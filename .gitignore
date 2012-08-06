@@ -1,2 +1,15 @@
 js/
 src/flash/.*
+tmp
+jslint.xml
+.settings
+.project
+docs
+jscoverage
+*~
+*.diff
+*.patch
+*.bak
+*.log
+*.min.js
+.DS_Store
