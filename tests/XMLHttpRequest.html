@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plupload Test Suite</title>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/jquery-1.7.1.min.js"><\/script>')</script>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
+<script src="http://code.jquery.com/qunit/qunit-git.js"></script>
+
+<script type="text/javascript" src="js/source.js"></script>
+<script type="text/javascript" src="js/inject.js"></script>
+
+<script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
+
+<script type="text/javascript">
+
+module("XMLHttpRequest", {
+	setup: function() {
+		var prohibited = ['CONNECT', 'TRACE', 'TRACK'],
+			allowed = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'];
+
+		function getRandom(min, max) {
+			return Math.floor(Math.random() * (max - min + 1)) + min; 
+		}
+
+		o.extend(this, {
+			x: o.Exceptions,
+
+			XHR: o.XMLHttpRequest,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			prohibited: prohibited,
+			
+			allowed: allowed,
+
+			methods: prohibited.concat(allowed),
+
+			runtimeOptions: {
+				runtime_order: "html5,flash",
+				swf_url: "../js/Moxie.swf",
+				container: "qunit-fixture"
+			},
+
+			getRandItem: function(arr) {
+				 return arr[getRandom(0, arr.length - 1)];
+			},
+
+			sameOrigin: function(url) {
+				function origin(url) {
+					return [url.scheme, url.host, url.port].join('/');
+				}
+					
+				if (typeof url === 'string') {
+					url = _parseUrl(url);
+				}
+					
+				return origin(_parseUrl()) === origin(url);
+			},
+
+			getsetSupported: function() {
+				return Object.defineProperty || Object.prototype.__defineGetter__;
+			}	
+
+		});
+		
+	},
+
+	teardown: function() {
+	}
+});
+
+
+// test object creation and initial state
+
+test('open()', function() {
+	var url = "XMLHttpRequest/sample.html",
+		xhr = new o.XMLHttpRequest,
+		x = o.Exceptions, i,
+		method, err, 
+		fired = false,
+		fireStarter = function(e) {
+			fired = true;
+		};
+
+	try {
+		xhr.open();
+	} catch (ex) { err = ex }
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if method not specified");
+	err = null;
+
+	try {
+		xhr.open('get');
+	} catch (ex) { err = ex }
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if url not specified");
+	err = null;
+
+
+	try {
+		xhr.open('INVĀLID', url); // Ā - \u0100
+	} catch (ex) { err = ex }
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if any code point in method is higher than U+00FF");
+	err = null;
+
+	try {
+		xhr.open('INVÀLID', url); // À - \u00C0
+	} catch (ex) { err = ex }
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if after deflating method does not match itself");
+	err = null;
+
+
+	for (i = 0; i < this.prohibited.length; i++) {
+		try {
+			xhr.open(this.prohibited[i], url);
+		} catch (ex) { 
+			if (!QUnit.equiv(ex, new x.DOMException(x.DOMException.SECURITY_ERR))) {
+				break;
+			}
+		}		
+	}
+	equal(i, this.prohibited.length, "Throws DOMException.SECURITY_ERR if method is one of the following ['CONNECT', 'TRACE', 'TRACK'])");
+
+
+	for (i = 0; i < this.allowed.length; i++) {
+		try {
+			xhr.open(this.allowed[i], url);
+		} catch (ex) { 
+			break;
+		}		
+	}
+	equal(i, this.allowed.length, "open() successfully called for allowed methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'] (can be called multiple times, but only last one matters)");
+
+
+	xhr.addEventListener('readystatechange', fireStarter);
+
+	try {
+		xhr.open('GET', url);
+	} catch (ex) { err = ex }
+	equal(xhr.readyState, o.XMLHttpRequest.OPENED, "XHR state switched to OPENED");
+	deepEqual(fired, true, "readystatechange has fired");
+	fired = false;
+
+	try {
+		xhr.open('GET', url, true, "user", "pass");
+	} catch (ex) { console.info(ex); }
+});
+
+
+test('setRequestHeader()', function() {
+	
+	//expect(6);
+
+	var xhr = new o.XMLHttpRequest,
+		x = o.Exceptions, i, err, 
+		url = "XMLHttpRequest/sample.html",
+		uaHeaders = [ // these headers are controlled by the user agent 
+			"accept-charset", 
+			"accept-encoding", 
+			"access-control-request-headers", 
+			"access-control-request-method", 
+			"connection", 
+			"content-length", 
+			"cookie", 
+			"cookie2", 
+			"content-transfer-encoding", 
+			"date", 
+			"expect", 
+			"host", 
+			"keep-alive", 
+			"origin", 
+			"referer", 
+			"te", 
+			"trailer", 
+			"transfer-encoding", 
+			"upgrade", 
+			"user-agent", 
+			"via"
+		];
+
+	// 1
+	try {
+		xhr.setRequestHeader('X-Test', 'test');
+	} catch (ex) { err = ex }
+	deepEqual(err, new x.DOMException(x.DOMException.INVALID_STATE_ERR), "Throws DOMException.INVALID_STATE_ERR if readyState of xhr is not XMLHttpRequest.OPENED");
+	err = null;
+
+	
+	xhr.open('get', url);
+
+	// 2
+	try {
+		xhr.setRequestHeader('X-Invālid', 'invalid'); // ā - \u0101
+	} catch (ex) { err = ex }
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if any code point in header field name is higher than U+00FF");
+	err = null;
+
+	// 3
+	try {
+		xhr.setRequestHeader('X-Invàlid', 'invalid'); // à - \u00E0
+	} catch (ex) { err = ex }
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if after deflating header field name does not match itself");
+	err = null;
+
+	// two above tests in theory should be run for heder field value too, but browsers seem to bypass it
+
+	// 4
+	for (i = 0; i < uaHeaders.length; i++) {
+		if (xhr.setRequestHeader(uaHeaders[i], 'valid value')) {
+			break;
+		}	
+	}
+	equal(i, uaHeaders.length, "None of the headers specified on step #5 of W3C XMLHttpRequest (http://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#the-setrequestheader()-method) accepted");
+
+	// 5
+	xhr.open('get', 'XMLHttpRequest/headers.php');
+	var result = (xhr.setRequestHeader('X-Test', 'one') && xhr.setRequestHeader('X-Test', 'two'));
+	ok(result, "Request headers added successfully");
+
+	// 6
+	stop();
+	xhr.onload = function() {
+		try {
+			var headers = o.JSON.parse(xhr.responseText);
+		} catch(ex) {
+			equal(1, xhr.responseText, "WTF?");
+		}
+		start();
+	};
+	xhr.send();
+});
+
+
+test('send() - get Blob (Binary)', function() {
+	expect(7);
+
+	var x = this.x
+	, xhr = new this.XHR
+	, startTime = (new Date).getTime()
+	, endTime
+	, progressRate = 0
+	, events = {
+		loadstart: 0,
+		//loadend: 0,
+		//load: 0,
+		progress: 0,
+		timeout: 0,
+		abort: 0,
+		error: 0
+	}
+	;
+
+	xhr.open('GET', 'XMLHttpRequest/image.jpg');
+	xhr.responseType = 'blob';
+
+	o.each(events, function(times, e) {
+		if (e === 'progress') {
+			var prevTime = startTime;
+			xhr.onprogress = function(e) {
+				var time = (new Date).getTime();
+				progressRate += time - prevTime;
+				prevTime = time;
+				events.progress++;
+			};
+		} else {
+			xhr['on' + e] = function() {
+				events[e]++;
+			};
+		}
+	});
+
+	xhr.onload = function() {
+		start();
+		
+		var 
+		  blob = xhr.response
+		, runtimeInfo = o.Runtime.getInfo(blob.ruid)
+		, img = new o.Image
+		;
+
+		ok(blob instanceof o.File, "XMLHttpRequest/image.jpg successfully received as File (Blob with a name); [using "+runtimeInfo.type+"]");
+		equal(blob.name, "image.jpg", "File name (image.jpg) extracted properly");
+		equal(blob.type, "image/jpeg", "Mime type (image/jpeg) figured out");
+
+		stop();
+		img.onload = function() {
+			start();
+			deepEqual({ width: img.width, height: img.height }, { width: 460, height: 670 }, "Image retained it's properties");
+		};
+		img.load(blob);
+	};
+
+	xhr.onloadend = function() {
+		// test events
+		equal(events.loadstart, 1, "LoadStart fired");
+		ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+		ok(true, "LoadEnd fired");
+	};
+
+	stop();
+	xhr.send(null, this.runtimeOptions);
+});
+
+
+test('send() - get JSON', function() {
+	expect(2);
+
+	var 
+	  x = this.x
+	, xhr = new this.XHR
+	, startTime
+	, endTime
+	;
+
+	// 1
+	xhr.open('get', 'XMLHttpRequest/json.php');
+	xhr.responseType = 'json';
+	stop();
+
+	xhr.onload = function(e) {
+		start();
+		endTime = (new Date).getTime();
+		ok(xhr.response, "Response received");
+		if (xhr.response) {
+			deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
+		}
+	};
+		
+	startTime = (new Date).getTime();
+	xhr.send(null, this.runtimeOptions);
+});
+
+
+test('send() - send FormData', function() {
+	var 
+	  x = this.x
+	, xhr = new this.XHR
+	, fd = new o.FormData
+	, startTime
+	, endTime
+	;
+
+	xhr.open('post', 'XMLHttpRequest/formdata.php');
+	xhr.responseType = 'json';
+
+	fd.append('one', "1");
+	fd.append('two', "2");
+	fd.append('three', "3");
+
+
+	stop();
+
+	xhr.onload = function(e) {
+		start();
+		endTime = (new Date).getTime();
+		
+		if (xhr.response) {
+			deepEqual(xhr.response, {
+				OK: 1,
+				one: "1",
+				two: "2",
+				three: "3"
+			}, "FormData constructed out of primitive values, successfully sent (in: " + (endTime - startTime) + " ms)");
+		}
+	};
+		
+	startTime = (new Date).getTime();
+	xhr.send(fd, this.runtimeOptions);
+});
+
+
+test('send() - send FormData (with Blob)', function() {
+	//expect(4);
+
+	var 
+	  x = this.x
+	, xhr = new this.XHR
+	, fd = new o.FormData
+	, blob
+	, binStr
+	, fileName = 'image.jpg'
+	, fileFieldName = 'image'
+	, startTime = (new Date).getTime()
+	, endTime
+	, progressRate = 0
+	, events = {
+		loadstart: 0,
+		//loadend: 0,
+		//load: 0,
+		progress: 0,
+		timeout: 0,
+		abort: 0,
+		error: 0
+	}
+	;
+
+	binStr = o.atob(imgB64);
+
+	file = new o.File(null, {
+		name: fileName,
+		type: 'image/jpeg',
+		size: binStr.length,
+		data: binStr	
+	});
+
+
+	xhr.open('post', 'XMLHttpRequest/formdata.php');
+	xhr.responseType = 'json';
+
+	if (xhr.upload) {
+		ok(xhr.upload, "Event target for upload events (xhr.upload) is present");
+
+		o.each(events, function(times, e) {
+			if (e === 'progress') {
+				var prevTime = startTime;
+				xhr.upload.onprogress = function(e) {
+					var time = (new Date).getTime();
+					progressRate += time - prevTime;
+					prevTime = time;
+					events.progress++;
+				};
+			} else {
+				xhr.upload['on' + e] = function() {
+					events[e]++;
+				};
+			}
+		});
+	}
+
+	fd.append('one', "1");
+	fd.append('two', "2");
+	fd.append('three', "3");
+	fd.append(fileFieldName, file);
+
+	stop();
+
+	xhr.onload = function(e) {
+		start();
+		endTime = (new Date).getTime();
+
+		ok(xhr.response, "Response received");
+		
+		if (xhr.response) {
+			deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
+
+			ok(xhr.response[fileFieldName], "File has been passed to a server with a field name of: " + fileFieldName);
+
+			if (xhr.response[fileFieldName]) {
+				equal(xhr.response[fileFieldName].error, 0, fileName + " uploaded, no errors detected during the upload");
+			}
+		}
+	};
+
+	xhr.onloadend = function() {
+		// test events
+		equal(events.loadstart, 1, "LoadStart fired");
+		if (events.progress != 0) {
+			ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+		} else {
+			ok(!events.progress, "Progress event didn't fire");
+		}
+		
+		ok(true, "LoadEnd fired");
+	};
+		
+	startTime = (new Date).getTime();
+	xhr.send(fd, this.runtimeOptions);
+});
+
+
+// test send ArrayBuffer
+
+
+// test receive Text
+
+// test receive Document
+
+
+// test receive ArrayBuffer
+</script>
+</head>
+<body>
+	<h1 id="qunit-header">Plupload Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests">
+	</ol>
+    <div id="qunit-fixture"></div>
+</body>
+</html>
