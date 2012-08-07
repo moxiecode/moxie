@@ -35,7 +35,7 @@ o.Image = (function() {
 		
 		o.extend(this, {
 			
-			uid: "uid_" + o.guid(),
+			uid: o.guid('uid_'),
 
 			ruid: null,
 			
@@ -147,50 +147,53 @@ o.Image = (function() {
 				return frs.readAsBinaryString(blob);
 			},
 
-			embed: function(el, options) {
-				var image, dataUrl, tr, runtime,
-					width, height, type, quality,
+			embed: function(el) {
+				var image, dataUrl, tr, runtime, type, quality, dimensions
+				, options = arguments[1] || {};
+				, width = this.width
+				, height = this.height
+				;
 
-					onResize = function() {
-						dataUrl = image.getAsDataURL(type, quality);
+				function onResize() {
+					dataUrl = image.getAsDataURL(type, quality);
 
-						if (o.ua.can('use_data_uri_of', image.size)) {
-							el.innerHTML = '<img src="' + dataUrl + '" width="' + image.width + '" height="' + image.height + '" />';
-							self.trigger('embedded');
-						} else {
-							tr = new o.Transporter;
+					if (o.ua.can('use_data_uri_of', image.size)) {
+						el.innerHTML = '<img src="' + dataUrl + '" width="' + image.width + '" height="' + image.height + '" />';
+						self.trigger('embedded');
+					} else {
+						tr = new o.Transporter;
 
-							tr.bind("TransportingComplete", function() {
-								runtime = self.connectRuntime(this.result.ruid);
-							
-								self.bind("Embedded", function() {
-									// position and size properly
-									o.extend(runtime.getShimContainer().style, {
-										//position: 'relative',
-										width: image.width + 'px',
-										height: image.height + 'px'
-									});
+						tr.bind("TransportingComplete", function() {
+							runtime = self.connectRuntime(this.result.ruid);
+						
+							self.bind("Embedded", function() {
+								// position and size properly
+								o.extend(runtime.getShimContainer().style, {
+									//position: 'relative',
+									width: image.width + 'px',
+									height: image.height + 'px'
+								});
 
-									// some shims (Flash/SilverLight) reload, if parent element is hidden, or it's position type changes (in Gecko)
-									tr.bind("RuntimeInit", function(e, runtime) {
-										tr.destroy();
-										runtime.destroy();
-										onResize.call(self); // re-feed our image data
-									});
-								}, 999);
+								// some shims (Flash/SilverLight) reload, if parent element is hidden, or it's position type changes (in Gecko)
+								tr.bind("RuntimeInit", function(e, runtime) {
+									tr.destroy();
+									runtime.destroy();
+									onResize.call(self); // re-feed our image data
+								});
+							}, 999);
 
-								runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);
-							});
+							runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);
+						});
 
-							tr.transport(o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, {
-								required_caps: {
-									display_media: true
-								},
-								container: el,
-								swf_url: options.swf_url
-							});
-						}
-					};
+						tr.transport(o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, {
+							required_caps: {
+								display_media: true
+							},
+							container: el,
+							swf_url: options.swf_url
+						});
+					}
+				}
 
 				if (!(el = o(el))) {
 					throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);	
@@ -200,11 +203,23 @@ o.Image = (function() {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
 				}
 
-				width = options.width || this.width;
-				height = options.height || this.height;
+
 				type = options.type || 'image/jpeg';
 				quality = options.quality || 90;
 				crop = options.crop !== undefined ? options.crop : false;
+
+				// figure out dimensions for the thumb
+				if (options.width) {
+					width = options.width;
+					height = options.height || width;
+				} else {
+					// if container element has > 0 dimensions, take them
+					dimensions = o.getSize(el);
+					if (dimensions.w && dimensions.h) { // both should be > 0
+						width = dimensions.w;
+						height = dimensions.h;
+					}
+				}
 
 				if (width === this.width && height === this.height) {
 					image = this;
