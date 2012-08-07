@@ -628,12 +628,12 @@
 					select_multiple: 
 						!(o.ua.browser === 'Safari' && o.ua.os === 'Windows'),
 					send_binary_string: 
-						!!(window.XMLHttpRequest && ((new XMLHttpRequest).sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
+						!!(window.XMLHttpRequest && (XMLHttpRequest.prototype.sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 					send_custom_headers: !!window.XMLHttpRequest,
 					send_multipart: function() {
 						return !!(window.XMLHttpRequest && (new XMLHttpRequest).upload && window.FormData) || can('send_binary_string');
 					},
-					stream_upload: !!(window['File'] && (File.mozSlice || File.webkitSlice || File.slice)),
+					stream_upload: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
 					summon_file_dialog: // yeah... some dirty sniffing here...
 						(o.ua.browser === 'Firefox' && o.ua.version >= 4)	|| 
 						(o.ua.browser === 'Opera' && o.ua.version >= 12)	|| 
