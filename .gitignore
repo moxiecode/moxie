@@ -13,3 +13,4 @@ jscoverage
 *.log
 *.min.js
 .DS_Store
+node_modules
