@@ -12,7 +12,7 @@ desc("Build release package");
 task("release", ["default", "package"], function (params) {});
 
 desc("Build libs for external usage");
-task("lib", ["minifyjs", "mkswf"]);
+task("lib", ["mkswf", "minifyjs"]);
 
 desc("Minify JS files");
 task("minifyjs", [], function (params) {
@@ -20,8 +20,9 @@ task("minifyjs", [], function (params) {
 		'core/mOxie.js',
 		'core/Utils.js',
 		'core/Exceptions.js',
-		'core/i18n.js',
+		'core/I18N.js',
 		'core/EventTarget.js',
+		'core/Runtime.js',
 		'core/Transporter.js',
 		'core/FileAPI.js',
 		'core/Image.js',
