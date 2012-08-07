@@ -6,10 +6,13 @@ var zip = require('./build/BuildTools').zip;
 var mkswf = require('./build/BuildTools').mkswf;
 
 desc("Default build task");
-task("default", ["minifyjs", "compileless", "yuidoc", "jshint"], function (params) {});
+task("default", ["minifyjs", "yuidoc", "jshint"], function (params) {});
 
 desc("Build release package");
 task("release", ["default", "package"], function (params) {});
+
+desc("Build libs for external usage");
+task("lib", ["minifyjs", "mkswf"]);
 
 desc("Minify JS files");
 task("minifyjs", [], function (params) {
@@ -40,11 +43,6 @@ task("mkswf", [], function(params) {
 		output: "./js/Moxie.swf"
 	}, complete);
 }, true);
-
-desc("Compile LESS CSS files");
-task("compileless", [], function (params) {
-	less("css/skin.less", "css/skin.min.css");
-});
 
 desc("Generate documentation using YUIDoc");
 task("yuidoc", [], function (params) {
