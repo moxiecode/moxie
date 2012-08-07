@@ -149,7 +149,7 @@ o.Image = (function() {
 
 			embed: function(el) {
 				var image, dataUrl, tr, runtime, type, quality, dimensions
-				, options = arguments[1] || {};
+				, options = arguments[1] || {}
 				, width = this.width
 				, height = this.height
 				;
