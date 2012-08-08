@@ -14,7 +14,9 @@ o.ImageInfo = function(binstr) {
 		for (var i = 0; i < _cs.length; i++) {
 			try {
 				return new _cs[i](binstr);
-			} catch (ex) {}
+			} catch (ex) {
+				// console.info(ex);
+			}
 		}
 		throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 	}());
@@ -29,7 +31,7 @@ o.ImageInfo = function(binstr) {
 JPEG = (function() {
 
 	function JPEG(binstr) {
-		var _binstr, _br, _hm, _ep, _info;
+		var _binstr, _br, _hm, _ep, _info, hasExif;
 
 		_binstr = binstr;
 
@@ -45,8 +47,8 @@ JPEG = (function() {
 		_hm = new JPEGHeaders(binstr);
 
 		// extract exif info
-		_ep = new ExifParser;
-		_ep.init(_hm.get('exif')[0]);
+		_ep = new ExifParser;		
+		hasExif = !!_ep.init(_hm.get('exif')[0]);
 
 		// get dimensions
 		_info = _getDimensions.call(this);
@@ -62,12 +64,11 @@ JPEG = (function() {
 
 			height: _info && _info.height || 0,
 
-			meta: {
-				exif: _ep.EXIF(),
-				gps: _ep.GPS()
-			},
-
 			setExif: function(tag, value) {
+				if (!hasExif) {
+					return false; // or throw an exception
+				}
+
 				if (o.typeOf(tag) === 'object') {
 					o.each(tag, function(value, tag) {
 						_ep.setExif(tag, value);
@@ -92,6 +93,13 @@ JPEG = (function() {
 				_purge.call(this);
 			}
 		});
+
+		if (hasExif) {
+			this.meta = {
+				exif: _ep.EXIF(),
+				gps: _ep.GPS()
+			};
+		}
 
 		function _getDimensions() {
 			var idx = 0, marker, length;
@@ -545,9 +553,13 @@ JPEG = (function() {
 			offsets['IFD0'] = offsets.tiffHeader + data.LONG(idx += 2);
 			Tiff = extractTags(offsets['IFD0'], tags.tiff);
 
-			offsets['exifIFD'] = ('ExifIFDPointer' in Tiff ? offsets.tiffHeader + Tiff.ExifIFDPointer : undefined);
-			offsets['gpsIFD'] = ('GPSInfoIFDPointer' in Tiff ? offsets.tiffHeader + Tiff.GPSInfoIFDPointer : undefined);
+			if ('ExifIFDPointer' in Tiff) {
+				offsets['exifIFD'] = offsets.tiffHeader + Tiff.ExifIFDPointer;
+			}
 
+			if ('GPSInfoIFDPointer' in Tiff) {
+				offsets['gpsIFD'] = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
+			}
 			return true;
 		}
 		
