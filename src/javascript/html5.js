@@ -257,7 +257,7 @@
 										fd = new FormData;
 
 										o.each(data._fields, function(value, name) {
-											if (data instanceof o.Blob) {
+											if (value instanceof o.Blob) {
 												fd.append(name, value.getSource());
 											} else {
 												fd.append(name, value);
