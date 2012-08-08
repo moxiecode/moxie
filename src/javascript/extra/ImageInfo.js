@@ -21,6 +21,18 @@ o.ImageInfo = function(binstr) {
 		throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 	}());
 
+	o.extend(this, {
+		type: '',
+		size: 0,
+		width: 0,
+		height: 0,
+		setExif: function() {},
+		writeHeaders: function(data) {
+			return data;
+		},
+		purge: function() {}
+	});
+
 	o.extend(this, _img);
 
 	this.purge = _img.purge;

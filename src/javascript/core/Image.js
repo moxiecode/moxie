@@ -155,7 +155,7 @@ o.Image = (function() {
 				;
 
 				function onResize() {
-					dataUrl = image.getAsDataURL(type, quality);
+					dataUrl = image.getAsDataURL(type || this.type || 'image/jpeg', quality);
 
 					if (o.ua.can('use_data_uri_of', image.size)) {
 						el.innerHTML = '<img src="' + dataUrl + '" width="' + image.width + '" height="' + image.height + '" />';
@@ -204,7 +204,7 @@ o.Image = (function() {
 				}
 
 
-				type = options.type || 'image/jpeg';
+				type = options.type;
 				quality = options.quality || 90;
 				crop = options.crop !== undefined ? options.crop : false;
 

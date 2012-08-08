@@ -451,7 +451,7 @@
 							},
 
 							getAsDataURL: function(type, quality) {
-								if (modified && 'image/jpeg' !== type) {
+								if (_modified && type !== 'image/jpeg') {
 									return _canvas.toDataURL('image/png');
 								} else {
 									return 'data:' + (comp.type || '') + ';base64,' + o.btoa(me.getAsBinaryString.call(this, type, quality));
@@ -486,10 +486,12 @@
 
 									if (_imgInfo) {
 										// update dimensions info in exif
-										_imgInfo.setExif({
-											PixelXDimension: this.width,
-											PixelYDimension: this.height
-										});
+										if (_imgInfo.meta && _imgInfo.meta.exif) {
+											_imgInfo.setExif({
+												PixelXDimension: this.width,
+												PixelYDimension: this.height
+											});
+										}
 
 										_binStr = _imgInfo.writeHeaders(_binStr);
 									}
@@ -543,15 +545,6 @@
 						function _resize(width, height, crop) {
 							var ctx, scale, mathFn, imgWidth, imgHeight;
 
-							// prepare canvas if necessary
-							if (!_canvas) {
-								_canvas = document.createElement("canvas");
-								_canvas.style.display = 'none';
-								document.body.appendChild(_canvas);
-							}
-							
-							ctx = _canvas.getContext('2d');
-
 							// unify dimensions
 							mathFn = !crop ? Math.min : Math.max;
 							scale = mathFn(width/this.width, height/this.height);
@@ -564,6 +557,15 @@
 								return;
 							}
 
+							// prepare canvas if necessary
+							if (!_canvas) {
+								_canvas = document.createElement("canvas");
+								_canvas.style.display = 'none';
+								document.body.appendChild(_canvas);
+							}
+							
+							ctx = _canvas.getContext('2d');
+
 							// scale image and canvas
 							if (crop) {
 								_canvas.width = width;
@@ -572,6 +574,7 @@
 								_canvas.width = imgWidth;
 								_canvas.height = imgHeight;
 							}
+
 							ctx.clearRect (0, 0 , _canvas.width, _canvas.height);
 							ctx.drawImage(_img, 0, 0, imgWidth, imgHeight);
 
