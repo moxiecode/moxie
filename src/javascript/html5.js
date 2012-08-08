@@ -64,7 +64,7 @@
 														
 							shimContainer = I.getShimContainer();		
 									
-							shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;' +
+							shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;"' +
 													(options.multiple ? 'multiple="multiple"' : '') + ' accept="' + mimes.join(',') + '" />';
 							
 							input = o(I.uid);
