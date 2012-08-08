@@ -685,8 +685,8 @@ PNG = (function() {
 			var idx = i = 0,
 			    signature = [0x8950, 0x4E47, 0x0D0A, 0x1A0A];
 			
-			for (var i = 0; i < signature.length; i++) {
-				if (signature[i] != _br.SHORT(idx+=2)) {
+			for (var i = 0; i < signature.length; i++, idx += 2) {
+				if (signature[i] != _br.SHORT(idx)) {
 					throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 				}
 			}
@@ -745,7 +745,7 @@ PNG = (function() {
 		}
 
 		function _purge() {
-			_br.read(null);
+			_br.init(null);
 			_hm = _ep = _br = null;
 		}
 	}
