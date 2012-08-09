@@ -505,6 +505,11 @@
 								}
 								
 								return _binStr;
+							},
+
+							destroy: function() {
+								_purge.call(this);
+								delete objpool[this.uid];
 							}
 						});
 

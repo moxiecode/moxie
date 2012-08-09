@@ -236,10 +236,15 @@ o.Image = (function() {
 					});
 
 					image.clone(this, false);					
-				}	
+				}
+				return image;	
 			},
 
 			destroy: function() {
+				if (this.ruid) {
+					var runtime = this.connectRuntime(this.ruid);
+					runtime.exec.call(self, 'Image', 'destroy');
+				}
 				this.unbindAll();
 			},
 			
