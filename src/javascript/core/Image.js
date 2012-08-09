@@ -51,8 +51,8 @@ o.Image = (function() {
 
 			meta: {},
 
-			clone: function(image, exact) {
-				this.load(image, exact);
+			clone: function() {
+				this.load.apply(this, arguments);
 			},
 
 			load: function(src, options) {
@@ -111,6 +111,11 @@ o.Image = (function() {
 				this.resize(width, height, true);
 			},
 
+			getAsImage: function() {
+				var runtime = this.connectRuntime(this.ruid);
+				return runtime.exec.call(self, 'Image', 'getAsImage');
+			},
+
 			getAsBlob: function(type, quality) {
 				if (!type) {
 					type = 'image/jpeg';
@@ -129,12 +134,8 @@ o.Image = (function() {
 			},
 
 			getAsDataURL: function(type, quality) {
-				var blob, frs;
-				
-				blob = this.getAsBlob(type, quality);
-				
-				frs = new o.FileReaderSync;
-				return frs.readAsDataURL(blob);
+				var runtime = this.connectRuntime(this.ruid);
+				return runtime.exec.call(self, 'Image', 'getAsDataURL', type, quality);
 			},
 
 

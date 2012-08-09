@@ -410,7 +410,13 @@
 									size: img.size,
 									type: img.type
 								};
-								_loadFromBinaryString.call(this, img.getAsBinaryString());
+
+								if (exact) {
+									_loadFromBinaryString.call(this, img.getAsBinaryString());
+								} else {
+									_img = img.getAsImage();
+									this.trigger('load', me.getInfo());
+								}
 							},
 
 							getInfo: function() {
@@ -418,12 +424,12 @@
 										width: _img && _img.width || 0,
 										height: _img && _img.height || 0,
 										type: _srcBlob && (_srcBlob.type || _srcBlob.name && o.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
-										size: _binStr.length,
+										size: _binStr && _binStr.length || _srcBlob.size || 0,
 										name: _srcBlob && _srcBlob.name || '',
 										meta: {}
 									};
 
-								if (I.can('access_image_binary')) {
+								if (I.can('access_image_binary') && _binStr) {
 									if (_imgInfo) {
 										_imgInfo.purge();
 									}
@@ -441,6 +447,10 @@
 								_resize.apply(this, arguments);
 							},
 
+							getAsImage: function() {
+								return _img;
+							},
+
 							getAsBlob: function(type, quality) {
 								var blob = new o.Blob(null, { // standalone blob
 									type: type,
@@ -451,10 +461,15 @@
 							},
 
 							getAsDataURL: function(type, quality) {
-								if (_modified && type !== 'image/jpeg') {
+								if (type !== 'image/jpeg') {
 									return _canvas.toDataURL('image/png');
 								} else {
-									return 'data:' + (comp.type || '') + ';base64,' + o.btoa(me.getAsBinaryString.call(this, type, quality));
+									try {
+										// older Geckos used to result in an exception on quality argument
+										return _canvas.toDataURL('image/jpeg', quality/100);	
+									} catch (ex) {
+										return _canvas.toDataURL('image/jpeg');	
+									}
 								}
 							},
 
@@ -478,7 +493,7 @@
 									try {
 										// older Geckos used to result in an exception on quality argument
 										dataUrl = _canvas.toDataURL('image/jpeg', quality/100);	
-									} catch (e) {
+									} catch (ex) {
 										dataUrl = _canvas.toDataURL('image/jpeg');	
 									}
 
@@ -592,7 +607,7 @@
 								_imgInfo.purge();
 								_imgInfo = null;
 							}
-							_binStr = null;
+							_binStr = _img = null;
 							_modified = false;
 
 							// remove canvas
