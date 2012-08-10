@@ -145,7 +145,7 @@
 						},
 						
 						FileInput: {
-							init: function(args) {
+							init: function(options) {
 								var comp = this;
 							
 								comp.bind("Change", function(e, files) {	
@@ -155,7 +155,7 @@
 									comp.files = files;						
 								}, 999);
 															
-								return self.getShim().exec(comp.uid, 'FileInput', 'init', args);
+								return self.getShim().exec(comp.uid, 'FileInput', 'init', [options]);
 							}
 						},
 								

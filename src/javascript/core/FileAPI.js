@@ -505,7 +505,7 @@ o.FileInput = (function() {
 				
 					self.ruid = runtime.uid;		
 					
-					runtime.exec.call(self, 'FileInput', 'init');
+					runtime.exec.call(self, 'FileInput', 'init', options);
 
 					// re-position and resize shim container
 					self.bind('Refresh', function() {

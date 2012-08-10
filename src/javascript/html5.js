@@ -30,7 +30,7 @@
 				
 				API: {	
 					FileInput: {
-						init: function(args) {
+						init: function(options) {
 							var comp = this, input, shimContainer, mimes;
 							
 							// figure out accept string

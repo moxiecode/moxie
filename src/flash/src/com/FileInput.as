@@ -48,17 +48,17 @@ package com
 						
 			
 			if (_options.accept !== null) {				
-				filters = [];
+				_filters = [];
 				
 				for (var i:int = 0; i < _options.accept.length; i++) {
-					filters.push(new FileFilter(
+					_filters.push(new FileFilter(
 						_options.accept[i].title,
 						'*.' + _options.accept[i].extensions.replace(/,/g, ";*."),
 						_options.accept.mac_types
 					));
 				}
 			}	
-			
+						
 			button = new Sprite;
 						
 			button.graphics.beginFill(0x000000, 0); // Fill with transparent color
