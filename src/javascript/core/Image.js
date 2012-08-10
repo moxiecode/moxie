@@ -111,6 +111,15 @@ o.Image = (function() {
 				this.resize(width, height, true);
 			},
 
+			getAsCanvas: function() {
+				if (!o.ua.can('create_canvas')) {
+					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);	
+				}
+
+				var runtime = this.connectRuntime(this.ruid);
+				return runtime.exec.call(self, 'Image', 'getAsCanvas');
+			},
+
 			getAsImage: function() {
 				var runtime = this.connectRuntime(this.ruid);
 				return runtime.exec.call(self, 'Image', 'getAsImage');
@@ -149,23 +158,33 @@ o.Image = (function() {
 			},
 
 			embed: function(el) {
-				var image, dataUrl, tr, runtime, type, quality, dimensions
+				var image, type, quality, dimensions
 				, options = arguments[1] || {}
 				, width = this.width
 				, height = this.height
 				;
 
 				function onResize() {
-					dataUrl = image.getAsDataURL(type || this.type || 'image/jpeg', quality);
+					var dataUrl, type = type || this.type || 'image/jpeg';
+
+					if (o.ua.can('create_canvas')) {
+						el.appendChild(image.getAsCanvas());
+						image.destroy();
+						self.trigger('embedded');
+						return;
+					} 
+
+					dataUrl = image.getAsDataURL(type, quality);
 
 					if (o.ua.can('use_data_uri_of', image.size)) {
 						el.innerHTML = '<img src="' + dataUrl + '" width="' + image.width + '" height="' + image.height + '" />';
+						image.destroy();
 						self.trigger('embedded');
 					} else {
-						tr = new o.Transporter;
+						var tr = new o.Transporter;
 
 						tr.bind("TransportingComplete", function() {
-							runtime = self.connectRuntime(this.result.ruid);
+							var runtime = self.connectRuntime(this.result.ruid);
 						
 							self.bind("Embedded", function() {
 								// position and size properly
@@ -176,14 +195,15 @@ o.Image = (function() {
 								});
 
 								// some shims (Flash/SilverLight) reload, if parent element is hidden, or it's position type changes (in Gecko)
-								tr.bind("RuntimeInit", function(e, runtime) {
+								/*tr.bind("RuntimeInit", function(e, runtime) {
 									tr.destroy();
 									runtime.destroy();
 									onResize.call(self); // re-feed our image data
-								});
+								});*/
 							}, 999);
 
 							runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);
+							image.destroy();
 						});
 
 						tr.transport(o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, {
@@ -221,23 +241,19 @@ o.Image = (function() {
 						height = dimensions.h;
 					}
 				}
+				
+				image = new o.Image;
 
-				if (width === this.width && height === this.height) {
-					image = this;
+				image.bind("Resize", function() {
 					onResize.call(self);
-				} else {
-					image = new o.Image;
+				});
 
-					image.bind("Resize", function() {
-						onResize.call(self);
-					});
+				image.bind("Load", function() {
+					image.resize(width, height, crop);
+				});
 
-					image.bind("Load", function() {
-						image.resize(width, height, crop);
-					});
+				image.clone(this, false);					
 
-					image.clone(this, false);					
-				}
 				return image;	
 			},
 
@@ -249,7 +265,7 @@ o.Image = (function() {
 				this.unbindAll();
 			},
 			
-			constructor: Image
+			constructor: o.Image
 		});
 
 
@@ -274,10 +290,10 @@ o.Image = (function() {
 		}
 
 
-		function _loadFromBlob(blob, options) {
+		function _loadFromBlob(blob, asBinary) {
 			var runtime = this.connectRuntime(blob.ruid);
 			this.ruid = runtime.uid;
-			runtime.exec.call(self, 'Image', 'loadFromBlob', blob.getSource());
+			runtime.exec.call(self, 'Image', 'loadFromBlob', blob.getSource(), asBinary);
 		}
 
 		function _loadFromUrl(url, options) {

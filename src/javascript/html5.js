@@ -385,13 +385,14 @@
 					},
 
 					Image: function() {
-						var me = this,
-							_img, _imgInfo, _canvas, _binStr, _srcBlob,
-							_modified = false; // is set true whenever image is modified
+						var me = this
+						, _img, _imgInfo, _canvas, _binStr, _srcBlob
+						, _modified = false // is set true whenever image is modified
+						; 
 
 						o.extend(me, {
-							loadFromBlob: function(srcBlob) {
-								var comp = this, fr;
+							loadFromBlob: function(srcBlob, asBinary) {
+								var comp = this;
 
 								if (!I.can('access_binary')) {
 									throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
@@ -399,9 +400,15 @@
 
 								_srcBlob = srcBlob;
 
-								_readAsBinaryString(_srcBlob, function(binStr) {
-									_loadFromBinaryString.call(comp, binStr);
-								});
+								if (asBinary) { // this will let us to hack the file internals
+									_readAsBinaryString(_srcBlob, function(data) {
+										_loadFromBinaryString.call(comp, data);
+									});
+								} else {
+									_readAsDataUrl(_srcBlob, function(data) {
+										_loadFromDataUrl.call(comp, data);
+									});
+								}
 							},
 
 							loadFromImage: function(img, exact) {
@@ -443,12 +450,23 @@
 								if (!_img) {
 									throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
 								}
-						
 								_resize.apply(this, arguments);
 							},
 
 							getAsImage: function() {
+								if (!_img) {
+									throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+								}
+								_img.id = this.uid + '_img';
 								return _img;
+							},
+
+							getAsCanvas: function() {
+								if (!_canvas) {
+									throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+								}
+								_canvas.id = this.uid + '_canvas';
+								return _canvas;
 							},
 
 							getAsBlob: function(type, quality) {
@@ -514,11 +532,6 @@
 								
 								_modified = false;
 								
-								// remove canvas
-								if (_canvas) {
-									_canvas.parentNode.removeChild(_canvas);
-								}
-								
 								return _binStr;
 							},
 
@@ -547,18 +560,47 @@
 							_img.src = 'data:' + (_srcBlob.type || '') + ';base64,' + o.btoa(binStr);
 						}
 
+						function _loadFromDataUrl(dataUrl) {
+							var comp = this;
+
+							_img = new Image;
+							_img.onerror = function() {
+								_purge.call(this);
+								throw new x.ImageError(x.ImageError.WRONG_FORMAT);
+							};
+							_img.onload = function() {
+								comp.trigger('load', me.getInfo());
+							};
+							_img.src = dataUrl;
+						}
+
 						function _readAsBinaryString(file, callback) {
 							var fr;
 
 							// use FileReader if it's available
-							if (window['FileReader']) {
+							if (window.FileReader) {
 								fr = new FileReader;
-								fr.readAsBinaryString(file);
 								fr.onload = function() {
 									callback(fr.result);
 								};
+								fr.readAsBinaryString(file);
 							} else {
 								return callback(file.getAsBinary());
+							}
+						}
+
+						function _readAsDataUrl(file, callback) {
+							var fr;
+
+							// use FileReader if it's available
+							if (window.FileReader) {
+								fr = new FileReader;
+								fr.onload = function() {
+									callback(fr.result);
+								};
+								fr.readAsDataURL(file);
+							} else {
+								return callback(file.getAsDataURL());
 							}
 						}
 
@@ -580,8 +622,6 @@
 							// prepare canvas if necessary
 							if (!_canvas) {
 								_canvas = document.createElement("canvas");
-								_canvas.style.display = 'none';
-								document.body.appendChild(_canvas);
 							}
 							
 							ctx = _canvas.getContext('2d');
@@ -607,14 +647,10 @@
 								_imgInfo.purge();
 								_imgInfo = null;
 							}
-							_binStr = _img = null;
+							_binStr = _img = _canvas - null;
 							_modified = false;
-
-							// remove canvas
-							if (_canvas) {
-								_canvas.parentNode.removeChild(_canvas);
-							}
 						}
+
 					}
 				}
 			}());

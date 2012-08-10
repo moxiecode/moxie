@@ -169,7 +169,8 @@
 	}());
 
 	o.ua.can = (function() {
-		var caps = {
+		// ideas for this heavily come from Modernizr (http://modernizr.com/)
+		var caps = { 
 				define_property: (function() {
 					try { // as of IE8, getters/setters are supported only on DOM elements
 						var obj = {};
@@ -188,8 +189,15 @@
 					return false;
 				}()),
 
+				create_canvas: (function() {
+					// On the S60 and BB Storm, getContext exists, but always returns undefined
+				    // so we actually have to call getContext() to verify
+				    // github.com/Modernizr/Modernizr/issues/issue/97/
+					var el = document.createElement('canvas');
+        			return !!(el.getContext && el.getContext('2d'));
+				}()),
+
 				use_data_uri: (function() {
-					// idea comes from Modernizr (http://modernizr.com/)
 					var du = new Image;
 
 					du.onload = function() {
