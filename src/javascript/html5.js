@@ -687,7 +687,7 @@
 					select_multiple: 
 						!(o.ua.browser === 'Safari' && o.ua.os === 'Windows'),
 					send_binary_string: 
-						!!(window.XMLHttpRequest && (XMLHttpRequest.prototype.sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
+						!!(window.XMLHttpRequest && ((new XMLHttpRequest).sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 					send_custom_headers: !!window.XMLHttpRequest,
 					send_multipart: function() {
 						return !!(window.XMLHttpRequest && (new XMLHttpRequest).upload && window.FormData) || can('send_binary_string');
