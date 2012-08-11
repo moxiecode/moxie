@@ -48,9 +48,12 @@ function Transporter() {
 			if (o.typeOf(options) === 'string' || options.ruid) {
 				_run.call(self, type, this.connectRuntime(options));
 			} else {
-				this.bind("RuntimeInit", function(e, runtime) {
+				// we require this to run only once
+				var cb = function(e, runtime) {
+					self.unbind("RuntimeInit", cb);
 					_run.call(self, type, runtime);
-				});
+				};
+				this.bind("RuntimeInit", cb);
 				this.connectRuntime(options);
 			}
 		},

@@ -162,16 +162,22 @@ o.Image = (function() {
 				, options = arguments[1] || {}
 				, width = this.width
 				, height = this.height
+				, runtime // this has to be outside of all the closures to contain proper runtime
 				;
 
 				function onResize() {
 					var dataUrl, type = type || this.type || 'image/jpeg';
 
+					// if possible, embed a canvas element directly
 					if (o.ua.can('create_canvas')) {
-						el.appendChild(image.getAsCanvas());
-						image.destroy();
-						self.trigger('embedded');
-						return;
+						var canvas = image.getAsCanvas();
+						if (canvas) {
+							el.appendChild(canvas);
+							canvas = null;
+							image.destroy();
+							self.trigger('embedded');
+							return;
+						}
 					} 
 
 					dataUrl = image.getAsDataURL(type, quality);
@@ -184,7 +190,7 @@ o.Image = (function() {
 						var tr = new o.Transporter;
 
 						tr.bind("TransportingComplete", function() {
-							var runtime = self.connectRuntime(this.result.ruid);
+							runtime = self.connectRuntime(this.result.ruid);
 						
 							self.bind("Embedded", function() {
 								// position and size properly
@@ -194,25 +200,24 @@ o.Image = (function() {
 									height: image.height + 'px'
 								});
 
-								// some shims (Flash/SilverLight) reload, if parent element is hidden, or it's position type changes (in Gecko)
-								/*tr.bind("RuntimeInit", function(e, runtime) {
+								// some shims (Flash/SilverLight) reinitialize, if parent element is hidden, reordered or it's position type changes (in Gecko)
+								tr.bind("RuntimeInit", function(e, runtime) {
 									tr.destroy();
 									runtime.destroy();
 									onResize.call(self); // re-feed our image data
-								});*/
+								});
 							}, 999);
 
 							runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);
 							image.destroy();
 						});
 
-						tr.transport(o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, {
+						tr.transport(o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, o.extend({}, options, {
 							required_caps: {
 								display_media: true
 							},
-							container: el,
-							swf_url: options.swf_url
-						});
+							container: el
+						}));
 					}
 				}
 

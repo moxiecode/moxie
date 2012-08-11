@@ -731,6 +731,18 @@ o.extend(o, {
 		delete uri.source;
 		return uri;
 	},
+
+	/**
+	Resolve url - among other things will turn relative url to absolute
+
+	@method resolveUrl
+	@param {String} url Either absolute or relative
+	@return {String} Resolved, absolute url
+	*/
+	resolveUrl: function(url) {
+		var urlp = o.parseUrl(url);										
+		return urlp.scheme + '://' + urlp.host + (urlp.port !== 80 ? ':' + urlp.port : '') + urlp.path;
+	},
 	
 	/**
 	Encode string with UTF-8  

@@ -37,7 +37,7 @@ package com
 			"Progress": OProgressEvent.PROGRESS,
 			"Load": ODataEvent.DATA,
 			"Error": OErrorEvent.ERROR,
-			"Resize": Event.COMPLETE
+			"Resize": ImageEvent.RESIZE
 		};
 		
 		private var _img:*;
@@ -209,7 +209,7 @@ package com
 						bd.draw(output, matrix, null, null, null, true);
 						output.dispose();			
 						output = bd;
-						
+												
 						if (scale > 1) {
 							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, { width: output.width, height: output.height }));
 							return;

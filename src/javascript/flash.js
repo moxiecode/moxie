@@ -114,7 +114,7 @@
 								return o.atob(data);
 							
 							case 'readAsDataURL':
-								return data;
+								return 'data:' + (type || '') + ';base64,' + data;
 							
 						}
 						return null;
@@ -287,6 +287,15 @@
 									return new o.Blob(self.uid, blob);
 								}
 								return null;
+							},
+
+							getAsDataURL: function(type, quality) {
+								var frs, blob = self.API.Image.getAsBlob.apply(this, arguments);
+								if (!blob) {
+									return null;
+								}
+								frs = new o.FileReaderSync;
+								return frs.readAsDataURL(blob);
 							}
 						}
 					};
