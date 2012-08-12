@@ -126,8 +126,9 @@ package com
 		}
 		
 		
-		public function isFileRef() : Boolean {
-			return false;
+		public function isFileRef() : Boolean 
+		{
+			return _sources.length === 1 && _sources[0].buffer.fileRef;
 		}
 		
 		
@@ -146,6 +147,24 @@ package com
 				size: size,
 				type: type
 			};
+		}
+		
+		public function purge() : void // this one simply clears out all FileReferences
+		{
+			var src:Object;
+			
+			for each (src in _sources) {
+				src.buffer.purge();	
+			}
+		}
+		
+		public function destroy() : void
+		{
+			var src:Object;
+			
+			for each (src in _sources) {
+				src.buffer.destroy();	
+			}
 		}
 	}
 }

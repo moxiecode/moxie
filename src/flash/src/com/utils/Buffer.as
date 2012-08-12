@@ -46,16 +46,17 @@ package com.utils
 		}
 		
 		
-		public function clear() : void {
-			
+		public function purge() : void {
+			if (_fileRef && _fileRef.data.length) {
+				_fileRef.data.clear();
+			}
 		}
 		
 		public function destroy() : void {
 			if (_data && _data.length) {
 				_data.clear();
 			}
-			
-			// clear FileReference
+			purge();
 		}
 	}
 }

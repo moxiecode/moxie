@@ -200,12 +200,14 @@ o.Image = (function() {
 									height: image.height + 'px'
 								});
 
-								// some shims (Flash/SilverLight) reinitialize, if parent element is hidden, reordered or it's position type changes (in Gecko)
-								tr.bind("RuntimeInit", function(e, runtime) {
+								// some shims (Flash/SilverLight) reinitialize, if parent element is hidden, reordered or it's 
+								// position type changes (in Gecko), but since we basically need this only in IEs 6/7 and 
+								// sometimes 8 and they do not have this problem, we can comment this for now
+								/*tr.bind("RuntimeInit", function(e, runtime) {
 									tr.destroy();
 									runtime.destroy();
 									onResize.call(self); // re-feed our image data
-								});
+								});*/
 							}, 999);
 
 							runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);

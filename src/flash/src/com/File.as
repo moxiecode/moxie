@@ -32,11 +32,6 @@ package com
 			super(sources, size, type);		
 		}
 		
-		public override function isFileRef() : Boolean 
-		{
-			return _sources.length === 1 && _sources[0].buffer.fileRef;
-		}
-		
 		
 		public override function toObject() : Object {
 			return {

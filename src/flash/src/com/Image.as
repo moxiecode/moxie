@@ -17,6 +17,7 @@ package com
 	import flash.events.IOErrorEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.geom.Matrix;
+	import flash.system.System;
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
 	
@@ -121,6 +122,7 @@ package com
 			fr.addEventListener(Event.COMPLETE, function(e:Event) : void {
 				fr.removeAllEventsListeners();
 				loadFromByteArray(fr.result);
+				blob.purge();
 			});
 			
 			fr.readAsByteArray(blob);
@@ -163,10 +165,12 @@ package com
 					// draw preloaded data onto the prepared BitmapData
 					bd.draw(e.target.content as IBitmapDrawable, null, null, null, null, true);
 					loader.unload();
-					loadFromBitmapData(bd);					
+					loadFromBitmapData(bd);	
+					ba.clear();
 				});
 				
 				loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function(e:*) : void {
+					ba.clear();
 					Moxie.log(e);
 				});
 				
@@ -321,6 +325,21 @@ package com
 			Moxie.blobPile.add(blob);
 
 			return blob.toObject();
+		}
+		
+		
+		public function destroy() : void
+		{
+			if (_img) {
+				_img.purge();					
+			}
+			
+			if (_bm) {
+				_bm.bitmapData.dispose();
+				_bm = null;
+			}
+			flash.system.System.gc();
+			flash.system.System.gc();
 		}
 		
 		
