@@ -35,7 +35,7 @@
 							
 							// figure out accept string
 							mimes = options.accept.mimes || (function(filters) {
-									var ext, i, y, type, mimes;
+									var ext, i, y, type, mimes = [];
 									
 									// Convert extensions to mime types list
 									no_type_restriction:
@@ -100,7 +100,7 @@
 										browseButton.style.position = 'relative';
 									}
 									
-									zIndex = parseInt(o.getStyle(browseButton, 'z-index'), 10) || 0;
+									zIndex = parseInt(o.getStyle(browseButton, 'z-index'), 10) || 1;
 			
 									browseButton.style.zIndex = zIndex;
 									shimContainer.style.zIndex = zIndex - 1;
