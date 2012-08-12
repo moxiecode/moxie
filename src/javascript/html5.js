@@ -647,7 +647,7 @@
 								_imgInfo.purge();
 								_imgInfo = null;
 							}
-							_binStr = _img = _canvas - null;
+							_binStr = _img = _canvas = null;
 							_modified = false;
 						}
 
