@@ -34,33 +34,7 @@
 							var comp = this, input, shimContainer, mimes;
 							
 							// figure out accept string
-							mimes = options.accept.mimes || (function(filters) {
-									var ext, i, y, type, mimes = [];
-									
-									// Convert extensions to mime types list
-									no_type_restriction:
-									for (i = 0; i < filters.length; i++) {
-										ext = filters[i].extensions.split(/\s*,\s*/);
-					
-										for (ii = 0; ii < ext.length; ii++) {
-											
-											// If there's an asterisk in the list, then accept attribute is not required
-											if (ext[ii] === '*') {
-												mimes = [];
-												break no_type_restriction;
-											}
-											
-											type = o.mimes[ext[ii]];
-					
-											if (type && !~o.inArray(type, mimes)) {
-												mimes.push(type);
-											}
-										}
-									}
-									
-									return mimes;
-								}(options.accept));
-							
+							mimes = options.accept.mimes || o.extList2mimes(options.accept);
 														
 							shimContainer = I.getShimContainer();		
 									
@@ -684,8 +658,7 @@
 						} catch (ex) {}
 						return false;
 					},
-					select_multiple: 
-						!(o.ua.browser === 'Safari' && o.ua.os === 'Windows'),
+					select_multiple: !(o.ua.browser === 'Safari' && o.ua.os === 'Windows'),
 					send_binary_string: 
 						!!(window.XMLHttpRequest && ((new XMLHttpRequest).sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 					send_custom_headers: !!window.XMLHttpRequest,
@@ -693,10 +666,11 @@
 						return !!(window.XMLHttpRequest && (new XMLHttpRequest).upload && window.FormData) || can('send_binary_string');
 					},
 					stream_upload: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
-					summon_file_dialog: // yeah... some dirty sniffing here...
-						(o.ua.browser === 'Firefox' && o.ua.version >= 4)	|| 
-						(o.ua.browser === 'Opera' && o.ua.version >= 12)	|| 
-						!!~o.inArray(o.ua.browser, ['Chrome', 'Safari']),
+					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
+						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4)	|| 
+								(o.ua.browser === 'Opera' && o.ua.version >= 12)	|| 
+								!!~o.inArray(o.ua.browser, ['Chrome', 'Safari']);
+					}()),
 					upload_filesize: true
 				});
 

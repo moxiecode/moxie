@@ -29,7 +29,8 @@ task("minifyjs", [], function (params) {
 		'extra/ImageInfo.js',
 		'core/XMLHttpRequest.js',
 		'html5.js',
-		'flash.js'
+		'flash.js',
+		'html4.js'
 	], "js/moxie.min.js", {
 		sourceBase: 'src/javascript/'
 	});

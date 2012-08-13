@@ -454,31 +454,7 @@ o.FileInput = (function() {
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
-			options.accept = (function(mimes) {
-				var exts = '', accept = [];
-				
-				mimes = o.trim(mimes);
-				
-				if (mimes !== '*') {
-					o.each(mimes.split(/\s*,\s*/), function(mime, i) {
-						if (o.extensions[mime]) {
-							exts += o.extensions[mime].join(',');
-						}
-					});
-				} else {
-					exts = mimes;	
-				}
-				
-				accept.push({
-					title: o.translate('Files'),
-					extensions: exts
-				});
-				
-				// save original mimes string
-				accept.mimes = mimes;
-								
-				return accept;
-			}(options.accept));
+			options.accept = mimes2extList(options.accept);
 		}
 					
 		// make container relative, if they're not
@@ -526,7 +502,6 @@ o.FileInput = (function() {
 							browseButton = null;
 						}
 					});
-
 					self.trigger('Refresh');
 								
 					self.dispatchEvent('ready');

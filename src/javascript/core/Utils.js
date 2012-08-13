@@ -449,7 +449,11 @@ o.extend(o, {
 			}
 
 			// Add event listener
-			if (obj.attachEvent) {
+			if (obj.addEventListener) {
+				func = callback;
+				
+				obj.addEventListener(name, func, false);
+			} else if (obj.attachEvent) {
 				
 				func = function() {
 					var evt = window.event;
@@ -463,12 +467,7 @@ o.extend(o, {
 
 					callback(evt);
 				};
-				obj.attachEvent('on' + name, func);
-				
-			} else if (obj.addEventListener) {
-				func = callback;
-				
-				obj.addEventListener(name, func, false);
+				obj.attachEvent('on' + name, func);	
 			}
 			
 			// Log event handler to objects internal mOxie registry
@@ -525,11 +524,11 @@ o.extend(o, {
 			for (var i=type.length-1; i>=0; i--) {
 				// undefined or not, key should match			
 				if (type[i].key === key || type[i].orig === callback) {
-										
-					if (obj.detachEvent) {
-						obj.detachEvent('on'+name, type[i].func);
-					} else if (obj.removeEventListener) {
+						
+					if (obj.removeEventListener) {
 						obj.removeEventListener(name, type[i].func, false);		
+					} else if (obj.detachEvent) {
+						obj.detachEvent('on'+name, type[i].func);
 					}
 					
 					type[i].orig = null;

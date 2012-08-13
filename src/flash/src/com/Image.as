@@ -197,7 +197,7 @@ package com
 		}
 			
 		
-		public function resize(width:uint, height:uint, crop:Boolean = false) : void
+		public function resize(width:uint, height:uint, crop:Boolean = false, oneGo:Boolean = false) : void
 		{
 			var self:Image = this, scale:Number, selector:Function, output:BitmapData,
 				
@@ -252,7 +252,7 @@ package com
 				selector = Math.max;
 			}
 			
-			if (output.width / 2 > width) {
+			if (output.width / 2 > width && !oneGo) {
 				downScale(output.width / 2, output.height / 2); // modifies output internally
 			} else {
 				downScale(width, height);
@@ -338,7 +338,10 @@ package com
 				_bm.bitmapData.dispose();
 				_bm = null;
 			}
+			
+			// one call to mark any dereferenced objects and sweep away old marks, 			
 			flash.system.System.gc();
+			// ...and the second to now sweep away marks from the first call.
 			flash.system.System.gc();
 		}
 		

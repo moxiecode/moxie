@@ -65,6 +65,69 @@
 		"text/plain,asc txt text diff log," +
 		"application/octet-stream,exe"
 	);
+
+
+	function extList2mimes(filters) {
+		var ext, i, y, type, mimes = [];
+		
+		// Convert extensions to mime types list
+		no_type_restriction:
+		for (i = 0; i < filters.length; i++) {
+			ext = filters[i].extensions.split(/\s*,\s*/);
+
+			for (ii = 0; ii < ext.length; ii++) {
+				
+				// If there's an asterisk in the list, then accept attribute is not required
+				if (ext[ii] === '*') {
+					mimes = [];
+					break no_type_restriction;
+				}
+				
+				type = o.mimes[ext[ii]];
+
+				if (type && !~o.inArray(type, mimes)) {
+					mimes.push(type);
+				}
+			}
+		}
+		
+		return mimes;
+	}
+
+
+	function mimes2extList(mimes) {
+		var exts = '', accept = [];
+		
+		mimes = o.trim(mimes);
+		
+		if (mimes !== '*') {
+			o.each(mimes.split(/\s*,\s*/), function(mime, i) {
+				if (o.extensions[mime]) {
+					exts += o.extensions[mime].join(',');
+				}
+			});
+		} else {
+			exts = mimes;	
+		}
+		
+		accept.push({
+			title: o.translate('Files'),
+			extensions: exts
+		});
+		
+		// save original mimes string
+		accept.mimes = mimes;
+						
+		return accept;
+	}
+
+
+	o.extList2mimes = extList2mimes;
+	o.mimes2extList = mimes2extList;
+
+
+							
+
 	
 	/**
 		Ok, YES, we do a browser sniffing here. Original: http://www.quirksmode.org/js/detect.html
