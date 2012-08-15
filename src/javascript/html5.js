@@ -251,7 +251,7 @@
 
 								// attach event handlers
 								(function() {
-									var events = ['loadstart', 'progress', 'abort', 'error', 'load', 'timeout', 'loadend'];
+									var events = ['loadstart', 'progress', 'abort', 'error', 'load', 'timeout'];
 
 									function reDispatch(e) {										
 										target.trigger(e);
@@ -378,7 +378,7 @@
 									_readAsBinaryString(_srcBlob, function(data) {
 										_loadFromBinaryString.call(comp, data);
 									});
-								} else {
+								} else { // ... but this is faster
 									_readAsDataUrl(_srcBlob, function(data) {
 										_loadFromDataUrl.call(comp, data);
 									});
@@ -657,6 +657,9 @@
 							}
 						} catch (ex) {}
 						return false;
+					},
+					resize_image: function() {
+						return can('access_binary') && o.ua.can('create_canvas');
 					},
 					select_multiple: !(o.ua.browser === 'Safari' && o.ua.os === 'Windows'),
 					send_binary_string: 

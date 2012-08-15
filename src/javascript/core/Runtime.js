@@ -229,6 +229,11 @@ Runtime.addConstructor = function(type, construct) {
 	runtimeConstructors[type] = construct;
 };
 
+
+Runtime.getConstructor = function(type) {
+	return runtimeConstructors[type] || null;
+};
+
 /**
 Get info about the runtime (uid, type, capabilities)
 
@@ -271,6 +276,7 @@ Runtime.caps = {
 	display_media: false,
 	drag_and_drop: false,
 	receive_response_type: false,
+	resize_image: false,
 	return_response_headers: true,
 	send_custom_headers: false,
 	select_multiple: true,

@@ -16,26 +16,26 @@
 			};
 			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;			
 			
-			o.Runtime.apply(this, [type, options]);
+			// inherit stuff from html5 runtime if it is available
+			if (o.Runtime.getConstructor('html5')) {
+				o.Runtime.getConstructor('html5').apply(this, [type, options]);
+				shim = this.getShim();
+			} else {
+				o.Runtime.apply(this, [type, options]);
+				shim = {};
+			}
+
 			
 			o.extend(this, {
-					
-				init : function() {		
-					I.trigger("Init");			
-				},
-
-				getShim: function() {
-					return shim;
-				},
 				
 				API: {	
 					FileInput: (function() {
 						var _uid, _mimes = [], _options;
 
 						function addInput() {
-							var comp = this, shimContainer, browseButton, currForm, input, uid;
+							var comp = this, shimContainer, browseButton, currForm, form, input, uid;
 
-							uid = o.guid();
+							uid = o.guid('uid_');
 
 							shimContainer = I.getShimContainer(); // we get new ref everytime to avoid memory leaks in IE
 
@@ -46,11 +46,36 @@
 								}
 							}		
 
-							shimContainer.innerHTML += '<form id="' + uid + '_form" method="post" ' + 
-								'style="overflow:hidden;position:absolute;top:0;left:0;width:100%;height:100%;" ' +
-								'enctype="multipart/form-data" encode="multipart/form-data" target="' + uid + '_iframe">' + 
-									'<input id="' + uid +'" type="file" style="font-size:999px;opacity:0;" accept="' + _mimes.join(',') + '"/>' +
-								'</form>';
+							// build form in DOM, since innerHTML version not able to submit file for some reason
+							form = document.createElement('form');
+							form.setAttribute('id', uid + '_form');
+							form.setAttribute('method', 'post');
+							form.setAttribute('enctype', 'multipart/form-data');
+							form.setAttribute('encoding', 'multipart/form-data');
+							form.setAttribute("target", uid + '_iframe');
+
+							o.extend(form.style, {
+								overflow: 'hidden',
+								position: 'absolute',
+								top: 0,
+								left: 0,
+								width: '100%',
+								height: '100%'
+							});
+
+							input = document.createElement('input');
+							input.setAttribute('id', uid);
+							input.setAttribute('type', 'file');
+							input.setAttribute('name', 'Filedata');
+							input.setAttribute('accept', _mimes.join(','));
+
+							o.extend(input.style, {
+								fontSize: '999px',
+								opacity: 0 
+							});
+
+							form.appendChild(input);
+							shimContainer.appendChild(form);
 
 							input = o(uid);
 
@@ -92,7 +117,9 @@
 									};
 								}
 
-								files.push(new o.File(I.uid, file));
+								file = new o.File(I.uid, file);
+								file.uid = uid; // override uid with the one that corresponds to out html structures
+								files.push(file);
 
 								input.onchange = function() {}; // clear event handler
 								addInput.call(comp);
@@ -178,34 +205,136 @@
 				}			
 			});
 
-			shim = (function() {
-				var objpool = {};
+			o.extend(shim, {
+				XMLHttpRequest: function() {
+					var _status, _response;
 
-				return {
-					exec: function(uid, comp, fn, args) {
-						var obj;
+					o.extend(this, {
+							
+						send: function(meta, data) {
+							var target = this, uid, form, input, blob;
 
-						if (!shim[comp]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
+							function createIframe() {
+								var 
+								  container = o(I.uid + '_container') || document.body
+								, temp = document.createElement('div')
+								;
+
+								// IE 6 won't be able to set the name using setAttribute or iframe.name
+								temp.innerHTML = '<iframe id="' + uid + '_iframe" name="' + uid + '_iframe" src="javascript:&quot;&quot;" style="display:none"></iframe>';
+								iframe = temp.firstChild;
+								container.appendChild(iframe);
+
+								iframe.onload = function(e) {
+									var el, result;
+
+									try {
+										el = iframe.contentWindow.document || iframe.contentDocument || window.frames[iframe.id].document;
+										_status = 200;
+									} catch (ex) {
+										// Probably a permission denied error
+										_status = 406;
+										// throw exception or do error event
+										return;
+									}
+
+									// get result
+									_response = el.body.innerHTML;
+
+									// cleanup
+									if (!data._blob) {
+										form.parentNode.removeChild(form);
+									} else {
+										o.each(form.getElementsByTagName('input'), function(input) {
+											if ('hidden' === input.getAttribute('type')) {
+												input.parentNode.removeChild(input);
+											}
+											input = null;
+										});
+									}
+									form = null;
+
+									// without timeout request is marked as canceled (in console)
+									setTimeout(function() { 
+										iframe.onload = null;
+										iframe.parentNode.removeChild(iframe);
+										iframe = null; 
+										
+										target.trigger('load');
+									}, 1);
+								};
+							} // end createIframe
+
+							// prepare data to be sent and convert if required	
+							if (data instanceof o.FormData) {
+								if (data._blob) {
+									blob = data._fields[data._blob];
+									uid = blob.uid;
+									input = o(uid);
+									form = o(uid + '_form');
+									if (!form) {
+										throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
+									}
+								} else {
+									uid = o.guid('uid_');
+
+									form = document.createElement('form');
+									form.setAttribute('id', uid + '_form');
+									form.setAttribute('method', 'post');
+									form.setAttribute('enctype', 'multipart/form-data');
+									form.setAttribute('encoding', 'multipart/form-data');
+									form.setAttribute("target", uid + '_iframe');
+									
+
+									//form.style.position = 'absolute';
+								}
+
+								o.each(data._fields, function(value, name) {
+									if (value instanceof o.Blob) {
+										if (input) {
+											input.setAttribute('name', name);
+										}
+									} else {
+										var hidden = document.createElement('input');
+
+										o.extend(hidden, {
+											type : 'hidden',
+											name : name,
+											value : value
+										});
+
+										form.appendChild(hidden);
+									}
+								});
+
+								// set destination url
+								form.setAttribute("action", meta.url);
+
+								createIframe();
+								form.submit();
+								target.trigger('loadstart');
+
+								temp = container == null;
+							}
+						},
+
+						getStatus: function() {
+							return _status;
+						},
+
+						getResponse: function(responseType) {
+							if ('json' === responseType) {
+								// strip off <pre>..</pre> tags that might be enclosing the response
+								return o.JSON.parse(_response.replace(/^\s*<pre>/, '').replace(/<\/pre>\s*$/, ''));
+							} else if ('document' === responseType) {
+
+							} else {
+								return _response;
+							}
 						}
-
-						obj = objpool[uid];
-						if (!obj) {
-							obj = objpool[uid] = new shim[comp];
-						}
-
-						if (!obj[fn]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
-						}
-
-						return obj[fn].apply(this, args);
-					},
-
-					XMLHttpRequest: function() {
-						
-					}
+					});
 				}
-			}());
+			});
 
 		}
 		
@@ -214,11 +343,15 @@
 			var caps = o.extend({}, o.Runtime.caps, {  
 					access_binary: false,		
 					access_image_binary: false,		
-					display_media: false,
+					display_media: o.ua.can('create_canvas') || o.ua.can('use_data_uri_over32kb'),
 					drag_and_drop: false,
 					receive_response_type: function(responseType) {
 						return !!~o.inArray(o.ua.browser, ['json', 'text', 'document', '']);
 					},
+					resize_image: function() {
+						return can('access_binary') && o.ua.can('create_canvas');
+					},
+					return_response_headers: false,
 					select_multiple: false,
 					send_binary_string: false,
 					send_custom_headers: false,
