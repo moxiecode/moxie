@@ -21,7 +21,7 @@ Common set of methods and properties for every runtime instance
 
 @class Runtime
 */
-function Runtime(type, options) {
+function Runtime(options, type) {
 	/**
 	Fired when runtime is initialized and ready. 
 	Automatically triggers RuntimeInit on the connected component.

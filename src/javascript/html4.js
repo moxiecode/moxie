@@ -18,10 +18,10 @@
 			
 			// inherit stuff from html5 runtime if it is available
 			if (o.Runtime.getConstructor('html5')) {
-				o.Runtime.getConstructor('html5').apply(this, [type, options]);
+				o.Runtime.getConstructor('html5').apply(this, [options, arguments[1] || type]);
 				shim = this.getShim();
 			} else {
-				o.Runtime.apply(this, [type, options]);
+				o.Runtime.apply(this, [options, arguments[1] || type]);
 				shim = {};
 			}
 
@@ -113,7 +113,7 @@
 									file = el.files[0];
 								} else {
 									file = {
-										name: el.value.replace(/\\/g, '/').substr(name.lastIndexOf('/') + 1)
+										name: el.value
 									};
 								}
 
@@ -214,9 +214,11 @@
 						send: function(meta, data) {
 							var target = this, uid, form, input, blob;
 
+							_status = _response = null;
+
 							function createIframe() {
 								var 
-								  container = o(I.uid + '_container') || document.body
+								  container = I.getShimContainer() || document.body
 								, temp = document.createElement('div')
 								;
 
@@ -225,21 +227,33 @@
 								iframe = temp.firstChild;
 								container.appendChild(iframe);
 
+								iframe.onreadystatechange = function() {
+									console.info(iframe.readyState);
+								};
+
 								iframe.onload = function(e) {
-									var el, result;
+									var el;
 
 									try {
 										el = iframe.contentWindow.document || iframe.contentDocument || window.frames[iframe.id].document;
+
+										// try to detect some standard error pages
+										if (/^4\d{2}\s/.test(el.title) && el.getElementsByTagName('address').length) { // standard Apache style
+											_status = el.title.replace(/^(\d+).*$/, '$1');
+											target.trigger('error');
+											return;
+										}
 										_status = 200;
+
 									} catch (ex) {
-										// Probably a permission denied error
-										_status = 406;
-										// throw exception or do error event
+										// probably a permission denied error
+										_status = 404;
+										target.trigger('error');
 										return;
 									}
 
-									// get result
-									_response = el.body.innerHTML;
+									// get result 
+									_response = o.trim(el.body.innerHTML);
 
 									// cleanup
 									if (!data._blob) {
@@ -259,7 +273,7 @@
 										iframe.onload = null;
 										iframe.parentNode.removeChild(iframe);
 										iframe = null; 
-										
+
 										target.trigger('load');
 									}, 1);
 								};

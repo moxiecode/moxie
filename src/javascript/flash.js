@@ -64,7 +64,7 @@
 			};
 			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;			
 			
-			o.Runtime.apply(self, [type, options]);
+			o.Runtime.apply(this, [options, arguments[1] || type]);
 			
 			o.extend(this, {
 					

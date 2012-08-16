@@ -153,29 +153,36 @@ var x = o.Exceptions;
 	o.File = (function() {
 		
 		function File(ruid, file) {
-			if (!file) {
+			var name, ext, type;
+
+			if (!file) { // avoid extra errors in case we overlooked something
 				file = {};
 			}
 
-			var 
-			  name
-			, ext = file.name && file.name.match(/[^\.]+$/)
-			, type = ext && o.mimes[ext[0]] || 'application/octet-stream'
-			;
+			// extract extension
+			ext = file.name && file.name.match(/[^\.]+$/);
 
-			// if file type is available and name is not, generate random one
-			if (!ext && file.type && o.extensions[file.type]) {
+			// figure out the type
+			if (!file.type) {
+				type = ext && o.mimes[ext[0]] || 'application/octet-stream';
+			}
+
+			// sanitize file name or generate new one
+			if (file.name) {
+				name = file.name.replace(/\\/g, '/');
+				name = name.substr(name.lastIndexOf('/') + 1);
+			} else if (file.type && o.extensions[file.type]) {
 				ext = o.extensions[file.type][0];
 				name = o.guid(file.type.split('/')[0] + '_' || 'file_') + '.' + ext;
 			}
-			
+
 			o.Blob.apply(this, arguments);
 			
 			o.extend(this, {
 
 				type: file.type || type,
 
-				name: file.name || name || '',
+				name: name || '',
 				
 				lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString(), 
 				

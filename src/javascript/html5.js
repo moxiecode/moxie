@@ -10,13 +10,15 @@
 		function Runtime(options) {	
 			var I = this, shim;
 
+			// allow to extend this runtime
+
 			// figure out the options	
 			defaults = {
 			
 			};
 			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;			
 			
-			o.Runtime.apply(this, [type, options]);
+			o.Runtime.apply(this, [options, arguments[1] || type]);
 			
 			o.extend(this, {
 					
