@@ -29,11 +29,19 @@
 				getShim: function() {
 					return shim;
 				},
+
+				shimExec: function(component, action, args) {
+					return self.getShim().exec.call(this, this.uid, component, action, args);
+				},
 				
-				API: {	
-					FileInput: {
+				FileInput: (function() {
+					var _files = [];
+
+					return {
 						init: function(options) {
 							var comp = this, input, shimContainer, mimes;
+
+							_files = [];
 							
 							// figure out accept string
 							mimes = options.accept.mimes || o.extList2mimes(options.accept);
@@ -113,57 +121,55 @@
 							
 							
 							input.onchange = function() { // there should be only one handler for this
-								var files = [];
-								
-								o.each(this.files, function(file) {
-									files.push(new o.File(I.uid, file));
-								});
-								
+								_files = this.files;
 								// Clearing the value enables the user to select the same file again if they want to
 								this.value = '';
-
-								comp.files = files;
-								comp.trigger('change', files);
+								comp.trigger('change');
 							};
 														
+						},
+
+						getFiles: function() {
+							return _files;
 						}
-					},
+					};
+					
+				}()),
 
-					FileReader: {
-						read : function(op, blob) {
-							var target = this, fr = new FileReader;
-							
-							(function() {
-								var events = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
+				FileReader: {
+					read : function(op, blob) {
+						var target = this, fr = new FileReader;
+						
+						(function() {
+							var events = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
 
-								function reDispatch(e) {
-									if (!!~o.inArray(e.type, ['progress', 'load'])) {
-										target.result = fr.result;
-									}
-									target.trigger(e);
+							function reDispatch(e) {
+								if (!!~o.inArray(e.type, ['progress', 'load'])) {
+									target.result = fr.result;
 								}
+								target.trigger(e);
+							}
 
-								function removeEventListeners() {
-									o.each(events, function(name) {
-										fr.removeEventListener(name, reDispatch);
-									});
-
-									fr.removeEventListener('loadend', removeEventListeners);
-								}
-
+							function removeEventListeners() {
 								o.each(events, function(name) {
-									fr.addEventListener(name, reDispatch);
+									fr.removeEventListener(name, reDispatch);
 								});
 
-								fr.addEventListener('loadend', removeEventListeners);
-							}());	
-
-							if (o.typeOf(fr[op]) === 'function') {
-								fr[op](blob.getSource());
+								fr.removeEventListener('loadend', removeEventListeners);
 							}
+
+							o.each(events, function(name) {
+								fr.addEventListener(name, reDispatch);
+							});
+
+							fr.addEventListener('loadend', removeEventListeners);
+						}());	
+
+						if (o.typeOf(fr[op]) === 'function') {
+							fr[op](blob.getSource());
 						}
 					}
-				}			
+				}
 			});
 
 			shim = (function() {

@@ -28,181 +28,179 @@
 			
 			o.extend(this, {
 				
-				API: {	
-					FileInput: (function() {
-						var _uid, _mimes = [], _options;
+				FileInput: (function() {
+					var _uid, _mimes = [], _options;
 
-						function addInput() {
-							var comp = this, shimContainer, browseButton, currForm, form, input, uid;
+					function addInput() {
+						var comp = this, shimContainer, browseButton, currForm, form, input, uid;
 
-							uid = o.guid('uid_');
+						uid = o.guid('uid_');
 
-							shimContainer = I.getShimContainer(); // we get new ref everytime to avoid memory leaks in IE
+						shimContainer = I.getShimContainer(); // we get new ref everytime to avoid memory leaks in IE
 
-							if (_uid) { // move previous form out of the view
-								currForm = o(_uid + '_form');
-								if (currForm) {
-									o.extend(currForm.style, { top: '100%' });
-								}
-							}		
+						if (_uid) { // move previous form out of the view
+							currForm = o(_uid + '_form');
+							if (currForm) {
+								o.extend(currForm.style, { top: '100%' });
+							}
+						}		
 
-							// build form in DOM, since innerHTML version not able to submit file for some reason
-							form = document.createElement('form');
-							form.setAttribute('id', uid + '_form');
-							form.setAttribute('method', 'post');
-							form.setAttribute('enctype', 'multipart/form-data');
-							form.setAttribute('encoding', 'multipart/form-data');
-							form.setAttribute("target", uid + '_iframe');
+						// build form in DOM, since innerHTML version not able to submit file for some reason
+						form = document.createElement('form');
+						form.setAttribute('id', uid + '_form');
+						form.setAttribute('method', 'post');
+						form.setAttribute('enctype', 'multipart/form-data');
+						form.setAttribute('encoding', 'multipart/form-data');
+						form.setAttribute("target", uid + '_iframe');
 
-							o.extend(form.style, {
-								overflow: 'hidden',
+						o.extend(form.style, {
+							overflow: 'hidden',
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							width: '100%',
+							height: '100%'
+						});
+
+						input = document.createElement('input');
+						input.setAttribute('id', uid);
+						input.setAttribute('type', 'file');
+						input.setAttribute('name', 'Filedata');
+						input.setAttribute('accept', _mimes.join(','));
+
+						o.extend(input.style, {
+							fontSize: '999px',
+							opacity: 0 
+						});
+
+						form.appendChild(input);
+						shimContainer.appendChild(form);
+
+						input = o(uid);
+
+						if (I.can('summon_file_dialog')) {
+							// prepare file input to be placed underneath the browse_button element
+							o.extend(input.style, {
 								position: 'absolute',
 								top: 0,
 								left: 0,
 								width: '100%',
 								height: '100%'
 							});
-
-							input = document.createElement('input');
-							input.setAttribute('id', uid);
-							input.setAttribute('type', 'file');
-							input.setAttribute('name', 'Filedata');
-							input.setAttribute('accept', _mimes.join(','));
-
+						} else {
+							// show arrow cursor in older browsers (instead of the text one - bit more logical)
 							o.extend(input.style, {
-								fontSize: '999px',
-								opacity: 0 
+								cssFloat: 'right', 
+								styleFloat: 'right'
 							});
-
-							form.appendChild(input);
-							shimContainer.appendChild(form);
-
-							input = o(uid);
-
-							if (I.can('summon_file_dialog')) {
-								// prepare file input to be placed underneath the browse_button element
-								o.extend(input.style, {
-									position: 'absolute',
-									top: 0,
-									left: 0,
-									width: '100%',
-									height: '100%'
-								});
-							} else {
-								// show arrow cursor in older browsers (instead of the text one - bit more logical)
-								o.extend(input.style, {
-									cssFloat: 'right', 
-									styleFloat: 'right'
-								});
-							}
-
-							if (o.ua.browser === 'IE' && o.ua.version < 10) {
-								plupload.extend(input.style, {
-									filter : "progid:DXImageTransform.Microsoft.Alpha(opacity=0)"
-								});
-							}
-
-							input.onchange = function() { // there should be only one handler for this
-								var el = this, files = [], file;
-								
-								if (!el.value) {
-									return;
-								}
-
-								if (el.files) {
-									file = el.files[0];
-								} else {
-									file = {
-										name: el.value
-									};
-								}
-
-								file = new o.File(I.uid, file);
-								file.uid = uid; // override uid with the one that corresponds to out html structures
-								files.push(file);
-
-								input.onchange = function() {}; // clear event handler
-								addInput.call(comp);
-
-								comp.files = files;
-								comp.trigger('change', files);
-							};
-
-
-							// route click event to the input
-							if (I.can('summon_file_dialog')) {
-								browseButton = o(_options.browse_button);
-								o.removeEvent(browseButton, 'click', comp.uid);
-								o.addEvent(browseButton, 'click', function(e) {
-									if (input && !input.disabled) { // for some reason FF (up to 8.0.1 so far) lets to click disabled input[type=file]
-										input.click();
-									}
-									e.preventDefault();
-								}, comp.uid); 
-							}
-
-							_uid = uid;
-
-							shimContainer = currForm = browseButton = null;
 						}
 
-						return {
-							init: function(options) {
-								var comp = this, input, form, shimContainer;
-								
-								// figure out accept string
-								_options = options;
-								_mimes = options.accept.mimes || o.extList2mimes(options.accept);
-								
-								shimContainer = I.getShimContainer();	
-								
-								(function() {
-									var browseButton, zIndex, top;
+						if (o.ua.browser === 'IE' && o.ua.version < 10) {
+							plupload.extend(input.style, {
+								filter : "progid:DXImageTransform.Microsoft.Alpha(opacity=0)"
+							});
+						}
 
-									browseButton  = o(options.browse_button);
-
-									// Route click event to the input[type=file] element for browsers that support such behavior
-									if (I.can('summon_file_dialog')) {
-
-										if (o.getStyle(browseButton, 'position') === 'static') {
-											browseButton.style.position = 'relative';
-										}
-										
-										zIndex = parseInt(o.getStyle(browseButton, 'z-index'), 10) || 1;
-				
-										browseButton.style.zIndex = zIndex;
-										shimContainer.style.zIndex = zIndex - 1;
-									}								
-
-									/* Since we have to place input[type=file] on top of the browse_button for some browsers,
-									browse_button loses interactivity, so we restore it here */
-									top = I.can('summon_file_dialog') ? browseButton : shimContainer;
-									
-									o.addEvent(top, 'mouseover', function() {
-										comp.trigger('mouseenter');
-									}, comp.uid);
-									
-									o.addEvent(top, 'mouseout', function() {
-										comp.trigger('mouseleave');
-									}, comp.uid);
-									
-									o.addEvent(top, 'mousedown', function() {
-										comp.trigger('mousedown');	
-									}, comp.uid);
-									
-									o.addEvent(o(options.container), 'mouseup', function() {
-										comp.trigger('mouseup');
-									}, comp.uid);
-
-								}());
-
-								addInput.call(this);	
-
-								browsebutton = shimContainer = null;
+						input.onchange = function() { // there should be only one handler for this
+							var el = this, files = [], file;
+							
+							if (!el.value) {
+								return;
 							}
+
+							if (el.files) {
+								file = el.files[0];
+							} else {
+								file = {
+									name: el.value
+								};
+							}
+
+							file = new o.File(I.uid, file);
+							file.uid = uid; // override uid with the one that corresponds to out html structures
+							files.push(file);
+
+							input.onchange = function() {}; // clear event handler
+							addInput.call(comp);
+
+							comp.files = files;
+							comp.trigger('change', files);
 						};
-					}())
-				}			
+
+
+						// route click event to the input
+						if (I.can('summon_file_dialog')) {
+							browseButton = o(_options.browse_button);
+							o.removeEvent(browseButton, 'click', comp.uid);
+							o.addEvent(browseButton, 'click', function(e) {
+								if (input && !input.disabled) { // for some reason FF (up to 8.0.1 so far) lets to click disabled input[type=file]
+									input.click();
+								}
+								e.preventDefault();
+							}, comp.uid); 
+						}
+
+						_uid = uid;
+
+						shimContainer = currForm = browseButton = null;
+					}
+
+					return {
+						init: function(options) {
+							var comp = this, input, form, shimContainer;
+							
+							// figure out accept string
+							_options = options;
+							_mimes = options.accept.mimes || o.extList2mimes(options.accept);
+							
+							shimContainer = I.getShimContainer();	
+							
+							(function() {
+								var browseButton, zIndex, top;
+
+								browseButton  = o(options.browse_button);
+
+								// Route click event to the input[type=file] element for browsers that support such behavior
+								if (I.can('summon_file_dialog')) {
+
+									if (o.getStyle(browseButton, 'position') === 'static') {
+										browseButton.style.position = 'relative';
+									}
+									
+									zIndex = parseInt(o.getStyle(browseButton, 'z-index'), 10) || 1;
+			
+									browseButton.style.zIndex = zIndex;
+									shimContainer.style.zIndex = zIndex - 1;
+								}								
+
+								/* Since we have to place input[type=file] on top of the browse_button for some browsers,
+								browse_button loses interactivity, so we restore it here */
+								top = I.can('summon_file_dialog') ? browseButton : shimContainer;
+								
+								o.addEvent(top, 'mouseover', function() {
+									comp.trigger('mouseenter');
+								}, comp.uid);
+								
+								o.addEvent(top, 'mouseout', function() {
+									comp.trigger('mouseleave');
+								}, comp.uid);
+								
+								o.addEvent(top, 'mousedown', function() {
+									comp.trigger('mousedown');	
+								}, comp.uid);
+								
+								o.addEvent(o(options.container), 'mouseup', function() {
+									comp.trigger('mouseup');
+								}, comp.uid);
+
+							}());
+
+							addInput.call(this);	
+
+							browsebutton = shimContainer = null;
+						}
+					};
+				}())
 			});
 
 			o.extend(shim, {
@@ -268,7 +266,7 @@
 									}
 									form = null;
 
-									// without timeout request is marked as canceled (in console)
+									// without timeout, request is marked as canceled (in console)
 									setTimeout(function() { 
 										iframe.onload = null;
 										iframe.parentNode.removeChild(iframe);

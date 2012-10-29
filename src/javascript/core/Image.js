@@ -101,8 +101,8 @@ o.Image = (function() {
 				}
 
 				runtime = this.connectRuntime(this.ruid);
-				self.bind('Resize', function(e, dimensions) {
-					o.extend(self, dimensions);
+				self.bind('Resize', function(e, info) {
+					_updateInfo.call(this, info);
 				}, 999);
 				runtime.exec.call(self, 'Image', 'resize', width, height, (crop === undefined ? false : crop));
 			},
@@ -285,9 +285,32 @@ o.Image = (function() {
 		});
 
 		
-		this.bind('load', function(e, info, meta) {
-			o.extend(this, info);
+		this.bind('load', function(e, info) {
+			_updateInfo.call(this, info);
 		}, 999);
+
+
+		function _updateInfo(info) {
+			if (!info) {
+				info = this.connectRuntime(this.ruid).runtime.exec.call(this, 'Image', 'getInfo');
+			}
+
+			if (info) {
+				if (o.typeOf(info.meta) === 'string') { // might be a JSON string
+					try {
+						this.meta = o.JSON.parse(info.meta);
+					} catch(ex) {}
+				}
+			}
+
+			o.extend(this, { // info object might be non-enumerable (as returned from SilverLight for example)
+				size: info.size,
+				width: info.width,
+				height: info.height,
+				name: info.name,
+				type: info.type
+			});
+		}
 
 
 		function _loadFromImage(img, exact) {

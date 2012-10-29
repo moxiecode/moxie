@@ -184,7 +184,7 @@ var x = o.Exceptions;
 
 				name: name || '',
 				
-				lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString(), 
+				lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString(), // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
 				
 				constructor: o.File
 			});	
@@ -457,7 +457,7 @@ o.FileInput = (function() {
 			container: browseButton.parentNode || document.body
 		};
 		
-		options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;
+		options = typeof(options) === 'object' ? o.extend({}, defaults, options) : defaults;
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
@@ -482,11 +482,22 @@ o.FileInput = (function() {
 			files: null,
 
 			init: function() {
+	
 				self.convertEventPropsToHandlers(dispatches);	
 		
 				self.bind('RuntimeInit', function(e, runtime) {		
 				
-					self.ruid = runtime.uid;		
+					self.ruid = runtime.uid;	
+
+					self.bind("Change", function(e) {	
+						var files = runtime.exec.call(self, 'FileInput', 'getFiles');
+
+						self.files = [];
+
+						o.each(files, function(file) {	
+							self.files.push(new o.File(self.ruid, file));
+						});						
+					}, 999);	
 					
 					runtime.exec.call(self, 'FileInput', 'init', options);
 

@@ -32,6 +32,8 @@ package com
 		
 		protected var _picker:*;
 		
+		protected var _files:Array = [];
+		
 		public function init(options:Object = null) : void {
 			var button:Sprite;
 			
@@ -39,6 +41,8 @@ package com
 				return;	
 			}
 			Moxie.stageOccupied = true; // occupies runtime's stage
+			
+			_files = [];
 			
 			_options = Utils.extend({
 				name: 'Filedata',
@@ -109,6 +113,17 @@ package com
 			_picker.addEventListener(Event.SELECT, onDialogEvent);
 			_picker.browse(_filters);
 		}
+		
+		
+		public function getFiles() : Array {
+			var files:Array = [];
+			
+			for each (var file:File in _files) {
+				Moxie.blobPile.add(file);
+				files.push(file.toObject());
+			}
+			return files;
+		}
 	
 		
 		private function onDialogEvent(e:Event) : void {
@@ -122,7 +137,7 @@ package com
 					break;
 				
 				case Event.SELECT:
-					var fileList:Array = [], fileRefList:Array = [], bb:BlobBuilder, file:File;
+					var fileRefList:Array = [], bb:BlobBuilder, file:File;
 					
 					if (!_options.multiple) {
 						fileRefList.push(_picker);
@@ -133,10 +148,10 @@ package com
 					for (var i:uint = 0; i < fileRefList.length; i++) {
 						bb = new BlobBuilder;
 						bb.append(fileRefList[i]);
-						fileList.push(bb.getFile());
+						_files.push(bb.getFile());
 					}
 																				
-					dispatchEvent(new FileInputEvent(FileInputEvent.SELECT, fileList));
+					dispatchEvent(new FileInputEvent(FileInputEvent.SELECT));
 					break;
 			}
 			

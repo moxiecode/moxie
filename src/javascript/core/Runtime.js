@@ -132,16 +132,7 @@ function Runtime(options, type) {
 		getShim: function() {
 			return o(this.uid);
 		},
-		
-		/**
-		A set of interceptor methods, defined in a particular runtime and meant to permutate values,
-		before passing them to the shim itself, if required,
 
-		@property API
-		@type Object
-		@default {}
-		*/
-		API: {},
 		
 		/**
 		Operaional interface that is used by components to invoke specific actions on the runtime
@@ -152,24 +143,26 @@ function Runtime(options, type) {
 		@protected
 		@return {Mixed} Depends on the action and component
 		*/
-		exec: function() { // this is called in the context of component, not runtime
-			var args = [].slice.call(arguments),
-				component = args.shift(),
-				action = args.shift();
+		exec: function(component, action) { // this is called in the context of component, not runtime
+			var args = [].slice.call(arguments, 2);
 			
-			try {
-				if (self.API[component] && self.API[component][action]) {
-					return self.API[component][action].apply(this, args);
-				}
-
-				if (self.getShim().tagName) {
-					return self.getShim().exec(this.uid, component, action, args);
-				} else {
-					return self.getShim().exec.call(this, this.uid, component, action, args);
-				}
-			} catch (ex) {
-				// console.info(ex);
+			if (self[component] && self[component][action]) {
+				return self[component][action].apply(this, args);
 			}
+			return self.shimExec.apply(this, arguments);
+		},
+
+		/**
+		Invokes a method within the runtime itself (might differ across the runtimes)
+
+		@method shimExec
+		@param {Mixed} []
+		@protected
+		@return {Mixed} Depends on the action and component
+		*/
+		shimExec: function(component, action) {
+			var args = [].slice.call(arguments, 2);
+			return self.getShim().exec(this.uid, component, action, args);	
 		},
 		
 		/**
@@ -181,6 +174,7 @@ function Runtime(options, type) {
 			var shimContainer = this.getShimContainer();
 			if (shimContainer) {
 				shimContainer.parentNode.removeChild(shimContainer);
+				shimContainer = null;
 			}			
 
 			this.unbindAll();
@@ -262,7 +256,7 @@ Default order to try different runtime types
 @type String
 @static
 */
-Runtime.order = 'flash';
+Runtime.order = 'silverlight';
 
 /**
 Default set of capabilities, which can be redifined later by specific runtime

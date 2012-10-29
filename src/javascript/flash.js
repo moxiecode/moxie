@@ -103,205 +103,201 @@
 					}
 					
 					wait4shim(5000); // Init will be dispatched by the shim					
-				},
-				
-				API: (function() {
+				}
+			});
 
-					function _formatData(data, op, type) {
-						switch (op) {
-							case 'readAsText':
-							case 'readAsBinaryString': 
-								return o.atob(data);
-							
-							case 'readAsDataURL':
-								return 'data:' + (type || '') + ';base64,' + data;
-							
-						}
-						return null;
+			o.extend(this, (function() {
+
+				function _formatData(data, op, type) {
+					switch (op) {
+						case 'readAsText':
+						case 'readAsBinaryString': 
+							return o.atob(data);
+						
+						case 'readAsDataURL':
+							return 'data:' + (type || '') + ';base64,' + data;
+						
 					}
+					return null;
+				}
 
-					return {	
-						Transporter: {
-							getAsBlob: function(type) {
-								var blob = self.getShim().exec(this.uid, 'Transporter', 'getAsBlob', [type]);
-								if (blob) {				
-									return new o.Blob(self.uid, blob);
-								}
-								return null;
+				return {	
+					Transporter: {
+						getAsBlob: function(type) {
+							var blob = self.shimExec.call(this, 'Transporter', 'getAsBlob', type);
+							if (blob) {				
+								return new o.Blob(self.uid, blob);
 							}
-						},
-						
-						Blob: {
-							slice: function() {
-								var blob;
-																	
-								blob = self.getShim().exec(this.uid, 'BlobSlicer', 'slice', arguments);
-								
-								if (blob) {
-									blob = new o.Blob(self.uid, blob);
-								}
-								return blob;
-							}
-						},
-						
-						FileInput: {
-							init: function(options) {
-								var comp = this;
+							return null;
+						}
+					},
+					
+					Blob: {
+						slice: function() {
+							var blob, args = [].slice.call(arguments);
+
+							args.unshift('BlobSlicer', 'slice');								
+							blob = self.shimExec.apply(this, args);
 							
-								comp.bind("Change", function(e, files) {	
-									for (var i = 0, length = files.length; i < length; i++) {	
-										files[i] = new o.File(self.uid, files[i]);
-									}		
-									comp.files = files;						
-								}, 999);
+							if (blob) {
+								blob = new o.Blob(self.uid, blob);
+							}
+							return blob;
+						}
+					},
+							
+					FileReader: {
+						read : function(op, blob) {
+							var comp = this;
+							
+							// special prefix for DataURL read mode	
+							if (op === 'readAsDataURL') {
+								comp.result = 'data:' + (blob.type || '') + ';base64,';	
+							}
 															
-								return self.getShim().exec(comp.uid, 'FileInput', 'init', [options]);
-							}
-						},
-								
-						FileReader: {
-							read : function(op, blob) {
-								var comp = this;
-								
-								// special prefix for DataURL read mode	
-								if (op === 'readAsDataURL') {
-									comp.result = 'data:' + (blob.type || '') + ';base64,';	
+							comp.bind('Progress', function(e, data) {			
+								if (data) {
+									comp.result += _formatData(data, op);	
 								}
-																
-								comp.bind('Progress', function(e, data) {			
-									if (data) {
-										comp.result += _formatData(data, op);	
+							}, 999);
+							
+							return self.shimExec.call(this, 'FileReader', 'readAsBase64', blob.getSource().id);
+						}
+					},
+
+					FileReaderSync: {
+						read : function(op, blob) {
+							var result;
+													
+							result = self.shimExec.call(this, 'FileReaderSync', 'readAsBase64', blob.getSource().id);
+							if (!result) {
+								return null; // or throw ex
+							}
+
+							return _formatData(result, op, blob.type);
+						}
+					},
+					
+					XMLHttpRequest: {
+						send: function(meta, data) {
+							var target = this;
+
+							function send() {
+								self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
+							}
+
+							function appendBlob(name, blob) {
+								self.shimExec.call(target, 'XMLHttpRequest', 'appendBlob', name, blob.getSource().id);
+								data = null;
+								send();
+							}
+
+							function attachBlob(name, blob) {
+								var tr = new o.Transporter;
+
+								tr.bind("TransportingComplete", function() {
+									appendBlob(name, this.result);
+								});
+
+								tr.transport(blob.getSource(), blob.type, {
+									ruid: self.uid
+								});
+							}
+
+							// copy over the headers if any
+							if (!o.isEmptyObj(meta.headers)) {
+								o.each(_headers, function(value, header) {
+									self.shimExec.call(target, 'XMLHttpRequest', 'setRequestHeader', name, value);
+								});
+							}
+
+
+							// transfer over multipart params and blob itself
+							if (data instanceof o.FormData) { 
+								o.each(data._fields, function(value, name) {
+									if (!(value instanceof o.Blob)) {
+										self.shimExec.call(target, 'XMLHttpRequest', 'append', name, value);
 									}
-								}, 999);
-								
-								return self.getShim().exec(comp.uid, 'FileReader', 'readAsBase64', [blob.getSource().id]);
-							}
-						},
+								});
 
-						FileReaderSync: {
-							read : function(op, blob) {
-								var result;
-														
-								result = self.getShim().exec(this.uid, 'FileReaderSync', 'readAsBase64', [blob.getSource().id]);
-								if (!result) {
-									return null; // or throw ex
-								}
-
-								return _formatData(result, op, blob.type);
-							}
-						},
-						
-						XMLHttpRequest: {
-							send: function(meta, data) {
-								var target = this;
-
-								function send() {
-									self.getShim().exec(target.uid, 'XMLHttpRequest', 'send', [meta, data]);
-								}
-
-								function appendBlob(name, blob) {
-									self.getShim().exec(target.uid, 'XMLHttpRequest', 'appendBlob', [name, blob.getSource().id]);
+								if (!data._blob) {
 									data = null;
 									send();
-								}
-
-								function attachBlob(name, blob) {
-									var tr = new o.Transporter;
-
-									tr.bind("TransportingComplete", function() {
-										appendBlob(name, this.result);
-									});
-
-									tr.transport(blob.getSource(), blob.type, {
-										ruid: self.uid
-									});
-								}
-
-									
-								if (data instanceof o.Blob) {
-									data = data.uid; // something wrong here
-								} else if (data instanceof o.FormData) { 
-									o.each(data._fields, function(value, name) {
-										if (!(value instanceof o.Blob)) {
-											self.getShim().exec(target.uid, 'XMLHttpRequest', 'append', [name, value]);
-										}
-									});
-
-									if (!data._blob) {
-										data = null;
-										send();
-									} else {
-										var blob = data._fields[data._blob];
-										if (blob.isDetached()) {
-											attachBlob(data._blob, blob);
-										} else {
-											appendBlob(data._blob, blob);
-										}
-									}									
 								} else {
-									send();
-								}												
-							},
-
-							getResponse: function(type) {
-								var blob, response;
-
-								blob = self.getShim().exec(this.uid, 'XMLHttpRequest', 'getResponseAsBlob');
-
-								if (blob) {
-									blob = new o.File(self.uid, blob);
-
-									if ('blob' === type) {
-										return blob;
-									} else if ('arraybuffer' === type) {
-
-										// do something
-									
-									} else if ('json' === type) {
-										var frs = new o.FileReaderSync;
-
-										this.bind('Exception', function(e, err) {
-											// throw JSON parse error
-											console.info(err);
-										});
-
-										return o.JSON.parse(frs.readAsText(blob));
+									var blob = data._fields[data._blob];
+									if (blob.isDetached()) {
+										attachBlob(data._blob, blob);
+									} else {
+										appendBlob(data._blob, blob);
 									}
 								}
-								return null;
-							}
+							} else if (data instanceof o.Blob) {
+								data = data.uid; // something wrong here									
+							} else {
+								send();
+							}												
 						},
 
-						Image: {
-							loadFromBlob: function(srcBlob) {
-								return self.getShim().exec(this.uid, 'Image', 'loadFromBlob', [srcBlob.id]);
-							},
+						getResponse: function(responseType) {
+							var blob, response;
 
-							loadFromImage: function(img, exact) {
-								return self.getShim().exec(this.uid, 'Image', 'loadFromImage', [img.uid]);
-							},
+							blob = self.shimExec.call(this, 'XMLHttpRequest', 'getResponseAsBlob');
 
-							getAsBlob: function(type, quality) {
-								var blob = self.getShim().exec(this.uid, 'Image', 'getAsBlob', [type, quality]);
-								if (blob) {				
-									return new o.Blob(self.uid, blob);
-								}
-								return null;
-							},
+							if (blob) {
+								blob = new o.File(self.uid, blob);
 
-							getAsDataURL: function(type, quality) {
-								var frs, blob = self.API.Image.getAsBlob.apply(this, arguments);
-								if (!blob) {
-									return null;
-								}
-								frs = new o.FileReaderSync;
-								return frs.readAsDataURL(blob);
+								if ('blob' === responseType) {
+									return blob;
+								} else if (!!~o.inArray(responseType, ["", "text"])) {
+									var frs = new o.FileReaderSync;
+									return frs.readAsText(blob);
+								} else if ('arraybuffer' === responseType) {
+
+									// do something
+								
+								} else if ('json' === responseType) {
+									var frs = new o.FileReaderSync;
+
+									this.bind('Exception', function(e, err) {
+										// throw JSON parse error
+										console.info(err);
+									});
+
+									return o.JSON.parse(frs.readAsText(blob));
+								} 
 							}
+							return null;
 						}
-					};
-				}())
-							
-			});
+					},
+
+					Image: {
+						loadFromBlob: function(srcBlob) {
+							return self.shimExec.call(this, 'Image', 'loadFromBlob', srcBlob.id);
+						},
+
+						loadFromImage: function(img, exact) {
+							return self.shimExec.call(this, 'Image', 'loadFromImage', img.uid);
+						},
+
+						getAsBlob: function(type, quality) {
+							var blob = self.shimExec.call(this, 'Image', 'getAsBlob', type, quality);
+							if (blob) {				
+								return new o.Blob(self.uid, blob);
+							}
+							return null;
+						},
+
+						getAsDataURL: function(type, quality) {
+							var frs, blob = self.Image.getAsBlob.apply(this, arguments);
+							if (!blob) {
+								return null;
+							}
+							frs = new o.FileReaderSync;
+							return frs.readAsDataURL(blob);
+						}
+					}
+				};
+			}()));
 		}
 				
 		Runtime.can = (function() {

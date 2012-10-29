@@ -121,18 +121,7 @@ package
 			var evt:Object = {};
 			
 			switch (e.type) 
-			{	
-				case FileInputEvent.SELECT: 
-					// keep a reference to every selected file
-					for (var i:uint = 0, max:uint = e.data.length; i < max; i++) {
-						if (Moxie.blobPile.add(e.data[i])) {
-							// adapt for outer world
-							e.data[i] = e.data[i].toObject();
-							e.data[i].ruid = Moxie.uid; // runtime uid
-						}
-					}					
-					break;
-				
+			{						
 				case ProgressEvent.PROGRESS:
 				case OProgressEvent.PROGRESS:
 					evt.loaded = e.bytesLoaded;

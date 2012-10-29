@@ -44,7 +44,11 @@ o.each = function(obj, callback) {
 	var length, key, i;
 
 	if (obj) {
-		length = obj.length;
+		try {
+			length = obj.length;
+		} catch(ex) {
+			length = undefined;
+		}
 
 		if (length === undefined) {
 			// Loop object items
@@ -106,6 +110,34 @@ o.extend(o, {
 		}
 		
 		return true;
+	},
+
+	/**
+	Recieve an array of functions (usually async) to call in sequence, each  function
+	receives a callback as first argument that it should call, when it completes. Finally,
+	after everything is complete, main callback is called. Passing truthy value to the 
+	callback as a first argument will interrupt the sequence and invoke main callback 
+	immediately.
+
+	@method callSerially
+	@param {Array} queue Array of functions to call in sequence
+	@param {Function} cb Main callback that is called in the end, or in case of error
+	*/
+	inSeries: function(queue, cb) {
+		var i = 0, length = queue.length;
+
+		if (o.typeOf(cb) !== 'function') {
+			cb = function() {};
+		}
+
+		function callNext(i) {
+			if (o.typeOf(queue[i]) === 'function') {
+				queue[i](function(error) {
+					++i < length && !error ? callNext(i) : cb(error);
+				});
+			}
+		}
+		callNext(i);
 	},
 	
 	

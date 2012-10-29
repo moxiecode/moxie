@@ -1,5 +1,7 @@
 package com
 {
+	import mxi.Utils;
+	
 	
 	public class File extends Blob
 	{
@@ -34,13 +36,10 @@ package com
 		
 		
 		public override function toObject() : Object {
-			return {
-				id: id,
-				size: size,
-				type: type,
+			return Utils.extend(super.toObject(), {
 				name: name,
 				lastModifiedDate: lastModifiedDate
-			};
+			});
 		}
 		
 	}

@@ -145,12 +145,19 @@ o.eventTarget = new (function() {
 			@return {Boolean} true by default and false if any handler returned false
 			*/
 			dispatchEvent: function(type) {
-				var uid, list, i, args, evt = {};
+				var uid, list, i, args, tmpEvt, evt = {};
 				
-				if (typeof type === 'object') {
-					if (typeof type.type === 'string') {
-						evt = type;
-						type = evt.type;
+				if (o.typeOf(type) !== 'string') {
+					// we can't use original object directly
+					tmpEvt = type; 
+
+					if (o.typeOf(tmpEvt.type) === 'string') {
+						type = tmpEvt.type;
+
+						if (tmpEvt.total && tmpEvt.loaded) { // progress event
+							evt.total = tmpEvt.total;
+							evt.loaded = tmpEvt.loaded;
+						}
 					} else {
 						throw new x.EventException(x.EventException.UNSPECIFIED_EVENT_TYPE_ERR);
 					}
@@ -183,19 +190,28 @@ o.eventTarget = new (function() {
 					args.unshift(evt);
 
 					// Dispatch event to all listeners
-					for (i = 0; i < list.length; i++) {
-						if (evt.async) {
-							(function(o) {
-								setTimeout(function() {
-									o.fn.apply(o.scope, args);
-								}, 1);
-							}(list[i]));
-						} else {
+					if (!evt.async) {
+						for (i = 0; i < list.length; i++) {
 							// Fire event, break chain if false is returned
 							if (list[i].fn.apply(list[i].scope, args) === false) {
 								return false;
 							}
 						}
+					} else {
+						// if event marked as async, we detach it, but still call in sequence and stop if handler returns false
+						var queue = [];
+						for (i = 0; i < list.length; i++) {
+							(function(o) {
+								queue.push(function(cb) {
+									setTimeout(function() {
+										cb(o.fn.apply(o.scope, args) === false); // if handler returns false stop propagation
+									}, 1);
+								});
+							}(list[i])); 
+						}
+						if (queue.length) {
+							o.inSeries(queue);
+						}						
 					}
 				}
 				return true;

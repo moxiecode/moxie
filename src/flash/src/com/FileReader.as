@@ -231,7 +231,7 @@ package com
 				return;
 			}
 			
-			chunk_size = 204798; // bytes, should devide by three
+			chunk_size = 204798; // bytes, should divide by three
 			chunk = new ByteArray;
 			length = _ba.length;
 			loaded = 0;

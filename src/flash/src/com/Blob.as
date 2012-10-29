@@ -144,6 +144,7 @@ package com
 		{
 			return {
 				id: id,
+				ruid: Moxie.uid,
 				size: size,
 				type: type
 			};
