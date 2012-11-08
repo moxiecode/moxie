@@ -303,7 +303,7 @@
 		Runtime.can = (function() {
 			var has_to_urlstream = function() {
 					var required_caps = this.options.required_caps;
-					return !isEmptyObj(required_caps) && (required.access_binary || required.send_custom_headers);
+					return !isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
 				},
 
 				caps = o.extend(o.Runtime.caps, {
@@ -340,13 +340,11 @@
 						}
 						return true;
 					}
-				}),
-
-				required_caps = {};
+				});
 
 			function can() {
 				var args = [].slice.call(arguments);
-				args.unshift(caps, required_caps);
+				args.unshift(caps);
 				return o.Runtime.can.apply(this, args);
 			}
 			return can;

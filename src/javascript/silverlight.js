@@ -121,7 +121,7 @@
 					
 					container = self.getShimContainer();
 
-					container.innerHTML = '<object id="' + self.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
+					container.innerHTML = '<object id="' + self.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +	
 						'<param name="source" value="' + options.xap_url + '"/>' +
 						'<param name="background" value="Transparent"/>' +
 						'<param name="windowless" value="true"/>' +
@@ -145,17 +145,44 @@
 													
 						return self.shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
 					}
-				}
+				} /*,
+
+				// this works only in safari (...crickets...)
+
+				FileDrop: {
+					init: function() {
+						var comp = this, dropZone;
+
+						dropZone = self.getShimContainer();
+
+						o.addEvent(dropZone, 'dragover', function(e) {
+							e.preventDefault();
+							e.stopPropagation();
+							e.dataTransfer.dropEffect = 'copy'; 
+						}, comp.uid);
+
+						o.addEvent(dropZone, 'dragenter', function(e) {
+							e.preventDefault();
+							var flag = o(self.uid).dragEnter(e);
+						    // If handled, then stop propagation of event in DOM
+						    if (flag) e.stopPropagation();
+						}, comp.uid);
+
+						o.addEvent(dropZone, 'drop', function(e) {
+							e.preventDefault();
+							var flag = o(self.uid).dragDrop(e);
+						    // If handled, then stop propagation of event in DOM
+						    if (flag) e.stopPropagation();
+						}, comp.uid);
+
+						return self.shimExec.call(this, 'FileDrop', 'init');
+					}
+				}*/
 			});
 		}
 				
 		Runtime.can = (function() {
-			var has_to_urlstream = function() {
-					var required_caps = this.options.required_caps;
-					return !isEmptyObj(required_caps) && (required.access_binary || required.send_custom_headers);
-				},
-
-				caps = o.extend(o.Runtime.caps, {
+			var caps = o.extend(o.Runtime.caps, {
 					access_binary: true,
 					access_image_binary: true,
 					display_media: true,
@@ -164,18 +191,9 @@
 					select_multiple: true,
 					send_custom_headers: true,
 					send_multipart: true,
-					stream_upload: function(value) {
-						return !!value & !has_to_urlstream.call(this);
-					},
+					stream_upload: true,
 					summon_file_dialog: false,
-					upload_filesize: function(size) {
-						var maxSize = has_to_urlstream.call(this) ? 2097152 : -1; // 200mb || unlimited
-						
-						if (!~maxSize || o.parseSizeStr(size) <= maxSize) {
-							return true;
-						}
-						return false;
-					},
+					upload_filesize: true,
 					use_http_method: function(methods) {
 						if (o.typeOf(methods) !== 'array') {
 							methods = [methods];
@@ -189,13 +207,11 @@
 						}
 						return true;
 					}
-				}),
-
-				required_caps = {};
+				});
 
 			function can() {
 				var args = [].slice.call(arguments);
-				args.unshift(caps, required_caps);
+				args.unshift(caps);
 				return o.Runtime.can.apply(this, args);
 			}
 			return can;

@@ -32,30 +32,8 @@ function Runtime(options, type) {
 	  self = this
 	, uid = o.guid(type + '_')
 	, shimid =  uid + '_container'
-	, shimContainer
-	, container
 	;
 		
-	container = options.container ? o(options.container) : document.body;	
-					
-	// create shim container and insert it at an absolute position into the outer container
-	shimContainer = document.createElement('div');
-	shimContainer.id = shimid;
-	
-	o.extend(shimContainer.style, {
-		position : 'absolute',
-		top : '0px',
-		left: '0px',
-		width : 1 + 'px',
-		height : 1 + 'px',
-		overflow: 'hidden'
-	});
-	
-	shimContainer.className = 'mOxie-shim mOxie-shim-' + type;
-	
-	container.appendChild(shimContainer);	
-	
-	container = shimContainer = null;
 		
 	// public methods				
 	o.extend(this, {
@@ -120,7 +98,31 @@ function Runtime(options, type) {
 		@return {DOMElement} 
 		*/
 		getShimContainer: function() {
-			return o(this.shimid);
+			var container, shimContainer = o(this.shimid);
+
+			// if no container for shim, create one
+			if (!shimContainer) {
+				container = options.container ? o(options.container) : document.body;	
+					
+				// create shim container and insert it at an absolute position into the outer container
+				shimContainer = document.createElement('div');
+				shimContainer.id = this.shimid;
+				shimContainer.className = 'mOxie-shim mOxie-shim-' + type;
+				
+				o.extend(shimContainer.style, {
+					position : 'absolute',
+					top : '0px',
+					left: '0px',
+					width : 1 + 'px',
+					height : 1 + 'px',
+					overflow: 'hidden'
+				});
+				
+				container.appendChild(shimContainer);	
+				container = null;
+			}
+
+			return shimContainer;
 		},
 		
 		/**
@@ -300,13 +302,12 @@ Runtime.can = function can(runtime_caps, cap, value) {
 		return true;
 	}
 
-	// if cap is in fact a comma-separated list of caps
+	// if cap var is a comma-separated list of caps, convert it to object (key/value)
 	if (o.typeOf(cap) === 'string' && value === undefined) {
-		// convert to object if required
 		cap = (function(arr) {
 			var obj = {};
 			o.each(arr, function(key) {
-				obj[key] = true;
+				obj[key] = true; // since no value supplied, we assume user meant it to be - true
 			});
 			return obj;
 		}(cap.split(',')));
