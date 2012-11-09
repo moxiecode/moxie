@@ -273,11 +273,13 @@ Runtime.caps = {
 	drag_and_drop: false,
 	receive_response_type: false,
 	resize_image: false,
+	report_upload_progress: false,
 	return_response_headers: true,
 	send_custom_headers: false,
 	select_multiple: true,
 	send_binary_string: false,
 	send_multipart: true,
+	slice_blob: false,
 	stream_upload: false,	
 	summon_file_dialog: false,
 	upload_filesize: function(size) {

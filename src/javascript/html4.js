@@ -363,11 +363,13 @@
 					resize_image: function() {
 						return can('access_binary') && o.ua.can('create_canvas');
 					},
+					report_upload_progress: false,
 					return_response_headers: false,
 					select_multiple: false,
 					send_binary_string: false,
 					send_custom_headers: false,
 					send_multipart: true,
+					slice_blob: false,
 					stream_upload: true,
 					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
 						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4)	|| 

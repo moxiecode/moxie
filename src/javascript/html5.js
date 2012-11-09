@@ -30,8 +30,9 @@
 					return shim;
 				},
 
-				shimExec: function(component, action, args) {
-					return self.getShim().exec.call(this, this.uid, component, action, args);
+				shimExec: function(component, action) {
+					var args = [].slice.call(arguments, 2);
+					return I.getShim().exec.call(this, this.uid, component, action, args);
 				},
 				
 				FileInput: (function() {
@@ -121,7 +122,7 @@
 							
 							
 							input.onchange = function() { // there should be only one handler for this
-								_files = this.files;
+								_files = [].slice.call(this.files);
 								// Clearing the value enables the user to select the same file again if they want to
 								this.value = '';
 								comp.trigger('change');
@@ -780,6 +781,9 @@
 						} catch (ex) {}
 						return false;
 					},
+					report_upload_progress: function() {
+						return !!(window.XMLHttpRequest && (new XMLHttpRequest).upload);
+					},
 					resize_image: function() {
 						return can('access_binary') && o.ua.can('create_canvas');
 					},
@@ -790,7 +794,10 @@
 					send_multipart: function() {
 						return !!(window.XMLHttpRequest && (new XMLHttpRequest).upload && window.FormData) || can('send_binary_string');
 					},
-					stream_upload: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
+					slice_blob: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
+					stream_upload: function() {
+						return can('slice_blob') && can('send_multipart');
+					},
 					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
 						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4)	|| 
 								(o.ua.browser === 'Opera' && o.ua.version >= 12)	|| 
