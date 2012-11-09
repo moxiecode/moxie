@@ -89,7 +89,49 @@ module("Utils", {
 
 
 test("extend()", function() {
-	deepEqual(o.extend({a:1}, {a:2, b: 2}), {a:2, b:2});
+	deepEqual(o.extend({a:1}, {a:2, b: 2}), {a:2, b:2}, "Basic extension");
+	
+	deepEqual(o.extend(
+		{ 
+			a: 1, 
+			b: {
+				a: 1,
+				b: 2
+			}
+		}, 
+		{
+			a: 1, 
+			b: {
+				b: 3,
+				c: 4
+			}
+		}), 
+		{
+			a: 1, 
+			b: {
+				a: 1,
+				b: 3,
+				c: 4
+			}
+		},
+		"Deep object extension"
+	);
+
+	deepEqual(o.extend(
+		{ 
+			a: 1, 
+			b: [1, 2]
+		}, 
+		{
+			a: 1, 
+			b: [3, 2, 4, 5]
+		}), 
+		{
+			a: 1, 
+			b: [3, 2, 4, 5]
+		},
+		"Deep array extension"
+	);
 });
 
 test("each()", function() {

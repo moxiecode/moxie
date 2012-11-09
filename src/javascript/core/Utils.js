@@ -19,12 +19,16 @@ Extends the specified object with another object.
 @param {Object} [obj]* Multiple objects to extend with.
 @return {Object} Same as target, the extended object.
 */
-mOxie.extend = function(target) {
-	mOxie.each(arguments, function(arg, i) {
+o.extend = function(target) {
+	o.each(arguments, function(arg, i) {
 		if (i > 0) {
 			o.each(arg, function(value, key) {
 				if (value !== undefined) {
-					target[key] = value;
+					if (typeof(target[key]) === 'object' && typeof(value) === 'object') { // arrays also count
+						o.extend(target[key], value);
+					} else {
+						target[key] = value;
+					}
 				}
 			});
 		}
