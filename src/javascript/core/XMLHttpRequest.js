@@ -979,9 +979,9 @@ o.XMLHttpRequest = (function() {
 			}
 
 			// clarify our requirements
-			_options.required_caps = {
+			_options.required_caps = o.extend({}, _options.required_caps, {
 				receive_response_type: props.responseType
-			};
+			});
 
 
 			if (_options.ruid) { // we do not need to wait if we can connect directly

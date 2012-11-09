@@ -567,11 +567,15 @@
 							},
 
 							getAsBlob: function(type, quality) {
-								var blob = new o.Blob(null, { // standalone blob
+								var data, blob;
+
+								data = me.getAsBinaryString.call(this, type, quality);
+
+								blob = new o.Blob(null, { // standalone blob
 									type: type,
-									size: this.size
+									size: data.length
 								});
-								blob.detach(me.getAsBinaryString.call(this, type, quality));
+								blob.detach(data);
 								return blob;
 							},
 
@@ -736,7 +740,10 @@
 							ctx.drawImage(_img, 0, 0, imgWidth, imgHeight);
 
 							_modified = true;
-							this.trigger('Resize', { width: crop ? width : imgWidth, height: crop ? height : imgHeight });
+							this.trigger('Resize', { 
+								width: crop ? width : imgWidth, 
+								height: crop ? height : imgHeight 
+							});
 						}
 
 						function _purge() {
