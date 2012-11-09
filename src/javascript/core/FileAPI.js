@@ -164,7 +164,7 @@ var x = o.Exceptions;
 
 			// figure out the type
 			if (!file.type) {
-				type = ext && o.mimes[ext[0]] || 'application/octet-stream';
+				type = ext && o.mimes[ext[0].toLowerCase()] || 'application/octet-stream';
 			}
 
 			// sanitize file name or generate new one
