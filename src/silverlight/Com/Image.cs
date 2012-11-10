@@ -137,8 +137,8 @@ namespace Moxiecode.Com
 				if (!(bool)crop) {
 					// retain proportions
 					scale = Math.Min((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
-					w = (int)Math.Round(w * scale);
-					h = (int)Math.Round(h * scale);
+					w = (int)Math.Round(_bm.PixelWidth * scale);
+					h = (int)Math.Round(_bm.PixelHeight * scale);
 				} else {
 					// without explicit cast to double, result is implicitly cast back to int (wtf?)
 					scale = Math.Max((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);

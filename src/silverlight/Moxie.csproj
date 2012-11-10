@@ -83,6 +83,7 @@
     <Compile Include="Com\Events\DataEventArgs.cs" />
     <Compile Include="Com\Events\ProgressEventArgs.cs" />
     <Compile Include="Com\File.cs" />
+    <Compile Include="Com\FileDrop.cs" />
     <Compile Include="Com\FileInput.cs" />
     <Compile Include="Com\FileReader.cs" />
     <Compile Include="Com\FileReaderSync.cs" />

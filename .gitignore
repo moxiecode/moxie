@@ -1,5 +1,7 @@
 js/
 src/flash/.*
+src/silverlight/Bin/
+src/silverlight/obj/
 tmp
 jslint.xml
 .settings

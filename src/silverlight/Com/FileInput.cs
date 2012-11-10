@@ -15,7 +15,7 @@ namespace Moxiecode.Com
 	{
 		private List<File> _files = new List<File>(); 
 
-		public static string[] dispatches = new string[6] 
+		public static string[] dispatches = new string[] 
 		{
 			"Cancel", 
 			"Change",
