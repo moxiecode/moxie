@@ -78,22 +78,15 @@
 
 						input = o(uid);
 
-						if (I.can('summon_file_dialog')) {
-							// prepare file input to be placed underneath the browse_button element
-							o.extend(input.style, {
-								position: 'absolute',
-								top: 0,
-								left: 0,
-								width: '100%',
-								height: '100%'
-							});
-						} else {
-							// show arrow cursor in older browsers (instead of the text one - bit more logical)
-							o.extend(input.style, {
-								cssFloat: 'right', 
-								styleFloat: 'right'
-							});
-						}
+						// prepare file input to be placed underneath the browse_button element
+						o.extend(input.style, {
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							width: '100%',
+							height: '100%'
+						});
+						
 
 						if (o.ua.browser === 'IE' && o.ua.version < 10) {
 							plupload.extend(input.style, {
