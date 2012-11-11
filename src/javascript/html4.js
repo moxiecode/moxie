@@ -109,8 +109,6 @@
 								};
 							}
 
-							file = new o.File(I.uid, file);
-							file.uid = uid; // override uid with the one that corresponds to out html structures
 							_files = [file];
 
 							input.onchange = function() {}; // clear event handler
@@ -349,7 +347,7 @@
 				
 		Runtime.can = (function() {
 			var caps = o.extend({}, o.Runtime.caps, {  
-					access_binary: false,		
+					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),		
 					access_image_binary: false,		
 					display_media: o.ua.can('create_canvas') || o.ua.can('use_data_uri_over32kb'),
 					drag_and_drop: false,
