@@ -237,7 +237,7 @@
 									console.info(iframe.readyState);
 								};*/
 
-								iframe.onload = function(e) {
+								o.addEvent(iframe, 'load', function(e) { // iframe.onload doesn't work in IE lte 8
 									var el;
 
 									try {
@@ -276,13 +276,13 @@
 
 									// without timeout, request is marked as canceled (in console)
 									setTimeout(function() { 
-										iframe.onload = null;
+										o.removeEvent(iframe, 'load', target.uid);
 										iframe.parentNode.removeChild(iframe);
 										iframe = null; 
 
 										target.trigger('load');
 									}, 1);
-								};
+								}, target.uid);
 							} // end createIframe
 
 							// prepare data to be sent and convert if required	
