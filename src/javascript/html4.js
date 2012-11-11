@@ -51,7 +51,6 @@
 						form.setAttribute('method', 'post');
 						form.setAttribute('enctype', 'multipart/form-data');
 						form.setAttribute('encoding', 'multipart/form-data');
-						form.setAttribute("target", uid + '_iframe');
 
 						o.extend(form.style, {
 							overflow: 'hidden',
@@ -76,8 +75,6 @@
 						form.appendChild(input);
 						shimContainer.appendChild(form);
 
-						input = o(uid);
-
 						// prepare file input to be placed underneath the browse_button element
 						o.extend(input.style, {
 							position: 'absolute',
@@ -95,25 +92,42 @@
 						}
 
 						input.onchange = function() { // there should be only one handler for this
-							var el = this, file;
+							var file;
 							
-							if (!el.value) {
+							if (!this.value) {
 								return;
 							}
 
-							if (el.files) {
-								file = el.files[0];
+							if (this.files) {
+								file = this.files[0];
 							} else {
 								file = {
-									name: el.value
+									name: this.value
 								};
 							}
 
 							_files = [file];
 
-							input.onchange = function() {}; // clear event handler
+							this.onchange = function() {}; // clear event handler
 							addInput.call(comp);
 
+							// after file is initialized as o.File, we need to update form and input ids
+							comp.bind('change', function() {
+								var input = o(uid), form = o(uid + '_form'), file;
+								
+								if (comp.files.length && input && form) {
+									file = comp.files[0];
+
+									input.setAttribute('id', file.uid);
+									form.setAttribute('id', file.uid + '_form');
+
+									// set upload target
+									form.setAttribute('target', file.uid + '_iframe');
+								}
+								input = form = null;
+							}, 998);
+
+							input = form = null;
 							comp.trigger('change');
 						};
 
@@ -219,9 +233,9 @@
 								iframe = temp.firstChild;
 								container.appendChild(iframe);
 
-								iframe.onreadystatechange = function() {
+								/* iframe.onreadystatechange = function() {
 									console.info(iframe.readyState);
-								};
+								};*/
 
 								iframe.onload = function(e) {
 									var el;
