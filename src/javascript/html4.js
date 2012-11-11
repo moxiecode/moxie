@@ -29,7 +29,7 @@
 			o.extend(this, {
 				
 				FileInput: (function() {
-					var _uid, _mimes = [], _options;
+					var _uid, _files = [], _mimes = [], _options;
 
 					function addInput() {
 						var comp = this, shimContainer, browseButton, currForm, form, input, uid;
@@ -102,7 +102,7 @@
 						}
 
 						input.onchange = function() { // there should be only one handler for this
-							var el = this, files = [], file;
+							var el = this, file;
 							
 							if (!el.value) {
 								return;
@@ -118,13 +118,12 @@
 
 							file = new o.File(I.uid, file);
 							file.uid = uid; // override uid with the one that corresponds to out html structures
-							files.push(file);
+							_files = [file];
 
 							input.onchange = function() {}; // clear event handler
 							addInput.call(comp);
 
-							comp.files = files;
-							comp.trigger('change', files);
+							comp.trigger('change');
 						};
 
 
@@ -198,6 +197,10 @@
 							addInput.call(this);	
 
 							browsebutton = shimContainer = null;
+						},
+
+						getFiles: function() {
+							return _files;
 						}
 					};
 				}())
