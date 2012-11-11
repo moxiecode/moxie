@@ -99,8 +99,8 @@ namespace Moxiecode.Com
 				}
 			}
 
-			if (_blob is File) {
-				_blobName = ((File)_blob).name != "" ? ((File)_blob).name : "blob" + DateTime.Now.Ticks;
+			if (_blob is Blob) {
+				_blobName = _blob is File && ((File)_blob).name != "" ? ((File)_blob).name : "blob" + DateTime.Now.Ticks;
 			}
 		}
 

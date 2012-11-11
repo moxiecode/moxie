@@ -54,6 +54,10 @@ namespace Moxiecode.Com
 				}
 			}
 
+			if (blob is File) {
+				name = ((File)blob).name;
+			}
+
 			FileReader fileReader = new FileReader();
 			MemoryStream stream = new MemoryStream();
 			fileReader.ReadAsMemoryStream(blob, stream);
@@ -260,7 +264,7 @@ namespace Moxiecode.Com
 			getAsEncodedStream(stream, type, quality);	
 			BlobBuilder bb = new BlobBuilder();
 			bb.append(stream);
-			Blob blob = bb.getBlob(type);
+			Blob blob = bb.getFile(type, this.name);
 			Moxie.blobPile.Add(blob.id, blob);
 			return blob.ToObject();
 		}
