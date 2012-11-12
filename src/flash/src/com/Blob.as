@@ -63,18 +63,6 @@ package com
 				contentType:String = args[2] || '',
 				size:uint, offset:uint = 0,
 				sources:Array = [];
-							
-			if (start < 0) {
-				start = Math.max(_size + start, 0);
-			} else if (start > 0) {
-				start = Math.min(start, _size);
-			}	
-			
-			if (end < 0) {
-				end = Math.max(_size + end, 0);	
-			} else if (end > 0) {
-				end = Math.min(end, _size);
-			}
 			
 			if (start > end) {
 				return new Blob([], 0, contentType);

@@ -1,5 +1,7 @@
 package com
 {
+	import com.errors.DOMError;
+
 	public class BlobSlicer
 	{
 		public function slice(blob:*, ... args) : Object
@@ -11,15 +13,13 @@ package com
 			}
 						
 			if (!blob) {
-				return null;
+				throw new DOMError(DOMError.NOT_FOUND_ERR);
 			}
 			
 			nBlob = blob.slice.apply(blob, args);
 			Moxie.blobPile.add(nBlob);
-			nBlob = nBlob.toObject();
-			nBlob.ruid = Moxie.uid;
 			
-			return nBlob;
+			return nBlob.toObject();
 		}
 		
 	}

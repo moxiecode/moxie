@@ -133,11 +133,21 @@
 					},
 					
 					Blob: {
-						slice: function() {
-							var blob = arguments[0], args = [].slice.call(arguments, 1);
-
-							args.unshift('BlobSlicer', 'slice', blob.id);								
-							blob = self.shimExec.apply(this, args);
+						slice: function(blob, start, end, type) {
+							
+							if (start < 0) {
+								start = Math.max(blob.size + start, 0);
+							} else if (start > 0) {
+								start = Math.min(start, blob.size);
+							}	
+							
+							if (end < 0) {
+								end = Math.max(blob.size + end, 0);	
+							} else if (end > 0) {
+								end = Math.min(end, blob.size);
+							}
+							
+							blob = self.shimExec.call(this, 'BlobSlicer', 'slice', blob.id, start, end, type || '');
 							
 							if (blob) {
 								blob = new o.Blob(self.uid, blob);
