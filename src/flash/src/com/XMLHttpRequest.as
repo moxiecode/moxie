@@ -77,9 +77,18 @@ package com
 		public function appendBlob(name:String, blob:*, fileName:String = null) : void
 		{			
 			_multipart = true;
-			_blobName = fileName || (blob is File && blob.name ? blob.name : 'blob');
-			_blobFieldName = name;
-			_blob = blob;			
+			
+			_blobName = fileName || 'blob' + new Date().getTime();
+			
+			if (typeof blob === 'string') {
+				blob = Moxie.blobPile.get(blob);
+				if (!fileName && blob is File && blob.hasOwnProperty('name')) { 
+					_blobName = blob.name;
+				} 
+			}
+			
+			_blob = blob;
+			_blobFieldName = name;						
 		}
 		
 				
@@ -97,6 +106,9 @@ package com
 									
 			if (typeof blob === 'string') {
 				blob = Moxie.blobPile.get(blob);
+				if (blob is File && blob.hasOwnProperty('name')) { 
+					_blobName = blob.name;
+				} 
 			}
 			
 			if (blob && _options.method == 'POST') {

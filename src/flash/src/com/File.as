@@ -35,7 +35,14 @@ package com
 		}
 		
 		
-		public override function toObject() : Object {
+		public override function isFileRef() : Boolean 
+		{
+			return !!(_sources.length === 1 && _sources[0].buffer.fileRef);
+		}
+		
+		
+		public override function toObject() : Object 
+		{
 			return Utils.extend(super.toObject(), {
 				name: name,
 				lastModifiedDate: lastModifiedDate

@@ -84,6 +84,8 @@ package
 			// Moxie.log([uid, compName, action, args]);
 			
 			var result:*, comp:* = Moxie.comps.get(uid, compName);	
+			
+			// Moxie.log([compName, action]);
 									
 			try {
 				// initialize corresponding com 

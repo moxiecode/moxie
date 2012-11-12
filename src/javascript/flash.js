@@ -134,9 +134,9 @@
 					
 					Blob: {
 						slice: function() {
-							var blob, args = [].slice.call(arguments);
+							var blob = arguments[0], args = [].slice.call(arguments, 1);
 
-							args.unshift('BlobSlicer', 'slice');								
+							args.unshift('BlobSlicer', 'slice', blob.id);								
 							blob = self.shimExec.apply(this, args);
 							
 							if (blob) {

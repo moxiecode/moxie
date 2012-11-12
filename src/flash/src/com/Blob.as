@@ -128,7 +128,7 @@ package com
 		
 		public function isFileRef() : Boolean 
 		{
-			return _sources.length === 1 && _sources[0].buffer.fileRef;
+			return false; // Blob as a rule contains only part of the source
 		}
 		
 		
