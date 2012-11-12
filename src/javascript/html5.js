@@ -274,6 +274,32 @@
 							fr[op](blob.getSource());
 						}
 					}
+				},
+
+				Blob: {
+					slice: function(srcBlob, start, end, type) {
+
+						function w3cBlobSlice(blob, start, end) {
+							var blobSlice;
+							
+							if (File.prototype.slice) {
+								try {
+									blob.slice();	// depricated version will throw WRONG_ARGUMENTS_ERR exception
+									return blob.slice(start, end);
+								} catch (e) {
+									// depricated slice method
+									return blob.slice(start, end - start); 
+								}
+							// slice method got prefixed: https://bugzilla.mozilla.org/show_bug.cgi?id=649672	
+							} else if (blobSlice = File.prototype.webkitSlice || File.prototype.mozSlice) {
+								return blobSlice.call(blob, start, end);	
+							} else {
+								return null; // or throw some exception	
+							}
+						}
+
+						return new o.Blob(I.uid, w3cBlobSlice.apply(this, arguments));
+					}
 				}
 			});
 
