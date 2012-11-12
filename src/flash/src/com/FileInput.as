@@ -41,9 +41,7 @@ package com
 				return;	
 			}
 			Moxie.stageOccupied = true; // occupies runtime's stage
-			
-			_files = [];
-			
+						
 			_options = Utils.extend({
 				name: 'Filedata',
 				multiple: false,
@@ -144,6 +142,8 @@ package com
 					} else {
 						fileRefList = _picker.fileList;
 					}
+					
+					_files = [];
 					
 					for (var i:uint = 0; i < fileRefList.length; i++) {
 						bb = new BlobBuilder;
