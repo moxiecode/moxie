@@ -18,7 +18,7 @@ namespace Moxiecode.Com
 	{
 		public static string[] dispatches = null;
 
-		public Dictionary<string, object> slice(object blob)
+		public Dictionary<string, object> slice(object blob, object start, object end, object type)
 		{
 			if (blob is string) {
 				if (!Moxie.blobPile.TryGetValue((string)blob, out blob)) {
@@ -26,12 +26,10 @@ namespace Moxiecode.Com
 				}
 			}
 
-			/* Blob nBlob = ((Blob)blob).slice();
+			Blob nBlob = ((Blob)blob).slice(Convert.ToInt32(start), Convert.ToInt32(end), (string)type);
 
 			Moxie.blobPile.Add(nBlob.id, nBlob);
-			return nBlob.ToObject(); */
-
-			return null;
+			return nBlob.ToObject(); 
 		}
 	}
 }

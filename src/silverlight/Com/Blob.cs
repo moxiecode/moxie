@@ -52,6 +52,50 @@ namespace Moxiecode.Com
 		}
 
 
+		public Blob slice(int start, int end, string type)
+		{
+			if (start > end) {
+				return new Blob(new List<BufferRegion>(), 0, type);
+			}
+
+			long size, offset = 0;
+			int i = 0, length = _sources.Count;
+			BufferRegion src;
+			List<BufferRegion> sources = new List<BufferRegion>();
+
+			for (; i < length; i++) {
+				src = _sources[i];
+				size = src.end - src.start;
+								
+				if (start > offset + size) { // start is outside of the current source's boundaries 
+					continue;
+				}
+								
+				sources.Add(new BufferRegion(src.buffer, src.start + start - offset, Math.Min(src.end, end)));
+				offset += size;
+				break;
+			}
+			
+			if (i == length || offset > end) {
+				return new Blob(sources, end - start, type);
+			} 
+			
+			// loop for the end otherwise
+			for (; i < length; i++) {
+				src = _sources[i];
+				offset += src.end - src.start;
+				if (offset < end) {
+					sources.Add(src);
+				} else {
+					sources.Add(new BufferRegion(src.buffer, src.start, src.end - (offset - end)));
+					break; // we have found the end
+				}
+			}
+			
+			return new Blob(sources, end - start, type);
+		}
+
+
 		public virtual Dictionary<string, object> ToObject()
 		{
 			Dictionary<string, object> dict = new Dictionary<string, object>();
