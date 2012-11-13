@@ -217,7 +217,7 @@
 							// copy over the headers if any
 							if (!o.isEmptyObj(meta.headers)) {
 								o.each(_headers, function(value, header) {
-									self.shimExec.call(target, 'XMLHttpRequest', 'setRequestHeader', name, value);
+									self.shimExec.call(target, 'XMLHttpRequest', 'setRequestHeader', name, value.toString()); // Silverlight doesn't accept integers into the arguments of type object
 								});
 							}
 
@@ -226,7 +226,7 @@
 							if (data instanceof o.FormData) { 
 								o.each(data._fields, function(value, name) {
 									if (!(value instanceof o.Blob)) {
-										self.shimExec.call(target, 'XMLHttpRequest', 'append', name, value);
+										self.shimExec.call(target, 'XMLHttpRequest', 'append', name, value.toString());
 									}
 								});
 
