@@ -25,11 +25,12 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 	var jsp = require("uglify-js").parser;
 	var pro = require("uglify-js").uglify;
 	var code = "";
+	var copyright;
 
 	options = extend({
 		mangle       : true,
 		toplevel     : false,
-		no_functions : false
+		no_functions : false,
 	}, options);
 
 	// Combine JS files
@@ -39,7 +40,7 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 				filePath = path.join(options.sourceBase, filePath);
 			}
 
-			code += fs.readFileSync(filePath);
+			code += fs.readFileSync(filePath).toString();
 		});
 	}
 
@@ -227,16 +228,20 @@ exports.zip = function (sourceFiles, zipFile, options) {
 	var zip = require("node-native-zip");
 	var archive = new zip();
 
+	var files = [];
+
 	function process(filePath, zipFilePath) {
 		var stat = fs.statSync(filePath);
 
 		zipFilePath = zipFilePath || filePath;
 
 		if (stat.isFile()) {
-			archive.add(zipFilePath, fs.readFileSync(filePath));
+			files.push({ name: zipFilePath, path: filePath });
 		} else if (stat.isDirectory()) {
 			fs.readdirSync(filePath).forEach(function(fileName) {
-				process(path.join(filePath, fileName), path.join(zipFilePath, fileName));
+				if (/^[^\.]/.test(fileName)) {
+					process(path.join(filePath, fileName), path.join(zipFilePath, fileName));
+				}
 			});
 		}
 	}
@@ -252,5 +257,79 @@ exports.zip = function (sourceFiles, zipFile, options) {
 		}
 	});
 
-	fs.writeFileSync(zipFile, archive.toBuffer());
+	archive.addFiles(files, function() {
+		archive.toBuffer(function(buffer) {
+			fs.writeFileSync(zipFile, buffer);
+		});
+	});
+}
+
+// recursively delete specified folder
+exports.rmDir = function(dirPath) {
+	try { var files = fs.readdirSync(dirPath); }
+	catch(e) { return; }
+	if (files.length > 0)
+		for (var i = 0; i < files.length; i++) {
+			var filePath = dirPath + '/' + files[i];
+			if (fs.statSync(filePath).isFile())
+				fs.unlinkSync(filePath);
+			else
+				this.rmDir(filePath);
+		}
+	fs.rmdirSync(dirPath);
+}
+
+// extract version details from chengelog.txt
+exports.getReleaseInfo = function (srcPath) {
+	if (!path.existsSync(srcPath)) {
+		console.info(srcPath + " cannot be found.");
+		process.exit(1);
+	} 
+	
+	var src = fs.readFileSync(srcPath).toString();
+
+	var info = src.match(/Version ([0-9xabrc\.]+)[^\(]+\(([^\)]+)\)/);
+	if (!info) {
+		console.info("Error: Version cannot be extracted.");
+		process.exit(1);
+	}
+
+	// assume that very first file in array will have the copyright
+	var copyright = (function() {
+		var matches = fs.readFileSync(srcPath).toString().match(/^\/\*[\s\S]+?\*\//);
+		return matches ? matches[0] : null;
+	}());
+
+	return {
+		version: info[1],
+		releaseDate: info[2],
+		fileVersion: info[1].replace(/\./g, '_'),
+		headNote: copyright
+	}
+}
+
+// inject version details and copyright header if available to all js files in specified directory
+exports.addReleaseDetailsTo = function (dir, info) {
+	var contents, filePath; 
+
+	if (path.existsSync(dir)) {
+		fs.readdirSync(dir).forEach(function(fileName) {
+			if (fileName && /\.js$/.test(fileName)) {
+				filePath = path.join(dir + "/" + fileName);
+				
+				if (info.headNote) {
+					contents = info.headNote + "\n" + fs.readFileSync(filePath).toString();
+				}
+
+				contents = contents.replace(/\!@@([^@]+)@@/g, function($0, $1) {
+					switch ($1) {
+						case "version": return info.version;
+						case "releasedate": return info.releaseDate;
+					}
+				});
+
+				fs.writeFileSync(filePath, contents);
+			}
+		});
+	}
 }

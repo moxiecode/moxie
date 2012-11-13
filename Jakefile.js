@@ -1,12 +1,15 @@
-var uglify = require('./build/BuildTools').uglify;
-var less = require('./build/BuildTools').less;
-var yuidoc = require('./build/BuildTools').yuidoc;
-var jshint = require('./build/BuildTools').jshint;
-var zip = require('./build/BuildTools').zip;
-var mkswf = require('./build/BuildTools').mkswf;
+var fs = require("fs");
+var path = require("path");
+var tools = require('./build/BuildTools');
+var uglify = tools.uglify;
+var less = tools.less;
+var yuidoc = tools.yuidoc;
+var jshint = tools.jshint;
+var zip = tools.zip;
+var mkswf = tools.mkswf;
 
 desc("Default build task");
-task("default", ["minifyjs", "yuidoc", "jshint"], function (params) {});
+task("default", ["minifyjs", "yuidoc"], function (params) {});
 
 desc("Build release package");
 task("release", ["default", "package"], function (params) {});
@@ -60,9 +63,33 @@ task("jshint", [], function (params) {
 
 desc("Package library");
 task("package", [], function (params) {
+	var releaseInfo = tools.getReleaseInfo("./changelog.txt");
+	tools.addReleaseDetailsTo("./js", releaseInfo);
+
+	var tmpDir = "./tmp";
+	if (path.existsSync(tmpDir)) {
+		tools.rmDir(tmpDir);
+	}
+
+	fs.mkdirSync(tmpDir, 0755);
+
+	// User package
+	zip([
+		"js",
+		["readme.md", "readme.txt"],
+		"changelog.txt",
+		"license.txt"
+	], path.join(tmpDir, "moxie_" + releaseInfo.fileVersion + ".zip"));
+
+	// Development package
 	zip([
 		"src",
 		"js",
-		["readme.md", "readme.txt"]
-	], "test.zip");
+		"tests",
+		"build",
+		"Jakefile.js",		
+		["readme.md", "readme.txt"],
+		"changelog.txt",
+		"license.txt"
+	], path.join(tmpDir, "moxie_" + releaseInfo.fileVersion + "_dev.zip"));
 });
