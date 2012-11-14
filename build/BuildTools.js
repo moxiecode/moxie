@@ -49,9 +49,9 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 	var ast = jsp.parse(code);
 
 	// Write combined, but not minified version (just strip off the comments)
-	fs.writeFileSync(outputFile.replace(/\.min\./, '.full.'), pro.gen_code(ast, {
+	/*fs.writeFileSync(outputFile.replace(/\.min\./, '.full.'), pro.gen_code(ast, {
 		beautify: true
-	}));
+	}));*/
 
 	ast = pro.ast_mangle(ast, options);
 	ast = pro.ast_squeeze(ast);
@@ -264,6 +264,30 @@ exports.zip = function (sourceFiles, zipFile, options) {
 	});
 }
 
+exports.copySync = function(from, to) {
+	var stat = fs.statSync(from);
+
+	function copyFile(from, to) {
+		try {
+			fs.createReadStream(from).pipe(fs.createWriteStream(to));
+		} catch(ex) {
+			console.info("Error: cannot copy " + from + " " + to);
+			//process.exit(1);
+		}
+	}
+
+	if (stat.isFile()) {
+		copyFile(from, to);
+	} else if (stat.isDirectory()) {
+		/*fs.readdirSync(from).forEach(function(fileName) {
+			copySync(from, to)
+		});*/
+		console.info("Error: " + from + " is directory");
+	}
+}
+
+
+
 // recursively delete specified folder
 exports.rmDir = function(dirPath) {
 	try { var files = fs.readdirSync(dirPath); }
@@ -321,7 +345,7 @@ exports.addReleaseDetailsTo = function (dir, info) {
 					contents = info.headNote + "\n" + fs.readFileSync(filePath).toString();
 				}
 
-				contents = contents.replace(/\!@@([^@]+)@@/g, function($0, $1) {
+				contents = contents.replace(/\@@([^@]+)@@/g, function($0, $1) {
 					switch ($1) {
 						case "version": return info.version;
 						case "releasedate": return info.releaseDate;

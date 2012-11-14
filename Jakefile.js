@@ -15,10 +15,16 @@ desc("Build release package");
 task("release", ["default", "package"], function (params) {});
 
 desc("Build libs for external usage");
-task("lib", ["mkswf", "minifyjs"]);
+task("lib", ["mkswf", "minifyjs", "package"]);
 
 desc("Minify JS files");
 task("minifyjs", [], function (params) {
+
+	// Remove old file if it's there
+	try {
+		fs.unlinkSync("js/moxie.min.js");
+	} catch(ex) {}
+
 	uglify([
 		'core/mOxie.js',
 		'core/Utils.js',
@@ -70,7 +76,6 @@ task("package", [], function (params) {
 	if (path.existsSync(tmpDir)) {
 		tools.rmDir(tmpDir);
 	}
-
 	fs.mkdirSync(tmpDir, 0755);
 
 	// User package
