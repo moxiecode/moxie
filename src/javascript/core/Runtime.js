@@ -88,7 +88,7 @@ function Runtime(options, type) {
 		@return {Boolean} true if runtime has such capability and false, if - not
 		*/
 		can: function() {
-			return this.constructor.can.apply(this, arguments);
+			return self.constructor.can.apply(self, arguments);
 		},
 		
 		/**
@@ -245,7 +245,7 @@ Runtime.getInfo = function(uid) {
 		return {
 			uid: runtime.uid,
 			type: runtime.type,
-			can: runtimeConstructors[runtime.type].can
+			can: runtime.can
 		}
 	}
 	return null;

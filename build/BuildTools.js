@@ -57,7 +57,7 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 	ast = pro.ast_squeeze(ast);
 	code = pro.gen_code(ast);
 
-	fs.writeFileSync(outputFile, code);
+	fs.writeFileSync(outputFile, ";" + code + ";");
 };
 
 exports.mkswf = function(params, cb) {

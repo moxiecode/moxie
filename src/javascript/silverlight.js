@@ -95,7 +95,7 @@
 			defaults = {
 				xap_url: 'js/Moxie.xap'
 			};
-			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;	
+			self.options = options = o.extend({}, defaults, options);	
 
 			// inherit stuff from flash runtime 
 			if (o.Runtime.getConstructor('flash')) {
@@ -182,7 +182,7 @@
 		}
 				
 		Runtime.can = (function() {
-			var caps = o.extend(o.Runtime.caps, {
+			var caps = o.extend({}, o.Runtime.caps, {
 					access_binary: true,
 					access_image_binary: true,
 					display_media: true,

@@ -14,8 +14,7 @@
 	o.Runtime.addConstructor(type, (function() {
 		
 		function Runtime(options) {	
-			var self = this,
-				shimContainer;
+			var self = this, shimContainer;
 						
 			/**
 			Get the version of the Flash Player
@@ -62,7 +61,7 @@
 			defaults = {
 				swf_url: 'js/Moxie.swf'
 			};
-			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;			
+			self.options = options = o.extend({}, defaults, options)			
 			
 			o.Runtime.apply(this, [options, arguments[1] || type]);
 			
@@ -313,10 +312,10 @@
 		Runtime.can = (function() {
 			var has_to_urlstream = function() {
 					var required_caps = this.options.required_caps;
-					return !isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
+					return !o.isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
 				},
 
-				caps = o.extend(o.Runtime.caps, {
+				caps = o.extend({}, o.Runtime.caps, {
 					access_binary: true,
 					access_image_binary: true,
 					display_media: true,
