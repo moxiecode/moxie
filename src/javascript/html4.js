@@ -280,6 +280,11 @@
 										iframe.parentNode.removeChild(iframe);
 										iframe = null; 
 
+										target.trigger({
+											type: 'uploadprogress',
+											loaded: blob && blob.size || 1025,
+											total: blob && blob.size || 1025
+										});
 										target.trigger('load');
 									}, 1);
 								}, target.uid);
