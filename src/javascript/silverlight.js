@@ -79,7 +79,7 @@
 					wait4shim.counter = 0; // initialize static variable
 				}
 				
-				// wait for 5 sec
+				// wait for ms/1000 sec(s)
 				if (wait4shim.counter++ > ms) {
 					self.destroy();
 					throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
@@ -129,7 +129,7 @@
 						'<param name="initParams" value="uid=' + self.uid + '"/>' +
 					'</object>';
 
-					wait4shim(5000); // Init will be dispatched by the shim	
+					wait4shim(10000); // Init will be dispatched by the shim	
 				},
 
 				FileInput: {
