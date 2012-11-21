@@ -396,17 +396,33 @@
 										target.trigger(e);
 									}
 
+									function dispatchUploadProgress(e) {
+										target.trigger({
+											type: 'UploadProgress',
+											loaded: e.loaded,
+											total: e.total
+										});
+									}
+
 									function removeEventListeners() {
 										o.each(events, function(name) {
 											_xhr2.removeEventListener(name, reDispatch);
 										});
 
 										_xhr2.removeEventListener('loadend', removeEventListeners);
+
+										if (_xhr2.upload) {
+											_xhr2.upload.removeEventListener('progress', dispatchUploadProgress);
+										}
 									}
 
 									o.each(events, function(name) {
 										_xhr2.addEventListener(name, reDispatch);
 									});
+
+									if (_xhr2.upload) {
+										_xhr2.upload.addEventListener('progress', dispatchUploadProgress);
+									}
 
 									_xhr2.addEventListener('loadend', removeEventListeners);
 								}());		
