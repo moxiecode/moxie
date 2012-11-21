@@ -453,6 +453,12 @@
 										}
 									}
 								} catch(ex) {}
+							},
+
+							abort: function() {
+								if (_xhr2) {
+									_xhr2.abort();
+								}
 							}
 						});
 
@@ -784,7 +790,7 @@
 					access_image_binary: function() {
 						return can('access_binary') && !!o.ImageInfo;
 					},		
-					display_media: false,
+					display_media: o.ua.can('create_canvas') || o.ua.can('use_data_uri_over32kb'),
 					drag_and_drop: (function() {
 						// this comes directly from Modernizr: http://www.modernizr.com/
 						var div = document.createElement('div');

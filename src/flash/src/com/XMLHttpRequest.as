@@ -36,6 +36,13 @@ package com
 			"Error": OErrorEvent.ERROR
 		};
 		
+		public static const UNSENT:uint = 0;
+		public static const OPENED:uint = 1;
+		public static const HEADERS_RECEIVED:uint = 2;
+		public static const LOADING:uint = 3;
+		public static const DONE:uint = 4;
+		public static const ABORTED:uint = 5;
+				
 		private var _methods:Object = {
 			'GET': URLRequestMethod.GET,
 			'POST': URLRequestMethod.POST
@@ -58,6 +65,8 @@ package com
 		private var _response:ByteArray;
 		
 		private var _status:int;
+		
+		private var _readyState:uint = XMLHttpRequest.UNSENT;
 		
 		private var _onCompleteTimeout:uint = 0;
 		
@@ -110,7 +119,7 @@ package com
 					_blobName = blob.name;
 				} 
 			}
-			
+						
 			if (blob && _options.method == 'POST') {
 				if (!urlstream && _multipart && blob.isFileRef() && Utils.isEmptyObj(_options.headers)) {
 					_uploadFileRef(blob);
@@ -148,8 +157,10 @@ package com
 		
 		
 		public function abort() : void 
-		{
+		{			
 			if (!_conn) {
+				// mark as aborted in order to be handled as soon as possible
+				_readyState = XMLHttpRequest.ABORTED; 
 				return;	
 			}
 			
@@ -158,11 +169,14 @@ package com
 			} else if (_conn is URLStream && _conn.connected) {
 				_conn.close();	
 			}
+			
+			removeEventListeners(_conn);	
+			_conn = null;
 		}
 		
 		
-		private function onOpen(e:Event):void {
-			dispatchEvent(e);
+		private function onOpen():void {
+			dispatchEvent(new Event(Event.OPEN));
 		}
 		
 		
@@ -190,7 +204,8 @@ package com
 				_conn.readBytes(_response);
 			}
 			
-			removeEventListeners(e.target);			
+			removeEventListeners(e.target);	
+			_readyState = XMLHttpRequest.DONE;
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
@@ -205,6 +220,7 @@ package com
 		
 		private function onError(e:*):void {
 			removeEventListeners(e.target);
+			_readyState = XMLHttpRequest.DONE;
 			dispatchEvent(e);
 		}
 		
@@ -231,8 +247,8 @@ package com
 			request.data = _postData;
 								
 			_conn = blob.getFileRef();
+			_readyState = XMLHttpRequest.OPENED;
 						
-			_conn.addEventListener(Event.OPEN, onOpen);
 			_conn.addEventListener(Event.COMPLETE, onComplete);
 			_conn.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadComplete);
 			_conn.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
@@ -240,6 +256,10 @@ package com
 			_conn.addEventListener(IOErrorEvent.IO_ERROR, onError);
 			_conn.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
 			
+			// _conn.addEventListener(Event.OPEN, onOpen); doesn't fire, ideas?
+			onOpen(); // trigger it manually
+			
+			_readyState = XMLHttpRequest.LOADING;
 			_conn.upload(request, _blobFieldName, false);
 		}
 		
@@ -248,12 +268,18 @@ package com
 		{					
 			var fr:FileReader = new FileReader;
 			
-			/*fr.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent) : void {
-				dispatchEvent(new ProgressEvent(ProgressEvent.PROGRESS, false, false, e.bytesLoaded, e.bytesTotal));
-			});*/
+			fr.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent) : void {
+				if (_readyState == XMLHttpRequest.ABORTED) {
+					fr.abort();
+				}
+			});
 			
 			fr.addEventListener(Event.COMPLETE, function() : void {	
 				fr.removeAllEventsListeners();
+				if (_readyState == XMLHttpRequest.ABORTED) {
+					fr.abort();
+					return;
+				}
 				callback(fr.result);
 			});
 			
@@ -270,6 +296,8 @@ package com
 			start:Date, end:Date; // we are going to measure upload time for each piece of data and make correction to the progress watch
 								
 			request = new URLRequest(_options.url);
+			
+			Moxie.log("ffuck2!!!");
 			
 			// set custom headers if required
 			if (!Utils.isEmptyObj(_options.headers)) {
@@ -293,6 +321,7 @@ package com
 			}		
 						
 			_conn = new URLStream;
+			_readyState = XMLHttpRequest.OPENED;
 			
 			_conn.addEventListener(Event.OPEN, onOpen);
 			_conn.addEventListener(ProgressEvent.PROGRESS, onProgress);
@@ -327,6 +356,8 @@ package com
 				_conn.addEventListener(Event.COMPLETE, onComplete);
 				_conn.load(request);
 			}
+			
+			_readyState = XMLHttpRequest.LOADING;
 		}
 		
 		

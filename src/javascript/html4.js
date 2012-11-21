@@ -213,7 +213,7 @@
 
 			o.extend(shim, {
 				XMLHttpRequest: function() {
-					var _status, _response;
+					var _status, _response, _iframe;
 
 					o.extend(this, {
 							
@@ -230,18 +230,18 @@
 
 								// IE 6 won't be able to set the name using setAttribute or iframe.name
 								temp.innerHTML = '<iframe id="' + uid + '_iframe" name="' + uid + '_iframe" src="javascript:&quot;&quot;" style="display:none"></iframe>';
-								iframe = temp.firstChild;
-								container.appendChild(iframe);
+								_iframe = temp.firstChild;
+								container.appendChild(_iframe);
 
-								/* iframe.onreadystatechange = function() {
-									console.info(iframe.readyState);
+								/* _iframe.onreadystatechange = function() {
+									console.info(_iframe.readyState);
 								};*/
 
-								o.addEvent(iframe, 'load', function(e) { // iframe.onload doesn't work in IE lte 8
+								o.addEvent(_iframe, 'load', function(e) { // _iframe.onload doesn't work in IE lte 8
 									var el;
 
 									try {
-										el = iframe.contentWindow.document || iframe.contentDocument || window.frames[iframe.id].document;
+										el = _iframe.contentWindow.document || _iframe.contentDocument || window.frames[_iframe.id].document;
 
 										// try to detect some standard error pages
 										if (/^4\d{2}\s/.test(el.title) && el.getElementsByTagName('address').length) { // standard Apache style
@@ -276,9 +276,11 @@
 
 									// without timeout, request is marked as canceled (in console)
 									setTimeout(function() { 
-										o.removeEvent(iframe, 'load', target.uid);
-										iframe.parentNode.removeChild(iframe);
-										iframe = null; 
+										o.removeEvent(_iframe, 'load', target.uid);
+										if (_iframe.parentNode) { // #382
+											_iframe.parentNode.removeChild(_iframe);
+										}
+										_iframe = null; 
 
 										target.trigger({
 											type: 'uploadprogress',
@@ -355,6 +357,27 @@
 
 							} else {
 								return _response;
+							}
+						},
+
+						abort: function(upload_complete_flag) {
+							if (_iframe) {
+								if (o.typeOf(_iframe.stop) === 'function') { // FireFox/Safari/Chrome
+									_iframe.stop();
+								} else {
+									_iframe.document.execCommand('Stop'); // IE
+								}
+							}
+
+							this.dispatchEvent('readystatechange');
+							// this.dispatchEvent('progress');
+							this.dispatchEvent('abort');
+							this.dispatchEvent('loadend');
+
+							if (!upload_complete_flag) {
+								// this.dispatchEvent('progress');
+								this.upload.dispatchEvent('abort');
+								this.upload.dispatchEvent('loadend');
 							}
 						}
 					});

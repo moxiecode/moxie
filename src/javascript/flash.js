@@ -276,6 +276,18 @@
 								} 
 							}
 							return null;
+						},
+
+						abort: function(upload_complete_flag) {
+							self.shimExec.call(this, 'XMLHttpRequest', 'abort');
+
+							this.dispatchEvent('readystatechange');
+							// this.dispatchEvent('progress');
+							this.dispatchEvent('abort');
+
+							if (!upload_complete_flag) {
+								// this.dispatchEvent('uploadprogress');
+							}
 						}
 					},
 

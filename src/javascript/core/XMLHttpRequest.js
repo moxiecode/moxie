@@ -142,8 +142,7 @@ Implementation of XMLHttpRequest
 */
 o.XMLHttpRequest = (function() {
 	var dispatches = ['loadstart', 'progress', 'abort', 'error', 'load', 'timeout', 'loadend'], // & readystatechange (for historical reasons)
-		NATIVE = 1, RUNTIME = 2,
-		metapool = {};
+		NATIVE = 1, RUNTIME = 2;
 					
 	function XMLHttpRequest() {	
 		var self = this,
@@ -271,7 +270,7 @@ o.XMLHttpRequest = (function() {
 
 			_options = {},
 			_xhr,
-			mode = NATIVE;
+			_mode = NATIVE;
 
 		
 		o.extend(this, props, {
@@ -584,18 +583,38 @@ o.XMLHttpRequest = (function() {
 			
 			@method abort
 			*/
-			abort: function() {		
-				metapool[this.uid].error_flag = true;
-				metapool[this.uid].send_flag = false;
-						
-				if (mode === NATIVE) {
-					_xhr.abort();
+			abort: function() {
+				var runtime;
+
+				_error_flag = true;
+				_sync_flag = false;
+
+				if (!~o.inArray(_p('readyState'), [XMLHttpRequest.UNSENT, XMLHttpRequest.OPENED, XMLHttpRequest.DONE])) {	
+					_p('readyState', XMLHttpRequest.DONE);
+					_send_flag = false;
+
+					if (_mode === NATIVE) {
+						_xhr.abort();
+						this.dispatchEvent('readystatechange');
+						// this.dispatchEvent('progress');
+						this.dispatchEvent('abort');
+						this.dispatchEvent('loadend');
+
+						if (!_upload_complete_flag) {
+							// this.dispatchEvent('progress');
+							this.upload.dispatchEvent('abort');
+							this.upload.dispatchEvent('loadend');
+						}
+					} else if (o.typeOf(_xhr.getRuntime) === 'function' && (runtime = _xhr.getRuntime())) {
+						runtime.exec.call(_xhr, 'XMLHttpRequest', 'abort', _upload_complete_flag);
+					} else {
+						throw new o.DOMException(o.DOMException.INVALID_STATE_ERR);
+					}
+
+					_upload_complete_flag = true;					
 				} else {
-					
+					_p('readyState', XMLHttpRequest.UNSENT);
 				}
-				
-				this.dispatchEvent('abort');
-				this.dispatchEvent('loadend');
 			},
 			
 			toString: function() {
@@ -925,6 +944,7 @@ o.XMLHttpRequest = (function() {
 				});
 				
 				_xhr.bind('Progress', function(e) {
+					_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
 					self.trigger(e);
 				});
 				
@@ -950,6 +970,11 @@ o.XMLHttpRequest = (function() {
 						self.upload.trigger(e);
 					}
 					
+					self.trigger(e);
+					self.trigger('loadend');
+				});
+
+				_xhr.bind('Abort', function(e) {
 					self.trigger(e);
 					self.trigger('loadend');
 				});

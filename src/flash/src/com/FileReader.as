@@ -69,6 +69,10 @@ package com
 			this.readyState = FileReader.DONE;
 			
 			if (_src.dataObject.fileRef) {
+				// In case of a large file and before fileRef.load#COMPLETE.
+				// Need to cancel() twice, not sure why.
+				// If single cancel(), #2037 will occurred at fileRef.load().
+				_src.dataObject.fileRef.cancel();
 				_src.dataObject.fileRef.cancel();
 				_removeAllEventListeners(_src.dataObject.fileRef);
 			}

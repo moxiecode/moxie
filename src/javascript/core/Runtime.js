@@ -351,8 +351,7 @@ o.RuntimeClient = function() {
 		@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
 		*/
 		connectRuntime: function(options) {
-			var ruid, i, type, construct, items = [], order, 
-				features, key;
+			var ruid, i, type, construct, items = [], order, features, key;
 									
 			// check if a particular runtime was requested
 			if (o.typeOf(options) === 'string') {
@@ -428,6 +427,10 @@ o.RuntimeClient = function() {
 			// if we ran out of runtimes
 			throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 		},
+
+		getRuntime: function() {
+			return runtime || null;
+		},
 		
 		/**
 		Disconnect from the runtime
@@ -458,7 +461,7 @@ when allowing them onto components is for either reason inappropriate
 */
 o.RuntimeTarget = (function() {
 	function RuntimeTarget() {
-		this.uid = 'uid_' + o.guid();	
+		this.uid = o.guid('uid_');	
 		o.RuntimeClient.call(this);
 	}
 	
