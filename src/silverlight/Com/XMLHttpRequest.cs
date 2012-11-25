@@ -131,6 +131,15 @@ namespace Moxiecode.Com
 		}
 
 
+		public void abort()
+		{
+			if (_req != null) {
+				_req.Abort();
+				_req = null;
+			}
+		}
+
+
 		public void send(ScriptObject args)
 		{
 			_options = _extractOptions(args);
@@ -269,20 +278,45 @@ namespace Moxiecode.Com
 					}
 				}
 			}
+			catch (WebException ex) 
+			{
+				if (ex.Status != WebExceptionStatus.RequestCanceled) // if request was not aborted
+				{
+					_syncContext.Post(delegate
+					{
+						Error(this, null);
+					}, this);
+				}
+			}
 			catch (Exception ex)
 			{
 				_syncContext.Post(delegate
 				{
-					Moxie.log(ex.Message);
+					Error(this, null);
 				}, this);
 			}
+
 
 			try
 			{
 				req.BeginGetResponse(new AsyncCallback(_responseCallback), req);
 			}
+			catch (WebException ex)
+			{
+				if (ex.Status != WebExceptionStatus.RequestCanceled) // if request was not aborted
+				{
+					_syncContext.Post(delegate
+					{
+						Error(this, null);
+					}, this);
+				}
+			}
 			catch (Exception ex)
 			{
+				_syncContext.Post(delegate
+				{
+					Error(this, null);
+				}, this);
 			}
 		}
 
@@ -291,22 +325,43 @@ namespace Moxiecode.Com
 		{
 			HttpWebRequest req = (HttpWebRequest)asynchronousResult.AsyncState;
 
-			using (HttpWebResponse response = (HttpWebResponse)req.EndGetResponse(asynchronousResult))
+			try
 			{
-				_status = (int)response.StatusCode;
-				_statusText = response.StatusDescription;
-
-				using (Stream responseStream = response.GetResponseStream())
+				using (HttpWebResponse response = (HttpWebResponse)req.EndGetResponse(asynchronousResult))
 				{
-					_response = new MemoryStream();
-					responseStream.CopyTo(_response);
-					_response.Position = 0;
+					_status = (int)response.StatusCode;
+					_statusText = response.StatusDescription;
+
+					using (Stream responseStream = response.GetResponseStream())
+					{
+						_response = new MemoryStream();
+						responseStream.CopyTo(_response);
+						_response.Position = 0;
+					}
+				}
+
+				_syncContext.Post(delegate
+				{
+					Load(this, null);
+				}, this);
+			}
+			catch (WebException ex)
+			{
+				if (ex.Status != WebExceptionStatus.RequestCanceled) // if request was not aborted
+				{
+					_syncContext.Post(delegate
+					{
+						Error(this, null);
+					}, this);
 				}
 			}
-
-			_syncContext.Post(delegate {
-				Load(this, null);
-			}, this);
+			catch (Exception ex)
+			{
+				_syncContext.Post(delegate
+				{
+					Error(this, null);
+				}, this);
+			}
 		}
 
 

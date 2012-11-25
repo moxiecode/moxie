@@ -206,6 +206,13 @@
 
 						getFiles: function() {
 							return _files;
+						},
+
+						disable: function(state) {
+							var input;
+							if (input = o(_uid)) { 
+								input.disabled = !!state;
+							}
 						}
 					};
 				}())

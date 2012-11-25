@@ -122,6 +122,13 @@
 
 						getFiles: function() {
 							return _files;
+						},
+
+						disable: function(state) {
+							var input;
+							if (input = o(I.uid)) {
+								input.disabled = !!state;
+							}
 						}
 					};
 					

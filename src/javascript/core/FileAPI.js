@@ -529,6 +529,13 @@ o.FileInput = (function() {
 				self.connectRuntime(options); // throws RuntimeError
 			},
 
+			disable: function(state) {
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileInput', 'disable', state === undefined ? true : state);
+				}
+			},
+
 			constructor: FileInput
 		});
 	}

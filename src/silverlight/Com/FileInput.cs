@@ -30,10 +30,11 @@ namespace Moxiecode.Com
 		public event MouseButtonEventHandler MouseDown;
 		public event MouseButtonEventHandler MouseUp;
 
-		#region private fields
 		private bool _multiple = true;
 		private string _accept;
-		#endregion
+
+		private Boolean _disabled = false;
+		
 
 		public FileInput()
 		{
@@ -61,9 +62,18 @@ namespace Moxiecode.Com
 
 			this.Click += delegate(object sender, RoutedEventArgs args)
 			{
-				this._openDialog();
+				if (!this._disabled) {
+					this._openDialog();
+				}
 			};
 		}
+
+
+		public void disable(object state)
+		{
+			_disabled = Convert.ToBoolean(state);
+		}
+
 
 		public Dictionary<string, object>[] getFiles()
 		{
