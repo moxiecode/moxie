@@ -388,7 +388,7 @@
 								}
 
 								if ("" !== meta.responseType) {
-									if ('json' === meta.responseType && !I.can('receive_response_type', 'json')) { // we can fake this one
+									if ('json' === meta.responseType && !o.ua.can('receive_response_type', 'json')) { // we can fake this one
 										_xhr2.responseType = 'text';
 									} else {
 										_xhr2.responseType = meta.responseType;
@@ -469,7 +469,7 @@
 											var file = new o.File(I.uid, _xhr2.response);
 											file.name = filename;
 											return file;
-										} else if ('json' === responseType && !I.can('receive_response_type', 'json')) {
+										} else if ('json' === responseType && !o.ua.can('receive_response_type', 'json')) {
 											return o.JSON.parse(_xhr2.response);
 										} else {
 											return _xhr2.response;
@@ -820,22 +820,11 @@
 						return ('draggable' in div) || ('ondragstart' in div && 'ondrop' in div);
 					}()),
 					receive_response_type: function(responseType) {
-						if (!window.XMLHttpRequest) {
-							return false;
+						if (responseType === 'json') {
+							return true; // we can fake this one even if it's not supported
+						} else {
+							return o.ua.can('receive_response_type', responseType);
 						}
-						try {
-							var xhr = new XMLHttpRequest;
-							if (o.typeOf(xhr.responseType) !== 'undefined') {
-								xhr.open('get', 'infinity-8.me'); // otherwise Gecko throws an exception
-								xhr.responseType = responseType;
-								// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
-								if (xhr.responseType !== responseType) {
-									return false;
-								}
-								return true;
-							}
-						} catch (ex) {}
-						return false;
 					},
 					report_upload_progress: function() {
 						return !!(window.XMLHttpRequest && (new XMLHttpRequest).upload);

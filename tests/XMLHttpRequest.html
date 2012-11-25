@@ -87,26 +87,34 @@ test('open()', function() {
 
 	try {
 		xhr.open();
-	} catch (ex) { err = ex }
+	} catch (ex) { 
+		err = new x.DOMException(ex.code); 
+	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if method not specified");
 	err = null;
 
 	try {
 		xhr.open('get');
-	} catch (ex) { err = ex }
+	} catch (ex) { 
+		err = new x.DOMException(ex.code); 
+	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if url not specified");
 	err = null;
 
 
 	try {
 		xhr.open('INVĀLID', url); // Ā - \u0100
-	} catch (ex) { err = ex }
+	} catch (ex) { 
+		err = new x.DOMException(ex.code); 
+	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if any code point in method is higher than U+00FF");
 	err = null;
 
 	try {
 		xhr.open('INVÀLID', url); // À - \u00C0
-	} catch (ex) { err = ex }
+	} catch (ex) { 
+		err = new x.DOMException(ex.code); 
+	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if after deflating method does not match itself");
 	err = null;
 
@@ -115,7 +123,7 @@ test('open()', function() {
 		try {
 			xhr.open(this.prohibited[i], url);
 		} catch (ex) { 
-			if (!QUnit.equiv(ex, new x.DOMException(x.DOMException.SECURITY_ERR))) {
+			if (!QUnit.equiv(new x.DOMException(ex.code), new x.DOMException(x.DOMException.SECURITY_ERR))) {
 				break;
 			}
 		}		
@@ -137,7 +145,9 @@ test('open()', function() {
 
 	try {
 		xhr.open('GET', url);
-	} catch (ex) { err = ex }
+	} catch (ex) { 
+		err = new x.DOMException(ex.code); 
+	}
 	equal(xhr.readyState, o.XMLHttpRequest.OPENED, "XHR state switched to OPENED");
 	deepEqual(fired, true, "readystatechange has fired");
 	fired = false;
@@ -182,7 +192,9 @@ test('setRequestHeader()', function() {
 	// 1
 	try {
 		xhr.setRequestHeader('X-Test', 'test');
-	} catch (ex) { err = ex }
+	} catch (ex) { 
+		err = new x.DOMException(ex.code); 
+	}
 	deepEqual(err, new x.DOMException(x.DOMException.INVALID_STATE_ERR), "Throws DOMException.INVALID_STATE_ERR if readyState of xhr is not XMLHttpRequest.OPENED");
 	err = null;
 
@@ -192,14 +204,18 @@ test('setRequestHeader()', function() {
 	// 2
 	try {
 		xhr.setRequestHeader('X-Invālid', 'invalid'); // ā - \u0101
-	} catch (ex) { err = ex }
+	} catch (ex) { 
+		err = new x.DOMException(ex.code); 
+	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if any code point in header field name is higher than U+00FF");
 	err = null;
 
 	// 3
 	try {
 		xhr.setRequestHeader('X-Invàlid', 'invalid'); // à - \u00E0
-	} catch (ex) { err = ex }
+	} catch (ex) { 
+		err = new x.DOMException(ex.code); 
+	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if after deflating header field name does not match itself");
 	err = null;
 

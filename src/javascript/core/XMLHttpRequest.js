@@ -871,7 +871,9 @@ o.XMLHttpRequest = (function() {
 					
 					// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions), hence we can't really use it	
 					case XMLHttpRequest.HEADERS_RECEIVED:
-						total = _xhr.getResponseHeader('Content-Length') || 0;
+						try {
+							total = _xhr.getResponseHeader('Content-Length') || 0; // old Safari throws an exception here
+						} catch(ex) {}
 						break;
 						
 					case XMLHttpRequest.LOADING:

@@ -258,7 +258,7 @@ package com
 			
 			// _conn.addEventListener(Event.OPEN, onOpen); doesn't fire, ideas?
 			onOpen(); // trigger it manually
-			
+						
 			_readyState = XMLHttpRequest.LOADING;
 			_conn.upload(request, _blobFieldName, false);
 		}
@@ -297,8 +297,6 @@ package com
 								
 			request = new URLRequest(_options.url);
 			
-			Moxie.log("ffuck2!!!");
-			
 			// set custom headers if required
 			if (!Utils.isEmptyObj(_options.headers)) {
 				for (var name:String in _options.headers) {
@@ -323,7 +321,7 @@ package com
 			_conn = new URLStream;
 			_readyState = XMLHttpRequest.OPENED;
 			
-			_conn.addEventListener(Event.OPEN, onOpen);
+			// _conn.addEventListener(Event.OPEN, onOpen); // doesn't trigger (I remember it did), maybe adobe abandoned it?..
 			_conn.addEventListener(ProgressEvent.PROGRESS, onProgress);
 			_conn.addEventListener(IOErrorEvent.IO_ERROR, onError);
 			_conn.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
@@ -336,6 +334,8 @@ package com
 				
 				progress.addEventListener(Event.OPEN, function() : void {
 					start = new Date;
+					
+					onOpen(); // trigger it manually
 					_conn.load(request);
 				});
 				
@@ -354,6 +354,8 @@ package com
 			}	
 			else {	
 				_conn.addEventListener(Event.COMPLETE, onComplete);
+				
+				onOpen(); // trigger it manually
 				_conn.load(request);
 			}
 			
