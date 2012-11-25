@@ -828,6 +828,10 @@
 							if (o.typeOf(xhr.responseType) !== 'undefined') {
 								xhr.open('get', 'infinity-8.me'); // otherwise Gecko throws an exception
 								xhr.responseType = responseType;
+								// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
+								if (xhr.responseType !== responseType) {
+									return false;
+								}
 								return true;
 							}
 						} catch (ex) {}
