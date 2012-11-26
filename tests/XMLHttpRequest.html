@@ -39,9 +39,10 @@ module("XMLHttpRequest", {
 			methods: prohibited.concat(allowed),
 
 			runtimeOptions: {
-				runtime_order: "html5,flash",
+				runtime_order: "silverlight",
+				container: "qunit-fixture",
 				swf_url: "../js/Moxie.swf",
-				container: "qunit-fixture"
+				xap_url: "../js/Moxie.xap"
 			},
 
 			getRandItem: function(arr) {
@@ -502,6 +503,6 @@ test('send() - send FormData (with Blob)', function() {
 	<h2 id="qunit-userAgent"></h2>
 	<ol id="qunit-tests">
 	</ol>
-    <div id="qunit-fixture"></div>
+    <div id="qunit-fixture" style="top: 0 !important; left: 0 !important;"></div>
 </body>
 </html>

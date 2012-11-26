@@ -198,6 +198,11 @@ namespace Moxiecode.Com
 				}
 			}
 
+			_req.ContentLength = 0;
+			if (_blob != null) {
+				_req.ContentLength = ((Blob)_blob).size;
+			}
+
 			if (_multipart)
 			{
 				string boundary = "----moxieboundary" + DateTime.Now.Ticks, dashdash = "--", crlf = "\r\n";
@@ -224,12 +229,11 @@ namespace Moxiecode.Com
 				_multipartHeader = _stringToByteArray(header);
 				_multipartFooter = _stringToByteArray((_blob != null ? crlf : "") + dashdash + boundary + dashdash + crlf);
 
-				_req.ContentLength = _multipartHeader.Length + ((Blob)_blob).size + _multipartFooter.Length;
+				_req.ContentLength += _multipartHeader.Length + _multipartFooter.Length;
 				_req.ContentType = "multipart/form-data; boundary=" + boundary;
 			}
 			else
 			{
-				_req.ContentLength = ((Blob)_blob).size;
 				_req.ContentType = "application/octet-stream";
 			}
 
