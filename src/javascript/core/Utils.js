@@ -215,7 +215,7 @@ o.extend(o, {
 		proto = o.typeOf(proto) === 'function' ? new proto : proto; 
 		
 		if (!ext || o.typeOf(ext) === 'object') { // properties for new object passed or empty
-			function object() {}
+			var object = function () {}
 			object.prototype = proto;
 			obj = o.extend(new object, ext);
 		} else if (o.typeOf(ext) === 'function') { // Constructor passed
