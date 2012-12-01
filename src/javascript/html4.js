@@ -348,7 +348,7 @@
 								form.submit();
 								target.trigger('loadstart');
 
-								temp = container == null;
+								temp = container = null;
 							}
 						},
 
