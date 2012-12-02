@@ -84,7 +84,7 @@
 
 
 	function extList2mimes(filters) {
-		var ext, i, y, type, mimes = [];
+		var ext, i, ii, y, type, mimes = [];
 		
 		// Convert extensions to mime types list
 		no_type_restriction:
