@@ -737,7 +737,7 @@ o.extend(o, {
 				https: 443
 			},
 			uri = {},
-			regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\?([^#]*))?(?:#(.*))?)/, 
+			regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/, 
 			m = regex.exec(str || ''),
 			i = key.length,
 			path;
@@ -749,7 +749,7 @@ o.extend(o, {
 		}
 		
 		// if url is relative, fill in missing parts
-		if (/^[^\/]/.test(uri.path) && !uri.scheme) {
+		if (!/^[^\/]/.test(uri.path) && !uri.scheme) {
 			uri.scheme = document.location.protocol.replace(/:$/, '');
 			uri.host = document.location.hostname;
 			uri.port = document.location.port || ports[uri.scheme];
@@ -762,6 +762,14 @@ o.extend(o, {
 			}
 			uri.path = path + (uri.path || '');
 		}
+        
+        // if some parts are missing, fill them
+		if(str === undef && (uri.scheme === undef || uri.host === undef)) {
+			throw new SyntaxError("Bad URL");
+		}
+		uri.path === undef && (uri.path = '/');
+		uri.port === undef && (uri.port = 80);
+		uri.query === undef && (uri.query = false);
 											
 		delete uri.source;
 		return uri;
