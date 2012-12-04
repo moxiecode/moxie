@@ -354,7 +354,7 @@ o.XMLHttpRequest = (function() {
 				urlp = o.parseUrl(url);
 																
 				// 7 - manually build up absolute url
-				_url = urlp.scheme + '://' + urlp.host + (urlp.port !== 80 ? ':' + urlp.port : '') + urlp.path;
+				_url = urlp.scheme + '://' + urlp.host + (urlp.port != 80 ? ':' + urlp.port : '') + urlp.path + (urlp.query !== false ? urlp.query : '');
 								
 				// 9-10, 12-13
 				if ((user || password) && !_sameOrigin(urlp)) {
@@ -799,7 +799,7 @@ o.XMLHttpRequest = (function() {
 				url = o.parseUrl(url);
 			}
 				
-			return origin(o.parseUrl()) === origin(url);
+			return origin(o.parseUrl(url)) === origin(url);
 		}	
 		
 		function _getNativeXHR() {
