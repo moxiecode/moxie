@@ -740,7 +740,7 @@ o.extend(o, {
 			regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/, 
 			m = regex.exec(str || ''),
 			i = key.length,
-			path;
+			path,undef;
 							
 		while (i--) {
 			if (m[i]) {
@@ -749,7 +749,7 @@ o.extend(o, {
 		}
 		
 		// if url is relative, fill in missing parts
-		if (!/^[^\/]/.test(uri.path) && !uri.scheme) {
+		if (/^[\/:]/.test(uri.path) && !uri.scheme) {
 			uri.scheme = document.location.protocol.replace(/:$/, '');
 			uri.host = document.location.hostname;
 			uri.port = document.location.port || ports[uri.scheme];
@@ -760,13 +760,14 @@ o.extend(o, {
 			if (!/(\/|\/[^\.]+)$/.test(path)) {
 				path = path.replace(/[^\/]+$/, '');
 			}
-			uri.path = path + (uri.path || '');
+			uri.path = path;
 		}
         
-        // if some parts are missing, fill them
+		// If function called without arguments inside plupload
 		if(str === undef && (uri.scheme === undef || uri.host === undef)) {
 			throw new SyntaxError("Bad URL");
 		}
+		// if some parts are missing, fill them
 		uri.path === undef && (uri.path = '/');
 		uri.port === undef && (uri.port = 80);
 		uri.query === undef && (uri.query = false);
