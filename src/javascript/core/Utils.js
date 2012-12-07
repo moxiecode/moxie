@@ -727,40 +727,53 @@ o.extend(o, {
 	based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
 
 	@method parseUrl
-	@param {String} str Url to parse
+	@param {String} str Url to parse (defaults to empty string if undefined)
 	@return {Object} Hash containing extracted uri components
 	*/
 	parseUrl: function(str) {			
-		var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment'],
-			ports = {
-				http: 80,
-				https: 443
-			},
-			uri = {},
-			regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\?([^#]*))?(?:#(.*))?)/, 
-			m = regex.exec(str || ''),
-			i = key.length,
-			path;
+		var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment']
+		, i = key.length
+		, ports = {
+			http: 80,
+			https: 443
+		}
+		, uri = {}
+		, regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/
+		, m = regex.exec(str || '') // default to empty string if undefined
+		;
 							
 		while (i--) {
 			if (m[i]) {
 			  uri[key[i]] = m[i];  
 			}
 		}
-		
-		// if url is relative, fill in missing parts
-		if (/^[^\/]/.test(uri.path) && !uri.scheme) {
-			uri.scheme = document.location.protocol.replace(/:$/, '');
-			uri.host = document.location.hostname;
-			uri.port = document.location.port || ports[uri.scheme];
-			
-			path = document.location.pathname;
-			
+
+		if (/^[^\/]/.test(uri.path) && !uri.scheme) { // when url is relative, we need to figure out the path ourselves
+			var path = document.location.pathname;	
 			// if path ends with a filename, strip it
 			if (!/(\/|\/[^\.]+)$/.test(path)) {
-				path = path.replace(/[^\/]+$/, '');
+				path = path.replace(/[^\/]+$/, ''); 
 			}
-			uri.path = path + (uri.path || '');
+			uri.host = document.location.hostname;
+			uri.path = path + (uri.path || ''); // site may reside at domain.com or domain.com/subdir
+		}
+
+		if (!uri.scheme) {
+			uri.scheme = document.location.protocol.replace(/:$/, '');
+		}
+
+		if (!uri.host) {
+			uri.host = document.location.hostname;
+		}
+
+		if (!uri.port) {
+			uri.port = ports[uri.scheme];
+		} else {
+			uri.port = parseInt(uri.port, 10); 
+		}
+
+		if (!uri.path) {
+			uri.path = "/";
 		}
 											
 		delete uri.source;
