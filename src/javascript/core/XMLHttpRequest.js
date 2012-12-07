@@ -968,6 +968,12 @@ o.XMLHttpRequest = (function() {
 					
 					_p('response', runtime.exec.call(_xhr, 'XMLHttpRequest', 'getResponse', _p('responseType')));
 
+					if (!!~o.inArray(_p('responseType'), ['text', ''])) {
+						_p('responseText', _p('response'));
+					} else if (_p('responseType') === 'document') {
+						_p('responseXML', _p('response'));
+					}
+
 					if (_upload_events_flag) {
 						self.upload.trigger(e);
 					}

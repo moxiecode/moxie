@@ -39,7 +39,7 @@ module("XMLHttpRequest", {
 			methods: prohibited.concat(allowed),
 
 			runtimeOptions: {
-				runtime_order: "silverlight",
+				runtime_order: "html5,flash,silverlight,html4",
 				container: "qunit-fixture",
 				swf_url: "../js/Moxie.swf",
 				xap_url: "../js/Moxie.xap"
@@ -348,6 +348,50 @@ test('send() - get JSON', function() {
 	xhr.send(null, this.runtimeOptions);
 });
 
+test('send() - send Blob / get Text (handled by runtime)', function() {
+	var 
+	  x = this.x
+	, xhr = new this.XHR
+	, fd = new o.FormData
+	, blob
+	, binStr
+	, file
+	, fileName = 'image.jpg'
+	, fileFieldName = 'image'
+	, startTime = (new Date).getTime()
+	, endTime
+	;
+
+	binStr = o.atob(imgB64);
+
+	file = new o.File(null, {
+		name: fileName,
+		type: 'image/jpeg',
+		size: binStr.length,
+		data: binStr	
+	});
+
+
+	xhr.open('post', 'XMLHttpRequest/formdata.php');
+	xhr.responseType = 'text';
+
+	fd.append('one', "1");
+	fd.append(fileFieldName, file);
+
+	stop();
+
+	xhr.onload = function(e) {
+		start();
+		endTime = (new Date).getTime();
+
+		ok(xhr.response && xhr.response !== '', "Response received");
+		ok(xhr.response === xhr.responseText, "xhr.response and xhr.responseText have the same content");
+	};
+
+	startTime = (new Date).getTime();
+	xhr.send(fd, this.runtimeOptions);
+});
+
 
 test('send() - send FormData', function() {
 	var 
@@ -396,6 +440,7 @@ test('send() - send FormData (with Blob)', function() {
 	, fd = new o.FormData
 	, blob
 	, binStr
+	, file
 	, fileName = 'image.jpg'
 	, fileFieldName = 'image'
 	, startTime = (new Date).getTime()
