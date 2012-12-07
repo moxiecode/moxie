@@ -788,8 +788,14 @@ o.extend(o, {
 	@return {String} Resolved, absolute url
 	*/
 	resolveUrl: function(url) {
-		var urlp = o.parseUrl(url);										
-		return urlp.scheme + '://' + urlp.host + (urlp.port !== 80 ? ':' + urlp.port : '') + urlp.path;
+		var ports = { // we ignore default ports
+			http: 80,
+			https: 443
+		}
+		, urlp = o.parseUrl(url)
+		;
+
+		return urlp.scheme + '://' + urlp.host + (urlp.port !== ports[urlp.scheme] ? ':' + urlp.port : '') + urlp.path + (urlp.query ? urlp.query : '');
 	},
 	
 	/**
