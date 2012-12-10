@@ -625,7 +625,12 @@
 							},
 
 							getAsDataURL: function(type, quality) {
-								if (type !== 'image/jpeg') {
+								// if image has not been modified, return the source right away
+								if (!_modified) {
+									return _img.src;
+								}
+
+								if ('image/jpeg' !== type) {
 									return _canvas.toDataURL('image/png');
 								} else {
 									try {
@@ -637,18 +642,21 @@
 								}
 							},
 
-							getAsBinaryString: function(type, quality) {
-								var dataUrl;
-
+							getAsBinaryString: function(type, quality) {								
 								// if image has not been modified, return the source right away
 								if (!_modified) {
+									// if image was not loaded from binary string
+									if (!_binStr) {
+										_binStr = _convertToBinary(me.getAsDataURL(type, quality));	
+									}
 									return _binStr;
 								}
 
 								if ('image/jpeg' !== type) {
-									dataUrl = me.getAsDataURL(type, quality);	
-									_binStr = o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
+									_binStr = _convertToBinary(me.getAsDataURL(type, quality));
 								} else { 
+									var dataUrl;
+
 									// if jpeg
 									if (!quality) {
 										quality = 90;
@@ -661,7 +669,7 @@
 										dataUrl = _canvas.toDataURL('image/jpeg');	
 									}
 
-									_binStr = o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
+									_binStr = _convertToBinary(dataUrl);
 
 									if (_imgInfo) {
 										// update dimensions info in exif
@@ -688,12 +696,15 @@
 						});
 
 						
+						function _convertToBinary(dataUrl) {
+							return o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
+						}
+						
+						
 						function _loadFromBinaryString(binStr) {
 							var comp = this, info;
 
 							_purge.call(this);
-
-							_binStr = binStr;
 
 							_img = new Image;
 							_img.onerror = function() {
@@ -701,6 +712,7 @@
 								throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 							};
 							_img.onload = function() {
+								_binStr = binStr;
 								comp.trigger('load', me.getInfo());
 							};
 							_img.src = 'data:' + (_srcBlob.type || '') + ';base64,' + o.btoa(binStr);
