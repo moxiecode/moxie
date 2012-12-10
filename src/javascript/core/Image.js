@@ -307,9 +307,13 @@ o.Image = (function() {
 				size: info.size,
 				width: info.width,
 				height: info.height,
-				name: info.name,
 				type: info.type
 			});
+
+			// update file name, only if empty
+			if (this.name === '') {
+				this.name = info.name;
+			}
 		}
 
 
@@ -323,6 +327,7 @@ o.Image = (function() {
 		function _loadFromBlob(blob, asBinary) {
 			var runtime = this.connectRuntime(blob.ruid);
 			this.ruid = runtime.uid;
+			this.name = blob.name || '';
 			runtime.exec.call(self, 'Image', 'loadFromBlob', blob.getSource(), asBinary);
 		}
 
@@ -339,7 +344,7 @@ o.Image = (function() {
 			};
 
 			xhr.onload = function() {
-				_loadFromBlob.call(self, xhr.response);
+				_loadFromBlob.call(self, xhr.response, true);
 			};
 
 			xhr.onerror = function(e) {
