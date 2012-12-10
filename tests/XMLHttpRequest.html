@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Plupload Test Suite</title>
+<title>mOxie: Test XMLHttpRequest</title>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="js/jquery-1.7.1.min.js"><\/script>')</script>
@@ -385,7 +385,7 @@ test('send() - send Blob / get Text (handled by runtime)', function() {
 		endTime = (new Date).getTime();
 
 		ok(xhr.response && xhr.response !== '', "Response received");
-		ok(xhr.response === xhr.responseText, "xhr.response and xhr.responseText have the same content");
+		equal(xhr.response, xhr.responseText, "xhr.response and xhr.responseText have the same content");
 	};
 
 	startTime = (new Date).getTime();
@@ -533,9 +533,6 @@ test('send() - send FormData (with Blob)', function() {
 
 // test send ArrayBuffer
 
-
-// test receive Text
-
 // test receive Document
 
 
@@ -548,6 +545,6 @@ test('send() - send FormData (with Blob)', function() {
 	<h2 id="qunit-userAgent"></h2>
 	<ol id="qunit-tests">
 	</ol>
-    <div id="qunit-fixture" style="top: 0 !important; left: 0 !important;"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important;"></div>
 </body>
 </html>
