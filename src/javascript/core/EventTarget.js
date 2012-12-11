@@ -186,32 +186,28 @@ o.eventTarget = new (function() {
 					// first argument will be pseudo-event object
 					args.shift();
 					evt.type = type;
-					evt.target = this;
 					args.unshift(evt);
 
 					// Dispatch event to all listeners
-					if (!evt.async) {
-						for (i = 0; i < list.length; i++) {
-							// Fire event, break chain if false is returned
-							if (list[i].fn.apply(list[i].scope, args) === false) {
-								return false;
-							}
+					var queue = [];
+					o.each(list, function(handler, i) {
+						// explicitly set the target, otherwise events fired from shims to not get it
+						args[0].target = handler.scope;
+						// if event is marked as async, detach the handler
+						if (evt.async) {
+							queue.push(function(cb) {
+								setTimeout(function() {
+									cb(handler.fn.apply(handler.scope, args) === false); 
+								}, 1);
+							});
+						} else {
+							queue.push(function(cb) {
+								cb(handler.fn.apply(handler.scope, args) === false); // if handler returns false stop propagation
+							});
 						}
-					} else {
-						// if event marked as async, we detach it, but still call in sequence and stop if handler returns false
-						var queue = [];
-						for (i = 0; i < list.length; i++) {
-							(function(o) {
-								queue.push(function(cb) {
-									setTimeout(function() {
-										cb(o.fn.apply(o.scope, args) === false); // if handler returns false stop propagation
-									}, 1);
-								});
-							}(list[i])); 
-						}
-						if (queue.length) {
-							o.inSeries(queue);
-						}						
+					});
+					if (queue.length) {
+						o.inSeries(queue);
 					}
 				}
 				return true;
