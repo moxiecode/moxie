@@ -126,6 +126,10 @@ o.Image = (function() {
 			},
 
 			getAsBlob: function(type, quality) {
+				if (!this.size) {
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+				}
+
 				if (!type) {
 					type = 'image/jpeg';
 				}
@@ -134,25 +138,20 @@ o.Image = (function() {
 					quality = 90;
 				}
 
-				if (!this.ruid) {
-					throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);	
-				}
-
-				runtime = this.connectRuntime(this.ruid);
-				return runtime.exec.call(self, 'Image', 'getAsBlob', type, quality);
+				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsBlob', type, quality);
 			},
 
 			getAsDataURL: function(type, quality) {
-				var runtime = this.connectRuntime(this.ruid);
-				return runtime.exec.call(self, 'Image', 'getAsDataURL', type, quality);
+				if (!this.size) {
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+				}
+				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
 			},
 
 
 			getAsBinaryString: function(type, quality) {
 				var blob, frs;
-				
 				blob = this.getAsBlob(type, quality);
-				
 				frs = new o.FileReaderSync;
 				return frs.readAsBinaryString(blob);
 			},
