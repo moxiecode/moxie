@@ -114,7 +114,7 @@
 							return o.atob(data);
 						
 						case 'readAsDataURL':
-							return 'data:' + (type || '') + ';base64,' + data;
+							return data;
 						
 					}
 					return null;
