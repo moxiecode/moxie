@@ -7,6 +7,7 @@ var yuidoc = tools.yuidoc;
 var jshint = tools.jshint;
 var zip = tools.zip;
 var mkswf = tools.mkswf;
+var wiki = tools.wiki;
 
 desc("Default build task");
 task("default", ["minifyjs", "yuidoc"], function (params) {});
@@ -58,7 +59,14 @@ task("mkswf", [], function(params) {
 desc("Generate documentation using YUIDoc");
 task("yuidoc", [], function (params) {
 	yuidoc("src/javascript/core", "docs");
+}, true);
+
+
+desc("Generate wiki pages");
+task("wiki", ["yuidoc"], function() {
+	wiki("git@github.com:moxiecode/moxie.wiki.git", "wiki", "docs");
 });
+
 
 desc("Runs JSHint on source files");
 task("jshint", [], function (params) {

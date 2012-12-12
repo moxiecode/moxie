@@ -10,8 +10,7 @@
 
 ;(function(window, document, o, undefined) {
 	
-var 
-  x = o.Exceptions
+var x = o.Exceptions
 , runtimeConstructors = {}
 , runtimes = {}
 ;
@@ -23,13 +22,12 @@ Common set of methods and properties for every runtime instance
 */
 function Runtime(options, type) {
 	/**
-	Fired when runtime is initialized and ready. 
-	Automatically triggers RuntimeInit on the connected component.
+	Dispatched when runtime is initialized and ready. 
+	Triggers RuntimeInit on a connected component.
 
 	@event Init
 	*/
-	var 
-	  self = this
+	var self = this
 	, uid = o.guid(type + '_')
 	, shimid =  uid + '_container'
 	;
@@ -42,7 +40,7 @@ function Runtime(options, type) {
 		Specifies whether runtime instance was initialized or not
 
 		@property initialized
-		@type Boolean
+		@type {Boolean}
 		@default false
 		*/
 		initialized: false, // shims require this flag to stop initialization retries
@@ -51,7 +49,7 @@ function Runtime(options, type) {
 		Unique ID of the runtime
 
 		@property uid
-		@type String
+		@type {String}
 		*/
 		uid: uid,
 		
@@ -59,7 +57,7 @@ function Runtime(options, type) {
 		Runtime type (e.g. flash, html5, etc)
 
 		@property type
-		@type String
+		@type {String}
 		*/
 		type: type,
 		
@@ -67,7 +65,7 @@ function Runtime(options, type) {
 		id of the DOM container for the runtime (if available)
 
 		@property shimid
-		@type String
+		@type {String}
 		*/				
 		shimid: shimid,
 
@@ -75,7 +73,7 @@ function Runtime(options, type) {
 		Runtime initialization options
 
 		@property options
-		@type Object
+		@type {Object}
 		*/
 		options: options,
 
@@ -295,11 +293,11 @@ is meant to tell whether the querried runtime has specific capability.
 @method can
 @protected
 @static
-@property {Object} runtime_caps Reference to runtime's all capabilities
+@property {Object} runtimeCaps Reference to runtime's all capabilities
 @property {String} cap Name of a capability to check
 @property {Mixed} [value] If passed, capability will be checked against the value
 */
-Runtime.can = function can(runtime_caps, cap, value) {
+Runtime.can = function can(runtimeCaps, cap, value) {
 	if (!cap || o.typeOf(cap) === 'object' && o.isEmptyObj(cap)) {
 		return true;
 	}
@@ -317,7 +315,7 @@ Runtime.can = function can(runtime_caps, cap, value) {
 
 	if (o.typeOf(cap) === 'object') {
 		for (var key in cap) {
-			if (!Runtime.can.call(this, runtime_caps, key, cap[key])) { 
+			if (!Runtime.can.call(this, runtimeCaps, key, cap[key])) { 
 				return false;
 			}
 		}
@@ -325,10 +323,10 @@ Runtime.can = function can(runtime_caps, cap, value) {
 	}
 
 	// check the individual cap	
-	if (o.typeOf(runtime_caps[cap]) === 'function') {
-		return runtime_caps[cap].call(this, value);
+	if (o.typeOf(runtimeCaps[cap]) === 'function') {
+		return runtimeCaps[cap].call(this, value);
 	}
-	return runtime_caps[cap];
+	return runtimeCaps[cap];
 };
 	
 o.Runtime = Runtime;

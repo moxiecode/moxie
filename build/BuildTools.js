@@ -15,13 +15,43 @@ function extend(a, b) {
 	return a;
 }
 
+function each(obj, callback) {
+	var length, key, i;
+
+	if (obj) {
+		try {
+			length = obj.length;
+		} catch(ex) {
+			length = undefined;
+		}
+
+		if (length === undefined) {
+			// Loop object items
+			for (key in obj) {
+				if (obj.hasOwnProperty(key)) {
+					if (callback(obj[key], key) === false) {
+						return;
+					}
+				}
+			}
+		} else {
+			// Loop array items
+			for (i = 0; i < length; i++) {
+				if (callback(obj[i], i) === false) {
+					return;
+				}
+			}
+		}
+	}
+}
+
 var color = function(s,c){return (color[c].toLowerCase()||'')+ s + color.reset;};
 color.reset = '\033[39m';
 color.red = '\033[31m';
 color.yellow = '\033[33m';
 color.green = '\033[32m';
 
-exports.uglify = function (sourceFiles, outputFile, options) {
+var uglify = function (sourceFiles, outputFile, options) {
 	var jsp = require("uglify-js").parser;
 	var pro = require("uglify-js").uglify;
 	var code = "";
@@ -60,7 +90,7 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 	fs.writeFileSync(outputFile, ";" + code + ";");
 };
 
-exports.mkswf = function(params, cb) {
+var mkswf = function(params, cb) {
 	var defaults = {
 		exe: "mxmlc",
 		target: "10.1.0",
@@ -89,7 +119,7 @@ exports.mkswf = function(params, cb) {
 	});
 }
 
-exports.less = function (sourceFile, outputFile, options) {
+var less = function (sourceFile, outputFile, options) {
 	var less = require('less');
 
 	options = extend({
@@ -162,7 +192,7 @@ exports.less = function (sourceFile, outputFile, options) {
 	});
 }
 
-exports.yuidoc = function (sourceDir, outputDir, options) {
+var yuidoc = function (sourceDir, outputDir, options) {
 	var Y = require('yuidocjs');
 
 	if (!(sourceDir instanceof Array)) {
@@ -185,10 +215,85 @@ exports.yuidoc = function (sourceDir, outputDir, options) {
 		if (options.time) {
 			Y.log('Completed in ' + ((endtime - starttime) / 1000) + ' seconds' , 'info', 'yuidoc');
 		}
+
+		complete();
 	});
 }
 
-exports.jshint = function (sourceDir, options) {
+var wiki = function(githubRepo, dir, YUIDocDir) {
+
+	function parseYUIDoc() {
+		var itemTpl = '<a name="%name%" />\n### %name%\n\n%description%\n\n---------------------------------------\n\n';
+
+		if (!path.existsSync(dir) || !path.existsSync(YUIDocDir + "/data.json")) {
+			process.exit(1);
+		}	
+
+		// Clear previous versions
+		var apiDir = dir + "/API";
+		if (path.existsSync(apiDir)) {
+			rmDir(apiDir);
+		}
+		fs.mkdirSync(apiDir, 0755);
+
+		// read YUIDoc exported data in json
+		var data = eval("("+fs.readFileSync(YUIDocDir + "/data.json").toString()+")");
+
+		var pages = {};		
+		each(data.classitems, function(item) {
+			var className
+			, page
+			;
+
+			if (!~['method', 'property', 'event'].indexOf(item.itemtype)) {
+				return true;
+			}
+
+			className = item.class;
+
+			if (!pages[className]) {
+				pages[className] = {
+					toc: {
+						property: "## Properties\n\n",
+						method: "## Methods\n\n",
+						event: "## Events\n\n"
+					},
+					content: {
+						property: "## Properties\n\n",
+						method: "## Methods\n\n",
+						event: "## Events\n\n"
+					},
+				}
+			}
+			page = pages[className];
+
+			page.toc[item.itemtype] += "* [%name%](#%name%)".replace(/%name%/g, item.name) + "\n";
+			page.content[item.itemtype] += itemTpl.replace(/%([^\%]+)%/g, function($0, $1) {
+				return item[$1] || '';
+			});
+			
+			if ('method' === item.itemtype) {
+
+			}
+		});
+
+		each(pages, function(page, name) {
+			var toc = page.toc.property + "\n" + page.toc.method + "\n" + page.toc.event  + "\n";
+			var content = page.content.property + "\n" + page.content.method + "\n" + page.content.event  + "\n";
+			fs.writeFileSync(apiDir + "/" + name + ".md", toc + content);
+		});
+	}
+
+	if (!path.existsSync(dir)) {
+		exec("git clone " + githubRepo + " ./" + dir, function(error, stdout, stderr) {
+			parseYUIDoc();
+		});
+	} else {
+		parseYUIDoc();
+	}
+}
+
+var jshint = function (sourceDir, options) {
 	var jshint = require('jshint').JSHINT;
 
 	function process(filePath) {
@@ -224,7 +329,7 @@ exports.jshint = function (sourceDir, options) {
 	process(sourceDir);
 }
 
-exports.zip = function (sourceFiles, zipFile, options) {
+var zip = function (sourceFiles, zipFile, options) {
 	var zip = require("node-native-zip");
 	var archive = new zip();
 
@@ -264,7 +369,7 @@ exports.zip = function (sourceFiles, zipFile, options) {
 	});
 }
 
-exports.copySync = function(from, to) {
+var copySync = function(from, to) {
 	var stat = fs.statSync(from);
 
 	function copyFile(from, to) {
@@ -286,10 +391,8 @@ exports.copySync = function(from, to) {
 	}
 }
 
-
-
 // recursively delete specified folder
-exports.rmDir = function(dirPath) {
+var rmDir = function(dirPath) {
 	try { var files = fs.readdirSync(dirPath); }
 	catch(e) { return; }
 	if (files.length > 0)
@@ -304,7 +407,7 @@ exports.rmDir = function(dirPath) {
 }
 
 // extract version details from chengelog.txt
-exports.getReleaseInfo = function (srcPath) {
+var getReleaseInfo = function (srcPath) {
 	if (!path.existsSync(srcPath)) {
 		console.info(srcPath + " cannot be found.");
 		process.exit(1);
@@ -333,7 +436,7 @@ exports.getReleaseInfo = function (srcPath) {
 }
 
 // inject version details and copyright header if available to all js files in specified directory
-exports.addReleaseDetailsTo = function (dir, info) {
+var addReleaseDetailsTo = function (dir, info) {
 	var contents, filePath; 
 
 	if (path.existsSync(dir)) {
@@ -357,3 +460,17 @@ exports.addReleaseDetailsTo = function (dir, info) {
 		});
 	}
 }
+
+extend(exports, {
+	uglify: uglify,
+	mkswf: mkswf,
+	less: less,
+	yuidoc: yuidoc,
+	wiki: wiki,
+	jshint: jshint,
+	zip: zip,
+	copySync: copySync,
+	rmDir: rmDir,
+	getReleaseInfo: getReleaseInfo,
+	addReleaseDetailsTo: addReleaseDetailsTo
+});

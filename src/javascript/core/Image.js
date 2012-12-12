@@ -25,9 +25,56 @@ depends on:
 	
 var x = o.Exceptions;
 
+
+/**
+Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
+
+@class Image
+@extends EventTarget
+*/
 o.Image = (function() {
-	var dispatches = ['loadstart', 'progress', 'load', 'error', 'loadend', 'resize', 'embedded'];
+
+	var dispatches = [
 	
+	'loadstart', 
+
+	'progress', 
+
+	/**
+	Dispatched when loading is complete.
+
+	@event load
+	@param {Object} event
+	*/
+	'load', 
+
+	'error', 
+
+	'loadend', 
+
+	/**
+	Dispatched when resize operation is complete.
+	
+	@event resize
+	@param {Object} event
+	*/
+	'resize', 
+
+	/**
+	Dispatched when visual representation of the image is successfully embedded 
+	into the corresponsing container.
+
+	@event embedded
+	@param {Object} event
+	*/
+	'embedded'
+	];
+	
+	/**
+	Image
+
+	@constructor
+	*/
 	function Image() {
 		var self = this;
 			
@@ -35,27 +82,103 @@ o.Image = (function() {
 		
 		o.extend(this, {
 			
+			/**
+			Unique id of the component
+
+			@property uid
+			@type {String}
+			*/
 			uid: o.guid('uid_'),
 
+			/**
+			Unique id of the connected runtime, if any.
+
+			@property ruid
+			@type {String}
+			*/
 			ruid: null,
 			
+			/**
+			Name of the file, that was used to create an image, if available. If not equals to empty string.
+
+			@property name
+			@type {String}
+			@default ""
+			*/
 			name: "",
 			
+			/**
+			Size of the image in bytes. Actual value is set only after image is preloaded.
+
+			@property size
+			@type {Number}
+			@default 0
+			*/
 			size: 0,
 
+			/**
+			Width of the image. Actual value is set only after image is preloaded.
+
+			@property width
+			@type {Number}
+			@default 0
+			*/
 			width: 0,
 
+			/**
+			Height of the image. Actual value is set only after image is preloaded.
+
+			@property height
+			@type {Number}
+			@default 0
+			*/
 			height: 0,
 			
+			/**
+			Mime type of the image. Currently only image/jpeg and image/png are supported. Actual value is set only after image is preloaded.
+
+			@property type
+			@type {String}
+			@default ""
+			*/
 			type: "",
 
+			/**
+			Holds meta info (Exif, GPS). Is populated only for image/jpeg. Actual value is set only after image is preloaded.
+
+			@property meta
+			@type {Object}
+			@default {}
+			*/
 			meta: {},
 
+			/**
+			Alias for load method, that takes another o.Image object as a source (see load).
+
+			@method clone
+			@param {Image} src Source for the image
+			@param {Boolean} [exact=false] Whether to activate in-depth clone mode
+			*/
 			clone: function() {
 				this.load.apply(this, arguments);
 			},
 
-			load: function(src, options) {
+			/**
+			Loads image from various sources. Currently the source for new image can be: o.Image, o.Blob/o.File or URL. 
+			Depending on the type of the source, arguments - differ.
+
+			When source is:
+			  - o.Image: Loads image from another existing o.Image object (clones it). Might be fast by default (surface clone), 
+				or a bit slower, if launched in exact mode (in-depth clone). Only exact mode (enabled by passing second argument
+				as - true) will copy over meta info, like Exif, GPS, IPTC data, etc.
+			  - o.Blob/o.File: Loads image from o.File or o.Blob object.
+			  - URL: Image will be downloaded from remote destination and loaded in memory.
+
+			@method load
+			@param {Image|Blob|File|String} src Source for the image
+			@param {Boolean|Object} [mixed] 
+			*/
+			load: function(src) {
 				var el, url, urlp;
 
 				this.convertEventPropsToHandlers(dispatches);	
@@ -78,13 +201,21 @@ o.Image = (function() {
 					// manually resolve the url
 					url = urlp.scheme + '://' + urlp.host + (urlp.port !== 80 ? ':' + urlp.port : '') + urlp.path;
 
-					_loadFromUrl.call(this, url, options);
+					_loadFromUrl.apply(this, arguments);
 				} 
 				else {
 					throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);	
 				}
 			},
 
+			/**
+			Resizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
+
+			@method resize
+			@param {Number} width Resulting width
+			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
+			@param {Boolean} [crop=false] Whether to crop the image to exact dimensions
+			*/
 			resize: function(width, height, crop) {
 				var runtime;
 
@@ -107,6 +238,13 @@ o.Image = (function() {
 				runtime.exec.call(self, 'Image', 'resize', width, height, (crop === undefined ? false : crop));
 			},
 
+			/**
+			Alias for resize(width, height, true). (see resize)
+			
+			@method crop
+			@param {Number} width Resulting width
+			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
+			*/
 			crop: function(width, height) {
 				this.resize(width, height, true);
 			},
@@ -125,6 +263,15 @@ o.Image = (function() {
 				return runtime.exec.call(self, 'Image', 'getAsImage');
 			},
 
+			/**
+			Retrieves image in it's current state as o.Blob object. Cannot be run on empty or image in progress (throws 
+			DOMException.INVALID_STATE_ERR).
+
+			@method getAsBlob
+			@param {String} [type="image/jpeg"] Mime type of resulting blob. Can either be image/jpeg or image/png
+			@param {Number} [quality=90] Applicable only together with mime type image/jpeg
+			@return {Blob} Image as Blob
+			*/
 			getAsBlob: function(type, quality) {
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
@@ -141,6 +288,15 @@ o.Image = (function() {
 				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsBlob', type, quality);
 			},
 
+			/**
+			Retrieves image in it's current state as dataURL string. Cannot be run on empty or image in progress (throws 
+			DOMException.INVALID_STATE_ERR).
+
+			@method getAsDataURL
+			@param {String} [type="image/jpeg"] Mime type of resulting blob. Can either be image/jpeg or image/png
+			@param {Number} [quality=90] Applicable only together with mime type image/jpeg
+			@return {String} Image as dataURL string
+			*/
 			getAsDataURL: function(type, quality) {
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
@@ -148,7 +304,15 @@ o.Image = (function() {
 				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
 			},
 
+			/**
+			Retrieves image in it's current state as binary string. Cannot be run on empty or image in progress (throws 
+			DOMException.INVALID_STATE_ERR).
 
+			@method getAsBinaryString
+			@param {String} [type="image/jpeg"] Mime type of resulting blob. Can either be image/jpeg or image/png
+			@param {Number} [quality=90] Applicable only together with mime type image/jpeg
+			@return {String} Image as binary string
+			*/
 			getAsBinaryString: function(type, quality) {
 				var blob, frs;
 				blob = this.getAsBlob(type, quality);
@@ -156,6 +320,16 @@ o.Image = (function() {
 				return frs.readAsBinaryString(blob);
 			},
 
+			/**
+			Embeds the image, or better to say, it's visual representation into the specified node. Depending on the runtime 
+			in use, might be a canvas, or image (actual ) element or shim object (Flash or SilverLight - very rare, used for 
+			legacy browsers that do not have canvas or proper dataURI support).
+
+			@method embed
+			@param {DOMElement} el DOM element to insert the image object into
+			@param {Object} options Set of key/value pairs controlling the mime type, dimensions and cropping factor of resulting 
+			representation
+			*/
 			embed: function(el) {
 				var image, type, quality, dimensions
 				, options = arguments[1] || {}
@@ -263,6 +437,11 @@ o.Image = (function() {
 				return image;	
 			},
 
+			/**
+			Properly destroys the image and frees resources in use. If any. Recommended way to dispose o.Image object.
+
+			@method destroy
+			*/
 			destroy: function() {
 				if (this.ruid) {
 					var runtime = this.connectRuntime(this.ruid);

@@ -13,13 +13,14 @@
 	
 var x = o.Exceptions;
 
-/**
-Parent object for all event dispatching components and objects
-
-@class EventTarget
-*/
 o.eventTarget = new (function() {
 	
+	/**
+	Parent object for all event dispatching components and objects
+
+	@class EventTarget
+	@constructor EventTarget
+	*/
 	function EventTarget() {
 		// hash of event listeners by object uid
 		var eventpool = {};
@@ -140,6 +141,7 @@ o.eventTarget = new (function() {
 			/**
 			Dispatch the event
 
+			@method dispatchEvent
 			@param {String/Object} Type of event or event object to dispatch
 			@param {Mixed} []* Variable number of arguments to be passed to a handlers
 			@return {Boolean} true by default and false if any handler returned false

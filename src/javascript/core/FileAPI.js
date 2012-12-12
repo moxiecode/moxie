@@ -36,7 +36,7 @@ var x = o.Exceptions;
 				Unique id of the component
 
 				@property uid
-				@type String
+				@type {String}
 				*/
 				uid: o.guid('uid_'),
 				
@@ -45,7 +45,7 @@ var x = o.Exceptions;
 				before this Blob can be used, modified or sent
 
 				@property ruid
-				@type String
+				@type {String}
 				*/
 				ruid: ruid,
 		
@@ -53,7 +53,7 @@ var x = o.Exceptions;
 				Size of blob
 
 				@property size
-				@type Number
+				@type {Number}
 				@default 0
 				*/
 				size: blob.size || 0,
@@ -61,8 +61,8 @@ var x = o.Exceptions;
 				/**
 				Mime type of blob
 
-				@property size
-				@type String
+				@property type
+				@type {String}
 				@default ''
 				*/
 				type: blob.type || '',
@@ -266,7 +266,15 @@ o.BlobBuilder = (function() {
 }());
 	
 
+/**
+Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader) 
+interface. Where possible uses native FileReader, where - not falls back to shims.
 
+@class FileReader
+@constructor FileReader
+@extends EventTarget
+@extends RuntimeClient
+*/
 o.FileReader = (function() {
 	var dispatches = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
 	
@@ -279,17 +287,37 @@ o.FileReader = (function() {
 			
 			uid: o.guid('uid_'),
 			
+			/**
+			Contains current state of o.FileReader object. Can take values of o.FileReader.EMPTY, o.FileReader.LOADING 
+			and o.FileReader.DONE.
+
+			@property readyState
+			@type {Number}
+			@default FileReader.EMPTY
+			*/
 			readyState: FileReader.EMPTY,	
 			
 			result: null,
 			
 			error: null,
 			
+			/**
+			Initiates reading of o.File/o.Blob object contents to binary string.
+
+			@method readAsBinaryString
+			@param {Blob|File} blob Object to preload
+			*/
 			readAsBinaryString: function(blob) {
 				this.result = '';
 				_read.call(this, 'readAsBinaryString', blob); 		 
 			},
 			
+			/**
+			Initiates reading of o.File/o.Blob object contents to dataURL string.
+
+			@method readAsDataURL
+			@param {Blob|File} blob Object to preload
+			*/
 			readAsDataURL: function(blob) {
 				_read.call(this, 'readAsDataURL', blob);
 			},
@@ -298,10 +326,21 @@ o.FileReader = (function() {
 				_read.call(this, 'readAsArrayBuffer', blob);
 			},
 			
+			/**
+			Initiates reading of o.File/o.Blob object contents to string.
+
+			@method readAsText
+			@param {Blob|File} blob Object to preload
+			*/
 			readAsText: function(blob) {
 	 			_read.call(this, 'readAsText', blob);
 			},
 			
+			/**
+			Aborts preloading process.
+
+			@method abort
+			*/
 			abort: function() {
 				if (!_runtime) {
 					return;	

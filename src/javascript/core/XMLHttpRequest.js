@@ -286,7 +286,7 @@ o.XMLHttpRequest = (function() {
 			/**
 			Target for Upload events
 
-			@property
+			@property upload
 			@type XMLHttpRequestUpload
 			*/
 			upload: new o.XMLHttpRequestUpload(),

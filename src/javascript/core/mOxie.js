@@ -8,6 +8,14 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+
+/**
+Global namespace
+
+@module o
+@main o
+@static
+**/
 ;(function(window, document, undefined) {
 		
 	function o(id) {

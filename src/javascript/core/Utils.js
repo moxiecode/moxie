@@ -9,12 +9,23 @@
  */
 
 ;(function(window, document, o, undefined) {	
+
+
+/**
+Not a real class, just a way to group generic static functions, all functions are meant to be invoked in mOxie namespace,
+e.g. mOxie.extend() or o.extend() 
+
+@class Utils
+@static
+*/	
+o = o || {};
 	
 /**
 Extends the specified object with another object.
 
 @method extend
-@for o
+@for Utils
+@static
 @param {Object} target Object to extend.
 @param {Object} [obj]* Multiple objects to extend with.
 @return {Object} Same as target, the extended object.
@@ -41,6 +52,7 @@ Executes the callback function for each item in array/object. If you return fals
 callback it will break the loop.
 
 @method each
+@static
 @param {Object} obj Object to iterate.
 @param {function} callback Callback function to execute for each item.
  */
@@ -82,6 +94,7 @@ o.extend(o, {
 	@credits Angus Croll (http://javascriptweblog.wordpress.com/)
 	
 	@method typeOf
+	@static
 	@param {Object} o Object to check.
 	@return {String} Object [[Class]]
 	*/
@@ -101,6 +114,7 @@ o.extend(o, {
 	Checks if object is empty.
 	
 	@method isEmptyObj
+	@static
 	@param {Object} o Object to check.
 	@return {Boolean}
 	 */
@@ -123,7 +137,8 @@ o.extend(o, {
 	callback as a first argument will interrupt the sequence and invoke main callback 
 	immediately.
 
-	@method callSerially
+	@method inSeries
+	@static
 	@param {Array} queue Array of functions to call in sequence
 	@param {Function} cb Main callback that is called in the end, or in case of error
 	*/
@@ -149,7 +164,8 @@ o.extend(o, {
 	Find an element in array and return it's index if present, otherwise return -1.
 	
 	@method inArray
-	@param {mixed} needle Element to find
+	@static
+	@param {Mixed} needle Element to find
 	@param {Array} array
 	@return {Int} Index of the element, or -1 if not found
 	 */
@@ -172,6 +188,7 @@ o.extend(o, {
 	Forces anything into an array.
 	
 	@method toArray
+	@static
 	@param {Object} obj Object with length field.
 	@return {Array} Array object containing all items.
 	 */
@@ -189,6 +206,7 @@ o.extend(o, {
 	Encodes the specified string.
 	
 	@method xmlEncode
+	@static
 	@param {String} s String to encode.
 	@return {String} Encoded string.
 	 */
@@ -205,6 +223,7 @@ o.extend(o, {
 	Optionally call init method on final object (if defined) and pass remaining arguments to it.
 	
 	@method inherit
+	@static
 	@param {Object|Function} proto
 	@param {Object|Function} ext
 	@return {Object}
@@ -241,6 +260,7 @@ o.extend(o, {
 	It's more probable for the earth to be hit with an ansteriod. Y
 	
 	@method guid
+	@static
 	@param {String} prefix to prepend (by default 'o' will be prepended).
 	@method guid
 	@return {String} Virtually unique id.
@@ -264,6 +284,7 @@ o.extend(o, {
 	Trims white spaces around the string
 	
 	@method trim
+	@static
 	@param {String} str
 	@return {String}
 	 */
@@ -280,6 +301,7 @@ o.extend(o, {
 	Checks if specified DOM element has specified class.
 	
 	@method hasClass
+	@static
 	@param {Object} obj DOM element like object to add handler to.
 	@param {String} name Class name
 	 */
@@ -299,6 +321,7 @@ o.extend(o, {
 	Adds specified className to specified DOM element.
 	
 	@method addClass
+	@static
 	@param {Object} obj DOM element like object to add handler to.
 	@param {String} name Class name
 	 */
@@ -312,6 +335,7 @@ o.extend(o, {
 	Removes specified className from specified DOM element.
 	
 	@method removeClass
+	@static
 	@param {Object} obj DOM element like object to add handler to.
 	@param {String} name Class name
 	 */
@@ -327,6 +351,7 @@ o.extend(o, {
 	Returns a given computed style of a DOM element.
 	
 	@method getStyle
+	@static
 	@param {Object} obj DOM element like object.
 	@param {String} name Style you want to get from the DOM element
 	 */
@@ -343,6 +368,7 @@ o.extend(o, {
 	Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
 	
 	@method getPos
+	@static
 	@param {Element} node HTML element or element id to get x, y position from.
 	@param {Element} root Optional root element to stop calculations at.
 	@return {object} Absolute position of the specified element object with x, y fields.
@@ -405,6 +431,7 @@ o.extend(o, {
 	Returns the size of the specified node in pixels.
 	
 	@method getSize
+	@static
 	@param {Node} node Node to get the size of.
 	@return {Object} Object with a w and h property.
 	*/
@@ -419,6 +446,7 @@ o.extend(o, {
 	Parses the specified size string into a byte value. For example 10kb becomes 10240.
 	
 	@method parseSizeStr
+	@static
 	@param {String/Number} size String to parse or number to just pass through.
 	@return {Number} Size in bytes.
 	*/
@@ -466,6 +494,7 @@ o.extend(o, {
 		in objects internal Plupload registry (@see removeEvent).
 		
 		@method addEvent
+		@static
 		@param {Object} obj DOM element like object to add handler to.
 		@param {String} name Name to add event listener to.
 		@param {Function} callback Function to call when event occurs.
@@ -534,6 +563,7 @@ o.extend(o, {
 		is not specified remove all events with the specified name.
 		
 		@method removeEvent
+		@static
 		@param {Object} obj DOM element to remove event listener(s) from.
 		@param {String} name Name of event listener to remove.
 		@param {Function|String} (optional) might be a callback or unique key to match.
@@ -602,6 +632,7 @@ o.extend(o, {
 		Remove all kind of events from the specified object
 		
 		@method removeAllEvents
+		@static
 		@param {Object} obj DOM element to remove event listeners from.
 		@param {String} (optional) unique key to match, when removing events.
 		*/
@@ -628,6 +659,7 @@ o.extend(o, {
 	Defines property with specified descriptor on an object
 	
 	@method defineProperty
+	@static
 	@param {Object} obj Object to add property to
 	@param {String} prop Property name
 	@param {Object} desc Set of key-value pairs defining descriptor for the property
@@ -648,6 +680,7 @@ o.extend(o, {
 	Defines getter for the property
 	
 	@method defineGetter
+	@static
 	@param {Object} obj Object to add property to
 	@param {String} prop Property name
 	@param {Object} desc Set of key-value pairs defining descriptor for the property
@@ -661,6 +694,7 @@ o.extend(o, {
 	Defines setter for the property
 	
 	@method defineSetter
+	@static
 	@param {Object} obj Object to add property to
 	@param {String} prop Property name
 	@param {Object} desc Set of key-value pairs defining descriptor for the property
@@ -674,6 +708,7 @@ o.extend(o, {
 	Defines getter or setter, depending on a type param
 	
 	@method defineGSetter
+	@static
 	@private
 	@param {String} prop Property name
 	@param {Object} desc Set of key-value pairs defining descriptor for the property
@@ -727,6 +762,7 @@ o.extend(o, {
 	based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
 
 	@method parseUrl
+	@static
 	@param {String} str Url to parse (defaults to empty string if undefined)
 	@return {Object} Hash containing extracted uri components
 	*/
@@ -784,6 +820,7 @@ o.extend(o, {
 	Resolve url - among other things will turn relative url to absolute
 
 	@method resolveUrl
+	@static
 	@param {String} url Either absolute or relative
 	@return {String} Resolved, absolute url
 	*/
@@ -802,6 +839,7 @@ o.extend(o, {
 	Encode string with UTF-8  
 
 	@method utf8_encode
+	@static
 	@param {String} str String to encode
 	@return {String} UTF-8 encoded string
 	*/
@@ -813,6 +851,7 @@ o.extend(o, {
 	Decode UTF-8 encoded string
 
 	@method utf8_decode
+	@static
 	@param {String} str String to decode
 	@return {String} Decoded string
 	*/
@@ -825,6 +864,7 @@ o.extend(o, {
 	from: https://raw.github.com/kvz/phpjs/master/functions/url/base64_decode.js
 
 	@method atob
+	@static
 	@param {String} data String to decode
 	@return {String} Decoded string
 	*/
@@ -893,6 +933,7 @@ o.extend(o, {
 	from: https://raw.github.com/kvz/phpjs/master/functions/url/base64_encode.js
 
 	@method btoa
+	@static
 	@param {String} data String to encode
 	@return {String} Base64 encoded string
 	*/
@@ -959,6 +1000,7 @@ Parse string into the JSON object in a safe way
 @credits Douglas Crockford: https://github.com/douglascrockford/JSON-js/blob/master/json_parse.js
 
 @method parse
+@static
 @param {Object} obj Object to add property to
 @param {String} prop Property name
 @param {Object} desc Set of key-value pairs defining descriptor for the property
