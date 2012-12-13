@@ -2,17 +2,21 @@ var fs = require("fs");
 var path = require("path");
 var exec = require("child_process").exec;
 
-function extend(a, b) {
-	if (b) {
-		var props = Object.getOwnPropertyNames(b);
-
-		props.forEach(function(name) {
-			var destination = Object.getOwnPropertyDescriptor(b, name);
-			Object.defineProperty(a, name, destination);
-		});
-	}
-
-	return a;
+function extend(target) {
+	each(arguments, function(arg, i) {
+		if (i > 0) {
+			each(arg, function(value, key) {
+				if (value !== undefined) {
+					if (typeof(target[key]) === 'object' && typeof(value) === 'object') { // arrays also count
+						extend(target[key], value);
+					} else {
+						target[key] = value;
+					}
+				}
+			});
+		}
+	});
+	return target;
 }
 
 function each(obj, callback) {
@@ -223,7 +227,14 @@ var yuidoc = function (sourceDir, outputDir, options) {
 var wiki = function(githubRepo, dir, YUIDocDir) {
 
 	function parseYUIDoc() {
-		var itemTpl = '<a name="%name%" />\n### %name%\n\n%description%\n\n---------------------------------------\n\n';
+		var types = {
+			method: "## Methods\n\n",
+			property: "## Properties\n\n",
+			event: "## Events\n\n"
+		}
+		, delimiter = '\n---------------------------------------\n\n'
+		, codeUrl = "/" + githubRepo.replace(/^[\s\S]+?github\.com[:\/]([\s\S]+?)\.wiki[\s\S]+$/, '$1') + "/blob/master/"
+		;
 
 		if (!path.existsSync(dir) || !path.existsSync(YUIDocDir + "/data.json")) {
 			process.exit(1);
@@ -239,11 +250,26 @@ var wiki = function(githubRepo, dir, YUIDocDir) {
 		// read YUIDoc exported data in json
 		var data = eval("("+fs.readFileSync(YUIDocDir + "/data.json").toString()+")");
 
+		// generate TOC page
+		var toc = '## Table of Contents\n\n';
+		each(data.classes, function(item) {
+			if (!item.access || item.access == 'public') {
+				toc += "* [[" + item.name + "|" + item.name + "]]\n";
+			}
+		});
+		fs.writeFileSync(apiDir + "/" + "API.md", toc);
+
+		// generate pages
 		var pages = {};		
 		each(data.classitems, function(item) {
 			var className
 			, page
 			;
+
+			// bypass private and protected
+			if (item.access && item.access != 'public') {
+				return true;
+			}
 
 			if (!~['method', 'property', 'event'].indexOf(item.itemtype)) {
 				return true;
@@ -252,35 +278,76 @@ var wiki = function(githubRepo, dir, YUIDocDir) {
 			className = item.class;
 
 			if (!pages[className]) {
-				pages[className] = {
+				pages[className] = extend({}, data.classes[className], {
 					toc: {
-						property: "## Properties\n\n",
-						method: "## Methods\n\n",
-						event: "## Events\n\n"
+						property: "",
+						method: "",
+						event: ""
 					},
 					content: {
-						property: "## Properties\n\n",
-						method: "## Methods\n\n",
-						event: "## Events\n\n"
-					},
-				}
+						property: "",
+						method: "",
+						event: ""
+					}
+				});
 			}
 			page = pages[className];
 
+			// put a link in the TOC
 			page.toc[item.itemtype] += "* [%name%](#%name%)".replace(/%name%/g, item.name) + "\n";
-			page.content[item.itemtype] += itemTpl.replace(/%([^\%]+)%/g, function($0, $1) {
-				return item[$1] || '';
-			});
-			
-			if ('method' === item.itemtype) {
 
+			// add item to the content
+			var title = '<a name="'+item.name+'" />\n### '+item.name;
+			var line = '_Defined at: ['+item.file+':'+item.line+']('+codeUrl+item.file+'#L'+item.line+')_\n\n\n';
+			var description = item.description + "\n";
+
+			// add arguments listing if item is method
+			if ('method' === item.itemtype && item.params) {
+				var titleArgs = [];
+				var args = "\n__Arguments__\n\n";
+				each(item.params, function(param) {
+					var name;
+					if (param.type) {
+						if (param.optional) {
+							name = param.optdefault ? "[" + param.name + "=" + param.optdefault + "]" : "[" + param.name + "]";
+						} else {
+							name = param.name;
+						}
+						titleArgs.push(name);
+						args += "* **" + name + "** _(" + param.type.replace(/\|/g, '/') + ")_ " + param.description + "\n";
+					}
+				});
+				// add arguments
+				title += "(" + (titleArgs.length ? titleArgs.join(", ") : "") + ")";
+				description += args;
 			}
+
+			page.content[item.itemtype] += title + "\n" + line + description;
+
+			// add delimiter
+			page.content[item.itemtype] += delimiter;
 		});
 
 		each(pages, function(page, name) {
-			var toc = page.toc.property + "\n" + page.toc.method + "\n" + page.toc.event  + "\n";
-			var content = page.content.property + "\n" + page.content.method + "\n" + page.content.event  + "\n";
-			fs.writeFileSync(apiDir + "/" + name + ".md", toc + content);
+			var toc = "", body = "", header = "";
+
+			header += "# " + page.name + "\n";
+			header += "_Defined at: [" + page.file + ":" + page.line + "](" + codeUrl + page.file + "#L" + page.line + ")_ \n\n\n";
+			if (page.description) {	
+				header += page.description + "\n\n";
+			}
+
+			each(["property", "method", "event"], function(type) {
+				if (page.toc[type] != "") {
+					toc += types[type] + page.toc[type] + "\n";
+				}
+
+				if (page.content[type] != "") {
+					body += types[type] + page.content[type] + "\n";
+				}
+			});
+
+			fs.writeFileSync(apiDir + "/" + name + ".md", header + toc + body);
 		});
 	}
 

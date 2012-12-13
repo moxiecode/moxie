@@ -109,10 +109,10 @@ function Runtime(options, type) {
 				
 				o.extend(shimContainer.style, {
 					position : 'absolute',
-					top : '0px',
-					left: '0px',
-					width : 1 + 'px',
-					height : 1 + 'px',
+					top : '-8px',
+					right: '-8px',
+					width : 9 + 'px', // if not the minimal height, shims are not initialized in older browsers
+					height : 9 + 'px',
 					overflow: 'hidden'
 				});
 				

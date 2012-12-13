@@ -143,7 +143,7 @@ o.eventTarget = new (function() {
 
 			@method dispatchEvent
 			@param {String/Object} Type of event or event object to dispatch
-			@param {Mixed} []* Variable number of arguments to be passed to a handlers
+			@param {Mixed} [...] Variable number of arguments to be passed to a handlers
 			@return {Boolean} true by default and false if any handler returned false
 			*/
 			dispatchEvent: function(type) {
@@ -219,6 +219,7 @@ o.eventTarget = new (function() {
 			Alias for addEventListener
 
 			@method bind
+			@protected
 			*/
 			bind: function() {
 				this.addEventListener.apply(this, arguments);	
@@ -228,6 +229,7 @@ o.eventTarget = new (function() {
 			Alias for removeEventListener
 
 			@method unbind
+			@protected
 			*/
 			unbind: function() {
 				this.removeEventListener.apply(this, arguments);
@@ -237,6 +239,7 @@ o.eventTarget = new (function() {
 			Alias for removeAllEventListeners
 
 			@method unbindAll
+			@protected
 			*/
 			unbindAll: function() {
 				this.removeAllEventListeners.apply(this, arguments);
@@ -246,6 +249,7 @@ o.eventTarget = new (function() {
 			Alias for dispatchEvent
 
 			@method trigger
+			@protected
 			*/
 			trigger: function() {
 				this.dispatchEvent.apply(this, arguments);

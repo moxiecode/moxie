@@ -174,6 +174,17 @@ o.Image = (function() {
 			  - o.Blob/o.File: Loads image from o.File or o.Blob object.
 			  - URL: Image will be downloaded from remote destination and loaded in memory.
 
+			When source is URL, Image will be downloaded from remote destination and loaded in memory.
+
+			````javascript
+			var blob;
+			var img = new o.Image;
+			img.onload = function() {
+				blob = img.getAsBlob('image/png')); // retrive as png o.Blob, ready ro be uploaded with o.XMLHttpRequest
+			};
+			img.load("http://www.moxiecode.com/images/mox-logo.jpg");
+			````  
+
 			@method load
 			@param {Image|Blob|File|String} src Source for the image
 			@param {Boolean|Object} [mixed] 

@@ -1,7 +1,6 @@
 ;(function(window, document, o, undefined) {
 	
-	var 
-	  type = 'flash'
+	var type = 'flash'
 	, x = o.Exceptions
 	;
 	

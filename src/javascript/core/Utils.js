@@ -992,6 +992,7 @@ o.extend(o, {
 /**
 @class JSON
 @static
+@protected
 */
 o.JSON = {};
 
@@ -1001,6 +1002,7 @@ Parse string into the JSON object in a safe way
 
 @method parse
 @static
+@protected
 @param {Object} obj Object to add property to
 @param {String} prop Property name
 @param {Object} desc Set of key-value pairs defining descriptor for the property
