@@ -76,6 +76,16 @@
 					}
 					
 					container = self.getShimContainer();
+
+					// if not the minimal height, shims are not initialized in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
+					o.extend(container.style, {
+						position: 'absolute',
+						top: '-8px',
+						right: '-8px',
+						width: '9px', 
+						height: '9px',
+						overflow: 'hidden'
+					});
 					
 					// insert flash object						
 					html = '<object id="' + self.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';

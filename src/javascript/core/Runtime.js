@@ -108,11 +108,11 @@ function Runtime(options, type) {
 				shimContainer.className = 'mOxie-shim mOxie-shim-' + type;
 				
 				o.extend(shimContainer.style, {
-					position : 'absolute',
-					top : '-8px',
-					right: '-8px',
-					width : 9 + 'px', // if not the minimal height, shims are not initialized in older browsers
-					height : 9 + 'px',
+					position: 'absolute',
+					top: '0px',
+					left: '0px',
+					width: '1px',
+					height: '1px',
 					overflow: 'hidden'
 				});
 				
