@@ -9,8 +9,6 @@
  */
 
 ;(function(window, document, o, undefined) {	
-
-
 /**
 Not a real class, just a way to group generic static functions, all functions are meant to be invoked in mOxie namespace,
 e.g. mOxie.extend() or o.extend() 
@@ -19,12 +17,34 @@ e.g. mOxie.extend() or o.extend()
 @static
 */	
 o = o || {};
+
+/**
+Gets the true type of the built-in object (better version of typeof).
+@credits Angus Croll (http://javascriptweblog.wordpress.com/)
+
+@method typeOf
+@for Utils
+@static
+@param {Object} o Object to check.
+@return {String} Object [[Class]]
+*/
+o.typeOf = function typeOf(o) {
+	// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
+	var undef;
+	if (o === undef) {
+		return 'undefined';
+	} else if (o === null) {
+		return 'null';
+	} else if (o.nodeType) {
+		return 'node';
+	}
+	return ({}).toString.call(o).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
+}
 	
 /**
 Extends the specified object with another object.
 
 @method extend
-@for Utils
 @static
 @param {Object} target Object to extend.
 @param {Object} [obj]* Multiple objects to extend with.
@@ -35,7 +55,7 @@ o.extend = function(target) {
 		if (i > 0) {
 			o.each(arg, function(value, key) {
 				if (value !== undefined) {
-					if (typeof(target[key]) === 'object' && typeof(value) === 'object') { // arrays also count
+					if (o.typeOf(target[key]) === o.typeOf(value) && !!~o.inArray(o.typeOf(value), ['array', 'object'])) { 
 						o.extend(target[key], value);
 					} else {
 						target[key] = value;
@@ -88,28 +108,6 @@ o.each = function(obj, callback) {
 
 
 o.extend(o, {
-	
-	/**
-	Gets the true type of the built-in object (better version of typeof).
-	@credits Angus Croll (http://javascriptweblog.wordpress.com/)
-	
-	@method typeOf
-	@static
-	@param {Object} o Object to check.
-	@return {String} Object [[Class]]
-	*/
-	typeOf: function(o) {
-		// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
-		var undef;
-		if (o === undef) {
-			return 'undefined';
-		} else if (o === null) {
-			return 'null';
-		}
-		return ({}).toString.call(o).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
-	},
-	
-	
 	/**
 	Checks if object is empty.
 	

@@ -137,6 +137,7 @@ o.XMLHttpRequestUpload = (function() {
 Implementation of XMLHttpRequest
 
 @class XMLHttpRequest
+@constructor
 @extends RuntimeClient
 @extends EventTarget
 */

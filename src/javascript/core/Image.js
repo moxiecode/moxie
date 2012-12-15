@@ -30,6 +30,7 @@ var x = o.Exceptions;
 Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
 @class Image
+@constructor
 @extends EventTarget
 */
 o.Image = (function() {
@@ -70,11 +71,6 @@ o.Image = (function() {
 	'embedded'
 	];
 	
-	/**
-	Image
-
-	@constructor
-	*/
 	function Image() {
 		var self = this;
 			
@@ -176,14 +172,15 @@ o.Image = (function() {
 
 			When source is URL, Image will be downloaded from remote destination and loaded in memory.
 
-			````javascript
-			var blob;
+			@example
+			<pre><code>var blob;
 			var img = new o.Image;
 			img.onload = function() {
-				blob = img.getAsBlob('image/png')); // retrive as png o.Blob, ready ro be uploaded with o.XMLHttpRequest
+				// retrive as png o.Blob, ready to be uploaded with o.XMLHttpRequest
+				blob = img.getAsBlob('image/png'));
 			};
 			img.load("http://www.moxiecode.com/images/mox-logo.jpg");
-			````  
+			</pre></code>
 
 			@method load
 			@param {Image|Blob|File|String} src Source for the image
@@ -362,7 +359,7 @@ o.Image = (function() {
 							self.trigger('embedded');
 							return;
 						}
-					} 
+					}
 
 					dataUrl = image.getAsDataURL(type, quality);
 
@@ -380,6 +377,8 @@ o.Image = (function() {
 								// position and size properly
 								o.extend(runtime.getShimContainer().style, {
 									//position: 'relative',
+									top: '0px',
+									left: '0px',
 									width: image.width + 'px',
 									height: image.height + 'px'
 								});

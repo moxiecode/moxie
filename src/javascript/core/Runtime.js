@@ -256,7 +256,7 @@ Default order to try different runtime types
 @type String
 @static
 */
-Runtime.order = 'silverlight';
+Runtime.order = 'html5,flash,silverlight,html4';
 
 /**
 Default set of capabilities, which can be redifined later by specific runtime

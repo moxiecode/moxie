@@ -5,7 +5,18 @@
 var JPEG, PNG;
 var x = o.Exceptions;
 
+/**
+Optional image investigation tool for HTML5 runtime. Provides the following features:
+ - ability to distinguish image type (JPEG or PNG) by signature
+ - ability to extract image width/height directly from it's internals, without preloading in memory (fast)
+ - ability to extract APP headers from JPEGs (Exif, GPS, etc)
+ - ability to replace width/height tags in extracted JPEG headers
+ - ability to restore APP headers, that were for example stripped during image manipulation
 
+@class ImageInfo
+@constructor
+@param {String} binstr Image source as binary string
+*/
 o.ImageInfo = function(binstr) {
 	var _cs = [JPEG, PNG], _img;
 
@@ -22,14 +33,67 @@ o.ImageInfo = function(binstr) {
 	}());
 
 	o.extend(this, {
+		/**
+		Image Mime Type extracted from it's depths
+
+		@property type
+		@type {String}
+		@default ''
+		*/
 		type: '',
+
+		/**
+		Image size in bytes
+
+		@property size
+		@type {Number}
+		@default 0
+		*/
 		size: 0,
+
+		/**
+		Image width extracted from image source
+
+		@property width
+		@type {Number}
+		@default 0
+		*/
 		width: 0,
+
+		/**
+		Image height extracted from image source
+
+		@property height
+		@type {Number}
+		@default 0
+		*/
 		height: 0,
+
+		/**
+		Sets Exif tag. Currently applicable only for width and height tags. Obviously works only with JPEGs.
+
+		@method setExif
+		@param {String} tag Tag to set
+		@param {Mixed} value Value to assign to the tag
+		*/
 		setExif: function() {},
+
+		/**
+		Restores headers to the source.
+
+		@method writeHeaders
+		@param {String} data Image source as binary string
+		@return {String} Updated binary string
+		*/
 		writeHeaders: function(data) {
 			return data;
 		},
+
+		/**
+		Dispose resources.
+
+		@method purge
+		*/
 		purge: function() {}
 	});
 

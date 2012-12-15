@@ -81,7 +81,7 @@
 					o.extend(container.style, {
 						position: 'absolute',
 						top: '-8px',
-						right: '-8px',
+						left: '-8px',
 						width: '9px', 
 						height: '9px',
 						overflow: 'hidden'
@@ -192,6 +192,11 @@
 								return null; // or throw ex
 							}
 
+							// special prefix for DataURL read mode	
+							if (op === 'readAsDataURL') {
+								result = 'data:' + (blob.type || '') + ';base64,' + result;	
+							}
+							
 							return _formatData(result, op, blob.type);
 						}
 					},

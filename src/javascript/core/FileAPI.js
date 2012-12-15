@@ -16,8 +16,6 @@ var x = o.Exceptions;
 	var blobpool = {};
 
 	/**
-	Blob
-
 	@class Blob
 	@constructor
 	@param {String} ruid Unique id of the runtime, to which this blob belongs to
@@ -149,7 +147,13 @@ var x = o.Exceptions;
 		return Blob;
 	}());
 		
-
+	/**
+	@class File
+	@extends Blob
+	@constructor
+	@param {String} ruid Unique id of the runtime, to which this blob belongs to
+	@param {Object} file Object "Native" file object, as it is represented in the runtime
+	*/
 	o.File = (function() {
 		
 		function File(ruid, file) {
@@ -182,8 +186,22 @@ var x = o.Exceptions;
 
 				type: file.type || type,
 
+				/**
+				File name
+
+				@property name
+				@type {String}
+				@default ''
+				*/
 				name: name || '',
 				
+				/**
+				Date of last modification
+
+				@property name
+				@type {String}
+				@default now
+				*/
 				lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString(), // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
 				
 				constructor: o.File
@@ -398,8 +416,37 @@ o.FileReader = (function() {
 		}
 	}
 	
+	/**
+	Initial FileReader state 
+
+	@property EMPTY
+	@type {Number}
+	@final
+	@static
+	@default 0
+	*/
 	FileReader.EMPTY = 0;
+
+	/**
+	FileReader switches to this state when it is preloading the source 
+
+	@property LOADING
+	@type {Number}
+	@final
+	@static
+	@default 1
+	*/
 	FileReader.LOADING = 1;
+
+	/**
+	Preloading is complete, this is a final state
+
+	@property DONE
+	@type {Number}
+	@final
+	@static
+	@default 2
+	*/
 	FileReader.DONE = 2;
 	
 	FileReader.prototype = o.eventTarget;
@@ -408,8 +455,15 @@ o.FileReader = (function() {
 	
 }());
 
-/* something like this is available in WebWorkers environment, here it can be used to read only preloaded blobs/files
-and only below certain size (not yet sure what that'd be, but probably < 1mb) */
+/**
+Synchronous FileReader implementation. Something like this is available in WebWorkers environment, here 
+it can be used to read only preloaded blobs/files and only below certain size (not yet sure what that'd be, 
+but probably < 1mb). Not meant to be used directly by user. 
+
+@class FileReaderSync
+@private
+@constructor
+*/
 o.FileReaderSync = (function() {
 
 	function FileReaderSync() {
@@ -464,9 +518,98 @@ o.FileReaderSync = (function() {
 }());
 
 
+/**
+Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
+converts selected files to o.File objects, to be used in conjunction with _o.Image_, preloaded in memory
+with _o.FileReader_ or uploaded to a server through _o.XMLHttpRequest_.
 
+@class FileInput
+@constructor
+@param {Object|String} options If options has typeof string, argument is considered as options.browse_button
+@param {String|DOMElement} options.browse_button DOM Element to turn into file picker
+@param {Array} [options.accept] Array of mime types to accept. By default accepts all
+@param {String} [options.file='file'] Name of the file field (not the filename)
+@param {Boolean} [options.multiple=false] Enable selection of multiple files
+@param {String|DOMElement} [options.container] DOM Element to use as acontainer for file-picker. Defaults to parentNode for options.browse_button 
+@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
+
+@example 
+	<div id="container">
+		<a id="file-picker" href="javascript:;">Browse...</a>
+	</div>
+
+	<script>
+		var fileInput = new o.FileInput({
+			browse_button: 'file-picker', // or document.getElementById('file-picker')
+			container: 'container'
+			accept: [
+				{title: "Image files", extensions: "jpg,gif,png"} // accept only images
+			],
+			multiple: true // allow multiple file selection
+		});
+
+		fileInput.onchange = function(e) {
+			// do something to files array
+			console.info(e.target.files); // or this.files or fileInput.files
+		};
+
+		fileInput.init(); // initialize
+	</script>
+*/
 o.FileInput = (function() {	
-	var dispatches = ['ready', 'change', 'mouseenter', 'mouseleave', 'mousedown', 'mouseup'];
+	var dispatches = [
+		/**
+		Dispatched when runtime is connected and file-picker is ready to be used.
+
+		@event ready
+		@param {Object} event
+		*/
+		'ready', 
+
+		/**
+		Dispatched when selection of files in the dialog is complete.
+
+		@event change
+		@param {Object} event
+		*/
+		'change', 
+
+		'cancel', // TODO: might be useful
+
+		/**
+		Dispatched when mouse cursor enters file-picker area. Can be used to style element
+		accordingly.
+
+		@event mouseenter
+		@param {Object} event
+		*/
+		'mouseenter', 
+
+		/**
+		Dispatched when mouse cursor leaves file-picker area. Can be used to style element
+		accordingly.
+
+		@event mouseleave
+		@param {Object} event
+		*/
+		'mouseleave', 
+
+		/**
+		Dispatched when functional mouse button is pressed on top of file-picker area. 
+
+		@event mousedown
+		@param {Object} event
+		*/
+		'mousedown', 
+
+		/**
+		Dispatched when functional mouse button is released on top of file-picker area. 
+
+		@event mouseup
+		@param {Object} event
+		*/
+		'mouseup'
+	];
 
 	function FileInput(options) {
 		var self = this, 
@@ -514,12 +657,40 @@ o.FileInput = (function() {
 		
 		o.extend(self, {
 			
+			/**
+			Unique id of the component
+
+			@property uid
+			@protected
+			@readOnly
+			@type {String}
+			@default UID
+			*/
 			uid: o.guid('uid_'),
 			
+			/**
+			Unique id of the connected runtime, if any.
+
+			@property ruid
+			@protected
+			@type {String}
+			*/
 			ruid: null,
 			
+			/**
+			Array of selected o.File objects
+
+			@property files
+			@type {Array}
+			@default null
+			*/
 			files: null,
 
+			/**
+			Initializes the file-picker, connects it to runtime and dispatches event ready when done.
+
+			@method init
+			*/
 			init: function() {
 	
 				self.convertEventPropsToHandlers(dispatches);	
@@ -568,6 +739,12 @@ o.FileInput = (function() {
 				self.connectRuntime(options); // throws RuntimeError
 			},
 
+			/**
+			Disables file-picker element, so that it doesn't react to mouse clicks.
+
+			@method disable
+			@param {Boolean} [state=true] Disable component if - true, enable if - false
+			*/
 			disable: function(state) {
 				var runtime = this.getRuntime();
 				if (runtime) {

@@ -231,10 +231,83 @@ var wiki = function(githubRepo, dir, YUIDocDir) {
 			method: "## Methods\n\n",
 			property: "## Properties\n\n",
 			event: "## Events\n\n"
-		}
-		, delimiter = '\n---------------------------------------\n\n'
-		, codeUrl = "/" + githubRepo.replace(/^[\s\S]+?github\.com[:\/]([\s\S]+?)\.wiki[\s\S]+$/, '$1') + "/blob/master/"
-		;
+		};
+
+		var formatArguments = function(args, level) {
+			var result = !level ? "\n__Arguments__\n\n" : "";
+			
+			level = level || 0;
+
+			each(args, function(param) {
+				var name;
+				if (param.type) {
+					if (param.optional) {
+						name = param.optdefault ? "[" + param.name + "=" + param.optdefault + "]" : "[" + param.name + "]";
+					} else {
+						name = param.name;
+					}
+					// indent level times
+					for (var i = 0; i < level; i++) {
+						result += "\t";
+					}
+					// put it together finally
+					result += "* **" + name + "** _(" + param.type.replace(/\|/g, '/') + ")_ " + param.description + "\n";
+
+					// if param has sub-properties
+					if (param.props) {
+						result += formatArguments(param.props, level + 1);
+					}
+				}
+			});
+			return result;
+		};
+
+
+		var formatItem = function(item) {
+			var delimiter = '\n---------------------------------------\n\n'
+			, codeUrl = "/" + githubRepo.replace(/^[\s\S]+?github\.com[:\/]([\s\S]+?)\.wiki[\s\S]+$/, '$1') + "/blob/master/"
+			, title = item.is_constructor ? '# '+item.name : '<a name="'+item.name+'" />\n### '+item.name
+			, line = '_Defined at: ['+item.file+':'+item.line+']('+codeUrl+item.file+'#L'+item.line+')_\n\n\n'
+			, description = item.description + "\n"
+			;
+
+			// add arguments listing if item is method
+			if (('method' === item.itemtype || item.is_constructor) && item.params) {
+				var titleArgs = [];
+				var args = "\n__Arguments__\n\n";
+				each(item.params, function(param) {
+					var name;
+					if (param.type) {
+						if (param.optional) {
+							name = param.optdefault ? "[" + param.name + "=" + param.optdefault + "]" : "[" + param.name + "]";
+						} else {
+							name = param.name;
+						}
+						titleArgs.push(name);
+						args += "* **" + name + "** _(" + param.type.replace(/\|/g, '/') + ")_ " + param.description + "\n";
+
+						// append sub-properties if any
+						if (param.props) {
+							args += formatArguments(param.props, 1);
+						}
+					}
+				});
+				// add arguments
+				title += "(" + (titleArgs.length ? titleArgs.join(", ") : "") + ")";
+				description += args;
+			}
+
+			// add example
+			if (item.example) {
+				description += "\n__Examples__\n\n"
+				each(item.example, function(example) {
+					var type = /<\w+>/.test(example) ? 'html' : 'javascript';
+					description += "```" + type + example.replace(/^\xA0+/, '') + "\n```\n";
+				});
+			}
+
+			return title + "\n" + line + description + (!item.is_constructor ? delimiter : '\n');
+		};
 
 		if (!path.existsSync(dir) || !path.existsSync(YUIDocDir + "/data.json")) {
 			process.exit(1);
@@ -262,9 +335,7 @@ var wiki = function(githubRepo, dir, YUIDocDir) {
 		// generate pages
 		var pages = {};		
 		each(data.classitems, function(item) {
-			var className
-			, page
-			;
+			var className, page;
 
 			// bypass private and protected
 			if (item.access && item.access != 'public') {
@@ -296,46 +367,13 @@ var wiki = function(githubRepo, dir, YUIDocDir) {
 			// put a link in the TOC
 			page.toc[item.itemtype] += "* [%name%](#%name%)".replace(/%name%/g, item.name) + "\n";
 
-			// add item to the content
-			var title = '<a name="'+item.name+'" />\n### '+item.name;
-			var line = '_Defined at: ['+item.file+':'+item.line+']('+codeUrl+item.file+'#L'+item.line+')_\n\n\n';
-			var description = item.description + "\n";
-
-			// add arguments listing if item is method
-			if ('method' === item.itemtype && item.params) {
-				var titleArgs = [];
-				var args = "\n__Arguments__\n\n";
-				each(item.params, function(param) {
-					var name;
-					if (param.type) {
-						if (param.optional) {
-							name = param.optdefault ? "[" + param.name + "=" + param.optdefault + "]" : "[" + param.name + "]";
-						} else {
-							name = param.name;
-						}
-						titleArgs.push(name);
-						args += "* **" + name + "** _(" + param.type.replace(/\|/g, '/') + ")_ " + param.description + "\n";
-					}
-				});
-				// add arguments
-				title += "(" + (titleArgs.length ? titleArgs.join(", ") : "") + ")";
-				description += args;
-			}
-
-			page.content[item.itemtype] += title + "\n" + line + description;
-
-			// add delimiter
-			page.content[item.itemtype] += delimiter;
+			page.content[item.itemtype] += formatItem(item);
 		});
 
 		each(pages, function(page, name) {
 			var toc = "", body = "", header = "";
 
-			header += "# " + page.name + "\n";
-			header += "_Defined at: [" + page.file + ":" + page.line + "](" + codeUrl + page.file + "#L" + page.line + ")_ \n\n\n";
-			if (page.description) {	
-				header += page.description + "\n\n";
-			}
+			header += formatItem(page);
 
 			each(["property", "method", "event"], function(type) {
 				if (page.toc[type] != "") {
