@@ -306,8 +306,22 @@
 					},
 
 					Image: {
-						loadFromBlob: function(srcBlob) {
-							return self.shimExec.call(this, 'Image', 'loadFromBlob', srcBlob.id);
+						loadFromBlob: function(blob) {
+							var comp = this;
+
+							function exec(srcBlob) {
+								self.shimExec.call(comp, 'Image', 'loadFromBlob', srcBlob.id);
+							}
+
+							if (blob.isDetached()) { // binary string
+								var tr = new o.Transporter;
+								tr.bind("TransportingComplete", function() {
+									exec(tr.result.getSource());
+								});
+								tr.transport(blob.getSource(), blob.type, self.uid); 
+							} else {
+								exec(blob.getSource());
+							}
 						},
 
 						loadFromImage: function(img, exact) {
@@ -348,6 +362,7 @@
 					drag_and_drop: false,
 					receive_response_type: true,
 					report_upload_progress: true,
+					resize_image: true,
 					return_response_headers: false,
 					select_multiple: true,
 					send_custom_headers: true,

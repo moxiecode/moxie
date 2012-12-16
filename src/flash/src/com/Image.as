@@ -103,7 +103,7 @@ package com
 			if (typeof blob === 'string') {
 				blob = Moxie.blobPile.get(blob);
 			}
-						
+									
 			if (!blob) {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, ImageError.WRONG_FORMAT));
 				return;
@@ -279,11 +279,9 @@ package com
 				return null;
 			}
 			
-			if (!type && this.type !== '') {
-				type = this.type;
-			} else {
-				type = 'image/jpeg'
-			}
+			if (!type) {
+				type = this.type !== '' ? this.type : 'image/jpeg';
+			} 
 			
 			if (type == 'image/jpeg') {		
 				ba = JPEGEncoder.encode(bd, quality);

@@ -533,24 +533,34 @@
 						; 
 
 						o.extend(me, {
-							loadFromBlob: function(srcBlob, asBinary) {
+							loadFromBlob: function(blob, asBinary) {
 								var comp = this;
 
 								if (!I.can('access_binary')) {
 									throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 								}
 
-								_srcBlob = srcBlob;
+								if (blob.isDetached()) {
+									_srcBlob = {
+										name: blob.name,
+										size: blob.size,
+										type: blob.type
+									};
+									_loadFromBinaryString.call(this, blob.getSource());
+									return;
+								} else {
+									_srcBlob = blob.getSource();
 
-								if (asBinary) { // this will let us to hack the file internals
-									_readAsBinaryString(_srcBlob, function(data) {
-										_loadFromBinaryString.call(comp, data);
-									});
-								} else { // ... but this is faster
-									_readAsDataUrl(_srcBlob, function(data) {
-										_loadFromDataUrl.call(comp, data);
-									});
-								}
+									if (asBinary) { // this will let us to hack the file internals
+										_readAsBinaryString(_srcBlob, function(data) {
+											_loadFromBinaryString.call(comp, data);
+										});
+									} else { // ... but this is faster
+										_readAsDataUrl(_srcBlob, function(data) {
+											_loadFromDataUrl.call(comp, data);
+										});
+									}
+								}								
 							},
 
 							loadFromImage: function(img, exact) {
@@ -612,15 +622,23 @@
 							},
 
 							getAsBlob: function(type, quality) {
-								var data, blob;
+								var blob;
 
-								data = me.getAsBinaryString.call(this, type, quality);
+								if (type !== this.type) {
+									// if different mime type requested prepare image for conversion
+									_resize.call(this, this.width, this.height, false);
+								}
 
-								blob = new o.Blob(null, { // standalone blob
-									type: type,
-									size: data.length
-								});
-								blob.detach(data);
+								if (!_modified && !!~o.inArray(o.typeOf(_srcBlob), ['blob', 'file'])) {
+									blob = new o.Blob(I.uid, _srcBlob);
+								} else {
+									var data = me.getAsBinaryString.call(this, type, quality);
+									blob = new o.Blob(null, { // standalone blob
+										type: type,
+										size: data.length
+									});
+									blob.detach(data);
+								}
 								return blob;
 							},
 
@@ -875,5 +893,3 @@
 	}()));	
 
 }(window, document, mOxie));
-
-

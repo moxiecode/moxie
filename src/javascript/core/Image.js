@@ -513,10 +513,27 @@ o.Image = (function() {
 
 
 		function _loadFromBlob(blob, asBinary) {
-			var runtime = this.connectRuntime(blob.ruid);
-			this.ruid = runtime.uid;
-			this.name = blob.name || '';
-			runtime.exec.call(self, 'Image', 'loadFromBlob', blob.getSource(), asBinary);
+
+			self.name = blob.name || '';
+
+			function exec(runtime) {
+				self.ruid = runtime.uid;
+				runtime.exec.call(self, 'Image', 'loadFromBlob', blob, asBinary);
+			}
+
+			if (blob.isDetached()) {
+				this.bind('RuntimeInit', function(e, runtime) {
+					exec(runtime);
+				});
+				this.connectRuntime({
+					required_caps: {
+						access_image_binary: true,
+						resize_image: true
+					}
+				});
+			} else {
+				exec(this.connectRuntime(blob.ruid));
+			}
 		}
 
 		function _loadFromUrl(url, options) {
