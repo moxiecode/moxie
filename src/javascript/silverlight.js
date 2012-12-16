@@ -187,8 +187,8 @@
 					access_image_binary: true,
 					display_media: true,
 					drag_and_drop: false,
-					receive_response_type: function(type) {
-						return !!~o.inArray(type, ['blob']); // not implemented yet
+					receive_response_type: function(responseType) {
+						return !~o.inArray(responseType, ['blob']); // not implemented yet
 					},
 					report_upload_progress: true,
 					resize_image: true,
