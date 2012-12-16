@@ -1,13 +1,10 @@
 js/
 !tests/js/
-src/flash/.*
 src/silverlight/Bin/
 src/silverlight/obj/
 tmp
 wiki
 jslint.xml
-.settings
-.project
 docs
 jscoverage
 *~
