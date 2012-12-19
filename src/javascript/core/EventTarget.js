@@ -1,19 +1,4 @@
-/**
- * EventTarget.js
- *
- * Copyright 2012, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-
-;(function(window, document, o, undefined) {
-	
-var x = o.Exceptions;
-
-o.eventTarget = new (function() {
+define('core/EventTarget', ['core/exceptions', 'core/utils/basic'], function(x, o) {
 	
 	/**
 	Parent object for all event dispatching components and objects
@@ -21,7 +6,7 @@ o.eventTarget = new (function() {
 	@class EventTarget
 	@constructor EventTarget
 	*/
-	function EventTarget() {
+	return function() {
 		// hash of event listeners by object uid
 		var eventpool = {};
 				
@@ -282,9 +267,5 @@ o.eventTarget = new (function() {
 			}
 			
 		});
-	}
-	return EventTarget;
-}());	
-
-	
-}(window, document, mOxie));
+	};
+});
