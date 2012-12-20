@@ -11,6 +11,8 @@ jscoverage
 *~
 *.diff
 *.patch
+*.suo
+*.sln
 *.bak
 *.log
 *.min.js
