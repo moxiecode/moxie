@@ -365,6 +365,7 @@
 					resize_image: true,
 					return_response_headers: false,
 					select_multiple: true,
+					send_binary_string: true,
 					send_custom_headers: true,
 					send_multipart: true,
 					slice_blob: true,
