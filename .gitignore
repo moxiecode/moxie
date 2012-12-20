@@ -2,6 +2,8 @@ js/
 !tests/js/
 src/silverlight/Bin/
 src/silverlight/obj/
+*.suo
+*.sln
 tmp
 wiki
 jslint.xml

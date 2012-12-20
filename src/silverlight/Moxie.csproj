@@ -177,6 +177,6 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>copy /Y Moxie.xap X:\moxie\www\plupload\js\Moxie.xap</PostBuildEvent>
+    <PostBuildEvent>copy /Y Moxie.xap X:\plupload\www\plupload\js\Moxie.xap</PostBuildEvent>
   </PropertyGroup>
 </Project>
