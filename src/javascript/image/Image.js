@@ -338,6 +338,9 @@ define("image/Image", [
 					}
 
 					dataUrl = image.getAsDataURL(type, quality);
+					if (!dataUrl) {
+						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
+					}
 
 					if (o.ua.can('use_data_uri_of', image.size)) {
 						el.innerHTML = '<img src="' + dataUrl + '" width="' + image.width + '" height="' + image.height + '" />';

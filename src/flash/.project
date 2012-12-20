@@ -21,9 +21,9 @@
 			<location>/Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/js</location>
 		</link>
 		<link>
-			<name>bin-release2</name>
+			<name>bin-release</name>
 			<type>2</type>
-			<location>/Users/jagga/Sites/mxi/plupload/www/plupload/js</location>
+			<location>/Users/jagga/Sites/mxi/moxie/www/plupload/moxie/js</location>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -58,7 +58,7 @@ package com
 		public var meta:Object = {}; // misc meta info (for JPEG it will be for example Exif and Gps)
 		
 		
-		public function loadFromImage(image:*, takeEncoded:Boolean = true) : void
+		public function loadFromImage(image:*, takeEncoded:Boolean = false) : void
 		{			
 			if (typeof image === 'string') {
 				image = Moxie.comps.get(image, 'Image');
@@ -90,7 +90,7 @@ package com
 				height = image.height;
 				type = image.type;
 				meta = image.meta;
-								
+												
 				loadFromBitmapData(bd);
 			}
 		}
@@ -103,7 +103,7 @@ package com
 			if (typeof blob === 'string') {
 				blob = Moxie.blobPile.get(blob);
 			}
-									
+						
 			if (!blob) {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, ImageError.WRONG_FORMAT));
 				return;
@@ -197,18 +197,28 @@ package com
 		}
 			
 		
-		public function resize(width:uint, height:uint, crop:Boolean = false, oneGo:Boolean = false) : void
-		{
+		public function resize(width:uint, height:uint, crop:Boolean = false, oneGo:Boolean = true) : void
+		{			
 			var self:Image = this, scale:Number, selector:Function, output:BitmapData,
 				
 				// when scaled directly, Flash produces low quality result, so we do it here gradually
 				downScale:Function = function(tmpWidth:Number, tmpHeight:Number) : void {				
 					_prepareBitmapData(tmpWidth, tmpHeight, function(bd:BitmapData) : void { // modifies output internally
-						var matrix:Matrix;
+						var matrix:Matrix, imgWidth:Number, imgHeight:Number;
 						
 						scale = selector(tmpWidth / output.width, tmpHeight / output.height);
 						matrix = new Matrix;
 						matrix.scale(scale, scale);
+						
+						// check if we need to center the image
+						imgWidth = output.width * scale;
+						imgHeight = output.height * scale;
+						if (imgWidth > tmpWidth) {
+							matrix.translate(-Math.round((imgWidth - tmpWidth) / 2), 0);
+						}
+						if (imgHeight > tmpHeight) {
+							matrix.translate(0, -Math.round((imgHeight - tmpHeight) / 2));
+						}
 						
 						bd.draw(output, matrix, null, null, null, true);
 						output.dispose();			
@@ -217,7 +227,7 @@ package com
 						if (scale > 1) {
 							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, { width: output.width, height: output.height }));
 							return;
-						} else if (output.width / 2 > width) {
+						} else if (output.width / 2 > width && output.height / 2 > height) {
 							downScale(output.width / 2, output.height / 2); 
 						} else if (width < output.width || height < output.height) {
 							downScale(width, height);
@@ -241,7 +251,6 @@ package com
 				
 			output = _bm.bitmapData;
 			
-			
 			if (!crop) { 
 				// retain proportions
 				selector = Math.min;			
@@ -252,7 +261,7 @@ package com
 				selector = Math.max;
 			}
 			
-			if (output.width / 2 > width && !oneGo) {
+			if (output.width / 2 > width && output.height / 2 > height && !oneGo) {
 				downScale(output.width / 2, output.height / 2); // modifies output internally
 			} else {
 				downScale(width, height);
@@ -266,6 +275,7 @@ package com
 			if (!_bm) {
 				return null;
 			}
+			
 			return _bm.bitmapData.clone();
 		}
 		
@@ -273,7 +283,7 @@ package com
 		public function getAsEncodedByteArray(type:String = null, quality:uint = 90) : ByteArray 
 		{
 			var ba:ByteArray, bd:BitmapData, type:String;
-						
+			
 			bd = getAsBitmapData();
 			if (!bd) {
 				return null;
