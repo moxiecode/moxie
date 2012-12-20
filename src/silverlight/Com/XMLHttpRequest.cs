@@ -151,7 +151,8 @@ namespace Moxiecode.Com
 
 			_req = (HttpWebRequest)WebRequestCreator.ClientHttp.Create(new Uri(_options["url"]));
 			_req.Method = _options["method"];
-			_req.AllowWriteStreamBuffering = false; // disable buffering (this only works for ClientHttp version)
+            // disable buffering (this only works for ClientHttp version)
+			//_req.AllowWriteStreamBuffering = false; // causes silent crash on Mac OS X 10.8.x
 
 			// add custom headers
 			if (_headers.Count != 0)
