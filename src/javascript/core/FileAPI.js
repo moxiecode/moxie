@@ -643,7 +643,7 @@ o.FileInput = (function() {
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
-			options.accept = mimes2extList(options.accept);
+			options.accept = o.mimes2extList(options.accept);
 		}
 					
 		// make container relative, if they're not
@@ -796,7 +796,7 @@ o.FileDrop = (function() {
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
-			options.accept = mimes2extList(options.accept);
+			options.accept = o.mimes2extList(options.accept);
 		}
 						
 		o.RuntimeClient.call(self);
