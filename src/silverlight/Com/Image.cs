@@ -157,9 +157,19 @@ namespace Moxiecode.Com
 						Source = _bm,
 						Stretch = Stretch.None
 					};
+
+                    int imgWidth = (int)Math.Round(_bm.PixelWidth * scale);
+                    int imgHeight = (int)Math.Round(_bm.PixelHeight * scale);
 					
 					WriteableBitmap bm = new WriteableBitmap(w, h);
-					bm.Render(image, new ScaleTransform() { ScaleX = scale, ScaleY = scale });
+
+                    bm.Render(image, new ScaleTransform()
+                    {
+                        ScaleX = scale,
+                        ScaleY = scale,
+                        CenterX = imgWidth > w ? -w / 2 : 0,
+                        CenterY = imgHeight > h ? -h / 2 : 0
+                    });
 					bm.Invalidate();
 
 					_bm = bm;
