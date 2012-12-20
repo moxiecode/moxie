@@ -186,11 +186,15 @@ package mxi.image {
 		public function EXIF():Object {	
 			var Exif:Object;
 			
-			if (!offsets['exifIFD'] || offsets['exifIFD'] === null) {
+			if (!offsets.hasOwnProperty('exifIFD') || offsets['exifIFD'] === null) {
 				return null;
 			}
 			
-			Exif = extractTags(offsets['exifIFD'], tags.exif);
+			try { // survive invalid offsets
+				Exif = extractTags(offsets['exifIFD'], tags.exif);
+			} catch (ex:Error) {
+				return null;
+			}
 			
 			// fix formatting of some tags
 			if (Exif.hasOwnProperty('ExifVersion') && Exif.ExifVersion is Array) {
@@ -206,11 +210,16 @@ package mxi.image {
 		public function GPS():Object {
 			var Gps:Object;
 			
-			if (!offsets['gpsIFD'] || offsets['gps'] === null) {
+			if (!offsets.hasOwnProperty('gpsIFD') || offsets['gps'] === null) {
 				return null;
 			}
 			
-			Gps = extractTags(offsets['gpsIFD'], tags.gps);	
+			try { // survive invalid offsets
+				Gps = extractTags(offsets['gpsIFD'], tags.gps);	
+			} catch (ex:Error) {
+				return null;
+			}
+			
 			if (Gps.hasOwnProperty('GPSVersionID') && Gps.GPSVersionID is Array) {
 				Gps.GPSVersionID = Gps.GPSVersionID.join('.');
 			}
@@ -258,10 +267,12 @@ package mxi.image {
 		}
 		
 		
-		private function extractTags(IFD_offset:int, tags2extract:Object):Object {
-			var length:uint = data.SHORT(IFD_offset), i:uint, ii:uint,
+		private function extractTags(IFD_offset:int, tags2extract:Object):Object {			
+			var length:uint, i:uint, ii:uint,
 				tag:String, type:uint, count:uint, tagOffset:uint, offset:uint, value:*, 
 				values:Array = [], hash:Object = {};
+			
+			length = data.SHORT(IFD_offset);
 			
 			for (i = 0; i < length; i++) {
 				// Set binary reader pointer to beginning of the next tag
