@@ -1,4 +1,4 @@
-define('core/exceptions', ['utils/basic'], function(utils) {
+define('core/exceptions', ['core/utils/basic'], function(utils) {
 
 	function _findKey(obj, value) {
 		var key;

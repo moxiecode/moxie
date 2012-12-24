@@ -34,7 +34,7 @@ define('core/utils/basic', [], function() {
 	@param {Object} o Object to check.
 	@return {String} Object [[Class]]
 	*/
-	var typeOf = function typeOf(o) {
+	var typeOf = function(o) {
 		// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
 		var undef;
 		if (o === undef) {
@@ -229,7 +229,7 @@ define('core/utils/basic', [], function() {
 			
 			return (prefix || 'o_') + guid + (counter++).toString(32);
 		}
-	}()),
+	}());
 	
 	
 	/**
@@ -245,6 +245,38 @@ define('core/utils/basic', [], function() {
 			return str;	
 		}
 		return String.prototype.trim ? String.prototype.trim.call(str) : str.toString().replace(/^\s*/, '').replace(/\s*$/, '');	
+	};
+
+
+	/**
+	Parses the specified size string into a byte value. For example 10kb becomes 10240.
+	
+	@method parseSizeStr
+	@static
+	@param {String/Number} size String to parse or number to just pass through.
+	@return {Number} Size in bytes.
+	*/
+	var parseSizeStr = function(size) {
+		if (typeof(size) !== 'string') {
+			return size;	
+		}
+		
+		var muls = {
+				t: 1099511627776,
+				g: 1073741824,
+				m: 1048576,
+				k: 1024
+			},
+			mul;
+
+		size = /^([0-9]+)([mgk]?)$/.exec(size.toLowerCase().replace(/[^0-9mkg]/g, ''));
+		mul = size[2];
+		size = +size[1];
+		
+		if (muls.hasOwnProperty(mul)) {
+			size *= muls[mul];	
+		}
+		return size;
 	};
 	
 

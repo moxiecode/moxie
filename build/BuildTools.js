@@ -121,7 +121,7 @@ var mkswf = function(params, cb) {
 		}
 		cb();
 	});
-}
+};
 
 var less = function (sourceFile, outputFile, options) {
 	var less = require('less');
@@ -194,7 +194,7 @@ var less = function (sourceFile, outputFile, options) {
 			yuicompress: options.yuicompress
 		}));
 	});
-}
+};
 
 var yuidoc = function (sourceDir, outputDir, options) {
 	var Y = require('yuidocjs');
@@ -222,7 +222,7 @@ var yuidoc = function (sourceDir, outputDir, options) {
 
 		complete();
 	});
-}
+};
 
 var wiki = function(githubRepo, dir, YUIDocDir) {
 
@@ -309,13 +309,13 @@ var wiki = function(githubRepo, dir, YUIDocDir) {
 			return title + "\n" + line + description + (!item.is_constructor ? delimiter : '\n');
 		};
 
-		if (!path.existsSync(dir) || !path.existsSync(YUIDocDir + "/data.json")) {
+		if (!fs.existsSync(dir) || !fs.existsSync(YUIDocDir + "/data.json")) {
 			process.exit(1);
 		}	
 
 		// Clear previous versions
 		var apiDir = dir + "/API";
-		if (path.existsSync(apiDir)) {
+		if (fs.existsSync(apiDir)) {
 			rmDir(apiDir);
 		}
 		fs.mkdirSync(apiDir, 0755);
@@ -389,14 +389,14 @@ var wiki = function(githubRepo, dir, YUIDocDir) {
 		});
 	}
 
-	if (!path.existsSync(dir)) {
+	if (!fs.existsSync(dir)) {
 		exec("git clone " + githubRepo + " ./" + dir, function(error, stdout, stderr) {
 			parseYUIDoc();
 		});
 	} else {
 		parseYUIDoc();
 	}
-}
+};
 
 var jshint = function (sourceDir, options) {
 	var jshint = require('jshint').JSHINT;
@@ -432,7 +432,7 @@ var jshint = function (sourceDir, options) {
 	}, options);
 
 	process(sourceDir);
-}
+};
 
 var zip = function (sourceFiles, zipFile, options) {
 	var zip = require("node-native-zip");
@@ -472,7 +472,7 @@ var zip = function (sourceFiles, zipFile, options) {
 			fs.writeFileSync(zipFile, buffer);
 		});
 	});
-}
+};
 
 var copySync = function(from, to) {
 	var stat = fs.statSync(from);
@@ -494,7 +494,7 @@ var copySync = function(from, to) {
 		});*/
 		console.info("Error: " + from + " is directory");
 	}
-}
+};
 
 // recursively delete specified folder
 var rmDir = function(dirPath) {
@@ -509,11 +509,11 @@ var rmDir = function(dirPath) {
 				this.rmDir(filePath);
 		}
 	fs.rmdirSync(dirPath);
-}
+};
 
 // extract version details from chengelog.txt
 var getReleaseInfo = function (srcPath) {
-	if (!path.existsSync(srcPath)) {
+	if (!fs.existsSync(srcPath)) {
 		console.info(srcPath + " cannot be found.");
 		process.exit(1);
 	} 
@@ -538,13 +538,13 @@ var getReleaseInfo = function (srcPath) {
 		fileVersion: info[1].replace(/\./g, '_'),
 		headNote: copyright
 	}
-}
+};
 
 // inject version details and copyright header if available to all js files in specified directory
 var addReleaseDetailsTo = function (dir, info) {
 	var contents, filePath; 
 
-	if (path.existsSync(dir)) {
+	if (fs.existsSync(dir)) {
 		fs.readdirSync(dir).forEach(function(fileName) {
 			if (fileName && /\.js$/.test(fileName)) {
 				filePath = path.join(dir + "/" + fileName);
@@ -564,7 +564,7 @@ var addReleaseDetailsTo = function (dir, info) {
 			}
 		});
 	}
-}
+};
 
 extend(exports, {
 	uglify: uglify,

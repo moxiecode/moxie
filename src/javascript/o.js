@@ -1,12 +1,12 @@
-define('o', ['core/utils/basic', 'core/Exceptions', 'core/EventTarget'], function(utils, x, EventTarget) {
+define('o', [
+		'core/utils/basic', 
+		'core/i18n', 
+		'core/JSON', 
+		'core/exceptions', 
+		'core/EventTarget',
+		'runtime/html5/extensions'
+	], function(utils, i18n, jsonParse, x, EventTarget) {
 	
-	function o(id) {
-		if (typeof id !== 'string') {
-			return id;	
-		}
-		return document.getElementById(id);
-	}
-
 	function o(id) {
 		if (typeof id !== 'string') {
 			return id;	
@@ -317,8 +317,14 @@ define('o', ['core/utils/basic', 'core/Exceptions', 'core/EventTarget'], functio
 
 
 	utils.extend(o, {
+		jsonParse: jsonParse,
 		eventTarget: new EventTarget()
-	}, x, utils);
+	}, i18n, x, utils);
+
+	// until properly replaced everywhere
+	o.JSON = {
+		parse: jsonParse
+	};
 
 	return o;
 });
