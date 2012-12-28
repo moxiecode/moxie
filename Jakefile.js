@@ -20,24 +20,12 @@ task("release", ["default", "package"], function (params) {});
 desc("Build libs for external usage");
 task("lib", ["mkswf", "minifyjs", "package"]);
 
-desc("Parse modules");
-task("parse", [], function() {
-	var baseDir = 'src/javascript';
-	var modules = amdlc.parseModules({
-	    from: baseDir + "/o.js",
-	    baseDir: baseDir,
-	    moduleOverrides: {
-
-	    }
-	});
-	console.info(modules);
-});
-
 desc("Minify JS files");
-task("minifyjs", [], function (modules) {
+task("minifyjs", [], function () {
+	var modules = Array.prototype.slice.call(arguments);
 	var baseDir = 'src/javascript';
 	var tmpDir = "tmp/o_" + (new Date()).getTime();
-	
+
 	// check if our template for runtime extensions file exists
 	var extTplPath = baseDir + '/runtime/extensions.js';
 	if (!fs.existsSync(extTplPath)) {
@@ -46,84 +34,76 @@ task("minifyjs", [], function (modules) {
 	}
 	var extTpl = fs.readFileSync(extTplPath).toString();
 
-	// parse requested modules and resolve all dependencies
+	// get complete array of all involved modules
 	modules = amdlc.parseModules({
-	    from: baseDir + "/o.js",
-	    baseDir: baseDir,
-	    moduleOverrides: {
-
-	    }
+	    from: modules,
+	    expose: ["o", "mOxie"],
+	    baseDir: baseDir
 	});
 
-
+	// come up with the list of runtime modules to get included
 	var overrides = {};
 	var runtimes = (process.env.runtimes || 'html5,flash,silverlight,html4').split(/,/);
-	runtimes.forEach(function(type) {
-		var modules = [];
-		jake.mkdirP(tmpDir + '/' + runtime);
 
-		modules.forEach(function(module) {
-			if (!fs.existsSync(baseDir + '/runtime/' + type + '/' + module)) {
-				modules.push(module);
-			}
+	if (runtimes.length) {
+		runtimes.forEach(function(type) {
+			var id = 'runtime/' + type + '/extensions';
+			if (overrides[id]) {
+				return; // continue
+			}	
+
+			var runtimeModules = [];
+			modules.forEach(function(module) {
+				if (fs.existsSync(baseDir + '/runtime/' + type + '/' + module.id + '.js')) {
+					runtimeModules.push(module.id);
+				}
+			});
+
+			var source = extTpl.replace(/@([^@]+)@/g, function($0, $1) {
+				switch ($1) { 
+					case 'type': 
+						return type;
+					case 'modules':
+						return '"' + runtimeModules.join('","')  +'"';
+				}
+			});
+
+			overrides[id] = {
+				source: source,
+				filePath: id + '.js'
+			};
 		});
 
-		fs.writeFileSync(tmpDir + '/' + runtime + '/extensions.js', extTpl.replace(/@([^@]+)@/g, function($0, $1) {
-			switch ($1) { 
-				case 'type': 
-					return type;
-				case 'modules':
-					return '"' + modules.join('","')  +'"';
-			}
+		// add runtimes and their modules
+		Array.prototype.push.apply(modules, amdlc.parseModules({
+			from: runtimes.map(function(type) { return 'runtime/' + type + '/Runtime.js'; }),
+			baseDir: baseDir,
+			expose: ["o", "mOxie"],
+			moduleOverrides: overrides
 		}));
+	}
 
-		overrides['runtime/' + type + '/extensions'] = tmpDir + '/' + runtime + '/extensions.js';
-	});
-
-	amdlc.compile({
-	    from: "src/**/*.js",
-	    baseDir: "src",
-	    compress: true,
-	    expose: "public",
-	    excludeRootNamespaceFromPath: true,
-	    verbose: true,
-	    outputSource: "out/lib.js",
-	    outputMinified: "out/lib.min.js",
-	    outputDev: "out/lib.dev.js"
-	});
-
-	jake.rmRf(tmpDir);
-
-	console.info(arguments);
-	console.info(process.env.runtimes);
-
-	/*
-	// Remove old file if it's there
+	// remove old files if they're there
 	try {
 		fs.unlinkSync("js/moxie.min.js");
+		fs.unlinkSync("js/moxie.dev.js");
+		fs.unlinkSync("js/moxie.js");
 	} catch(ex) {}
 
-	console.info(params);
+	var options = {
+	    compress: true,
+	    excludeRootNamespaceFromPath: true,
+	    verbose: true,
+	    outputSource: "js/moxie.js",
+	    outputMinified: "js/moxie.min.js",
+	    outputDev: "js/moxie.dev.js"
+	};
 
-	uglify([
-		'core/mOxie.js',
-		'core/Utils.js',
-		'core/Exceptions.js',
-		'core/I18N.js',
-		'core/EventTarget.js',
-		'core/Runtime.js',
-		'core/Transporter.js',
-		'core/FileAPI.js',
-		'core/Image.js',
-		'extra/ImageInfo.js',
-		'core/XMLHttpRequest.js',
-		'html5.js',
-		'flash.js',
-		'html4.js'
-	], "js/moxie.min.js", {
-		sourceBase: 'src/javascript/'
-	});*/
+	amdlc.compileMinified(modules, options);
+	amdlc.compileSource(modules, options);
+	amdlc.compileDevelopment(modules, options);
 });
+
 
 desc("Compile Flash component");
 task("mkswf", [], function(params) {

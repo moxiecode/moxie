@@ -1,12 +1,11 @@
 define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/events"], function(o, dom, events) {
 
 	return function() {
-		var I = this.getRuntime();
 		var _files = [];
 
 		o.extend(this, {
 			init: function(options) {
-				var comp = this, input, shimContainer, mimes;
+				var comp = this, I = comp.getRuntime(), input, shimContainer, mimes;
 
 				_files = [];
 				
@@ -91,7 +90,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 			},
 
 			disable: function(state) {
-				var input;
+				var I = this.getRuntime(), input;
 				if (input = o(I.uid)) {
 					input.disabled = !!state;
 				}

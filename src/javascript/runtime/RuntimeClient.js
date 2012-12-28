@@ -27,7 +27,7 @@ define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
 			*/
 			connectRuntime: function(options) {
-				var ruid, i, type, construct, items = [], order, features, key;
+				var ruid, i, construct, items = [], order, features, key;
 										
 				// check if a particular runtime was requested
 				if (o.typeOf(options) === 'string') {
@@ -55,13 +55,11 @@ define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime
 				items = order.split(/\s?,\s?/);
 				
 				next_runtime: 
-				for (i in items) {
-					type = items[i];
-					
-					if (!runtimeConstructors[type]) {
+				for (i in items) {					
+					construct = Runtime.getConstructor(items[i]);
+					if (!construct) {
 						continue;	
 					}
-					construct = runtimeConstructors[type];
 						
 					// check if runtime supports required features
 					if (!construct.can(options.required_caps)) { 

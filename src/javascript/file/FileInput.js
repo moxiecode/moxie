@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('file/FileInput', ['o', 'utils/dom', 'file/File', 'runtime/RuntimeClient'], function(o, dom, File, RuntimeClient) {	
+define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeClient'], function(o, dom, File, RuntimeClient) {	
 
 	var x = o.Exceptions;
 
@@ -251,5 +251,5 @@ define('file/FileInput', ['o', 'utils/dom', 'file/File', 'runtime/RuntimeClient'
 	
 	FileInput.prototype = o.eventTarget;
 			
-	return FileInput;
+	return (o.FileInput = FileInput);
 });

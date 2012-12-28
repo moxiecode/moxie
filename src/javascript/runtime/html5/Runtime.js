@@ -1,11 +1,11 @@
-define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensions"], function(o, Runtime, extensions) {
-	
+define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensions"], function(o, R, extensions) {
+	var x = o.Exceptions;
 	var type = 'html5';
 	
-	Runtime.addConstructor(type, (function() {
+	R.addConstructor(type, (function() {
 		
 		function Runtime(options) {	
-			var I = this, s/////
+			var I = this,
 			// allow to extend this runtime
 
 			// figure out the options	
@@ -14,7 +14,7 @@ define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensio
 			};
 			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;			
 			
-			Runtime.apply(this, [options, arguments[1] || type]);
+			R.apply(this, [options, arguments[1] || type]);
 			
 			o.extend(this, {
 					
@@ -32,7 +32,7 @@ define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensio
 				}
 			});
 
-			shim = (function() {
+			shim = o.extend((function() {
 				var objpool = {};
 
 				return {
@@ -55,12 +55,12 @@ define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensio
 						return obj[fn].apply(this, args);
 					}
 				}
-			}());
+			}()), extensions);
 		}
 		
 				
 		Runtime.can = (function() {
-			var caps = o.extend({}, Runtime.caps, {  
+			var caps = o.extend({}, R.caps, {  
 					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),		
 					access_image_binary: function() {
 						return can('access_binary') && !!o.ImageInfo;
@@ -106,7 +106,7 @@ define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensio
 			function can() {
 				var args = [].slice.call(arguments);
 				args.unshift(caps);
-				return Runtime.can.apply(this, args);
+				return R.can.apply(this, args);
 			}
 			return can;
 		}());

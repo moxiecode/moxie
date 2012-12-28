@@ -7,14 +7,8 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
-define("xhr/XMLHttpRequest", [
-		"o", 
-		"runtime/RuntimeTarget",
-		"file/Blob",
-		"xhr/XMLHttpRequestUpload", 
-		"xhr/FormData"
-	], function(o, Blob, XMLHttpRequestUpload, FormData) {
-
+define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/FormData"], function(o, RuntimeTarget, Blob, FormData) {
+	var undefined;
 	var x = o.Exceptions;
 
 	var httpCode = {
@@ -96,7 +90,7 @@ define("xhr/XMLHttpRequest", [
 	var NATIVE = 1, RUNTIME = 2;
 					
 	function XMLHttpRequest() {	
-		var self = this
+		var self = this,
 			// this (together with _p() @see below) is here to gracefully upgrade to setter/getter syntax where possible
 			props = {
 				/**

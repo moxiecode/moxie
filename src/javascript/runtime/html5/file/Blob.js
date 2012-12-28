@@ -1,8 +1,8 @@
-define("runtime/htm5/file/Blob", ["o", "file/Blob"], function(o, Blob) {
+define("runtime/html5/file/Blob", ["o", "file/Blob"], function(o, Blob) {
 
 	return function() {
 
-		this.slice = function w3cBlobSlice(blob, start, end) {
+		function w3cBlobSlice(blob, start, end) {
 			var blobSlice;
 			
 			if (window.File.prototype.slice) {
@@ -21,6 +21,8 @@ define("runtime/htm5/file/Blob", ["o", "file/Blob"], function(o, Blob) {
 			}
 		}
 
-		return new Blob(I.uid, w3cBlobSlice.apply(this, arguments));
+		this.slice = function() {
+			return new Blob(I.uid, w3cBlobSlice.apply(this, arguments));
+		};
 	};
 });

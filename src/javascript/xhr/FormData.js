@@ -14,7 +14,7 @@ define("xhr/FormData", ["core/exceptions"], function(x) {
 	@class FormData
 	@constructor
 	*/
-	return FormData() {
+	return function() {
 		
 		o.extend(this, {
 			

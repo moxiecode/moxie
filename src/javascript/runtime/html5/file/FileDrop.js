@@ -1,12 +1,11 @@
 define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/events"], function(o, dom, events) {
 
 	return function() {
-		var I = this.getRuntime();
 		var _files = [];
 
 		o.extend(this, {
 			init: function() {
-				var comp = this, dropZone = options.container;
+				var comp = this, I = this.getRuntime(), dropZone = options.container;
 
 				// Safari on Windows has drag/drop problems, so we fake it by moving a input type file 
 				// in front of the mouse pointer when we drag into the drop zone

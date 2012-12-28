@@ -7,7 +7,6 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
-
 define('runtime/RuntimeClient', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
 
 	/**

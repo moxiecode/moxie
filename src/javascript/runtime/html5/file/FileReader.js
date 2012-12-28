@@ -1,4 +1,4 @@
-define("runtime/htm5/file/FileReader", ["o"], function(o) {
+define("runtime/html5/file/FileReader", ["o"], function(o) {
 
 	return function() {
 

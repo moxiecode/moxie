@@ -8,8 +8,8 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('runtime/Runtime', ['core/exceptions', 'core/utils/basic'], function(x, o) {
-	
+define('runtime/Runtime', ["o"], function(o) {
+	var x = o.Exceptions;
 	var runtimeConstructors = {}, runtimes = {};
 
 	/**
