@@ -355,7 +355,7 @@ o.XMLHttpRequest = (function() {
 				urlp = o.parseUrl(url);
 																
 				// 7 - manually build up absolute url
-				_url = urlp.scheme + '://' + urlp.host + (urlp.port !== 80 ? ':' + urlp.port : '') + urlp.path;
+				_url = o.resolveUrl(url);
 								
 				// 9-10, 12-13
 				if ((user || password) && !_sameOrigin(urlp)) {
