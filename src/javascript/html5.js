@@ -22,7 +22,11 @@
 			
 			o.extend(this, {
 					
-				init : function() {		
+				init : function() {	
+					if (!window.File) { // minimal requirement
+						I.destroy();
+						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+					}
 					I.trigger("Init");			
 				},
 
