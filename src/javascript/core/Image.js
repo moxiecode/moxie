@@ -173,14 +173,22 @@ o.Image = (function() {
 			When source is URL, Image will be downloaded from remote destination and loaded in memory.
 
 			@example
-			<pre><code>var blob;
-			var img = new o.Image;
+			var img = new o.Image();
 			img.onload = function() {
-				// retrive as png o.Blob, ready to be uploaded with o.XMLHttpRequest
-				blob = img.getAsBlob('image/png'));
+				var blob = img.getAsBlob('image/png'); // convert to png and retrieve as blob, ready to be uploaded
+				
+				var formData = new o.FormData();
+				formData.append('file', blob);
+
+				var xhr = new o.XMLHttpRequest();
+				xhr.onload = function() {
+					// upload complete
+				};
+				xhr.open('post', 'upload.php');
+				xhr.send(formData);
 			};
-			img.load("http://www.moxiecode.com/images/mox-logo.jpg");
-			</pre></code>
+			img.load("http://www.moxiecode.com/images/mox-logo.jpg"); // notice file extension (.jpg)
+			
 
 			@method load
 			@param {Image|Blob|File|String} src Source for the image
