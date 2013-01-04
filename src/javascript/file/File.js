@@ -68,5 +68,5 @@ define('file/File', ['o', 'file/Blob'], function(o, Blob) {
 
 	File.prototype = Blob.prototype;
  		
-	return File;
+	return (o.File = File);
 });

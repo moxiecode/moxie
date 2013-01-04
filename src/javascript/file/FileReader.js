@@ -176,5 +176,5 @@ define('file/FileReader', ['o', 'runtime/RuntimeClient'], function(o, RuntimeCli
 	
 	FileReader.prototype = o.eventTarget;
 		
-	return FileReader;
+	return (o.FileReader = FileReader);
 });

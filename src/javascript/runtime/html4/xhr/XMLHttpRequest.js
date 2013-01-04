@@ -1,0 +1,174 @@
+define("runtime/html4/xhr/XMLHttpRequest", ["o", "file/Blob", "xhr/FormData"], function(o, Blob, FormData) {
+
+	var x = o.Exceptions;
+
+	return function() {
+		var _status, _response, _iframe;
+
+		o.extend(this, {
+				
+			send: function(meta, data) {
+				var target = this, I = target.getRuntime(), uid, form, input, blob;
+
+				_status = _response = null;
+
+				function createIframe() {
+					var container = I.getShimContainer() || document.body
+					, temp = document.createElement('div')
+					;
+
+					// IE 6 won't be able to set the name using setAttribute or iframe.name
+					temp.innerHTML = '<iframe id="' + uid + '_iframe" name="' + uid + '_iframe" src="javascript:&quot;&quot;" style="display:none"></iframe>';
+					_iframe = temp.firstChild;
+					container.appendChild(_iframe);
+
+					/* _iframe.onreadystatechange = function() {
+						console.info(_iframe.readyState);
+					};*/
+
+					o.addEvent(_iframe, 'load', function(e) { // _iframe.onload doesn't work in IE lte 8
+						var el;
+
+						try {
+							el = _iframe.contentWindow.document || _iframe.contentDocument || window.frames[_iframe.id].document;
+
+							// try to detect some standard error pages
+							if (/^4\d{2}\s/.test(el.title) && el.getElementsByTagName('address').length) { // standard Apache style
+								_status = el.title.replace(/^(\d+).*$/, '$1');
+								target.trigger('error');
+								return;
+							}
+							_status = 200;
+
+						} catch (ex) {
+							// probably a permission denied error
+							_status = 404;
+							target.trigger('error');
+							return;
+						}
+
+						// get result 
+						_response = o.trim(el.body.innerHTML);
+
+						// cleanup
+						if (!data._blob) {
+							form.parentNode.removeChild(form);
+						} else {
+							o.each(form.getElementsByTagName('input'), function(input) {
+								if ('hidden' === input.getAttribute('type')) {
+									input.parentNode.removeChild(input);
+								}
+								input = null;
+							});
+						}
+						form = null;
+
+						// without timeout, request is marked as canceled (in console)
+						setTimeout(function() { 
+							o.removeEvent(_iframe, 'load', target.uid);
+							if (_iframe.parentNode) { // #382
+								_iframe.parentNode.removeChild(_iframe);
+							}
+							_iframe = null; 
+
+							target.trigger({
+								type: 'uploadprogress',
+								loaded: blob && blob.size || 1025,
+								total: blob && blob.size || 1025
+							});
+							target.trigger('load');
+						}, 1);
+					}, target.uid);
+				} // end createIframe
+
+				// prepare data to be sent and convert if required	
+				if (data instanceof FormData) {
+					if (data._blob) {
+						blob = data._fields[data._blob];
+						uid = blob.uid;
+						input = o(uid);
+						form = o(uid + '_form');
+						if (!form) {
+							throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
+						}
+					} else {
+						uid = o.guid('uid_');
+
+						form = document.createElement('form');
+						form.setAttribute('id', uid + '_form');
+						form.setAttribute('method', 'post');
+						form.setAttribute('enctype', 'multipart/form-data');
+						form.setAttribute('encoding', 'multipart/form-data');
+						form.setAttribute("target", uid + '_iframe');
+						
+
+						//form.style.position = 'absolute';
+					}
+
+					o.each(data._fields, function(value, name) {
+						if (value instanceof Blob) {
+							if (input) {
+								input.setAttribute('name', name);
+							}
+						} else {
+							var hidden = document.createElement('input');
+
+							o.extend(hidden, {
+								type : 'hidden',
+								name : name,
+								value : value
+							});
+
+							form.appendChild(hidden);
+						}
+					});
+
+					// set destination url
+					form.setAttribute("action", meta.url);
+
+					createIframe();
+					form.submit();
+					target.trigger('loadstart');
+
+					temp = container = null;
+				}
+			},
+
+			getStatus: function() {
+				return _status;
+			},
+
+			getResponse: function(responseType) {
+				if ('json' === responseType) {
+					// strip off <pre>..</pre> tags that might be enclosing the response
+					return o.JSON.parse(_response.replace(/^\s*<pre>/, '').replace(/<\/pre>\s*$/, ''));
+				} else if ('document' === responseType) {
+
+				} else {
+					return _response;
+				}
+			},
+
+			abort: function(upload_complete_flag) {
+				if (_iframe) {
+					if (o.typeOf(_iframe.stop) === 'function') { // FireFox/Safari/Chrome
+						_iframe.stop();
+					} else {
+						_iframe.document.execCommand('Stop'); // IE
+					}
+				}
+
+				this.dispatchEvent('readystatechange');
+				// this.dispatchEvent('progress');
+				this.dispatchEvent('abort');
+				this.dispatchEvent('loadend');
+
+				if (!upload_complete_flag) {
+					// this.dispatchEvent('progress');
+					this.upload.dispatchEvent('abort');
+					this.upload.dispatchEvent('loadend');
+				}
+			}
+		});
+	};
+});

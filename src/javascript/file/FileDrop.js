@@ -88,5 +88,5 @@ define('file/FileDrop', ['o', 'file/File', 'runtime/RuntimeClient'], function(o,
 	
 	FileDrop.prototype = o.eventTarget;
 			
-	return FileDrop;
+	return (o.FileDrop = FileDrop);
 });

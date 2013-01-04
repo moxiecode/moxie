@@ -7,14 +7,17 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
-define("xhr/FormData", ["core/exceptions"], function(x) {
+define("xhr/FormData", ["o", "file/Blob", "file/File"], function(o, Blob, File) {
+
+	var x = o.Exceptions;
+
 	/**
 	FormData
 
 	@class FormData
 	@constructor
 	*/
-	return function() {
+	function FormData() {
 		
 		o.extend(this, {
 			
@@ -30,7 +33,7 @@ define("xhr/FormData", ["core/exceptions"], function(x) {
 			@param {Mixed} value Value for the field, can be String, Number, File
 			*/		
 			append: function(name, value) {
-				if (value instanceof o.Blob || value instanceof o.File) {
+				if (value instanceof Blob || value instanceof File) {
 					if (this._blob) {
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
 					} else {
@@ -40,5 +43,7 @@ define("xhr/FormData", ["core/exceptions"], function(x) {
 				this._fields[name] = value;
 			}
 		});
-	};	
+	}
+
+	return (o.FormData = FormData);	
 });

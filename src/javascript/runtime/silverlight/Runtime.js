@@ -1,7 +1,5 @@
-;(function(window, document, o, undefined) {
-	
-	var 
-	  type = 'silverlight'
+define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverlight/extensions"], function(o, R, extensions) {
+	var type = 'silverlight'
 	, x = o.Exceptions
 	;
 	
@@ -11,11 +9,10 @@
 	@class RuntimeFlash
 	@extends Runtime
 	*/
-	o.Runtime.addConstructor(type, (function() {
+	R.addConstructor(type, (function() {
 		
 		function Runtime(options) {	
-			var self = this,
-				shimContainer;
+			var self = this, shimContainer;
 						
 			function isInstalled(version) {
 				var isVersionSupported = false, container = null, control = null, actualVer,
@@ -95,17 +92,12 @@
 			defaults = {
 				xap_url: 'js/Moxie.xap'
 			};
-			self.options = options = o.extend({}, defaults, options);	
-
-			// inherit stuff from flash runtime 
-			if (o.Runtime.getConstructor('flash')) {
-				o.Runtime.getConstructor('flash').apply(this, [options, arguments[1] || type]);
-			} else {
-				throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
-			}		
-						
+			self.options = options = o.extend({}, defaults, options);			
+			
+			R.apply(this, [options, arguments[1] || type]);
+			
 			o.extend(this, {
-
+					
 				getShim: function() {
 					return o(this.uid).content.Moxie;
 				},
@@ -130,59 +122,13 @@
 					'</object>';
 
 					wait4shim(10000); // Init will be dispatched by the shim	
-				},
-
-				FileInput: {
-					init: function(options) {
-						
-						function toFilters(accept) {
-							var filter = '';
-							for (i = 0; i < accept.length; i++) {
-								filter += (filter != '' ? '|' : '') + accept[i].title + " | *." + accept[i].extensions.replace(/,/g, ';*.');
-							}
-							return filter;
-						}
-													
-						return self.shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
-					}
-				} /*,
-
-				// this works only in safari (...crickets...)
-
-				FileDrop: {
-					init: function() {
-						var comp = this, dropZone;
-
-						dropZone = self.getShimContainer();
-
-						o.addEvent(dropZone, 'dragover', function(e) {
-							e.preventDefault();
-							e.stopPropagation();
-							e.dataTransfer.dropEffect = 'copy'; 
-						}, comp.uid);
-
-						o.addEvent(dropZone, 'dragenter', function(e) {
-							e.preventDefault();
-							var flag = o(self.uid).dragEnter(e);
-						    // If handled, then stop propagation of event in DOM
-						    if (flag) e.stopPropagation();
-						}, comp.uid);
-
-						o.addEvent(dropZone, 'drop', function(e) {
-							e.preventDefault();
-							var flag = o(self.uid).dragDrop(e);
-						    // If handled, then stop propagation of event in DOM
-						    if (flag) e.stopPropagation();
-						}, comp.uid);
-
-						return self.shimExec.call(this, 'FileDrop', 'init');
-					}
-				}*/
-			});
+				}
+			}, extensions);
 		}
+		
 				
 		Runtime.can = (function() {
-			var caps = o.extend({}, o.Runtime.caps, {
+			var caps = o.extend({}, R.caps, {
 					access_binary: true,
 					access_image_binary: true,
 					display_media: true,
@@ -218,14 +164,11 @@
 			function can() {
 				var args = [].slice.call(arguments);
 				args.unshift(caps);
-				return o.Runtime.can.apply(this, args);
+				return R.can.apply(this, args);
 			}
 			return can;
 		}());
 		
 		return Runtime;
-	}()));		
-
-}(window, document, mOxie));
-
-
+	}()));	
+});

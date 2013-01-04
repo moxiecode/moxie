@@ -131,12 +131,12 @@ define('file/Blob', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
 
 		function _getRuntime() {
 			if (o.typeOf(this.connectRuntime) !== 'function') {		
-				o.RuntimeClient.call(this);
+				RuntimeClient.call(this);
 			}
 			return this.connectRuntime(this.ruid);
 		}
 	}
 	
-	return Blob;
+	return (o.Blob = Blob);
 
 });
