@@ -1,4 +1,4 @@
-define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob"], function(o, encode, Blob) {
+define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "runtime/html5/image/ImageInfo"], function(o, encode, Blob, ImageInfo) {
 
 	var x = o.Exceptions;
 
@@ -68,7 +68,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob"], fun
 					if (_imgInfo) {
 						_imgInfo.purge();
 					}
-					_imgInfo = new o.ImageInfo(_binStr);
+					_imgInfo = new ImageInfo(_binStr);
 					o.extend(info, _imgInfo);
 				}
 				return info;
