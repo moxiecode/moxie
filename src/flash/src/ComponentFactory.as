@@ -10,12 +10,11 @@ package
 	
 	public class ComponentFactory
 	{
-		// depending on command-line params, conditionally compile image manipulation logic or not (default is - compile)
-		BUILD::NOIMAGE {
-			FileInput, FileReader, FileReaderSync, BlobSlicer, XMLHttpRequest, Transporter;
-		}
+		FileInput, FileReader, FileReaderSync, BlobSlicer, XMLHttpRequest, Transporter;
+		
+		// depending on command-line params, conditionally compile image manipulation logic
 		BUILD::IMAGE {
-			FileInput, FileReader, FileReaderSync, BlobSlicer, XMLHttpRequest, Image, ImageView, Transporter;
+			Image, ImageView;
 		}
 		
 		private var _registry:Object = {};
