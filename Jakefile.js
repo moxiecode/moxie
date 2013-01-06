@@ -21,10 +21,9 @@ task("lib", ["mkswf", "minifyjs", "package"]);
 desc("Minify JS files");
 task("minifyjs", [], function (params) {
 
-	// Remove old file if it's there
-	try {
-		fs.unlinkSync("js/moxie.min.js");
-	} catch(ex) {}
+	if (!fs.existsSync("js")) {
+		jake.mkdirP("js");
+	}
 
 	uglify([
 		'core/mOxie.js',

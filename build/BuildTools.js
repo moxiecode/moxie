@@ -98,9 +98,9 @@ var mkswf = function(params, cb) {
 	var defaults = {
 		exe: "mxmlc",
 		target: "10.1.0",
-		extra: "-static-link-runtime-shared-libraries=true"
+		extra: ""
 	};
-	var cmd = "<exe> -target-player=<target> -compiler.source-path=<src> -output=<output> <extra> <input>";
+	var cmd = "<exe> -target-player=<target> -compiler.source-path=<src> -output=<output> -static-link-runtime-shared-libraries=true <extra> <input>";
 
 	params = extend(defaults, params);
 
