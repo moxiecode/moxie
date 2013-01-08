@@ -40,7 +40,7 @@ Building environment is based on [Node.js](http://nodejs.org/), mainly because i
 
 In addtion to Node.js some additional modules are required, simply change your working directory to where you have extracted mOxie package and run: `node bootstrap`. All dependencies will be downloaded and installed automatically.
 
-*Note:* for currently unknown reason locally installed Node.js modules on Windows, may not be automatically added to the system PATH. So if `jake` commands below are not recognized you will need to add them manually, like this:
+*Note:* currently for unknown reason, locally installed Node.js modules on Windows, may not be automatically added to the system PATH. So if `jake` commands below are not recognized you will need to add them manually:
 
 ```
 set PATH=%PATH%;%CD%\node_modules\.bin\
