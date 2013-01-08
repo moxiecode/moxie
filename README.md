@@ -48,7 +48,7 @@ Plupload runtimes - the main source for these pollyfills historically came in mo
 
 Basic JavaScript compiler can be invoked with: `jake mkjs`. It will compile all the components and runtimes into several versions of one monolithic `moxie.js` file (minified and development versions among them). Results will be written to `bin/js`.
 
-But as I mentioned it doesn't have to be monolithic anymore and you can include only the parts that you require. For example basic file uploader, without progress indication support can get as small as 14kb (?). In order to leverage that granularity you must invoke JavaScript compiler with the list of components that you absolutely want to use and list of runtimes to fallback to. For example:
+But as I mentioned it doesn't have to be monolithic anymore and you can include only the parts that you require. For example basic file uploader, without progress indication support can get as small as 12kb gzipped. In order to leverage that granularity you must invoke JavaScript compiler with the list of components that you absolutely want to use and list of runtimes to fallback to. For example:
 <a name="compile-js-options" />
 
 ```

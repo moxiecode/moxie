@@ -39,11 +39,8 @@ task("jshint", [], function (params) {
 
 desc("Compile JS");
 task("mkjs", [], function () {
-	var modules = Array.prototype.slice.call(arguments);
-	var baseDir = "src/javascript";
+	var modules = mkjs.resolveModules(arguments, "src/javascript");
 	var targetDir = "bin/js";
-
-	
 
 	// start fresh
 	if (fs.existsSync(targetDir)) {
