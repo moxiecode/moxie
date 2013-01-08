@@ -6,8 +6,6 @@ using System.Windows.Browser;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using Moxiecode.MXI;
-using Moxiecode.MXI.Image;
 
 namespace Moxiecode.Com
 {

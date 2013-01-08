@@ -167,8 +167,6 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <Target Name="Cleanup">
     <RemoveDir Directories=".\obj\" />
-    <RemoveDir Directories="$(OutputDir);" Condition="Exists('$(OutputDir)')" />
-    <MakeDir Directories="$(OutputDir)" Condition="!Exists('$(OutputDir)')" />
   </Target>
   <Target Name="Rebuild" DependsOnTargets="Cleanup;Build" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

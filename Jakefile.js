@@ -111,13 +111,13 @@ task("mkxap", [], function() {
 	utils.inSeries([
 		function(cb) {
 			mkxap({
-				input: ".\\src\\silverlight\\Moxie.cproj",
+				input: ".\\src\\silverlight\\Moxie.csproj",
 				output: "/p:BUILD=IMAGE,XapFilename=Moxie.plus.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		},
 		function(cb) {
 			mkxap({
-				input: ".\\src\\silverlight\\Moxie.cproj",
+				input: ".\\src\\silverlight\\Moxie.csproj",
 				output: "/p:XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		}
