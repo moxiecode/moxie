@@ -19,7 +19,8 @@
     </SupportedCultures>
     <XapOutputs>true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
-    <XapFilename Condition=" '$(XapFilename)' == '' ">Moxie.xap</XapFilename>
+    <BUILD Condition=" '$(BUILD)' == '' ">IMAGE</BUILD>
+    <XapFilename Condition=" '$(XapFilename)' == '' ">Moxie.plus.xap</XapFilename>
     <OutputDir>..\..\bin\silverlight\</OutputDir>
     <SilverlightManifestTemplate>Properties\AppManifest.xml</SilverlightManifestTemplate>
     <SilverlightAppEntry>Moxiecode.App</SilverlightAppEntry>
