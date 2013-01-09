@@ -101,7 +101,7 @@ package
 				}
 				
 			} catch(err:*) { // re-route exceptions thrown by components (TODO: check marshallExceptions feature)
-				_fireEvent(uid + "::Exception", { name: getQualifiedClassName(err).replace(/^[^:*]::/, ''), code: err.id });
+				_fireEvent(uid + "::Exception", { name: getQualifiedClassName(err).replace(/^[^:*]::/, ''), code: err.errorID });
 			}
 		}
 		
