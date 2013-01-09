@@ -206,6 +206,9 @@ o.Image = (function() {
 					_loadFromImage.apply(this, arguments);
 				} 
 				else if (src instanceof o.File || src instanceof o.Blob) {
+					if (!~o.inArray(src.type, ['image/jpeg', 'image/png'])) {
+						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
+					}
 					_loadFromBlob.apply(this, arguments);
 				} 
 				else if (o.typeOf(src) === 'string' && /^http:\/\//.test(src)) {
