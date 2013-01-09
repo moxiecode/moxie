@@ -38,8 +38,13 @@ First of all you will need to download mOxie package from [here on github]() and
 
 Building environment is based on [Node.js](http://nodejs.org/), mainly because it is cool and easy, but even more importantly, because it is powered by JavaScript (we love JavaScript :). Node.js binaries (as well as Source) [are available](http://nodejs.org/download/) for all major operating systems.
 
+In addtion to Node.js some additional modules are required, simply change your working directory to where you have extracted mOxie package and run: `node bootstrap`. All dependencies will be downloaded and installed automatically.
 
-In addtion to Node.js some additional modules are required, simply change your working directory to where you have extracted mOxie package and run: `node prepare`. All dependencies will be downloaded and installed automatically.
+*Note:* currently for unknown reason, locally installed Node.js modules on Windows, may not be automatically added to the system PATH. So if `jake` commands below are not recognized you will need to add them manually:
+
+```
+set PATH=%PATH%;%CD%\node_modules\.bin\
+``` 
 
 <a name="compile-js" />
 #### Compile JavaScript

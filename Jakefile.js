@@ -1,14 +1,14 @@
 var fs = require("fs");
 var sys = require('sys');
 var path = require("path");
-var tools = require('./build/BuildTools');
+var tools = require("./build/BuildTools");
 var uglify = tools.uglify;
 var less = tools.less;
 var yuidoc = tools.yuidoc;
 var jshint = tools.jshint;
 var zip = tools.zip;
 
-var amdlc = require('amdlc');
+var amdlc = require("amdlc");
 
 var utils = require("./build/utils");
 var mkjs = require("./build/mkjs");
@@ -111,13 +111,13 @@ task("mkxap", [], function() {
 	utils.inSeries([
 		function(cb) {
 			mkxap({
-				input: ".\\src\\silverlight\\Moxie.cproj",
+				input: ".\\src\\silverlight\\Moxie.csproj",
 				output: "/p:BUILD=IMAGE,XapFilename=Moxie.plus.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		},
 		function(cb) {
 			mkxap({
-				input: ".\\src\\silverlight\\Moxie.cproj",
+				input: ".\\src\\silverlight\\Moxie.csproj",
 				output: "/p:XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		}
