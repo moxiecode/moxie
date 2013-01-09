@@ -36,7 +36,7 @@ package com
 			
 			for each (src in blob._sources) {
 				if (src.buffer.isEmpty()) {
-					throw new DOMError(DOMError.NOT_READABLE_ERR);
+					break;
 				}
 				
 				src.buffer.data.position = src.start;
