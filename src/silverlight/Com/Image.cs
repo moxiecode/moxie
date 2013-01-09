@@ -158,18 +158,30 @@ namespace Moxiecode.Com
 						Stretch = Stretch.None
 					};
 
-                    int imgWidth = (int)Math.Round(_bm.PixelWidth * scale);
-                    int imgHeight = (int)Math.Round(_bm.PixelHeight * scale);
-					
 					WriteableBitmap bm = new WriteableBitmap(w, h);
 
-                    bm.Render(image, new ScaleTransform()
-                    {
-                        ScaleX = scale,
-                        ScaleY = scale,
-                        CenterX = imgWidth > w ? -w / 2 : 0,
-                        CenterY = imgHeight > h ? -h / 2 : 0
-                    });
+					TransformGroup tg = new TransformGroup();
+					tg.Children.Add(new ScaleTransform()
+					{
+						ScaleX = scale,
+						ScaleY = scale
+					});
+
+					// center crop if required
+					int imgWidth = (int)Math.Round(_bm.PixelWidth * scale);
+					int imgHeight = (int)Math.Round(_bm.PixelHeight * scale);
+
+					if (imgWidth > w)
+					{
+						tg.Children.Add(new TranslateTransform() { X = -Math.Round((double)(imgWidth - w) / 2) });
+					}
+
+					if (imgHeight > h)
+					{
+						tg.Children.Add(new TranslateTransform() { Y = -Math.Round((double)(imgHeight - h) / 2) });
+					}
+
+					bm.Render(image, tg);
 					bm.Invalidate();
 
 					_bm = bm;
