@@ -1,5 +1,6 @@
 js/
 bin/
+tests/
 !tests/js/
 src/silverlight/Bin/
 src/silverlight/obj/
