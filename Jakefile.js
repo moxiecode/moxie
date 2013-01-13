@@ -80,7 +80,7 @@ task("mkswf", [], function() {
 				src: "./src/flash/src",
 				libs: ["./src/flash/blooddy_crypto.swc"],
 				input: "./src/flash/src/Moxie.as",
-				output: targetDir + "/Moxie.plus.swf",
+				output: targetDir + "/Moxie.swf",
 				extra: "-define=BUILD::IMAGE,true"
 			}, cb);
 		},
@@ -89,7 +89,7 @@ task("mkswf", [], function() {
 				src: "./src/flash/src",
 				libs: ["./src/flash/blooddy_crypto.swc"],
 				input: "./src/flash/src/Moxie.as",
-				output: targetDir + "/Moxie.swf",
+				output: targetDir + "/Moxie.min.swf",
 				extra: "-define=BUILD::IMAGE,false"
 			}, cb);
 		}
@@ -112,13 +112,13 @@ task("mkxap", [], function() {
 		function(cb) {
 			mkxap({
 				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:BUILD=IMAGE,XapFilename=Moxie.plus.xap,OutputDir=..\\..\\" + targetDir
+				output: "/p:BUILD=IMAGE,XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		},
 		function(cb) {
 			mkxap({
 				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
+				output: "/p:XapFilename=Moxie.min.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		}
 	], complete);
