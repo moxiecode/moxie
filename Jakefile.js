@@ -80,8 +80,8 @@ task("mkswf", [], function() {
 				src: "./src/flash/src",
 				libs: ["./src/flash/blooddy_crypto.swc"],
 				input: "./src/flash/src/Moxie.as",
-				output: targetDir + "/Moxie.swf",
-				extra: "-define=BUILD::IMAGE,true"
+ 				output: targetDir + "/Moxie.swf",
+				extra: "-define=BUILD::IMAGE,true -debug=false -optimize=true""
 			}, cb);
 		},
 		function(cb) {
@@ -90,7 +90,7 @@ task("mkswf", [], function() {
 				libs: ["./src/flash/blooddy_crypto.swc"],
 				input: "./src/flash/src/Moxie.as",
 				output: targetDir + "/Moxie.min.swf",
-				extra: "-define=BUILD::IMAGE,false"
+				extra: "-define=BUILD::IMAGE,false -debug=false -optimize=true"
 			}, cb);
 		}
 	], complete);
