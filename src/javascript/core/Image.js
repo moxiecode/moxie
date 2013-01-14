@@ -499,7 +499,7 @@ o.Image = (function() {
 
 		function _updateInfo(info) {
 			if (!info) {
-				info = this.connectRuntime(this.ruid).runtime.exec.call(this, 'Image', 'getInfo');
+				info = this.connectRuntime(this.ruid).exec.call(this, 'Image', 'getInfo');
 			}
 
 			if (info) {
