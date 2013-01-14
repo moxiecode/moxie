@@ -54,12 +54,15 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "file/Blob", "xhr/FormData"], f
 						if (!data._blob) {
 							form.parentNode.removeChild(form);
 						} else {
-							o.each(form.getElementsByTagName('input'), function(input) {
-								if ('hidden' === input.getAttribute('type')) {
-									input.parentNode.removeChild(input);
+							(function() {
+								var inputs = form.getElementsByTagName('input'), i = inputs.length;
+								while (--i) {
+									if ('hidden' === inputs[i].getAttribute('type')) {
+										inputs[i].parentNode.removeChild(inputs[i]);
+									}
+									inputs[i] = null;
 								}
-								input = null;
-							});
+							})();
 						}
 						form = null;
 
