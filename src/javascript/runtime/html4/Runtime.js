@@ -19,10 +19,6 @@ define("runtime/html4/Runtime", ["o", "runtime/Runtime", "runtime/html4/extensio
 			o.extend(this, {
 					
 				init : function() {	
-					if (!window.File) { // minimal requirement
-						I.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
-					}	
 					I.trigger("Init");			
 				},
 
