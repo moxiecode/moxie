@@ -207,6 +207,11 @@ package com
 						var matrix:Matrix, imgWidth:Number, imgHeight:Number;
 						
 						scale = selector(tmpWidth / output.width, tmpHeight / output.height);
+						if (scale > 1) {
+							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, { width: output.width, height: output.height }));
+							return;
+						}
+						
 						matrix = new Matrix;
 						matrix.scale(scale, scale);
 						
@@ -224,10 +229,7 @@ package com
 						output.dispose();			
 						output = bd;
 												
-						if (scale > 1) {
-							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, { width: output.width, height: output.height }));
-							return;
-						} else if (output.width / 2 > width && output.height / 2 > height) {
+						if (output.width / 2 > width && output.height / 2 > height) {
 							downScale(output.width / 2, output.height / 2); 
 						} else if (width < output.width || height < output.height) {
 							downScale(width, height);
