@@ -367,6 +367,10 @@ namespace Moxiecode.Com
 					Error(this, null);
 				}, this);
 			}
+			finally
+			{
+				_req = null; // let GC do its job
+			}
 		}
 
 
