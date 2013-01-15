@@ -19,6 +19,7 @@
     </SupportedCultures>
     <XapOutputs>true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
+    <BUILD Condition=" '$(BUILD)' == '' ">IMAGE</BUILD>
     <XapFilename Condition=" '$(XapFilename)' == '' ">Moxie.xap</XapFilename>
     <OutputDir>..\..\bin\silverlight\</OutputDir>
     <SilverlightManifestTemplate>Properties\AppManifest.xml</SilverlightManifestTemplate>
@@ -97,52 +98,52 @@
     <Compile Include="MXI\JsonReader.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(BUILD)' == 'IMAGE' ">
-	<Compile Include="Com\Image.cs" />
-	<Compile Include="Com\ImageView.cs" />
-	<Compile Include="MXI\BinaryReader.cs">
-		<SubType>Code</SubType>
-	</Compile>
-	<Compile Include="MXI\Image\ExifParser.cs" />
-	<Compile Include="MXI\Image\Format.cs" />
-	<Compile Include="MXI\Image\JPEG.cs" />
-	<Compile Include="MXI\Image\PNG.cs" />
-	<Compile Include="MXI\Image\WriteableBitmapExtension.cs" />
-	<Compile Include="MXI\Utils.cs" />
-	<Compile Include="FJCore\DCT.cs" />
-	<Compile Include="FJCore\DecodedJpeg.cs" />
-	<Compile Include="FJCore\Decoder\HuffmanTable.cs" />
-	<Compile Include="FJCore\Decoder\JpegComponent.cs" />
-	<Compile Include="FJCore\Decoder\JpegDecoder.cs" />
-	<Compile Include="FJCore\Decoder\JpegFrame.cs" />
-	<Compile Include="FJCore\Decoder\JpegHuffmanTable.cs" />
-	<Compile Include="FJCore\Decoder\JpegQuantizationTable.cs" />
-	<Compile Include="FJCore\Decoder\JpegScan.cs" />
-	<Compile Include="FJCore\Encoder\JpegEncoder.cs" />
-	<Compile Include="FJCore\FDCT.cs" />
-	<Compile Include="FJCore\Filter\Convolution.cs" />
-	<Compile Include="FJCore\Filter\FilterBase.cs" />
-	<Compile Include="FJCore\Filter\FilterLowpassResize.cs" />
-	<Compile Include="FJCore\Filter\FilterNNResize.cs" />
-	<Compile Include="FJCore\Filter\GrayImage.cs" />
-	<Compile Include="FJCore\Image.cs" />
-	<Compile Include="FJCore\IO\BinaryReader.cs" />
-	<Compile Include="FJCore\IO\BinaryWriter.cs" />
-	<Compile Include="FJCore\IO\JpegBinaryReader.cs" />
-	<Compile Include="FJCore\JpegMarker.cs" />
-	<Compile Include="FJCore\Resize\ImageResizer.cs" />
-	<Compile Include="FJCore\YCbCr.cs" />
-	<Compile Include="FJCore\ZigZag.cs" />
-	<Compile Include="PngEncoder\Adler32.cs" />
-	<Compile Include="PngEncoder\CRC32.cs" />
-	<Compile Include="PngEncoder\Deflater.cs" />
-	<Compile Include="PngEncoder\DeflaterConstants.cs" />
-	<Compile Include="PngEncoder\DeflaterEngine.cs" />
-	<Compile Include="PngEncoder\DeflaterHuffman.cs" />
-	<Compile Include="PngEncoder\DeflaterOutputStream.cs" />
-	<Compile Include="PngEncoder\DeflaterPending.cs" />
-	<Compile Include="PngEncoder\IChecksum.cs" />
-	<Compile Include="PngEncoder\PendingBuffer.cs" />
-	<Compile Include="PngEncoder\PngEncoder.cs" />
+  	<Compile Include="Com\Image.cs" />
+  	<Compile Include="Com\ImageView.cs" />
+  	<Compile Include="MXI\BinaryReader.cs">
+  		<SubType>Code</SubType>
+  	</Compile>
+  	<Compile Include="MXI\Image\ExifParser.cs" />
+  	<Compile Include="MXI\Image\Format.cs" />
+  	<Compile Include="MXI\Image\JPEG.cs" />
+  	<Compile Include="MXI\Image\PNG.cs" />
+  	<Compile Include="MXI\Image\WriteableBitmapExtension.cs" />
+  	<Compile Include="MXI\Utils.cs" />
+  	<Compile Include="FJCore\DCT.cs" />
+  	<Compile Include="FJCore\DecodedJpeg.cs" />
+  	<Compile Include="FJCore\Decoder\HuffmanTable.cs" />
+  	<Compile Include="FJCore\Decoder\JpegComponent.cs" />
+  	<Compile Include="FJCore\Decoder\JpegDecoder.cs" />
+  	<Compile Include="FJCore\Decoder\JpegFrame.cs" />
+  	<Compile Include="FJCore\Decoder\JpegHuffmanTable.cs" />
+  	<Compile Include="FJCore\Decoder\JpegQuantizationTable.cs" />
+  	<Compile Include="FJCore\Decoder\JpegScan.cs" />
+  	<Compile Include="FJCore\Encoder\JpegEncoder.cs" />
+  	<Compile Include="FJCore\FDCT.cs" />
+  	<Compile Include="FJCore\Filter\Convolution.cs" />
+  	<Compile Include="FJCore\Filter\FilterBase.cs" />
+  	<Compile Include="FJCore\Filter\FilterLowpassResize.cs" />
+  	<Compile Include="FJCore\Filter\FilterNNResize.cs" />
+  	<Compile Include="FJCore\Filter\GrayImage.cs" />
+  	<Compile Include="FJCore\Image.cs" />
+  	<Compile Include="FJCore\IO\BinaryReader.cs" />
+  	<Compile Include="FJCore\IO\BinaryWriter.cs" />
+  	<Compile Include="FJCore\IO\JpegBinaryReader.cs" />
+  	<Compile Include="FJCore\JpegMarker.cs" />
+  	<Compile Include="FJCore\Resize\ImageResizer.cs" />
+  	<Compile Include="FJCore\YCbCr.cs" />
+  	<Compile Include="FJCore\ZigZag.cs" />
+  	<Compile Include="PngEncoder\Adler32.cs" />
+  	<Compile Include="PngEncoder\CRC32.cs" />
+  	<Compile Include="PngEncoder\Deflater.cs" />
+  	<Compile Include="PngEncoder\DeflaterConstants.cs" />
+  	<Compile Include="PngEncoder\DeflaterEngine.cs" />
+  	<Compile Include="PngEncoder\DeflaterHuffman.cs" />
+  	<Compile Include="PngEncoder\DeflaterOutputStream.cs" />
+  	<Compile Include="PngEncoder\DeflaterPending.cs" />
+  	<Compile Include="PngEncoder\IChecksum.cs" />
+  	<Compile Include="PngEncoder\PendingBuffer.cs" />
+  	<Compile Include="PngEncoder\PngEncoder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
