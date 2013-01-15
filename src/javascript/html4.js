@@ -226,6 +226,49 @@
 				XMLHttpRequest: function() {
 					var _status, _response, _iframe;
 
+					function cleanup(cb) {
+						var target = this, uid, form, inputs, i, hasFile = false;
+
+						if (!_iframe) {
+							return;
+						}
+
+						uid = _iframe.id.replace(/_iframe$/, '');
+
+						form = o(uid + '_form');
+						if (form) {
+							inputs = form.getElementsByTagName('input');
+							i = inputs.length;
+							
+							while (i--) {
+								switch (inputs[i].getAttribute('type')) {
+									case 'hidden':
+										inputs[i].parentNode.removeChild(inputs[i]);
+										break;
+									case 'file':
+										hasFile = true; // flag the case for later
+										break;
+								}
+								inputs[i] = null;
+							}
+
+							if (!hasFile) { // we need to keep the form for sake of possible retries
+								form.parentNode.removeChild(form);
+							}
+							form = null;
+						}
+
+						// without timeout, request is marked as canceled (in console)
+						setTimeout(function() { 
+							o.removeEvent(_iframe, 'load', target.uid);
+							if (_iframe.parentNode) { // #382
+								_iframe.parentNode.removeChild(_iframe);
+							}
+							_iframe = null; 
+							cb();
+						}, 1);
+					}
+
 					o.extend(this, {
 							
 						send: function(meta, data) {
@@ -234,8 +277,7 @@
 							_status = _response = null;
 
 							function createIframe() {
-								var 
-								  container = I.getShimContainer() || document.body
+								var container = I.getShimContainer() || document.body
 								, temp = document.createElement('div')
 								;
 
@@ -272,37 +314,15 @@
 									// get result 
 									_response = o.trim(el.body.innerHTML);
 
-									// cleanup
-									if (!data._blob) {
-										form.parentNode.removeChild(form);
-									} else {
-										(function() {
-											var inputs = form.getElementsByTagName('input'), i = inputs.length;
-											while (--i) {
-												if ('hidden' === inputs[i].getAttribute('type')) {
-													inputs[i].parentNode.removeChild(inputs[i]);
-												}
-												inputs[i] = null;
-											}
-										})();
-									}
-									form = null;
-
-									// without timeout, request is marked as canceled (in console)
-									setTimeout(function() { 
-										o.removeEvent(_iframe, 'load', target.uid);
-										if (_iframe.parentNode) { // #382
-											_iframe.parentNode.removeChild(_iframe);
-										}
-										_iframe = null; 
-
+									cleanup.call(this, function() {
 										target.trigger({
 											type: 'uploadprogress',
 											loaded: blob && blob.size || 1025,
 											total: blob && blob.size || 1025
 										});
 										target.trigger('load');
-									}, 1);
+									});
+
 								}, target.uid);
 							} // end createIframe
 
@@ -355,7 +375,7 @@
 								form.submit();
 								target.trigger('loadstart');
 
-								temp = container = null;
+								temp = container = form = null;
 							}
 						},
 
@@ -375,29 +395,26 @@
 						},
 
 						abort: function(upload_complete_flag) {
-							if (_iframe) {
-								if (o.typeOf(_iframe.stop) === 'function') { // FireFox/Safari/Chrome
-									_iframe.stop();
+							var target = this;
+
+							if (_iframe && _iframe.contentWindow) {
+								if (_iframe.contentWindow.stop) { // FireFox/Safari/Chrome
+									_iframe.contentWindow.stop();
+								} else if (_iframe.contentWindow.document.execCommand) { // IE
+									_iframe.contentWindow.document.execCommand('Stop');
 								} else {
-									_iframe.document.execCommand('Stop'); // IE
+									_iframe.src = "about:blank";
 								}
 							}
 
-							this.dispatchEvent('readystatechange');
-							// this.dispatchEvent('progress');
-							this.dispatchEvent('abort');
-							this.dispatchEvent('loadend');
-
-							if (!upload_complete_flag) {
-								// this.dispatchEvent('progress');
-								this.upload.dispatchEvent('abort');
-								this.upload.dispatchEvent('loadend');
-							}
+							cleanup.call(this, function() {
+								// target.dispatchEvent('readystatechange');
+								target.dispatchEvent('abort');
+							});
 						}
 					});
 				}
 			});
-
 		}
 		
 				
