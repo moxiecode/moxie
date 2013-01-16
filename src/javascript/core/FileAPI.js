@@ -24,6 +24,31 @@ var x = o.Exceptions;
 	o.Blob = (function() {
 		
 		function Blob(ruid, blob) {
+
+			function _sliceDetached(start, end, type) {
+				var blob, data = blobpool[this.uid];
+
+				if (o.typeOf(data) !== 'string' || !data.length) {
+					return null; // or throw exception
+				}
+
+				blob = new o.Blob(null, {
+					type: type,
+					size: end - start
+				});
+				blob.detach(data.substr(start, blob.size));
+
+				return blob;
+			}
+
+			function _getRuntime() {
+				if (o.typeOf(o.connectRuntime) !== 'function') {		
+					o.RuntimeClient.call(this);
+				}
+				return this.connectRuntime(this.ruid);
+			}
+
+
 			if (!blob) {
 				blob = {};
 			}
@@ -70,8 +95,10 @@ var x = o.Exceptions;
 				@param {Number} [start=0]
 				*/
 				slice: function(start, end, type) {		
-					var runtime = _getRuntime.call(this);
-					return runtime.exec.call(this, 'Blob', 'slice', this.getSource(), start, end, type);
+					if (this.isDetached()) {
+						return _sliceDetached.apply(this, arguments);
+					}
+					return _getRuntime.call(this).exec.call(this, 'Blob', 'slice', this.getSource(), start, end, type);
 				},
 
 				/**
@@ -133,14 +160,6 @@ var x = o.Exceptions;
 				this.detach(blob.data); // auto-detach if payload has been passed
 			} else {
 				blobpool[this.uid] = blob;	
-			}
-
-
-			function _getRuntime() {
-				if (o.typeOf(o.connectRuntime) !== 'function') {		
-					o.RuntimeClient.call(this);
-				}
-				return this.connectRuntime(this.ruid);
 			}
 		}
 		
