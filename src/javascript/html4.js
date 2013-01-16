@@ -249,8 +249,8 @@
 										hasFile = true; // flag the case for later
 										break;
 								}
-								inputs[i] = null;
 							}
+							inputs = [];
 
 							if (!hasFile) { // we need to keep the form for sake of possible retries
 								form.parentNode.removeChild(form);
