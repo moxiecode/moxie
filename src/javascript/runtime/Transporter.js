@@ -11,15 +11,17 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/Transporter", ["o", "core/utils/encode", "runtime/RuntimeClient"], function(o, encode, RuntimeClient) {
-
+define("moxie/runtime/Transporter", [
+	"moxie/core/utils/Basic",
+	"moxie/core/utils/encode",
+	"moxie/runtime/RuntimeClient"
+], function(o, encode, RuntimeClient) {
 	function Transporter() {
 		var mod, _runtime, _data, _size, _pos, _chunk_size;
 
 		RuntimeClient.call(this);
 
 		o.extend(this, {
-
 			uid: 'uid_' + o.guid(),
 
 			state: Transporter.IDLE,
@@ -34,7 +36,7 @@ define("runtime/Transporter", ["o", "core/utils/encode", "runtime/RuntimeClient"
 				}, options);
 
 				// should divide by three, base64 requires this
-				if (mod = options.chunk_size % 3) {
+				if ((mod = options.chunk_size % 3)) {
 					options.chunk_size += 3 - mod;
 				}
 
@@ -58,12 +60,15 @@ define("runtime/Transporter", ["o", "core/utils/encode", "runtime/RuntimeClient"
 			},
 
 			abort: function() {
-				this.state = Transporter.IDLE;
+				var self = this;
+
+				self.state = Transporter.IDLE;
 				if (_runtime) {
 					_runtime.exec.call(self, 'Transporter', 'clear');
-					this.trigger("TransportingAborted");
+					self.trigger("TransportingAborted");
 				}
-				_reset.call(this);
+
+				_reset.call(self);
 			},
 
 
@@ -97,7 +102,7 @@ define("runtime/Transporter", ["o", "core/utils/encode", "runtime/RuntimeClient"
 				}
 			}, 999);
 
-			self.bind("TransportingComplete", function(e) {
+			self.bind("TransportingComplete", function() {
 				_pos = _size;
 				self.state = Transporter.DONE;
 				_data = null; // clean a bit

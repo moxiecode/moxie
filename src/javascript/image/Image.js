@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
 define("moxie/image/Image", [
@@ -16,8 +16,10 @@ define("moxie/image/Image", [
 		"moxie/core/util/Dom",
 		"moxie/core/Exceptions",
 		"moxie/file/FileReaderSync",
-		"moxie/runtime/RuntimeClient"
-], function(o, dom, x, FileReaderSync, RuntimeClient) {
+		"moxie/runtime/RuntimeClient",
+		"moxie/runtime/Transporter",
+		"moxie/core/util/Env"
+], function(o, dom, x, FileReaderSync, RuntimeClient, Transporter, Env) {
 	var dispatches = [
 		'loadstart',
 		'progress',
@@ -58,7 +60,6 @@ define("moxie/image/Image", [
 		RuntimeClient.call(this);
 		
 		o.extend(this, {
-			
 			/**
 			Unique id of the component
 
@@ -255,7 +256,7 @@ define("moxie/image/Image", [
 			},
 
 			getAsCanvas: function() {
-				if (!o.ua.can('create_canvas')) {
+				if (!Env.can('create_canvas')) {
 					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 				}
 

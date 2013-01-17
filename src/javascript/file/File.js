@@ -12,7 +12,7 @@
 /*global define:true */
 
 define('moxie/file/File', [
-	'moxie/core/util/Basic',
+	'moxie/core/utils/Basic',
 	'moxie/file/Blob'
 ], function(o, Blob) {
 	/**

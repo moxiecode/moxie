@@ -8,13 +8,17 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
+/*global define:true, escape:true */
 
-define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensions"], function(o, R, extensions) {
-	var type = 'flash'
-	, x = o.Exceptions
-	;
+define("runtime/flash/Runtime", [
+	"o",
+	"runtime/Runtime",
+	"moxie/core/Exceptions",
+	"moxie/core/utils/Env",
+	"runtime/flash/extensions"
+], function(o, R, x, Env, extensions) {
+	var type = 'flash';
 
 	/**
 	Constructor for the Flash Runtime
@@ -25,7 +29,7 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 	R.addConstructor(type, (function() {
 
 		function Runtime(options) {
-			var self = this, shimContainer;
+			var self = this;
 
 			/**
 			Get the version of the Flash Player
@@ -64,12 +68,12 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 
 				// if initialized properly, the shim will trigger Init event on widget itself
 				if (!self.initialized) {
-					setTimeout(function() { wait4shim.call(self, ms) }, 1);
+					setTimeout(function() { wait4shim.call(self, ms); }, 1);
 				}
 			}
 
 			// figure out the options
-			defaults = {
+			var defaults = {
 				swf_url: 'js/Moxie.swf'
 			};
 			self.options = options = o.extend({}, defaults, options);
@@ -102,7 +106,7 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 					// insert flash object
 					html = '<object id="' + self.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';
 
-					if (o.ua.browser === 'IE') {
+					if (Env.browser === 'IE') {
 						html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
 					}
 
@@ -113,7 +117,7 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 						'<param name="allowscriptaccess" value="always" />' +
 					'</object>';
 
-					if (o.ua.browser === 'IE') {
+					if (Env.browser === 'IE') {
 						el = document.createElement('div');
 						container.appendChild(el);
 						el.outerHTML = html;
@@ -148,7 +152,7 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 					send_multipart: true,
 					slice_blob: true,
 					stream_upload: function(value) {
-						return !!value & !has_to_urlstream.call(this);
+						return !!value && !has_to_urlstream.call(this);
 					},
 					summon_file_dialog: false,
 					upload_filesize: function(size) {

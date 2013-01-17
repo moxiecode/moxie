@@ -11,8 +11,11 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define('runtime/RuntimeClient', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
-
+define('moxie/runtime/RuntimeTarget', [
+	'moxie/core/utils/Basic',
+	'moxie/runtime/RuntimeClient',
+	"moxie/core/EventTarget"
+], function(o, RuntimeClient, EventTarget) {
 	/**
 	Instance of this class can be used as a target for the events dispatched by shims,
 	when allowing them onto components is for either reason inappropriate
@@ -27,7 +30,7 @@ define('runtime/RuntimeClient', ['o', 'runtime/RuntimeClient'], function(o, Runt
 		RuntimeClient.call(this);
 	}
 
-	RuntimeTarget.prototype = o.eventTarget;
+	RuntimeTarget.prototype = new EventTarget();
 
 	return RuntimeTarget;
 });

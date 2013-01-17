@@ -11,10 +11,12 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/image/ImageInfo", ["o", "runtime/html5/image/JPEG", "runtime/html5/image/PNG"], function(o, JPEG, PNG) {
-
-	var x = o.Exceptions;
-
+define("moxie/runtime/html5/image/ImageInfo", [
+	"moxie/core/utils/Basic",
+	"moxie/core/Exceptions",
+	"moxie/runtime/html5/image/JPEG",
+	"moxie/runtime/html5/image/PNG"
+], function(o, x, JPEG, PNG) {
 	/**
 	Optional image investigation tool for HTML5 runtime. Provides the following features:
 	 - ability to distinguish image type (JPEG or PNG) by signature

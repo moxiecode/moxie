@@ -12,7 +12,7 @@
 /*global define:true */
 
 define('moxie/file/BlobBuilder', [
-	'moxie/core/util/Basic',
+	'moxie/core/utils/Basic',
 	'moxie/core/Exceptions',
 	'moxie/file/Blob',
 	'moxie/file/File',

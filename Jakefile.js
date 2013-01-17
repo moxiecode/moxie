@@ -64,7 +64,10 @@ task("mkjs", [], function () {
 
 	compileAmd({
 		from: [
-			"src/javascript/core/EventTarget.js"
+			"src/javascript/core/**/*.js",
+			"src/javascript/file/**/*.js",
+			"src/javascript/xhr/**/*.js",
+			"src/javascript/runtime/html5/**/*.js"
 		],
 		baseDir: "src/javascript",
 		rootNS: "moxie",

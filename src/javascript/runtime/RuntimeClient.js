@@ -11,8 +11,11 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime/Runtime'], function(x, o, Runtime) {
-
+define('moxie/runtime/RuntimeClient', [
+	'moxie/core/Exceptions',
+	'moxie/core/utils/Basic',
+	'moxie/runtime/Runtime'
+], function(x, o, Runtime) {
 	/**
 	Set of methods and properties, required by a component to acquire ability to connect to a runtime
 

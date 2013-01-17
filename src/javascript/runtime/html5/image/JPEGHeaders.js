@@ -11,9 +11,9 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-
-define("runtime/html5/image/JPEGHeaders", ["runtime/html5/utils/BinaryReader"], function(BinaryReader) {
-
+define("moxie/runtime/html5/image/JPEGHeaders", [
+	"moxie/runtime/html5/utils/BinaryReader"
+], function(BinaryReader) {
 	return function JPEGHeaders(data) {
 		var markers = {
 				0xFFE1: {
@@ -78,7 +78,6 @@ define("runtime/html5/image/JPEGHeaders", ["runtime/html5/utils/BinaryReader"], 
 		read.init(null); // free memory
 
 		return {
-
 			headers: headers,
 
 			restore: function(data) {

@@ -11,8 +11,11 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/events"], function(o, dom, events) {
-
+define("moxie/runtime/html5/file/FileInput", [
+	"moxie/core/utils/Basic",
+	"moxie/core/utils/Dom",
+	"moxie/core/utils/Events"
+], function(o, Dom, Events) {
 	return function() {
 		var _files = [];
 
@@ -30,7 +33,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 				shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;"' +
 										(options.multiple ? 'multiple="multiple"' : '') + ' accept="' + mimes.join(',') + '" />';
 
-				input = o(I.uid);
+				input = Dom.get(I.uid);
 
 				// prepare file input to be placed underneath the browse_button element
 				o.extend(input.style, {
@@ -44,21 +47,20 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 				(function() {
 					var browseButton, zIndex, top;
 
-					browseButton  = o(options.browse_button);
+					browseButton = Dom.get(options.browse_button);
 
 					// Route click event to the input[type=file] element for browsers that support such behavior
 					if (I.can('summon_file_dialog')) {
-
-						if (dom.getStyle(browseButton, 'position') === 'static') {
+						if (Dom.getStyle(browseButton, 'position') === 'static') {
 							browseButton.style.position = 'relative';
 						}
 
-						zIndex = parseInt(dom.getStyle(browseButton, 'z-index'), 10) || 1;
+						zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 1;
 
 						browseButton.style.zIndex = zIndex;
 						shimContainer.style.zIndex = zIndex - 1;
 
-						events.addEvent(browseButton, 'click', function(e) {
+						Events.addEvent(browseButton, 'click', function(e) {
 							if (input && !input.disabled) { // for some reason FF (up to 8.0.1 so far) lets to click disabled input[type=file]
 								input.click();
 							}
@@ -70,24 +72,23 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 					browse_button loses interactivity, so we restore it here */
 					top = I.can('summon_file_dialog') ? browseButton : shimContainer;
 
-					events.addEvent(top, 'mouseover', function() {
+					Events.addEvent(top, 'mouseover', function() {
 						comp.trigger('mouseenter');
 					}, comp.uid);
 
-					events.addEvent(top, 'mouseout', function() {
+					Events.addEvent(top, 'mouseout', function() {
 						comp.trigger('mouseleave');
 					}, comp.uid);
 
-					events.addEvent(top, 'mousedown', function() {
+					Events.addEvent(top, 'mousedown', function() {
 						comp.trigger('mousedown');
 					}, comp.uid);
 
-					events.addEvent(o(options.container), 'mouseup', function() {
+					Events.addEvent(o(options.container), 'mouseup', function() {
 						comp.trigger('mouseup');
 					}, comp.uid);
 
 				}());
-
 
 				input.onchange = function() { // there should be only one handler for this
 					_files = [].slice.call(this.files);
@@ -95,7 +96,6 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 					this.value = '';
 					comp.trigger('change');
 				};
-
 			},
 
 			getFiles: function() {
@@ -104,7 +104,8 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 
 			disable: function(state) {
 				var I = this.getRuntime(), input;
-				if ((input = o(I.uid))) {
+
+				if ((input = Dom.get(I.uid))) {
 					input.disabled = !!state;
 				}
 			}

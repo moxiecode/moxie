@@ -11,8 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], function(BinaryReader) {
-
+define("moxie/runtime/html5/image/ExifParser", [
+	"moxie/core/utils/Basic",
+	"moxie/runtime/html5/utils/BinaryReader"
+], function(o, BinaryReader) {
 	return function() {
 		// Private ExifParser fields
 		var data, tags, offsets = {}, tagDescs;
@@ -290,7 +292,7 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 		}
 
 		function getIFDOffsets() {
-			var Tiff = undefined, idx = offsets.tiffHeader;
+			var Tiff, idx = offsets.tiffHeader;
 
 			// Set read order of multi-byte data
 			data.II(data.SHORT(idx) == 0x4949);
@@ -320,7 +322,7 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 			// If tag name passed translate into hex key
 			if (typeof(tag) === 'string') {
 				var tmpTags = tags[ifd.toLowerCase()];
-				for (hex in tmpTags) {
+				for (var hex in tmpTags) {
 					if (tmpTags[hex] === tag) {
 						tag = hex;
 						break;

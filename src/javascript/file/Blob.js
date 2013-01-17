@@ -12,7 +12,7 @@
 /*global define:true */
 
 define('moxie/file/Blob', [
-	'moxie/core/util/Basic',
+	'moxie/core/utils/Basic',
 	'moxie/runtime/RuntimeClient'
 ], function(o, RuntimeClient) {
 	var blobpool = {};

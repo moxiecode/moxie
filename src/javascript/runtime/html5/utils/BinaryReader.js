@@ -8,11 +8,10 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/utils/BinaryReader", [], function() {
-
+define("moxie/runtime/html5/utils/BinaryReader", [], function() {
 	return function() {
 		var II = false, bin;
 
@@ -28,8 +27,7 @@ define("runtime/html5/utils/BinaryReader", [], function() {
 		}
 
 		function putstr(segment, idx, length) {
-			var length = arguments.length === 3 ? length : bin.length - idx - 1;
-
+			length = arguments.length === 3 ? length : bin.length - idx - 1;
 			bin = bin.substr(0, idx) + segment + bin.substr(length + idx);
 		}
 

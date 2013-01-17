@@ -8,13 +8,16 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
-define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "runtime/html5/image/ImageInfo"], function(o, encode, Blob, ImageInfo) {
-
-	var x = o.Exceptions;
-
+define("moxie/runtime/html5/image/Image", [
+	"moxie/core/utils/Basic",
+	"moxie/core/Exceptions",
+	"moxie/core/utils/Encode",
+	"moxie/file/Blob",
+	"moxie/runtime/html5/image/ImageInfo"
+], function(o, x, Encode, Blob, ImageInfo) {
 	return function() {
 		var I = this.getRuntime(), me = this
 		, _img, _imgInfo, _canvas, _binStr, _srcBlob
@@ -198,15 +201,14 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 
 			destroy: function() {
 				_purge.call(this);
+				// TODO: objpool not defined, why?
 				delete objpool[this.uid];
 			}
 		});
 
-
 		function _convertToBinary(dataUrl) {
-			return encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
+			return Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
 		}
-
 
 		function _loadFromBinaryString(binStr) {
 			var comp = this;
@@ -222,7 +224,8 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 				_binStr = binStr;
 				comp.trigger('load', me.getInfo());
 			};
-			_img.src = 'data:' + (_srcBlob.type || '') + ';base64,' + encode.btoa(binStr);
+
+			_img.src = 'data:' + (_srcBlob.type || '') + ';base64,' + Encode.btoa(binStr);
 		}
 
 		function _loadFromDataUrl(dataUrl) {

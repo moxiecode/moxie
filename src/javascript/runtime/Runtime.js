@@ -8,11 +8,13 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
-define('runtime/Runtime', ["o"], function(o) {
-	var x = o.Exceptions;
+define('moxie/runtime/Runtime', [
+	"moxie/core/utils/Basic",
+	"moxie/core/utils/Dom"
+], function(o, Dom) {
 	var runtimeConstructors = {}, runtimes = {};
 
 	/**
@@ -32,10 +34,8 @@ define('runtime/Runtime', ["o"], function(o) {
 		, shimid =  uid + '_container'
 		;
 
-
 		// public methods
 		o.extend(this, {
-
 			/**
 			Specifies whether runtime instance was initialized or not
 
@@ -96,11 +96,11 @@ define('runtime/Runtime', ["o"], function(o) {
 			@return {DOMElement}
 			*/
 			getShimContainer: function() {
-				var container, shimContainer = o.byId(this.shimid);
+				var container, shimContainer = Dom.get(this.shimid);
 
 				// if no container for shim, create one
 				if (!shimContainer) {
-					container = options.container ? o.byId(options.container) : document.body;
+					container = options.container ? Dom.get(options.container) : document.body;
 
 					// create shim container and insert it at an absolute position into the outer container
 					shimContainer = document.createElement('div');
@@ -132,7 +132,6 @@ define('runtime/Runtime', ["o"], function(o) {
 			getShim: function() {
 				return o.byId(this.uid);
 			},
-
 
 			/**
 			Operaional interface that is used by components to invoke specific actions on the runtime
@@ -197,7 +196,7 @@ define('runtime/Runtime', ["o"], function(o) {
 	Runtime.registerRuntime = function(uid, runtime) {
 		runtimes[uid] = runtime;
 		return runtime;
-	}
+	};
 
 	/**
 	Retrieves runtime from private hash by it's uid
@@ -210,7 +209,7 @@ define('runtime/Runtime', ["o"], function(o) {
 	*/
 	Runtime.getRuntime = function(uid) {
 		return runtimes[uid] ? runtimes[uid] : false;
-	}
+	};
 
 	/**
 	Register constructor for the Runtime of new (or perhaps modified) type
@@ -224,7 +223,6 @@ define('runtime/Runtime', ["o"], function(o) {
 		construct.prototype = o.eventTarget;
 		runtimeConstructors[type] = construct;
 	};
-
 
 	Runtime.getConstructor = function(type) {
 		return runtimeConstructors[type] || null;
@@ -246,8 +244,9 @@ define('runtime/Runtime', ["o"], function(o) {
 				uid: runtime.uid,
 				type: runtime.type,
 				can: runtime.can
-			}
+			};
 		}
+
 		return null;
 	};
 
@@ -309,6 +308,7 @@ define('runtime/Runtime', ["o"], function(o) {
 				o.each(arr, function(key) {
 					obj[key] = true; // since no value supplied, we assume user meant it to be - true
 				});
+
 				return obj;
 			}(cap.split(',')));
 		}
@@ -319,6 +319,7 @@ define('runtime/Runtime', ["o"], function(o) {
 					return false;
 				}
 			}
+
 			return true;
 		}
 
@@ -326,6 +327,7 @@ define('runtime/Runtime', ["o"], function(o) {
 		if (o.typeOf(runtimeCaps[cap]) === 'function') {
 			return runtimeCaps[cap].call(this, value);
 		}
+
 		return runtimeCaps[cap];
 	};
 

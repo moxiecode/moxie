@@ -11,10 +11,11 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/image/PNG", ["o", "runtime/html5/utils/BinaryReader"], function(o, BinaryReader) {
-
-	var x = o.Exceptions;
-
+define("moxie/runtime/html5/image/PNG", [
+	"moxie/core/Exceptions",
+	"moxie/core/utils/Basic",
+	"moxie/runtime/html5/utils/BinaryReader"
+], function(x, o, BinaryReader) {
 	return function PNG(binstr) {
 		var _binstr, _br, _hm, _ep, _info;
 

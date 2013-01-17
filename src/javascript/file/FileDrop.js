@@ -13,7 +13,7 @@
 
 define('moxie/file/FileDrop', [
 	'moxie/core/I18n',
-	'moxie/core/util/Dom',
+	'moxie/core/utils/Dom',
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic',
 	'moxie/file/File',
@@ -93,7 +93,7 @@ define('moxie/file/FileDrop', [
 		});
 	}
 
-	FileDrop.prototype = EventTarget;
+	FileDrop.prototype = new EventTarget();
 
 	return FileDrop;
 });

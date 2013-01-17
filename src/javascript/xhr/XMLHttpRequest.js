@@ -17,10 +17,11 @@ define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/EventTarget",
 	"moxie/core/utils/Encode",
 	"moxie/core/utils/Url",
-	"runtime/RuntimeTarget",
-	"file/Blob",
-	"xhr/FormData"
-], function(o, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData) {
+	"moxie/runtime/RuntimeTarget",
+	"moxie/file/Blob",
+	"moxie/xhr/FormData",
+	"moxie/core/utils/Env"
+], function(o, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData, Env) {
 	var undef;
 
 	var httpCode = {
@@ -85,7 +86,7 @@ define("moxie/xhr/XMLHttpRequest", [
 		this.uid = o.guid('uid_');
 	}
 	
-	XMLHttpRequestUpload.prototype = EventTarget;
+	XMLHttpRequestUpload.prototype = new EventTarget();
 
 	/**
 	Implementation of XMLHttpRequest
@@ -724,9 +725,9 @@ define("moxie/xhr/XMLHttpRequest", [
 				return;
 			}
 			if (arguments.length === 1) { // get
-				return o.ua.can('define_property') ? props[prop] : self[prop];
+				return Env.can('define_property') ? props[prop] : self[prop];
 			} else { // set
-				if (o.ua.can('define_property')) {
+				if (Env.can('define_property')) {
 					props[prop] = value;
 				} else {
 					self[prop] = value;
@@ -753,7 +754,7 @@ define("moxie/xhr/XMLHttpRequest", [
 		}
 		
 		function _getNativeXHR() {
-			if (window.XMLHttpRequest && !(o.ua.browser === 'IE' && o.ua.version < 8)) { // IE7 has native XHR but it's buggy
+			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
 				return new window.XMLHttpRequest();
 			} else {
 				return (function() {
@@ -773,7 +774,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			var rText = xhr.responseText;
 			
 			// Try parsing responseText (@see: http://www.ilinsky.com/articles/XMLHttpRequest/#bugs-ie-responseXML-content-type)
-			if (o.ua.browser === 'IE' && rText && rXML && !rXML.documentElement && /[^\/]+\/[^\+]+\+xml/.test(xhr.getResponseHeader("Content-Type"))) {
+			if (Env.browser === 'IE' && rText && rXML && !rXML.documentElement && /[^\/]+\/[^\+]+\+xml/.test(xhr.getResponseHeader("Content-Type"))) {
 				rXML = new window.ActiveXObject("Microsoft.XMLDOM");
 				rXML.async = false;
 				rXML.validateOnParse = false;
@@ -782,7 +783,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	
 			// Check if there is no error in document
 			if (rXML) {
-				if ((o.ua.browser === 'IE' && rXML.parseError !== 0) || !rXML.documentElement || rXML.documentElement.tagName === "parsererror") {
+				if ((Env.browser === 'IE' && rXML.parseError !== 0) || !rXML.documentElement || rXML.documentElement.tagName === "parsererror") {
 					return null;
 				}
 			}
@@ -1016,7 +1017,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	XMLHttpRequest.LOADING = 3;
 	XMLHttpRequest.DONE = 4;
 	
-	XMLHttpRequest.prototype = EventTarget;
+	XMLHttpRequest.prototype = new EventTarget();
 
 	return XMLHttpRequest;
 });

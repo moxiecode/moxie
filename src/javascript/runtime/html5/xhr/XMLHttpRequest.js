@@ -8,17 +8,22 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
+/*global define:true, unescape:true */
 
-define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/FormData"], function(o, File, Blob, FormData) {
-
+define("moxie/runtime/html5/xhr/XMLHttpRequest", [
+	"moxie/core/utils/Basic",
+	"moxie/file/File",
+	"moxie/file/Blob",
+	"moxie/xhr/FormData",
+	"moxie/core/Exceptions",
+	"moxie/core/utils/Env"
+], function(o, File, Blob, FormData, x, Env) {
 	return function() {
 		var I = this.getRuntime();
 		var _xhr2, filename;
 
 		o.extend(this, {
-
 			send: function(meta, data) {
 				var target = this
 				, mustSendAsBinary = false
@@ -54,7 +59,7 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 						data = _prepareMultipart(data._fields);
 						mustSendAsBinary = true;
 					} else {
-						fd = new window.FormData;
+						fd = new window.FormData();
 
 						o.each(data._fields, function(value, name) {
 							if (value instanceof Blob) {
@@ -68,7 +73,7 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 				}
 
 				if ("" !== meta.responseType) {
-					if ('json' === meta.responseType && !o.ua.can('receive_response_type', 'json')) { // we can fake this one
+					if ('json' === meta.responseType && !Env.can('receive_response_type', 'json')) { // we can fake this one
 						_xhr2.responseType = 'text';
 					} else {
 						_xhr2.responseType = meta.responseType;
@@ -149,7 +154,7 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 							var file = new o.File(I.uid, _xhr2.response);
 							file.name = filename;
 							return file;
-						} else if ('json' === responseType && !o.ua.can('receive_response_type', 'json')) {
+						} else if ('json' === responseType && !Env.can('receive_response_type', 'json')) {
 							return o.JSON.parse(_xhr2.response);
 						} else {
 							return _xhr2.response;
@@ -170,7 +175,6 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 			  boundary = '----moxieboundary' + new Date().getTime()
 			, dashdash = '--'
 			, crlf = '\r\n'
-			, mimeType = ''
 			, src
 			, multipart = ''
 			;

@@ -11,16 +11,13 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/image/JPEG", [
-			"o",
-			"runtime/html5/image/JPEGHeaders",
-			"runtime/html5/utils/BinaryReader",
-			"runtime/html5/image/ExifParser"
-		],
-	function(o, JPEGHeaders, BinaryReader, ExifParser) {
-
-	var x = o.Exceptions;
-
+define("moxie/runtime/html5/image/JPEG", [
+	"moxie/core/utils/Basic",
+	"moxie/core/Exceptions",
+	"moxie/runtime/html5/image/JPEGHeaders",
+	"moxie/runtime/html5/utils/BinaryReader",
+	"moxie/runtime/html5/image/ExifParser"
+], function(o, x, JPEGHeaders, BinaryReader, ExifParser) {
 	return function JPEG(binstr) {
 		var _binstr, _br, _hm, _ep, _info, hasExif;
 
@@ -65,7 +62,6 @@ define("runtime/html5/image/JPEG", [
 		_info = _getDimensions.call(this);
 
 		o.extend(this, {
-
 			type: 'image/jpeg',
 
 			size: _binstr.length,
@@ -94,7 +90,7 @@ define("runtime/html5/image/JPEG", [
 			writeHeaders: function() {
 				if (!arguments.length) {
 					// if no arguments passed, update headers internally
-					return _binstr = _hm.restore(_binstr);
+					return (_binstr = _hm.restore(_binstr));
 				}
 				return _hm.restore(arguments[0]);
 			},
@@ -110,8 +106,6 @@ define("runtime/html5/image/JPEG", [
 				gps: _ep.GPS()
 			};
 		}
-
-
 
 		function _purge() {
 			_ep.purge();

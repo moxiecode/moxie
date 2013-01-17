@@ -11,13 +11,14 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/flash/file/FileReaderSync", ["o", "core/utils/encode"], function(o, encode) {
-
-	function _formatData(data, op, type) {
+define("moxie/runtime/flash/file/FileReaderSync", [
+	"moxie/core/utils/Encode"
+], function(Encode) {
+	function _formatData(data, op) {
 		switch (op) {
 			case 'readAsText':
 			case 'readAsBinaryString':
-				return encode.atob(data);
+				return Encode.atob(data);
 
 			case 'readAsDataURL':
 				return data;

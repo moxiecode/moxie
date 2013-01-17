@@ -8,13 +8,13 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/file/FileReader", ["o"], function(o) {
-
+define("moxie/runtime/html5/file/FileReader", [
+	"moxie/core/utils/Basic"
+], function(o) {
 	return function() {
-
 		this.read = function(op, blob) {
 			var target = this, fr = new window.FileReader();
 
@@ -25,6 +25,7 @@ define("runtime/html5/file/FileReader", ["o"], function(o) {
 					if (!!~o.inArray(e.type, ['progress', 'load'])) {
 						target.result = fr.result;
 					}
+
 					target.trigger(e);
 				}
 

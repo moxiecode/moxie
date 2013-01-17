@@ -11,7 +11,7 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true */
 
-define("image/ImageEditor", [
+define("moxie/image/ImageEditor", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Basic",
 	"runtime/RuntimeClient"

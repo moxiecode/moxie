@@ -11,7 +11,9 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/flash/file/Blob", ["o", "file/Blob"], function(o, Blob) {
+define("moxie/runtime/flash/file/Blob", [
+	"moxie/file/Blob"
+], function(Blob) {
 	return {
 		slice: function(blob, start, end, type) {
 			var self = this.getRuntime();

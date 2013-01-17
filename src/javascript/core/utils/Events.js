@@ -11,7 +11,9 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
+define('moxie/core/utils/Events', [
+	'moxie/core/utils/Basic'
+], function(o) {
 	var eventhash = {}, uid;
 	
 	// IE W3C like event funcs

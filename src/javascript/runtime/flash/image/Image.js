@@ -8,11 +8,14 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
-define("runtime/flash/image/Image", ["o", "runtime/Transporter", "file/Blob", "file/FileReaderSync"], function(o, Transporter, Blob, FileReaderSync) {
-
+define("moxie/runtime/flash/image/Image", [
+	"moxie/runtime/Transporter",
+	"moxie/file/Blob",
+	"moxie/file/FileReaderSync"
+], function(Transporter, Blob, FileReaderSync) {
 	return {
 		loadFromBlob: function(blob) {
 			var comp = this, self = comp.getRuntime();
@@ -32,7 +35,7 @@ define("runtime/flash/image/Image", ["o", "runtime/Transporter", "file/Blob", "f
 			}
 		},
 
-		loadFromImage: function(img, exact) {
+		loadFromImage: function(img) {
 			var self = comp.getRuntime();
 			return self.shimExec.call(this, 'Image', 'loadFromImage', img.uid);
 		},
@@ -47,7 +50,7 @@ define("runtime/flash/image/Image", ["o", "runtime/Transporter", "file/Blob", "f
 			return null;
 		},
 
-		getAsDataURL: function(type, quality) {
+		getAsDataURL: function(type) {
 			var self = comp.getRuntime()
 			, blob = self.Image.getAsBlob.apply(this, arguments)
 			, frs

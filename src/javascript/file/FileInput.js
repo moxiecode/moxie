@@ -14,12 +14,12 @@
 define('moxie/file/FileInput', [
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
-	'moxie/core/utils/dom',
+	'moxie/core/utils/Dom',
 	'moxie/core/I18n',
 	'moxie/file/File',
 	'moxie/runtime/RuntimeClient',
 	'moxie/core/utils/Basic'
-], function(x, EventTarget, dom, I18n, File, RuntimeClient, utils) {
+], function(x, EventTarget, Dom, I18n, File, RuntimeClient, utils) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to o.File objects, to be used in conjunction with _o.Image_, preloaded in memory
@@ -124,7 +124,7 @@ define('moxie/file/FileInput', [
 		}
 
 		// this will help us to find proper default container
-		browseButton = dom.get(options.browse_button);
+		browseButton = Dom.get(options.browse_button);
 		if (!browseButton) {
 			// browse button is required
 			throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
@@ -150,8 +150,8 @@ define('moxie/file/FileInput', [
 		}
 
 		// make container relative, if they're not
-		container = dom.get(options.container);
-		if (dom.getStyle(container, 'position') === 'static') {
+		container = Dom.get(options.container);
+		if (Dom.getStyle(container, 'position') === 'static') {
 			container.style.position = 'relative';
 		}
 		container = browseButton = null; // IE
@@ -195,11 +195,9 @@ define('moxie/file/FileInput', [
 			@method init
 			*/
 			init: function() {
-	
 				self.convertEventPropsToHandlers(dispatches);
 
 				self.bind('RuntimeInit', function(e, runtime) {
-				
 					self.ruid = runtime.uid;
 
 					self.bind("Change", function() {
@@ -218,11 +216,11 @@ define('moxie/file/FileInput', [
 					self.bind('Refresh', function() {
 						var pos, size, browseButton;
 						
-						browseButton = dom.get(options.browse_button);
+						browseButton = Dom.get(options.browse_button);
 
 						if (browseButton) {
-							pos = dom.getPos(browseButton, dom.get(options.container));
-							size = dom.getSize(browseButton);
+							pos = Dom.getPos(browseButton, Dom.get(options.container));
+							size = Dom.getSize(browseButton);
 
 							utils.extend(runtime.getShimContainer().style, {
 								top     : pos.y + 'px',
@@ -233,11 +231,11 @@ define('moxie/file/FileInput', [
 							browseButton = null;
 						}
 					});
+
 					self.trigger('Refresh');
-								
 					self.dispatchEvent('ready');
 				});
-							
+
 				// runtime needs: options.required_features, options.runtime_order and options.container
 				self.connectRuntime(options); // throws RuntimeError
 			},
@@ -257,7 +255,7 @@ define('moxie/file/FileInput', [
 		});
 	}
 
-	FileInput.prototype = EventTarget;
+	FileInput.prototype = new EventTarget();
 
 	return FileInput;
 });

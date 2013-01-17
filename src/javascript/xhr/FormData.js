@@ -11,11 +11,11 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true */
 
-define("xhr/FormData", [
+define("moxie/xhr/FormData", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Basic",
-	"file/Blob",
-	"file/File"
+	"moxie/file/Blob",
+	"moxie/file/File"
 ], function(x, o, Blob, File) {
 	/**
 	FormData

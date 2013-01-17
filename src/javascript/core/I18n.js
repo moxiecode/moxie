@@ -11,7 +11,9 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("moxie/core/I18n", ["moxie/core/utils/Basic"], function(o) {
+define("moxie/core/I18n", [
+	"moxie/core/utils/Basic"
+], function(o) {
 	var i18n = {};
 
 	return {

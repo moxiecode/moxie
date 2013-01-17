@@ -11,27 +11,32 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/events"], function(o, dom, events) {
-
+define("moxie/runtime/html5/file/FileInput", [
+	"moxie/core/utils/Basic",
+	"moxie/core/utils/Dom",
+	"moxie/core/utils/Events",
+	"moxie/core/utils/Env"
+], function(o, Dom, Events, Env) {
 	return function() {
 		var _files = [];
 
 		o.extend(this, {
 			init: function() {
+				// TODO: Options comes from where??
 				var comp = this, I = this.getRuntime(), dropZone = options.container;
 
 				// Safari on Windows has drag/drop problems, so we fake it by moving a input type file
 				// in front of the mouse pointer when we drag into the drop zone
 				// TODO: Remove this logic once Safari has proper drag/drop support
-				if (o.ua.browser === "Safari" && o.ua.OS === "Windows" && o.ua.version < 5.2) {
-					if (dom.getStyle(dropZone, 'position') === 'static') {
+				if (Env.browser === "Safari" && Env.OS === "Windows" && Env.version < 5.2) {
+					if (Dom.getStyle(dropZone, 'position') === 'static') {
 						o.extend(dropZone.style, {
 							position : 'relative'
 						});
 					}
 
-					events.addEvent(dropZone, 'dragenter', function(e) {
-						var dropInput = o(I.uid + "_drop");
+					Events.addEvent(dropZone, 'dragenter', function(e) {
+						var dropInput = Dom.get(I.uid + "_drop");
 
 						e.preventDefault();
 						e.stopPropagation();
@@ -78,7 +83,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 					}, comp.uid);
 
 
-					events.addEvent(dropZone, 'dragleave', function(e) {
+					Events.addEvent(dropZone, 'dragleave', function(e) {
 						var dropInput = o(I.uid + "_drop");
 						if (!dropInput) {
 							dropInput.parentNode.removeChild(dropInput);
@@ -93,27 +98,26 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 					return; // do not proceed farther
 				}
 
-				events.addEvent(dropZone, 'dragover', function(e) {
+				Events.addEvent(dropZone, 'dragover', function(e) {
 					e.preventDefault();
 					e.stopPropagation();
 					e.dataTransfer.dropEffect = 'copy';
 				}, comp.uid);
 
-
-				events.addEvent(dropZone, 'drop', function(e) {
+				Events.addEvent(dropZone, 'drop', function(e) {
 					e.preventDefault();
 					e.stopPropagation();
 					_files = e.dataTransfer.files;
 					comp.trigger("drop");
 				}, comp.uid);
 
-				events.addEvent(dropZone, 'dragenter', function(e) {
+				Events.addEvent(dropZone, 'dragenter', function(e) {
 					e.preventDefault();
 					e.stopPropagation();
 					comp.trigger("dragenter");
 				}, comp.uid);
 
-				events.addEvent(dropZone, 'dragleave', function(e) {
+				Events.addEvent(dropZone, 'dragleave', function(e) {
 					e.preventDefault();
 					e.stopPropagation();
 					comp.trigger("dragleave");

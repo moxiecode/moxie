@@ -8,10 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
-define("runtime/flash/runtime/Transporter", ["file/Blob"], function(Blob) {
+define("moxie/runtime/flash/runtime/Transporter", [
+	"moxie/file/Blob"
+], function(Blob) {
 	return {
 		getAsBlob: function(type) {
 			var self = this.getRuntime()

@@ -8,10 +8,13 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
-define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
+define("moxie/core/utils/Extra", [
+	"moxie/core/utils/Basic",
+	"moxie/core/utils/Env"
+], function(o, Env) {
 	/**
 	Defines property with specified descriptor on an object
 	
@@ -93,7 +96,7 @@ define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
 			return;
 		}
 
-		if (o.ua.can('define_property')) {
+		if (Env.can('define_property')) {
 			if (Object.defineProperty) {
 				return Object.defineProperty(this, prop, o.extend({}, defaults, desc));
 			} else {
