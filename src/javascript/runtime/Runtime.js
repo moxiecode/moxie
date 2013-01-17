@@ -8,6 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define('runtime/Runtime', ["o"], function(o) {
 	var x = o.Exceptions;
 	var runtimeConstructors = {}, runtimes = {};
@@ -19,7 +22,7 @@ define('runtime/Runtime', ["o"], function(o) {
 	*/
 	function Runtime(options, type) {
 		/**
-		Dispatched when runtime is initialized and ready. 
+		Dispatched when runtime is initialized and ready.
 		Triggers RuntimeInit on a connected component.
 
 		@event Init
@@ -28,11 +31,11 @@ define('runtime/Runtime', ["o"], function(o) {
 		, uid = o.guid(type + '_')
 		, shimid =  uid + '_container'
 		;
-			
-			
-		// public methods				
+
+
+		// public methods
 		o.extend(this, {
-			
+
 			/**
 			Specifies whether runtime instance was initialized or not
 
@@ -41,7 +44,7 @@ define('runtime/Runtime', ["o"], function(o) {
 			@default false
 			*/
 			initialized: false, // shims require this flag to stop initialization retries
-			
+
 			/**
 			Unique ID of the runtime
 
@@ -49,7 +52,7 @@ define('runtime/Runtime', ["o"], function(o) {
 			@type {String}
 			*/
 			uid: uid,
-			
+
 			/**
 			Runtime type (e.g. flash, html5, etc)
 
@@ -57,13 +60,13 @@ define('runtime/Runtime', ["o"], function(o) {
 			@type {String}
 			*/
 			type: type,
-			
+
 			/**
 			id of the DOM container for the runtime (if available)
 
 			@property shimid
 			@type {String}
-			*/				
+			*/
 			shimid: shimid,
 
 			/**
@@ -79,31 +82,31 @@ define('runtime/Runtime', ["o"], function(o) {
 
 			@method can
 			@param {String} cap Name of capability to check
-			@param {Mixed} [value] If passed, capability should somehow correlate to the value 
+			@param {Mixed} [value] If passed, capability should somehow correlate to the value
 			@return {Boolean} true if runtime has such capability and false, if - not
 			*/
 			can: function() {
 				return self.constructor.can.apply(self, arguments);
 			},
-			
+
 			/**
 			Returns container for the runtime as DOM element
 
-			@method getShimContainer 
-			@return {DOMElement} 
+			@method getShimContainer
+			@return {DOMElement}
 			*/
 			getShimContainer: function() {
 				var container, shimContainer = o.byId(this.shimid);
 
 				// if no container for shim, create one
 				if (!shimContainer) {
-					container = options.container ? o.byId(options.container) : document.body;	
-						
+					container = options.container ? o.byId(options.container) : document.body;
+
 					// create shim container and insert it at an absolute position into the outer container
 					shimContainer = document.createElement('div');
 					shimContainer.id = this.shimid;
 					shimContainer.className = 'mxi-shim mxi-shim-' + type;
-					
+
 					o.extend(shimContainer.style, {
 						position: 'absolute',
 						top: '0px',
@@ -112,14 +115,14 @@ define('runtime/Runtime', ["o"], function(o) {
 						height: '1px',
 						overflow: 'hidden'
 					});
-					
-					container.appendChild(shimContainer);	
+
+					container.appendChild(shimContainer);
 					container = null;
 				}
 
 				return shimContainer;
 			},
-			
+
 			/**
 			Returns runtime as DOM element (if appropriate)
 
@@ -130,7 +133,7 @@ define('runtime/Runtime', ["o"], function(o) {
 				return o.byId(this.uid);
 			},
 
-			
+
 			/**
 			Operaional interface that is used by components to invoke specific actions on the runtime
 			(is invoked in the scope of component)
@@ -142,7 +145,7 @@ define('runtime/Runtime', ["o"], function(o) {
 			*/
 			exec: function(component, action) { // this is called in the context of component, not runtime
 				var args = [].slice.call(arguments, 2);
-				
+
 				if (self[component] && self[component][action]) {
 					return self[component][action].apply(this, args);
 				}
@@ -159,9 +162,9 @@ define('runtime/Runtime', ["o"], function(o) {
 			*/
 			shimExec: function(component, action) {
 				var args = [].slice.call(arguments, 2);
-				return self.getShim().exec(this.uid, component, action, args);	
+				return self.getShim().exec(this.uid, component, action, args);
 			},
-			
+
 			/**
 			Destroys the runtime (removes all events and deletes DOM structures)
 
@@ -172,13 +175,13 @@ define('runtime/Runtime', ["o"], function(o) {
 				if (shimContainer) {
 					shimContainer.parentNode.removeChild(shimContainer);
 					shimContainer = null;
-				}			
+				}
 
 				this.unbindAll();
 				delete runtimes[this.uid];
 			}
-			
-		});		
+
+		});
 	}
 
 	/**
@@ -191,11 +194,11 @@ define('runtime/Runtime', ["o"], function(o) {
 	@param {Runtime} runtime Runtime object to register
 	@return {Runtime}
 	*/
-	Runtime.registerRuntime = function(uid, runtime) {			
+	Runtime.registerRuntime = function(uid, runtime) {
 		runtimes[uid] = runtime;
 		return runtime;
 	}
-		
+
 	/**
 	Retrieves runtime from private hash by it's uid
 
@@ -204,9 +207,9 @@ define('runtime/Runtime', ["o"], function(o) {
 	@static
 	@param {String} uid Unique identifier of the runtime
 	@return {Runtime|Boolean} Returns runtime, if it exists and false, if - not
-	*/		
+	*/
 	Runtime.getRuntime = function(uid) {
-		return runtimes[uid] ? runtimes[uid] : false;	
+		return runtimes[uid] ? runtimes[uid] : false;
 	}
 
 	/**
@@ -218,7 +221,7 @@ define('runtime/Runtime', ["o"], function(o) {
 	@param {Function} construct Constructor function for the Runtime
 	*/
 	Runtime.addConstructor = function(type, construct) {
-		construct.prototype = o.eventTarget;	
+		construct.prototype = o.eventTarget;
 		runtimeConstructors[type] = construct;
 	};
 
@@ -237,7 +240,7 @@ define('runtime/Runtime', ["o"], function(o) {
 	*/
 	Runtime.getInfo = function(uid) {
 		var runtime = Runtime.getRuntime(uid);
-		
+
 		if (runtime) {
 			return {
 				uid: runtime.uid,
@@ -277,7 +280,7 @@ define('runtime/Runtime', ["o"], function(o) {
 		send_binary_string: false,
 		send_multipart: true,
 		slice_blob: false,
-		stream_upload: false,	
+		stream_upload: false,
 		summon_file_dialog: false,
 		upload_filesize: true,
 		use_http_method: true
@@ -312,19 +315,19 @@ define('runtime/Runtime', ["o"], function(o) {
 
 		if (o.typeOf(cap) === 'object') {
 			for (var key in cap) {
-				if (!Runtime.can.call(this, runtimeCaps, key, cap[key])) { 
+				if (!Runtime.can.call(this, runtimeCaps, key, cap[key])) {
 					return false;
 				}
 			}
 			return true;
 		}
 
-		// check the individual cap	
+		// check the individual cap
 		if (o.typeOf(runtimeCaps[cap]) === 'function') {
 			return runtimeCaps[cap].call(this, value);
 		}
 		return runtimeCaps[cap];
 	};
-		
+
 	return Runtime;
 });

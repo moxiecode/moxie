@@ -1,8 +1,21 @@
+/**
+ * RunTime.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverlight/extensions"], function(o, R, extensions) {
 	var type = 'silverlight'
 	, x = o.Exceptions
 	;
-	
+
 	/**
 	Constructor for the Flash Runtime
 
@@ -10,12 +23,12 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 	@extends Runtime
 	*/
 	R.addConstructor(type, (function() {
-		
-		function Runtime(options) {	
-			var self = this, shimContainer;
-						
+
+		function Runtime(options) {
+			var self = this;
+
 			function isInstalled(version) {
-				var isVersionSupported = false, container = null, control = null, actualVer,
+				var isVersionSupported = false, control = null, actualVer,
 					actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
 
 				try {
@@ -70,50 +83,50 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 
 				return isVersionSupported;
 			}
-			
+
 			function wait4shim(ms) {
 				if ( wait4shim.counter === undefined ) {
 					wait4shim.counter = 0; // initialize static variable
 				}
-				
+
 				// wait for ms/1000 sec(s)
 				if (wait4shim.counter++ > ms) {
 					self.destroy();
 					throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 				}
-			
-				// if initialized properly, the shim will trigger Init event on widget itself 
+
+				// if initialized properly, the shim will trigger Init event on widget itself
 				if (!self.initialized) {
-					setTimeout(function() { wait4shim.call(self, ms) }, 1);
+					setTimeout(function() { wait4shim.call(self, ms); }, 1);
 				}
 			}
-			
-			// figure out the options	
-			defaults = {
+
+			// figure out the options
+			var defaults = {
 				xap_url: 'js/Moxie.xap'
 			};
-			self.options = options = o.extend({}, defaults, options);			
-			
+			self.options = options = o.extend({}, defaults, options);
+
 			R.apply(this, [options, arguments[1] || type]);
-			
+
 			o.extend(this, {
-					
+
 				getShim: function() {
 					return o(this.uid).content.Moxie;
 				},
-					
-				init : function() {	
-					var html, el, container;
-							
+
+				init : function() {
+					var container;
+
 					// minimal requirement Flash Player 10
 					if (!isInstalled('2.0.31005.0') || o.ua.browser === 'Opera') {
 						self.destroy();
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 					}
-					
+
 					container = self.getShimContainer();
 
-					container.innerHTML = '<object id="' + self.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +	
+					container.innerHTML = '<object id="' + self.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
 						'<param name="source" value="' + options.xap_url + '"/>' +
 						'<param name="background" value="Transparent"/>' +
 						'<param name="windowless" value="true"/>' +
@@ -121,12 +134,12 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 						'<param name="initParams" value="uid=' + self.uid + '"/>' +
 					'</object>';
 
-					wait4shim(10000); // Init will be dispatched by the shim	
+					wait4shim(10000); // Init will be dispatched by the shim
 				}
 			}, extensions);
 		}
-		
-				
+
+
 		Runtime.can = (function() {
 			var caps = o.extend({}, R.caps, {
 					access_binary: true,
@@ -169,7 +182,7 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 			}
 			return can;
 		}());
-		
+
 		return Runtime;
-	}()));	
+	}()));
 });

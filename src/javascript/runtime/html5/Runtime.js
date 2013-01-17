@@ -1,29 +1,42 @@
+/**
+ * Runtime.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensions"], function(o, R, extensions) {
 	var x = o.Exceptions;
 	var type = 'html5';
-	
+
 	R.addConstructor(type, (function() {
-		
-		function Runtime(options) {	
+
+		function Runtime(options) {
 			var I = this,
 			// allow to extend this runtime
 
-			// figure out the options	
+			// figure out the options
 			defaults = {
-			
+
 			};
-			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;			
-			
+			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;
+
 			R.apply(this, [options, arguments[1] || type]);
-			
+
 			o.extend(this, {
-					
-				init : function() {	
+
+				init : function() {
 					if (!window.File) { // minimal requirement
 						I.destroy();
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
-					}	
-					I.trigger("Init");			
+					}
+					I.trigger("Init");
 				},
 
 				getShim: function() {
@@ -58,17 +71,17 @@ define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensio
 
 						return obj[fn].apply(this, args);
 					}
-				}
+				};
 			}()), extensions);
 		}
-		
-				
+
+
 		Runtime.can = (function() {
-			var caps = o.extend({}, R.caps, {  
-					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),		
+			var caps = o.extend({}, R.caps, {
+					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
 					access_image_binary: function() {
 						return can('access_binary') && !!o.ImageInfo;
-					},		
+					},
 					display_media: o.ua.can('create_canvas') || o.ua.can('use_data_uri_over32kb'),
 					drag_and_drop: (function() {
 						// this comes directly from Modernizr: http://www.modernizr.com/
@@ -89,7 +102,7 @@ define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensio
 						return can('access_binary') && o.ua.can('create_canvas');
 					},
 					select_multiple: !(o.ua.browser === 'Safari' && o.ua.os === 'Windows'),
-					send_binary_string: 
+					send_binary_string:
 						!!(window.XMLHttpRequest && ((new XMLHttpRequest).sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 					send_custom_headers: !!window.XMLHttpRequest,
 					send_multipart: function() {
@@ -100,8 +113,8 @@ define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensio
 						return can('slice_blob') && can('send_multipart');
 					},
 					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
-						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4)	|| 
-								(o.ua.browser === 'Opera' && o.ua.version >= 12)	|| 
+						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4)	||
+								(o.ua.browser === 'Opera' && o.ua.version >= 12)	||
 								!!~o.inArray(o.ua.browser, ['Chrome', 'Safari']);
 					}()),
 					upload_filesize: true
@@ -114,8 +127,8 @@ define("runtime/html5/Runtime", ["o", "runtime/Runtime", "runtime/html5/extensio
 			}
 			return can;
 		}());
-		
+
 		return Runtime;
-	}()));	
+	}()));
 
 });

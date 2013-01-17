@@ -1,3 +1,16 @@
+/**
+ * XMLHttpRequest.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/FormData"], function(o, File, Blob, FormData) {
 
 	return function() {
@@ -5,14 +18,14 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 		var _xhr2, filename;
 
 		o.extend(this, {
-			
+
 			send: function(meta, data) {
 				var target = this
 				, mustSendAsBinary = false
 				, fd
 				;
 
-				_xhr2 = new window.XMLHttpRequest;
+				_xhr2 = new window.XMLHttpRequest();
 
 				// extract file name
 				filename = meta.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase();
@@ -25,11 +38,11 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 						_xhr2.setRequestHeader(header, value);
 					});
 				}
-					
-				// prepare data to be sent and convert if required	
+
+				// prepare data to be sent and convert if required
 				if (data instanceof Blob) {
 					if (data.isDetached()) {
-						// if blob contains binary string, we have to manually build multipart blob 
+						// if blob contains binary string, we have to manually build multipart blob
 						data = _prepareMultipart({ Filedata: data });
 						mustSendAsBinary = true;
 					} else {
@@ -66,7 +79,7 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 				(function() {
 					var events = ['loadstart', 'progress', 'abort', 'error', 'load', 'timeout'];
 
-					function reDispatch(e) {										
+					function reDispatch(e) {
 						target.trigger(e);
 					}
 
@@ -99,10 +112,10 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 					}
 
 					_xhr2.addEventListener('loadend', removeEventListeners);
-				}());		
+				}());
 
-						
-				// send ...		
+
+				// send ...
 				if (!mustSendAsBinary) {
 					_xhr2.send(data);
 				} else {
@@ -153,7 +166,7 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 		});
 
 		function _prepareMultipart(params) {
-			var 
+			var
 			  boundary = '----moxieboundary' + new Date().getTime()
 			, dashdash = '--'
 			, crlf = '\r\n'
@@ -180,7 +193,7 @@ define("runtime/html5/xhr/XMLHttpRequest", ["o", "file/File", "file/Blob", "xhr/
 							'Content-Type: ' + value.type + crlf + crlf +
 							src + crlf;
 					} else {
-						multipart += dashdash + boundary + crlf + 
+						multipart += dashdash + boundary + crlf +
 							'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf +
 							unescape(encodeURIComponent(value)) + crlf;
 					}

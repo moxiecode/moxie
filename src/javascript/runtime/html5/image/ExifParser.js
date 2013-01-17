@@ -1,5 +1,18 @@
+/**
+ * ExifParser.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], function(BinaryReader) {
-	
+
 	return function() {
 		// Private ExifParser fields
 		var data, tags, offsets = {}, tagDescs;
@@ -286,7 +299,7 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 			if (data.SHORT(idx+=2) !== 0x002A) {
 				return false;
 			}
-		
+
 			offsets['IFD0'] = offsets.tiffHeader + data.LONG(idx += 2);
 			Tiff = extractTags(offsets['IFD0'], tags.tiff);
 
@@ -299,25 +312,25 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 			}
 			return true;
 		}
-		
+
 		// At the moment only setting of simple (LONG) values, that do not require offset recalculation, is supported
 		function setTag(ifd, tag, value) {
 			var offset, length, tagOffset, valueOffset = 0;
-			
+
 			// If tag name passed translate into hex key
 			if (typeof(tag) === 'string') {
 				var tmpTags = tags[ifd.toLowerCase()];
 				for (hex in tmpTags) {
 					if (tmpTags[hex] === tag) {
 						tag = hex;
-						break;	
+						break;
 					}
 				}
 			}
 			offset = offsets[ifd.toLowerCase() + 'IFD'];
 			length = data.SHORT(offset);
-						
-			for (i = 0; i < length; i++) {
+
+			for (var i = 0; i < length; i++) {
 				tagOffset = offset + 12 * i + 2;
 
 				if (data.SHORT(tagOffset) == tag) {
@@ -325,14 +338,15 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 					break;
 				}
 			}
-			
-			if (!valueOffset) return false;
 
-			
+			if (!valueOffset) {
+				return false;
+			}
+
 			data.LONG(valueOffset, value);
 			return true;
 		}
-		
+
 
 		// Public functions
 		return {
@@ -341,7 +355,7 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 				offsets = {
 					tiffHeader: 10
 				};
-				
+
 				if (segment === undefined || !segment.length) {
 					return false;
 				}
@@ -354,17 +368,17 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 				}
 				return false;
 			},
-			
+
 			EXIF: function() {
 				var Exif;
-				
+
 				// Populate EXIF hash
 				Exif = extractTags(offsets.exifIFD, tags.exif);
 
 				// Fix formatting of some tags
 				if (Exif.ExifVersion && o.typeOf(Exif.ExifVersion) === 'array') {
 					for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
-						exifVersion += String.fromCharCode(Exif.ExifVersion[i]);	
+						exifVersion += String.fromCharCode(Exif.ExifVersion[i]);
 					}
 					Exif.ExifVersion = exifVersion;
 				}
@@ -374,21 +388,21 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 
 			GPS: function() {
 				var GPS;
-				
+
 				GPS = extractTags(offsets.gpsIFD, tags.gps);
-				
+
 				// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
-				if (GPS.GPSVersionID && o.typeOf(GPS.GPSVersionID) === 'array') { 
+				if (GPS.GPSVersionID && o.typeOf(GPS.GPSVersionID) === 'array') {
 					GPS.GPSVersionID = GPS.GPSVersionID.join('.');
 				}
 
 				return GPS;
 			},
-			
+
 			setExif: function(tag, value) {
 				// Right now only setting of width/height is possible
-				if (tag !== 'PixelXDimension' && tag !== 'PixelYDimension') return false;
-				
+				if (tag !== 'PixelXDimension' && tag !== 'PixelYDimension') {return false;}
+
 				return setTag('exif', tag, value);
 			},
 
@@ -401,5 +415,5 @@ define("runtime/html5/image/ExifParser", ["runtime/html5/utils/BinaryReader"], f
 				data.init(null);
 			}
 		};
-	};	
+	};
 });

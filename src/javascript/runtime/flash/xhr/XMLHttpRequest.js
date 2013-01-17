@@ -1,11 +1,24 @@
+/**
+ * XMLHttpRequest.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/flash/xhr/XMLHttpRequest", [
-		"o", 
-		"file/Blob", 
+		"o",
+		"file/Blob",
 		"file/File",
 		"file/FileReaderSync",
-		"xhr/FormData", 
+		"xhr/FormData",
 		"runtime/Transporter"
-	], 
+	],
 	function(o, Blob, File, FileReaderSync, FormData, Transporter) {
 
 	return {
@@ -23,7 +36,7 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 			}
 
 			function attachBlob(name, blob) {
-				var tr = new Transporter;
+				var tr = new Transporter();
 
 				tr.bind("TransportingComplete", function() {
 					appendBlob(name, this.result);
@@ -43,7 +56,7 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 
 
 			// transfer over multipart params and blob itself
-			if (data instanceof FormData) { 
+			if (data instanceof FormData) {
 				o.each(data._fields, function(value, name) {
 					if (!(value instanceof Blob)) {
 						self.shimExec.call(target, 'XMLHttpRequest', 'append', name, value.toString());
@@ -62,14 +75,14 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 					}
 				}
 			} else if (data instanceof o.Blob) {
-				data = data.uid; // something wrong here									
+				data = data.uid; // something wrong here
 			} else {
 				send();
-			}												
+			}
 		},
 
 		getResponse: function(responseType) {
-			var blob, response, self = this.getRuntime();
+			var blob, self = this.getRuntime();
 
 			blob = self.shimExec.call(this, 'XMLHttpRequest', 'getResponseAsBlob');
 
@@ -79,22 +92,23 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 				if ('blob' === responseType) {
 					return blob;
 				} else if (!!~o.inArray(responseType, ["", "text"])) {
-					var frs = new FileReaderSync;
+					var frs = new FileReaderSync();
 					return frs.readAsText(blob);
 				} else if ('arraybuffer' === responseType) {
 
 					// do something
-				
+
 				} else if ('json' === responseType) {
-					var frs = new FileReaderSync;
+					var frs = new FileReaderSync();
 
 					this.bind('Exception', function(e, err) {
 						// throw JSON parse error
+						// TODO: This should not log to console.info
 						console.info(err);
 					});
 
 					return o.JSON.parse(frs.readAsText(blob));
-				} 
+				}
 			}
 			return null;
 		},

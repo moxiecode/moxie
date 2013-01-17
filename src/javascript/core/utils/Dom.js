@@ -1,5 +1,5 @@
 /**
- * dom.js
+ * Dom.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -22,7 +22,7 @@ define('moxie/core/utils/Dom', [], function() {
 
 	/**
 	Checks if specified DOM element has specified class.
-	
+
 	@method hasClass
 	@static
 	@param {Object} obj DOM element like object to add handler to.
@@ -30,7 +30,7 @@ define('moxie/core/utils/Dom', [], function() {
 	*/
 	var hasClass = function(obj, name) {
 		var regExp;
-	
+
 		if (obj.className === '') {
 			return false;
 		}
@@ -42,7 +42,7 @@ define('moxie/core/utils/Dom', [], function() {
 
 	/**
 	Adds specified className to specified DOM element.
-	
+
 	@method addClass
 	@static
 	@param {Object} obj DOM element like object to add handler to.
@@ -56,7 +56,7 @@ define('moxie/core/utils/Dom', [], function() {
 
 	/**
 	Removes specified className from specified DOM element.
-	
+
 	@method removeClass
 	@static
 	@param {Object} obj DOM element like object to add handler to.
@@ -64,7 +64,7 @@ define('moxie/core/utils/Dom', [], function() {
 	*/
 	var removeClass = function(obj, name) {
 		var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
-		
+
 		obj.className = obj.className.replace(regExp, function($0, $1, $2) {
 			return $1 === ' ' && $2 === ' ' ? ' ' : '';
 		});
@@ -72,7 +72,7 @@ define('moxie/core/utils/Dom', [], function() {
 
 	/**
 	Returns a given computed style of a DOM element.
-	
+
 	@method getStyle
 	@static
 	@param {Object} obj DOM element like object.
@@ -86,10 +86,10 @@ define('moxie/core/utils/Dom', [], function() {
 		}
 	};
 
-	
+
 	/**
 	Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
-	
+
 	@method getPos
 	@static
 	@param {Element} node HTML element or element id to get x, y position from.
@@ -152,7 +152,7 @@ define('moxie/core/utils/Dom', [], function() {
 
 	/**
 	Returns the size of the specified node in pixels.
-	
+
 	@method getSize
 	@static
 	@param {Node} node Node to get the size of.

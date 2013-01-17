@@ -1,3 +1,16 @@
+/**
+ * XMLHttpRequest.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob", "xhr/FormData"], function(o, events, Blob, FormData) {
 
 	var x = o.Exceptions;
@@ -18,7 +31,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 			if (form) {
 				inputs = form.getElementsByTagName('input');
 				i = inputs.length;
-				
+
 				while (i--) {
 					switch (inputs[i].getAttribute('type')) {
 						case 'hidden':
@@ -38,18 +51,18 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 			}
 
 			// without timeout, request is marked as canceled (in console)
-			setTimeout(function() { 
+			setTimeout(function() {
 				events.removeEvent(_iframe, 'load', target.uid);
 				if (_iframe.parentNode) { // #382
 					_iframe.parentNode.removeChild(_iframe);
 				}
-				_iframe = null; 
+				_iframe = null;
 				cb();
 			}, 1);
 		}
 
 		o.extend(this, {
-				
+
 			send: function(meta, data) {
 				var target = this, I = target.getRuntime(), uid, form, input, blob;
 
@@ -90,7 +103,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 							return;
 						}
 
-						// get result 
+						// get result
 						_response = o.trim(el.body.innerHTML);
 
 						cleanup.call(this, function() {
@@ -104,7 +117,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 					}, target.uid);
 				} // end createIframe
 
-				// prepare data to be sent and convert if required	
+				// prepare data to be sent and convert if required
 				if (data instanceof FormData) {
 					if (data._blob) {
 						blob = data._fields[data._blob];
@@ -123,7 +136,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 						form.setAttribute('enctype', 'multipart/form-data');
 						form.setAttribute('encoding', 'multipart/form-data');
 						form.setAttribute("target", uid + '_iframe');
-						
+
 
 						//form.style.position = 'absolute';
 					}

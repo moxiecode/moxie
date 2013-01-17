@@ -1,3 +1,16 @@
+/**
+ * BinaryReader.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html5/utils/BinaryReader", [], function() {
 
 	return function() {
@@ -16,7 +29,7 @@ define("runtime/html5/utils/BinaryReader", [], function() {
 
 		function putstr(segment, idx, length) {
 			var length = arguments.length === 3 ? length : bin.length - idx - 1;
-			
+
 			bin = bin.substr(0, idx) + segment + bin.substr(length + idx);
 		}
 
@@ -45,16 +58,16 @@ define("runtime/html5/utils/BinaryReader", [], function() {
 				bin = binData;
 			},
 
-			SEGMENT: function(idx, length, segment) {				
+			SEGMENT: function(idx, length, segment) {
 				switch (arguments.length) {
-					case 1: 
+					case 1:
 						return bin.substr(idx, bin.length - idx - 1);
-					case 2: 
+					case 2:
 						return bin.substr(idx, length);
-					case 3: 
+					case 3:
 						putstr(segment, idx, length);
 						break;
-					default: return bin;	
+					default: return bin;
 				}
 			},
 
@@ -90,5 +103,5 @@ define("runtime/html5/utils/BinaryReader", [], function() {
 				return str;
 			}
 		};
-	}
+	};
 });

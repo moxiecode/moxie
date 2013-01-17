@@ -7,6 +7,10 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define('runtime/RuntimeClient', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
 
 	/**
@@ -19,11 +23,11 @@ define('runtime/RuntimeClient', ['o', 'runtime/RuntimeClient'], function(o, Runt
 	@extends EventTarget
 	*/
 	function RuntimeTarget() {
-		this.uid = o.guid('uid_');	
+		this.uid = o.guid('uid_');
 		RuntimeClient.call(this);
 	}
-		
+
 	RuntimeTarget.prototype = o.eventTarget;
-		
-	return RuntimeTarget;		
+
+	return RuntimeTarget;
 });

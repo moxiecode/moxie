@@ -1,3 +1,16 @@
+/**
+ * Image.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "runtime/html5/image/ImageInfo"], function(o, encode, Blob, ImageInfo) {
 
 	var x = o.Exceptions;
@@ -6,7 +19,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 		var I = this.getRuntime(), me = this
 		, _img, _imgInfo, _canvas, _binStr, _srcBlob
 		, _modified = false // is set true whenever image is modified
-		; 
+		;
 
 		o.extend(me, {
 			loadFromBlob: function(blob, asBinary) {
@@ -36,7 +49,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 							_loadFromDataUrl.call(comp, data);
 						});
 					}
-				}								
+				}
 			},
 
 			loadFromImage: function(img, exact) {
@@ -76,14 +89,14 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 
 			resize: function() {
 				if (!_img) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 				_resize.apply(this, arguments);
 			},
 
 			getAsImage: function() {
 				if (!_img) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 				_img.id = this.uid + '_img';
 				return _img;
@@ -91,7 +104,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 
 			getAsCanvas: function() {
 				if (!_canvas) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 				_canvas.id = this.uid + '_canvas';
 				return _canvas;
@@ -129,26 +142,26 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 				} else {
 					try {
 						// older Geckos used to result in an exception on quality argument
-						return _canvas.toDataURL('image/jpeg', quality/100);	
+						return _canvas.toDataURL('image/jpeg', quality/100);
 					} catch (ex) {
-						return _canvas.toDataURL('image/jpeg');	
+						return _canvas.toDataURL('image/jpeg');
 					}
 				}
 			},
 
-			getAsBinaryString: function(type, quality) {								
+			getAsBinaryString: function(type, quality) {
 				// if image has not been modified, return the source right away
 				if (!_modified) {
 					// if image was not loaded from binary string
 					if (!_binStr) {
-						_binStr = _convertToBinary(me.getAsDataURL(type, quality));	
+						_binStr = _convertToBinary(me.getAsDataURL(type, quality));
 					}
 					return _binStr;
 				}
 
 				if ('image/jpeg' !== type) {
 					_binStr = _convertToBinary(me.getAsDataURL(type, quality));
-				} else { 
+				} else {
 					var dataUrl;
 
 					// if jpeg
@@ -158,9 +171,9 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 
 					try {
 						// older Geckos used to result in an exception on quality argument
-						dataUrl = _canvas.toDataURL('image/jpeg', quality/100);	
+						dataUrl = _canvas.toDataURL('image/jpeg', quality/100);
 					} catch (ex) {
-						dataUrl = _canvas.toDataURL('image/jpeg');	
+						dataUrl = _canvas.toDataURL('image/jpeg');
 					}
 
 					_binStr = _convertToBinary(dataUrl);
@@ -177,9 +190,9 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 						_binStr = _imgInfo.writeHeaders(_binStr);
 					}
 				}
-				
+
 				_modified = false;
-				
+
 				return _binStr;
 			},
 
@@ -189,18 +202,18 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 			}
 		});
 
-		
+
 		function _convertToBinary(dataUrl) {
 			return encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
 		}
-		
-		
+
+
 		function _loadFromBinaryString(binStr) {
-			var comp = this, info;
+			var comp = this;
 
 			_purge.call(this);
 
-			_img = new Image;
+			_img = new Image();
 			_img.onerror = function() {
 				_purge.call(this);
 				throw new x.ImageError(x.ImageError.WRONG_FORMAT);
@@ -215,7 +228,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 		function _loadFromDataUrl(dataUrl) {
 			var comp = this;
 
-			_img = new Image;
+			_img = new Image();
 			_img.onerror = function() {
 				_purge.call(this);
 				throw new x.ImageError(x.ImageError.WRONG_FORMAT);
@@ -231,7 +244,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 
 			// use FileReader if it's available
 			if (window.FileReader) {
-				fr = new FileReader;
+				fr = new FileReader();
 				fr.onload = function() {
 					callback(fr.result);
 				};
@@ -246,7 +259,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 
 			// use FileReader if it's available
 			if (window.FileReader) {
-				fr = new FileReader;
+				fr = new FileReader();
 				fr.onload = function() {
 					callback(fr.result);
 				};
@@ -267,7 +280,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 
 			// we only downsize here
 			if (scale > 1) {
-				this.trigger('Resize'); 
+				this.trigger('Resize');
 				return;
 			}
 
@@ -275,7 +288,7 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 			if (!_canvas) {
 				_canvas = document.createElement("canvas");
 			}
-			
+
 			ctx = _canvas.getContext('2d');
 
 			// scale image and canvas
@@ -291,9 +304,9 @@ define("runtime/html5/image/Image", ["o", "core/utils/encode", "file/Blob", "run
 			ctx.drawImage(_img, 0, 0, imgWidth, imgHeight);
 
 			_modified = true;
-			this.trigger('Resize', { 
-				width: crop ? width : imgWidth, 
-				height: crop ? height : imgHeight 
+			this.trigger('Resize', {
+				width: crop ? width : imgWidth,
+				height: crop ? height : imgHeight
 			});
 		}
 

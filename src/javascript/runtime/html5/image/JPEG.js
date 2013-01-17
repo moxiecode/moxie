@@ -1,15 +1,48 @@
+/**
+ * JPEG.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html5/image/JPEG", [
-			"o", 
-			"runtime/html5/image/JPEGHeaders", 
-			"runtime/html5/utils/BinaryReader", 
+			"o",
+			"runtime/html5/image/JPEGHeaders",
+			"runtime/html5/utils/BinaryReader",
 			"runtime/html5/image/ExifParser"
-		], 
+		],
 	function(o, JPEGHeaders, BinaryReader, ExifParser) {
 
 	var x = o.Exceptions;
 
 	return function JPEG(binstr) {
 		var _binstr, _br, _hm, _ep, _info, hasExif;
+
+		function _getDimensions() {
+			var idx = 0, marker, length;
+
+			// examine all through the end, since some images might have very large APP segments
+			while (idx <= _binstr.length) {
+				marker = _br.SHORT(idx += 2);
+
+				if (marker >= 0xFFC0 && marker <= 0xFFC3) { // SOFn
+					idx += 5; // marker (2 bytes) + length (2 bytes) + Sample precision (1 byte)
+					return {
+						height: _br.SHORT(idx),
+						width: _br.SHORT(idx += 2)
+					};
+				}
+				length = _br.SHORT(idx += 2);
+				idx += length - 2;
+			}
+			return null;
+		}
 
 		_binstr = binstr;
 
@@ -20,17 +53,16 @@ define("runtime/html5/image/JPEG", [
 		if (_br.SHORT(0) !== 0xFFD8) {
 			throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 		}
-		
-		// backup headers		
+
+		// backup headers
 		_hm = new JPEGHeaders(binstr);
 
 		// extract exif info
-		_ep = new ExifParser;		
+		_ep = new ExifParser();
 		hasExif = !!_ep.init(_hm.get('exif')[0]);
 
 		// get dimensions
 		_info = _getDimensions.call(this);
-
 
 		o.extend(this, {
 
@@ -60,7 +92,7 @@ define("runtime/html5/image/JPEG", [
 			},
 
 			writeHeaders: function() {
-				if (!arguments.length) { 
+				if (!arguments.length) {
 					// if no arguments passed, update headers internally
 					return _binstr = _hm.restore(_binstr);
 				}
@@ -79,25 +111,7 @@ define("runtime/html5/image/JPEG", [
 			};
 		}
 
-		function _getDimensions() {
-			var idx = 0, marker, length;
-			
-			// examine all through the end, since some images might have very large APP segments
-			while (idx <= _binstr.length) {
-				marker = _br.SHORT(idx += 2);
-				
-				if (marker >= 0xFFC0 && marker <= 0xFFC3) { // SOFn
-					idx += 5; // marker (2 bytes) + length (2 bytes) + Sample precision (1 byte)
-					return {
-						height: _br.SHORT(idx),
-						width: _br.SHORT(idx += 2)
-					};
-				}
-				length = _br.SHORT(idx += 2);
-				idx += length - 2;			
-			}		
-			return null;
-		}
+
 
 		function _purge() {
 			_ep.purge();

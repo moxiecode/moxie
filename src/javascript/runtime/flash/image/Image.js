@@ -1,3 +1,16 @@
+/**
+ * Image.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/flash/image/Image", ["o", "runtime/Transporter", "file/Blob", "file/FileReaderSync"], function(o, Transporter, Blob, FileReaderSync) {
 
 	return {
@@ -9,11 +22,11 @@ define("runtime/flash/image/Image", ["o", "runtime/Transporter", "file/Blob", "f
 			}
 
 			if (blob.isDetached()) { // binary string
-				var tr = new Transporter;
+				var tr = new Transporter();
 				tr.bind("TransportingComplete", function() {
 					exec(tr.result.getSource());
 				});
-				tr.transport(blob.getSource(), blob.type, self.uid); 
+				tr.transport(blob.getSource(), blob.type, self.uid);
 			} else {
 				exec(blob.getSource());
 			}
@@ -28,7 +41,7 @@ define("runtime/flash/image/Image", ["o", "runtime/Transporter", "file/Blob", "f
 			var self = comp.getRuntime()
 			, blob = self.shimExec.call(this, 'Image', 'getAsBlob', type, quality)
 			;
-			if (blob) {				
+			if (blob) {
 				return new Blob(self.uid, blob);
 			}
 			return null;
@@ -42,7 +55,7 @@ define("runtime/flash/image/Image", ["o", "runtime/Transporter", "file/Blob", "f
 			if (!blob) {
 				return null;
 			}
-			frs = new FileReaderSync;
+			frs = new FileReaderSync();
 			return frs.readAsDataURL(blob);
 		}
 	};

@@ -8,6 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime/Runtime'], function(x, o, Runtime) {
 
 	/**
@@ -15,11 +18,11 @@ define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime
 
 	@class RuntimeClient
 	*/
-	return function() { 
+	return function() {
 		var self = this, runtime;
-		
+
 		o.extend(this, {
-			
+
 			/**
 			Connects to the runtime specified by the options. Will either connect to existing runtime or create a new one
 
@@ -28,53 +31,53 @@ define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime
 			*/
 			connectRuntime: function(options) {
 				var ruid, i, construct, items = [], order, features, key;
-										
+
 				// check if a particular runtime was requested
 				if (o.typeOf(options) === 'string') {
-					ruid = options;	
+					ruid = options;
 				} else if (o.typeOf(options.ruid) === 'string') {
-					ruid = options.ruid;	
+					ruid = options.ruid;
 				}
-				
+
 				if (ruid) {
 					runtime = getRuntime(ruid);
-					
+
 					if (runtime) {
 						/*if (o.typeOf(self.trigger) === 'function') { // connectRuntime might be called on non eventTarget object
-							self.trigger('RuntimeInit', runtime);	
+							self.trigger('RuntimeInit', runtime);
 						}*/
 						return runtime;
 					} else {
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);	
-					}						
+						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+					}
 				}
-				
+
 				// initialize a fresh one, that fits runtime list and required features best
-				order = options.runtime_order || Runtime.order;			
-				
+				order = options.runtime_order || Runtime.order;
+
 				items = order.split(/\s?,\s?/);
-				
-				next_runtime: 
-				for (i in items) {					
+
+				next_runtime:
+				for (i in items) {
 					construct = Runtime.getConstructor(items[i]);
 					if (!construct) {
-						continue;	
+						continue;
 					}
-						
+
 					// check if runtime supports required features
-					if (!construct.can(options.required_caps)) { 
+					if (!construct.can(options.required_caps)) {
 						continue next_runtime; // runtime fails to support some features
 					}
-		
+
 					// try initializing the runtime
 					try {
 						runtime = new construct(options);
 						Runtime.registerRuntime(runtime.uid, runtime);
-						
-						runtime.bind('Init', function() {									
+
+						runtime.bind('Init', function() {
 							// mark runtime as initialized
 							runtime.initialized = true;
-							
+
 							runtime.constructor = construct;
 
 							// jailbreak ...
@@ -83,13 +86,13 @@ define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime
 								self.trigger('RuntimeInit', runtime);
 							}, 1);
 						});
-						
+
 						runtime.bind('Exception', function() {
 							// console.info(arguments);
 						});
-						
+
 						runtime.init();
-						return;	
+						return;
 					} catch(err) {
 						// destroy failed runtime's remnants and proceed to the next one
 						if (runtime) {
@@ -97,7 +100,7 @@ define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime
 						}
 					}
 				}
-				
+
 				// if we ran out of runtimes
 				throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 			},
@@ -105,23 +108,23 @@ define('runtime/RuntimeClient', ['core/exceptions', 'core/utils/basic', 'runtime
 			getRuntime: function() {
 				return runtime || null;
 			},
-			
+
 			/**
 			Disconnect from the runtime
 
 			@method disconnectRuntime
 			*/
 			disconnectRuntime: function() {
-				
+
 				// check if runtime not occupied
-				
+
 				// destroy runtime if not
-				
+
 				// unregister runtime
-				
+
 			}
-			
-		});	
+
+		});
 	};
 
 

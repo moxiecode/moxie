@@ -1,3 +1,16 @@
+/**
+ * FileInput.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/events"], function(o, dom, events) {
 
 	return function() {
@@ -15,7 +28,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 				if (currForm) {
 					o.extend(currForm.style, { top: '100%' });
 				}
-			}		
+			}
 
 			// build form in DOM, since innerHTML version not able to submit file for some reason
 			form = document.createElement('form');
@@ -41,7 +54,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 
 			o.extend(input.style, {
 				fontSize: '999px',
-				opacity: 0 
+				opacity: 0
 			});
 
 			form.appendChild(input);
@@ -55,7 +68,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 				width: '100%',
 				height: '100%'
 			});
-			
+
 
 			if (o.ua.browser === 'IE' && o.ua.version < 10) {
 				plupload.extend(input.style, {
@@ -65,7 +78,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 
 			input.onchange = function() { // there should be only one handler for this
 				var file;
-				
+
 				if (!this.value) {
 					return;
 				}
@@ -86,7 +99,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 				// after file is initialized as o.File, we need to update form and input ids
 				comp.bind('change', function() {
 					var input = o(uid), form = o(uid + '_form'), file;
-					
+
 					if (comp.files.length && input && form) {
 						file = comp.files[0];
 
@@ -113,7 +126,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 						input.click();
 					}
 					e.preventDefault();
-				}, comp.uid); 
+				}, comp.uid);
 			}
 
 			_uid = uid;
@@ -123,14 +136,14 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 
 		o.extend(this, {
 			init: function(options) {
-				var comp = this, input, form, shimContainer;
-				
+				var comp = this, form, shimContainer;
+
 				// figure out accept string
 				_options = options;
 				_mimes = options.accept.mimes || o.extList2mimes(options.accept);
-				
-				shimContainer = I.getShimContainer();	
-				
+
+				shimContainer = I.getShimContainer();
+
 				(function() {
 					var browseButton, zIndex, top;
 
@@ -142,36 +155,36 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 						if (o.getStyle(browseButton, 'position') === 'static') {
 							browseButton.style.position = 'relative';
 						}
-						
+
 						zIndex = parseInt(o.getStyle(browseButton, 'z-index'), 10) || 1;
 
 						browseButton.style.zIndex = zIndex;
 						shimContainer.style.zIndex = zIndex - 1;
-					}								
+					}
 
 					/* Since we have to place input[type=file] on top of the browse_button for some browsers,
 					browse_button loses interactivity, so we restore it here */
 					top = I.can('summon_file_dialog') ? browseButton : shimContainer;
-					
+
 					o.addEvent(top, 'mouseover', function() {
 						comp.trigger('mouseenter');
 					}, comp.uid);
-					
+
 					o.addEvent(top, 'mouseout', function() {
 						comp.trigger('mouseleave');
 					}, comp.uid);
-					
+
 					o.addEvent(top, 'mousedown', function() {
-						comp.trigger('mousedown');	
+						comp.trigger('mousedown');
 					}, comp.uid);
-					
+
 					o.addEvent(o(options.container), 'mouseup', function() {
 						comp.trigger('mouseup');
 					}, comp.uid);
 
 				}());
 
-				addInput.call(this);	
+				addInput.call(this);
 
 				browsebutton = shimContainer = null;
 			},
@@ -182,7 +195,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 
 			disable: function(state) {
 				var input;
-				if (input = o(_uid)) { 
+				if (input = o(_uid)) {
 					input.disabled = !!state;
 				}
 			}

@@ -1,25 +1,38 @@
+/**
+ * Runtime.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html4/Runtime", ["o", "runtime/Runtime", "runtime/html4/extensions"], function(o, R, extensions) {
 	var x = o.Exceptions;
 	var type = 'html4';
-	
+
 	R.addConstructor(type, (function() {
-		
-		function Runtime(options) {	
+
+		function Runtime(options) {
 			var I = this,
 			// allow to extend this runtime
 
-			// figure out the options	
+			// figure out the options
 			defaults = {
-			
+
 			};
-			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;			
-			
+			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;
+
 			R.apply(this, [options, arguments[1] || type]);
-			
+
 			o.extend(this, {
-					
-				init : function() {	
-					I.trigger("Init");			
+
+				init : function() {
+					I.trigger("Init");
 				},
 
 				getShim: function() {
@@ -54,15 +67,15 @@ define("runtime/html4/Runtime", ["o", "runtime/Runtime", "runtime/html4/extensio
 
 						return obj[fn].apply(this, args);
 					}
-				}
+				};
 			}()), extensions);
 		}
-		
-				
+
+
 		Runtime.can = (function() {
-			var caps = o.extend({}, o.Runtime.caps, {  
-					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),		
-					access_image_binary: false,		
+			var caps = o.extend({}, o.Runtime.caps, {
+					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
+					access_image_binary: false,
 					display_media: o.ua.can('create_canvas') || o.ua.can('use_data_uri_over32kb'),
 					drag_and_drop: false,
 					receive_response_type: function(responseType) {
@@ -80,8 +93,8 @@ define("runtime/html4/Runtime", ["o", "runtime/Runtime", "runtime/html4/extensio
 					slice_blob: false,
 					stream_upload: true,
 					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
-						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4)	|| 
-								(o.ua.browser === 'Opera' && o.ua.version >= 12)	|| 
+						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4)	||
+								(o.ua.browser === 'Opera' && o.ua.version >= 12)	||
 								!!~o.inArray(o.ua.browser, ['Chrome', 'Safari']);
 					}()),
 					upload_filesize: true
@@ -94,8 +107,8 @@ define("runtime/html4/Runtime", ["o", "runtime/Runtime", "runtime/html4/extensio
 			}
 			return can;
 		}());
-		
+
 		return Runtime;
-	}()));	
+	}()));
 
 });

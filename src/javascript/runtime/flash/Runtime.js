@@ -1,8 +1,21 @@
+/**
+ * Runtime.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensions"], function(o, R, extensions) {
 	var type = 'flash'
 	, x = o.Exceptions
 	;
-	
+
 	/**
 	Constructor for the Flash Runtime
 
@@ -10,20 +23,20 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 	@extends Runtime
 	*/
 	R.addConstructor(type, (function() {
-		
-		function Runtime(options) {	
+
+		function Runtime(options) {
 			var self = this, shimContainer;
-						
+
 			/**
 			Get the version of the Flash Player
 
 			@method getShimVersion
 			@private
 			@return {Number} Flash Player version
-			*/			
+			*/
 			function getShimVersion() {
 				var version;
-		
+
 				try {
 					version = navigator.plugins['Shockwave Flash'];
 					version = version.description;
@@ -37,43 +50,43 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 				version = version.match(/\d+/g);
 				return parseFloat(version[0] + '.' + version[1]);
 			}
-			
+
 			function wait4shim(ms) {
 				if ( wait4shim.counter === undefined ) {
 					wait4shim.counter = 0; // initialize static variable
 				}
-				
+
 				// wait for 5 sec
 				if (wait4shim.counter++ > ms) {
 					self.destroy();
 					throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 				}
-			
-				// if initialized properly, the shim will trigger Init event on widget itself 
+
+				// if initialized properly, the shim will trigger Init event on widget itself
 				if (!self.initialized) {
 					setTimeout(function() { wait4shim.call(self, ms) }, 1);
 				}
 			}
-			
-			// figure out the options	
+
+			// figure out the options
 			defaults = {
 				swf_url: 'js/Moxie.swf'
 			};
-			self.options = options = o.extend({}, defaults, options);			
-			
+			self.options = options = o.extend({}, defaults, options);
+
 			o.Runtime.apply(this, [options, arguments[1] || type]);
-			
+
 			o.extend(this, {
-					
-				init : function() {	
+
+				init : function() {
 					var html, el, container;
-							
+
 					// minimal requirement Flash Player 10
-					if (getShimVersion() < 10) { 
+					if (getShimVersion() < 10) {
 						self.destroy();
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 					}
-					
+
 					container = self.getShimContainer();
 
 					// if not the minimal height, shims are not initialized in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
@@ -81,25 +94,25 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 						position: 'absolute',
 						top: '-8px',
 						left: '-8px',
-						width: '9px', 
+						width: '9px',
 						height: '9px',
 						overflow: 'hidden'
 					});
-					
-					// insert flash object						
+
+					// insert flash object
 					html = '<object id="' + self.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';
-					
+
 					if (o.ua.browser === 'IE') {
 						html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
 					}
-	
+
 					html += 'width="100%" height="100%" style="outline:0">'  +
 						'<param name="movie" value="' + options.swf_url + '" />' +
 						'<param name="flashvars" value="uid=' + escape(self.uid) + '" />' +
 						'<param name="wmode" value="transparent" />' +
 						'<param name="allowscriptaccess" value="always" />' +
 					'</object>';
-						
+
 					if (o.ua.browser === 'IE') {
 						el = document.createElement('div');
 						container.appendChild(el);
@@ -108,13 +121,13 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 					} else {
 						container.innerHTML = html;
 					}
-					
-					wait4shim(5000); // Init will be dispatched by the shim					
+
+					wait4shim(5000); // Init will be dispatched by the shim
 				}
 			}, extensions);
 		}
-		
-				
+
+
 		Runtime.can = (function() {
 			var has_to_urlstream = function() {
 					var required_caps = this.options.required_caps;
@@ -140,7 +153,7 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 					summon_file_dialog: false,
 					upload_filesize: function(size) {
 						var maxSize = has_to_urlstream.call(this) ? 2097152 : -1; // 200mb || unlimited
-						
+
 						if (!~maxSize || o.parseSizeStr(size) <= maxSize) {
 							return true;
 						}
@@ -168,7 +181,7 @@ define("runtime/flash/Runtime", ["o", "runtime/Runtime", "runtime/flash/extensio
 			}
 			return can;
 		}());
-		
+
 		return Runtime;
-	}()));	
+	}()));
 });
