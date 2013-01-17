@@ -12,7 +12,7 @@ var uglify = function (sourceFiles, outputFile, options) {
 	options = utils.extend({
 		mangle       : true,
 		toplevel     : false,
-		no_functions : false,
+		no_functions : false
 	}, options);
 
 	// Combine JS files
@@ -58,7 +58,6 @@ var less = function (sourceFile, outputFile, options) {
 
 	var parser = new less.Parser({
 		paths: [path.dirname(sourceFile)],
-		filename: path.basename(sourceFile),
         optimization: options.optimization,
         filename: sourceFile,
         strictImports: options.strictImports
@@ -101,7 +100,7 @@ var less = function (sourceFile, outputFile, options) {
 				callback({ type: 'File', message: "'" + file + "' wasn't found.\n" });
 			}
 		}
-	}
+	};
 
 	parser.parse(fs.readFileSync(sourceFile).toString(), function (err, tree) {
 		if (err) {
@@ -147,10 +146,19 @@ var yuidoc = function (sourceDir, outputDir, options) {
 var jshint = function (sourceDir, options) {
 	var jshint = require('jshint').JSHINT;
 
+	var color = function(s, c){
+		return (color[c].toLowerCase()||'') + s + color.reset;
+	};
+
+	color.reset = '\u001b[39m';
+	color.red = '\u001b[31m';
+	color.yellow = '\u001b[33m';
+	color.green = '\u001b[32m';
+
 	function process(filePath) {
 		var stat = fs.statSync(filePath);
 
-		if (stat.isFile()) {
+		if (stat.isFile() && path.extname(filePath) == '.js') {
 			if (!jshint(fs.readFileSync(filePath).toString(), options)) {
 				// Print the errors
 				console.log(color('Errors in file ' + filePath, 'red'));
@@ -209,7 +217,7 @@ var zip = function (sourceFiles, zipFile, options) {
 		if (filePath instanceof Array) {
 			process(filePath[0], filePath[1]);
 		} else {
-			process(filePath);			
+			process(filePath);
 		}
 	});
 
@@ -248,7 +256,7 @@ var getReleaseInfo = function (srcPath) {
 	if (!fs.existsSync(srcPath)) {
 		console.info(srcPath + " cannot be found.");
 		process.exit(1);
-	} 
+	}
 	
 	var src = fs.readFileSync(srcPath).toString();
 
@@ -269,12 +277,12 @@ var getReleaseInfo = function (srcPath) {
 		releaseDate: info[2],
 		fileVersion: info[1].replace(/\./g, '_'),
 		headNote: copyright
-	}
+	};
 };
 
 // inject version details and copyright header if available to all js files in specified directory
 var addReleaseDetailsTo = function (dir, info) {
-	var contents, filePath; 
+	var contents, filePath;
 
 	if (fs.existsSync(dir)) {
 		fs.readdirSync(dir).forEach(function(fileName) {
