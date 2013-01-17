@@ -298,6 +298,10 @@ var addReleaseDetailsTo = function (dir, info) {
 	}
 };
 
+function compileAmd(options) {
+	require("amdlc").compile(options);
+}
+
 utils.extend(exports, {
 	uglify: uglify,
 	less: less,
@@ -306,5 +310,6 @@ utils.extend(exports, {
 	zip: zip,
 	copySync: copySync,
 	getReleaseInfo: getReleaseInfo,
-	addReleaseDetailsTo: addReleaseDetailsTo
+	addReleaseDetailsTo: addReleaseDetailsTo,
+	compileAmd: compileAmd
 });

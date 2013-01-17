@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('core/utils/encode', [], function() {
+define('moxie/core/utils/Encode', [], function() {
 
 	/**
 	Encodes the specified string.

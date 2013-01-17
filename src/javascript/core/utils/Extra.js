@@ -1,4 +1,4 @@
-define("core/utils/extra", ["core/utils/basic"], function(o) {
+define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
 
 	/**
 	Defines property with specified descriptor on an object

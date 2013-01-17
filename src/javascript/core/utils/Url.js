@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('core/utils/url', [], function() {
+define('moxie/core/utils/Url', [], function() {
 
 	/**
 	Parse url into separate components and fill in absent parts with parts from current url,  

@@ -8,7 +8,15 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('file/BlobBuilder', ['o', 'file/Blob', 'file/File', 'file/FileReaderSync'], function(o, Blob, File, FileReaderSync) {	
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define('moxie/file/BlobBuilder', [
+	'o',
+	'moxie/file/Blob',
+	'moxie/file/File',
+	'moxie/file/FileReaderSync'
+], function(o, Blob, File, FileReaderSync) {
 
 	var x = o.Exceptions;
 
@@ -22,10 +30,10 @@ define('file/BlobBuilder', ['o', 'file/Blob', 'file/File', 'file/FileReaderSync'
 				if (o.typeOf(src) === 'string') {
 					data += src;
 				} else if (src instanceof Blob) {
-					var frs = new FileReaderSync;
+					var frs = new FileReaderSync();
 					data += frs.readAsBinaryString(src);
 				}
-			});	
+			});
 			return data;
 		}
 		

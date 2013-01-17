@@ -8,7 +8,13 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('file/File', ['o', 'file/Blob'], function(o, Blob) {
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define('moxie/file/File', [
+	'o',
+	'moxie/file/Blob'
+], function(o, Blob) {
 	/**
 	@class File
 	@extends Blob
@@ -63,10 +69,10 @@ define('file/File', ['o', 'file/Blob'], function(o, Blob) {
 			@default now
 			*/
 			lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString() // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
-		});	
+		});
 	}
 
 	File.prototype = Blob.prototype;
- 		
+ 
 	return (o.File = File);
 });

@@ -8,10 +8,18 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeClient'], function(o, dom, File, RuntimeClient) {	
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
 
-	var x = o.Exceptions;
-
+define('moxie/file/FileInput', [
+	'moxie/core/Exceptions',
+	'moxie/core/EventTarget',
+	'moxie/core/utils/dom',
+	'moxie/core/I18n',
+	'moxie/file/File',
+	'moxie/runtime/RuntimeClient',
+	'moxie/core/utils/Basic'
+], function(x, EventTarget, dom, I18n, File, RuntimeClient, utils) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to o.File objects, to be used in conjunction with _o.Image_, preloaded in memory
@@ -26,10 +34,10 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
 	@param {String} [options.file='file'] Name of the file field (not the filename)
 	@param {Boolean} [options.multiple=false] Enable selection of multiple files
-	@param {String|DOMElement} [options.container] DOM Element to use as acontainer for file-picker. Defaults to parentNode for options.browse_button 
+	@param {String|DOMElement} [options.container] DOM Element to use as acontainer for file-picker. Defaults to parentNode for options.browse_button
 	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 
-	@example 
+	@example
 		<div id="container">
 			<a id="file-picker" href="javascript:;">Browse...</a>
 		</div>
@@ -59,7 +67,7 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 		@event ready
 		@param {Object} event
 		*/
-		'ready', 
+		'ready',
 
 		/**
 		Dispatched when selection of files in the dialog is complete.
@@ -67,7 +75,7 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 		@event change
 		@param {Object} event
 		*/
-		'change', 
+		'change',
 
 		'cancel', // TODO: might be useful
 
@@ -78,7 +86,7 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 		@event mouseenter
 		@param {Object} event
 		*/
-		'mouseenter', 
+		'mouseenter',
 
 		/**
 		Dispatched when mouse cursor leaves file-picker area. Can be used to style element
@@ -87,18 +95,18 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 		@event mouseleave
 		@param {Object} event
 		*/
-		'mouseleave', 
+		'mouseleave',
 
 		/**
-		Dispatched when functional mouse button is pressed on top of file-picker area. 
+		Dispatched when functional mouse button is pressed on top of file-picker area.
 
 		@event mousedown
 		@param {Object} event
 		*/
-		'mousedown', 
+		'mousedown',
 
 		/**
-		Dispatched when functional mouse button is released on top of file-picker area. 
+		Dispatched when functional mouse button is released on top of file-picker area.
 
 		@event mouseup
 		@param {Object} event
@@ -107,25 +115,25 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 	];
 
 	function FileInput(options) {
-		var self = this, 
-			container, browseButton, defaults; 
-	
-		// if flat argument passed it should be browse_button id	
+		var self = this,
+			container, browseButton, defaults;
+
+		// if flat argument passed it should be browse_button id
 		if (typeof(options) === 'string') {
 			options = { browse_button : options };
 		}
-			
+
 		// this will help us to find proper default container
-		browseButton = o(options.browse_button);
+		browseButton = dom.get(options.browse_button);
 		if (!browseButton) {
 			// browse button is required
-			throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);	
-		}	
-		
-		// figure out the options	
+			throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
+		}
+
+		// figure out the options
 		defaults = {
 			accept: [{
-				title: o.translate('All Files'),	
+				title: I18n.translate('All Files'),
 				extensions: '*'
 			}],
 			name: 'file',
@@ -134,15 +142,15 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 			container: browseButton.parentNode || document.body
 		};
 		
-		options = typeof(options) === 'object' ? o.extend({}, defaults, options) : defaults;
+		options = typeof(options) === 'object' ? utils.extend({}, defaults, options) : defaults;
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
 			options.accept = o.mimes2extList(options.accept);
 		}
-					
+
 		// make container relative, if they're not
-		container = o(options.container);
+		container = dom.get(options.container);
 		if (dom.getStyle(container, 'position') === 'static') {
 			container.style.position = 'relative';
 		}
@@ -150,7 +158,7 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 						
 		RuntimeClient.call(self);
 		
-		o.extend(self, {
+		utils.extend(self, {
 			
 			/**
 			Unique id of the component
@@ -161,7 +169,7 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 			@type {String}
 			@default UID
 			*/
-			uid: o.guid('uid_'),
+			uid: utils.guid('uid_'),
 			
 			/**
 			Unique id of the connected runtime, if any.
@@ -188,21 +196,21 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 			*/
 			init: function() {
 	
-				self.convertEventPropsToHandlers(dispatches);	
-		
-				self.bind('RuntimeInit', function(e, runtime) {		
-				
-					self.ruid = runtime.uid;	
+				self.convertEventPropsToHandlers(dispatches);
 
-					self.bind("Change", function(e) {	
+				self.bind('RuntimeInit', function(e, runtime) {
+				
+					self.ruid = runtime.uid;
+
+					self.bind("Change", function() {
 						var files = runtime.exec.call(self, 'FileInput', 'getFiles');
 
 						self.files = [];
 
-						o.each(files, function(file) {	
+						utils.each(files, function(file) {
 							self.files.push(new File(self.ruid, file));
-						});						
-					}, 999);	
+						});
+					}, 999);
 					
 					runtime.exec.call(self, 'FileInput', 'init', options);
 
@@ -210,18 +218,18 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 					self.bind('Refresh', function() {
 						var pos, size, browseButton;
 						
-						browseButton = o(options.browse_button);
+						browseButton = dom.get(options.browse_button);
 
 						if (browseButton) {
-							pos = dom.getPos(browseButton, o(options.container));
+							pos = dom.getPos(browseButton, dom.get(options.container));
 							size = dom.getSize(browseButton);
-												
-							o.extend(runtime.getShimContainer().style, {
-								top 	: pos.y + 'px',
-								left 	: pos.x + 'px',
-								width 	: size.w + 'px',
-								height 	: size.h + 'px'
-							});	
+
+							utils.extend(runtime.getShimContainer().style, {
+								top     : pos.y + 'px',
+								left    : pos.x + 'px',
+								width   : size.w + 'px',
+								height  : size.h + 'px'
+							});
 							browseButton = null;
 						}
 					});
@@ -248,8 +256,8 @@ define('file/FileInput', ['o', 'core/utils/dom', 'file/File', 'runtime/RuntimeCl
 			}
 		});
 	}
-	
-	FileInput.prototype = o.eventTarget;
-			
-	return (o.FileInput = FileInput);
+
+	FileInput.prototype = EventTarget;
+
+	return FileInput;
 });

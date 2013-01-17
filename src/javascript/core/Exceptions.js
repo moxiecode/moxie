@@ -1,4 +1,4 @@
-define('core/exceptions', ['core/utils/basic'], function(utils) {
+define('moxie/core/Exceptions', ['moxie/core/utils/Basic'], function(utils) {
 
 	function _findKey(obj, value) {
 		var key;

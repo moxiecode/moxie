@@ -1,5 +1,5 @@
 /**
- * basic.js
+ * Basic.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('core/utils/basic', [], function() {
+define('moxie/core/utils/Basic', [], function() {
 
 	/**
 	Get DOM Element by it's id.

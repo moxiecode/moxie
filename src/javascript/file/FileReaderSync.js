@@ -8,7 +8,13 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('file/FileReaderSync', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {	
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define('moxie/file/FileReaderSync', [
+	'o',
+	'moxie/runtime/RuntimeClient'
+], function(o, RuntimeClient) {
 
 	/**
 	Synchronous FileReader implementation. Something like this is available in WebWorkers environment, here 

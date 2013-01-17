@@ -8,10 +8,13 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('file/FileReader', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {	
-	
-	var x = o.Exceptions;
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
 
+define('moxie/file/FileReader', [
+	'moxie/core/Exceptions',
+	'moxie/runtime/RuntimeClient'
+], function(x, RuntimeClient) {	
 	/**
 	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader) 
 	interface. Where possible uses native FileReader, where - not falls back to shims.

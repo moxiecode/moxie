@@ -8,24 +8,28 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('file/FileDrop', ['o', 'file/File', 'runtime/RuntimeClient'], function(o, File, RuntimeClient) {	
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
 
-	var x = o.Exceptions;
-
+define('moxie/file/FileDrop', [
+	'moxie/core/Exceptions',
+	'moxie/file/File',
+	'moxie/runtime/RuntimeClient'
+], function(x, File, RuntimeClient) {
 	var dispatches = ['ready', 'dragleave', 'dragenter', 'drop', 'error'];
 
 	function FileDrop(options) {
-		var self = this, defaults; 
-	
-		// if flat argument passed it should be drop_zone id	
+		var self = this, defaults;
+
+		// if flat argument passed it should be drop_zone id
 		if (typeof(options) === 'string') {
 			options = { drop_zone : options };
 		}
 
-		// figure out the options	
+		// figure out the options
 		defaults = {
 			accept: [{
-				title: o.translate('All Files'),	
+				title: o.translate('All Files'),
 				extensions: '*'
 			}],
 			required_caps: {
@@ -60,23 +64,23 @@ define('file/FileDrop', ['o', 'file/File', 'runtime/RuntimeClient'], function(o,
 
 			init: function() {
 	
-				self.convertEventPropsToHandlers(dispatches);	
+				self.convertEventPropsToHandlers(dispatches);
 		
-				self.bind('RuntimeInit', function(e, runtime) {	
-					self.ruid = runtime.uid;	
+				self.bind('RuntimeInit', function(e, runtime) {
+					self.ruid = runtime.uid;
 
-					self.bind("Drop", function(e) {	
+					self.bind("Drop", function(e) {
 						var files = runtime.exec.call(self, 'FileDrop', 'getFiles');
 
 						self.files = [];
 
-						o.each(files, function(file) {	
+						o.each(files, function(file) {
 							self.files.push(new File(self.ruid, file));
-						});						
-					}, 999);	
-					
+						});
+					}, 999);
+
 					runtime.exec.call(self, 'FileDrop', 'init');
-								
+
 					self.dispatchEvent('ready');
 				});
 							

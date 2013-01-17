@@ -7,8 +7,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
-define("core/i18n", ["core/utils/basic"], function(o) {
-	
+define("moxie/core/I18n", ["moxie/core/utils/Basic"], function(o) {
 	var i18n = {};
 
 	return {
@@ -39,7 +38,7 @@ define("core/i18n", ["core/utils/basic"], function(o) {
 		 * @return {String} Translated string or the input string if it wasn't found.
 		 */
 		_ : function(str) {
-			return this.translate(str);	
+			return this.translate(str);
 		}
-	};	
+	};
 });

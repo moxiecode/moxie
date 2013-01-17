@@ -8,7 +8,13 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('file/Blob', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define('moxie/file/Blob', [
+	'o',
+	'moxie/runtime/RuntimeClient'
+], function(o, RuntimeClient) {
 
 	var blobpool = {};
 
@@ -17,7 +23,7 @@ define('file/Blob', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
 	@constructor
 	@param {String} ruid Unique id of the runtime, to which this blob belongs to
 	@param {Object} blob Object "Native" blob object, as it is represented in the runtime
-	*/		
+	*/
 	function Blob(ruid, blob) {
 		if (!blob) {
 			blob = {};
@@ -34,7 +40,7 @@ define('file/Blob', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
 			uid: o.guid('uid_'),
 			
 			/**
-			Unique id of the connected runtime, if falsy, then runtime will have to be initialized 
+			Unique id of the connected runtime, if falsy, then runtime will have to be initialized
 			before this Blob can be used, modified or sent
 
 			@property ruid
@@ -64,7 +70,7 @@ define('file/Blob', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
 			@method slice
 			@param {Number} [start=0]
 			*/
-			slice: function(start, end, type) {		
+			slice: function(start, end, type) {
 				var runtime = _getRuntime.call(this);
 				return runtime.exec.call(this, 'Blob', 'slice', this.getSource(), start, end, type);
 			},
@@ -77,13 +83,13 @@ define('file/Blob', ['o', 'runtime/RuntimeClient'], function(o, RuntimeClient) {
 			*/
 			getSource: function() {
 				if (!blobpool[this.uid]) {
-					return null;	
+					return null;
 				}
 				
 				return blobpool[this.uid];
 			},
 
-			/** 
+			/**
 			Detaches blob from any runtime that it depends on and initialize with standalone value
 
 			@method detach

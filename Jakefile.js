@@ -8,14 +8,13 @@ var yuidoc = tools.yuidoc;
 var jshint = tools.jshint;
 var zip = tools.zip;
 
-var amdlc = require("amdlc");
+var compileAmd = require('./build/BuildTools').compileAmd;
 
 var utils = require("./build/utils");
 var mkjs = require("./build/mkjs");
 var mkswf = require("./build/mkswf");
 var mkxap = require("./build/mkxap");
 var wiki = require("./build/wiki");
-
 
 var isImageLogicRequired = function(modules) {
 	var result = false;
@@ -28,6 +27,7 @@ var isImageLogicRequired = function(modules) {
 	return result;
 };
 
+task("default", ["jshint", "mkjs"], function (params) {});
 
 desc("Runs JSHint on source files");
 task("jshint", [], function (params) {
@@ -39,7 +39,7 @@ task("jshint", [], function (params) {
 
 desc("Compile JS");
 task("mkjs", [], function () {
-	var modules = mkjs.resolveModules(arguments, "src/javascript");
+/*	var modules = mkjs.resolveModules(arguments, "src/javascript");
 	var targetDir = "bin/js";
 
 	// start fresh
@@ -49,17 +49,31 @@ task("mkjs", [], function () {
 	jake.mkdirP(targetDir);
 
 	var options = {
-	    compress: true,
-	    excludeRootNamespaceFromPath: true,
-	    verbose: true,
-	    outputSource: targetDir + "/moxie.js",
-	    outputMinified: targetDir + "/moxie.min.js",
-	    outputDev: targetDir + "/moxie.dev.js"
+		compress: true,
+		excludeRootNamespaceFromPath: true,
+		verbose: true,
+		outputSource: targetDir + "/moxie.js",
+		outputMinified: targetDir + "/moxie.min.js",
+		outputDev: targetDir + "/moxie.dev.js"
 	};
 
 	amdlc.compileMinified(modules, options);
 	amdlc.compileSource(modules, options);
 	amdlc.compileDevelopment(modules, options);
+*/
+
+	compileAmd({
+		from: [
+			"src/javascript/core/EventTarget.js"
+		],
+		baseDir: "src/javascript",
+		rootNS: "moxie",
+		outputSource: "js/moxie.js",
+		outputMinified: "js/moxie.min.js",
+		outputDev: "js/moxie.dev.js",
+		verbose: true,
+		expose: "public"
+	});
 });
 
 
@@ -80,8 +94,8 @@ task("mkswf", [], function() {
 				src: "./src/flash/src",
 				libs: ["./src/flash/blooddy_crypto.swc"],
 				input: "./src/flash/src/Moxie.as",
- 				output: targetDir + "/Moxie.swf",
-				extra: "-define=BUILD::IMAGE,true -debug=false -optimize=true""
+				output: targetDir + "/Moxie.swf",
+				extra: "-define=BUILD::IMAGE,true -debug=false -optimize=true"
 			}, cb);
 		},
 		function(cb) {
@@ -174,7 +188,7 @@ task("package", [], function (params) {
 		"js",
 		"tests",
 		"build",
-		"Jakefile.js",		
+		"Jakefile.js",
 		["readme.md", "readme.txt"],
 		"changelog.txt",
 		"license.txt"

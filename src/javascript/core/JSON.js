@@ -1,4 +1,4 @@
-define("core/JSON", [], function() {
+define("moxie/core/JSON", [], function() {
 
 	/**
 	Parse string into the JSON object in a safe way

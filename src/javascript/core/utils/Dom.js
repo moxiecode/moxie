@@ -8,8 +8,18 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('core/utils/dom', [], function() {
-	
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define('moxie/core/utils/Dom', [], function() {
+	var get = function(id) {
+		if (typeof id !== 'string') {
+			return id;
+		}
+
+		return document.getElementById(id);
+	};
+
 	/**
 	Checks if specified DOM element has specified class.
 	
@@ -21,7 +31,7 @@ define('core/utils/dom', [], function() {
 	var hasClass = function(obj, name) {
 		var regExp;
 	
-		if (obj.className == '') {
+		if (obj.className === '') {
 			return false;
 		}
 
@@ -39,8 +49,8 @@ define('core/utils/dom', [], function() {
 	@param {String} name Class name
 	*/
 	var addClass = function(obj, name) {
-		if (!o.hasClass(obj, name)) {
-			obj.className = obj.className == '' ? name : obj.className.replace(/\s+$/, '')+' '+name;
+		if (!hasClass(obj, name)) {
+			obj.className = obj.className === '' ? name : obj.className.replace(/\s+$/, '') + ' ' + name;
 		}
 	};
 
@@ -157,6 +167,7 @@ define('core/utils/dom', [], function() {
 
 
 	return {
+		get: get,
 		hasClass: hasClass,
 		addClass: addClass,
 		removeClass: removeClass,

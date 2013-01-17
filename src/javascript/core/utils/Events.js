@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('core/utils/events', ['core/utils/basic'], function(o) {
+define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 	var eventhash = {}, uid;
 	
 	// IE W3C like event funcs

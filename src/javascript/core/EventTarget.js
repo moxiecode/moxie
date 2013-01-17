@@ -1,4 +1,17 @@
-define('core/EventTarget', ['core/exceptions', 'core/utils/basic'], function(x, o) {
+/**
+ * EventTarget.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Basic'], function(x, o) {
 	
 	/**
 	Parent object for all event dispatching components and objects
@@ -27,7 +40,7 @@ define('core/EventTarget', ['core/exceptions', 'core/utils/basic'], function(x, 
 			*/
 			init: function() {
 				if (!this.uid) {
-					this.uid = o.guid('uid_');	
+					this.uid = o.guid('uid_');
 				}
 			},
 
@@ -47,10 +60,11 @@ define('core/EventTarget', ['core/exceptions', 'core/utils/basic'], function(x, 
 				
 				if (/\s/.test(type)) {
 					// multiple event types were passed for one handler
-					o.each(type.split(/\s+/), function(type, i) {
+					o.each(type.split(/\s+/), function(type) {
 						self.addEventListener(type, fn, priority, scope);
 					});
-					return;	
+
+					return;
 				}
 				
 				type = type.toLowerCase();
@@ -62,7 +76,7 @@ define('core/EventTarget', ['core/exceptions', 'core/utils/basic'], function(x, 
 				if (!eventpool[this.uid]) {
 					eventpool[this.uid] = {};
 				}
-				eventpool[this.uid][type] = list;				
+				eventpool[this.uid][type] = list;
 			},
 			
 			/**
@@ -73,7 +87,7 @@ define('core/EventTarget', ['core/exceptions', 'core/utils/basic'], function(x, 
 			@return {Mixed} Returns a handler if it was found and false, if - not
 			*/
 			hasEventListener: function(type) {
-				return type ? !!(eventpool[this.uid] && eventpool[this.uid][type]) : !!eventpool[this.uid];					
+				return type ? !!(eventpool[this.uid] && eventpool[this.uid][type]) : !!eventpool[this.uid];
 			},
 			
 			/**

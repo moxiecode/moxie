@@ -1,3 +1,16 @@
+/**
+ * Blob.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
 define("runtime/html5/file/Blob", ["o", "file/Blob"], function(o, Blob) {
 
 	return function() {
@@ -11,13 +24,13 @@ define("runtime/html5/file/Blob", ["o", "file/Blob"], function(o, Blob) {
 					return blob.slice(start, end);
 				} catch (e) {
 					// depricated slice method
-					return blob.slice(start, end - start); 
+					return blob.slice(start, end - start);
 				}
-			// slice method got prefixed: https://bugzilla.mozilla.org/show_bug.cgi?id=649672	
+			// slice method got prefixed: https://bugzilla.mozilla.org/show_bug.cgi?id=649672
 			} else if (blobSlice = window.File.prototype.webkitSlice || window.File.prototype.mozSlice) {
-				return blobSlice.call(blob, start, end);	
+				return blobSlice.call(blob, start, end);
 			} else {
-				return null; // or throw some exception	
+				return null; // or throw some exception
 			}
 		}
 
