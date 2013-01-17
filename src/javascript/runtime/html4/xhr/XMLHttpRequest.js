@@ -8,13 +8,18 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
-define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob", "xhr/FormData"], function(o, events, Blob, FormData) {
-
-	var x = o.Exceptions;
-
+define("moxie/runtime/html4/xhr/XMLHttpRequest", [
+	"moxie/core/utils/Basic",
+	"moxie/core/utils/Dom",
+	"moxie/core/Exceptions",
+	"moxie/core/utils/Events",
+	"moxie/file/Blob",
+	"moxie/xhr/FormData",
+	"moxie/core/JSON"
+], function(Basic, Dom, x, Events, Blob, FormData, JSON) {
 	return function() {
 		var _status, _response, _iframe;
 
@@ -27,7 +32,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 
 			uid = _iframe.id.replace(/_iframe$/, '');
 
-			form = o(uid + '_form');
+			form = Dom.get(uid + '_form');
 			if (form) {
 				inputs = form.getElementsByTagName('input');
 				i = inputs.length;
@@ -52,7 +57,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 
 			// without timeout, request is marked as canceled (in console)
 			setTimeout(function() {
-				events.removeEvent(_iframe, 'load', target.uid);
+				Events.removeEvent(_iframe, 'load', target.uid);
 				if (_iframe.parentNode) { // #382
 					_iframe.parentNode.removeChild(_iframe);
 				}
@@ -61,8 +66,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 			}, 1);
 		}
 
-		o.extend(this, {
-
+		Basic.extend(this, {
 			send: function(meta, data) {
 				var target = this, I = target.getRuntime(), uid, form, input, blob;
 
@@ -82,7 +86,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 						console.info(_iframe.readyState);
 					};*/
 
-					events.addEvent(_iframe, 'load', function(e) { // _iframe.onload doesn't work in IE lte 8
+					Events.addEvent(_iframe, 'load', function() { // _iframe.onload doesn't work in IE lte 8
 						var el;
 
 						try {
@@ -104,7 +108,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 						}
 
 						// get result
-						_response = o.trim(el.body.innerHTML);
+						_response = Basic.trim(el.body.innerHTML);
 
 						cleanup.call(this, function() {
 							target.trigger({
@@ -122,13 +126,13 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 					if (data._blob) {
 						blob = data._fields[data._blob];
 						uid = blob.uid;
-						input = o(uid);
-						form = o(uid + '_form');
+						input = Dom.get(uid);
+						form = Dom.get(uid + '_form');
 						if (!form) {
 							throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
 						}
 					} else {
-						uid = o.guid('uid_');
+						uid = Basic.guid('uid_');
 
 						form = document.createElement('form');
 						form.setAttribute('id', uid + '_form');
@@ -141,7 +145,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 						//form.style.position = 'absolute';
 					}
 
-					o.each(data._fields, function(value, name) {
+					Basic.each(data._fields, function(value, name) {
 						if (value instanceof Blob) {
 							if (input) {
 								input.setAttribute('name', name);
@@ -149,7 +153,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 						} else {
 							var hidden = document.createElement('input');
 
-							o.extend(hidden, {
+							Basic.extend(hidden, {
 								type : 'hidden',
 								name : name,
 								value : value
@@ -165,8 +169,6 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 					createIframe();
 					form.submit();
 					target.trigger('loadstart');
-
-					temp = container = null;
 				}
 			},
 
@@ -177,7 +179,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 			getResponse: function(responseType) {
 				if ('json' === responseType) {
 					// strip off <pre>..</pre> tags that might be enclosing the response
-					return o.JSON.parse(_response.replace(/^\s*<pre>/, '').replace(/<\/pre>\s*$/, ''));
+					return JSON.parse(_response.replace(/^\s*<pre>/, '').replace(/<\/pre>\s*$/, ''));
 				} else if ('document' === responseType) {
 
 				} else {
@@ -185,7 +187,7 @@ define("runtime/html4/xhr/XMLHttpRequest", ["o", "core/utils/events", "file/Blob
 				}
 			},
 
-			abort: function(upload_complete_flag) {
+			abort: function() {
 				var target = this;
 
 				if (_iframe && _iframe.contentWindow) {

@@ -13,16 +13,17 @@
 
 define("moxie/runtime/Transporter", [
 	"moxie/core/utils/Basic",
-	"moxie/core/utils/encode",
-	"moxie/runtime/RuntimeClient"
-], function(o, encode, RuntimeClient) {
+	"moxie/core/utils/Encode",
+	"moxie/runtime/RuntimeClient",
+	"moxie/core/EventTarget"
+], function(Basic, Encode, RuntimeClient, EventTarget) {
 	function Transporter() {
 		var mod, _runtime, _data, _size, _pos, _chunk_size;
 
 		RuntimeClient.call(this);
 
-		o.extend(this, {
-			uid: 'uid_' + o.guid(),
+		Basic.extend(this, {
+			uid: 'uid_' + Basic.guid(),
 
 			state: Transporter.IDLE,
 
@@ -31,7 +32,7 @@ define("moxie/runtime/Transporter", [
 			transport: function(data, type, options) {
 				var self = this;
 
-				options = o.extend({
+				options = Basic.extend({
 					chunk_size: 204798
 				}, options);
 
@@ -46,7 +47,7 @@ define("moxie/runtime/Transporter", [
 				_data = data;
 				_size = data.length;
 
-				if (o.typeOf(options) === 'string' || options.ruid) {
+				if (Basic.typeOf(options) === 'string' || options.ruid) {
 					_run.call(self, type, this.connectRuntime(options));
 				} else {
 					// we require this to run only once
@@ -86,7 +87,6 @@ define("moxie/runtime/Transporter", [
 			_data = this.result = null;
 		}
 
-
 		function _run(type, runtime) {
 			var self = this;
 
@@ -97,7 +97,7 @@ define("moxie/runtime/Transporter", [
 			self.bind("TransportingProgress", function(e) {
 				_pos = e.loaded;
 
-				if (_pos < _size && o.inArray(self.state, [Transporter.IDLE, Transporter.DONE]) === -1) {
+				if (_pos < _size && Basic.inArray(self.state, [Transporter.IDLE, Transporter.DONE]) === -1) {
 					_transport.call(self);
 				}
 			}, 999);
@@ -114,7 +114,6 @@ define("moxie/runtime/Transporter", [
 			_transport.call(self);
 		}
 
-
 		function _transport() {
 			var self = this,
 				chunk,
@@ -124,7 +123,7 @@ define("moxie/runtime/Transporter", [
 				_chunk_size = bytesLeft;
 			}
 
-			chunk = encode.btoa(_data.substr(_pos, _chunk_size));
+			chunk = Encode.btoa(_data.substr(_pos, _chunk_size));
 			_runtime.exec.call(self, 'Transporter', 'receive', chunk, _size);
 		}
 	}
@@ -133,7 +132,7 @@ define("moxie/runtime/Transporter", [
 	Transporter.BUSY = 1;
 	Transporter.DONE = 2;
 
-	Transporter.prototype = o.eventTarget;
+	Transporter.prototype = new EventTarget();
 
 	return Transporter;
 });

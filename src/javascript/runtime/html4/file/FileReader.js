@@ -11,6 +11,8 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html4/file/FileReader", ["runtime/html5/file/FileReader"], function(FileReader) {
+define("moxie/runtime/html4/file/FileReader", [
+	"moxie/runtime/html5/file/FileReader"
+], function(FileReader) {
 	return FileReader;
 });

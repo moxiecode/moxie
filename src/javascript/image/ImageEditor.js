@@ -14,8 +14,8 @@
 define("moxie/image/ImageEditor", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Basic",
-	"runtime/RuntimeClient"
-], function(x, o, RuntimeClient) {
+	"moxie&runtime/RuntimeClient"
+], function(x, Basic, RuntimeClient) {
 	function ImageEditor(image) {
 		var self = this,
 			ops = "rotate flipH flipV resize crop sharpen emboss".split(/\s+/);
@@ -26,7 +26,7 @@ define("moxie/image/ImageEditor", [
 
 		RuntimeClient.call(this);
 
-		o.each(ops, function(op) {
+		Basic.each(ops, function(op) {
 			self[op] = function() {
 				var runtime;
 				

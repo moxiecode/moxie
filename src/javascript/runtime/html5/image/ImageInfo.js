@@ -16,7 +16,7 @@ define("moxie/runtime/html5/image/ImageInfo", [
 	"moxie/core/Exceptions",
 	"moxie/runtime/html5/image/JPEG",
 	"moxie/runtime/html5/image/PNG"
-], function(o, x, JPEG, PNG) {
+], function(Basic, x, JPEG, PNG) {
 	/**
 	Optional image investigation tool for HTML5 runtime. Provides the following features:
 	 - ability to distinguish image type (JPEG or PNG) by signature
@@ -44,7 +44,7 @@ define("moxie/runtime/html5/image/ImageInfo", [
 			throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 		}());
 
-		o.extend(this, {
+		Basic.extend(this, {
 			/**
 			Image Mime Type extracted from it's depths
 
@@ -109,7 +109,7 @@ define("moxie/runtime/html5/image/ImageInfo", [
 			purge: function() {}
 		});
 
-		o.extend(this, _img);
+		Basic.extend(this, _img);
 
 		this.purge = _img.purge;
 	};

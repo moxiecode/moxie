@@ -13,8 +13,9 @@
 
 define('moxie/runtime/Runtime', [
 	"moxie/core/utils/Basic",
-	"moxie/core/utils/Dom"
-], function(o, Dom) {
+	"moxie/core/utils/Dom",
+	"moxie/core/EventTarget"
+], function(Basic, Dom, EventTarget) {
 	var runtimeConstructors = {}, runtimes = {};
 
 	/**
@@ -30,12 +31,12 @@ define('moxie/runtime/Runtime', [
 		@event Init
 		*/
 		var self = this
-		, uid = o.guid(type + '_')
-		, shimid =  uid + '_container'
+		, uid = Basic.guid(type + '_')
+		, shimid = uid + '_container'
 		;
 
 		// public methods
-		o.extend(this, {
+		Basic.extend(this, {
 			/**
 			Specifies whether runtime instance was initialized or not
 
@@ -107,7 +108,7 @@ define('moxie/runtime/Runtime', [
 					shimContainer.id = this.shimid;
 					shimContainer.className = 'mxi-shim mxi-shim-' + type;
 
-					o.extend(shimContainer.style, {
+					Basic.extend(shimContainer.style, {
 						position: 'absolute',
 						top: '0px',
 						left: '0px',
@@ -130,7 +131,7 @@ define('moxie/runtime/Runtime', [
 			@return {DOMElement}
 			*/
 			getShim: function() {
-				return o.byId(this.uid);
+				return Dom.get(this.uid);
 			},
 
 			/**
@@ -220,7 +221,7 @@ define('moxie/runtime/Runtime', [
 	@param {Function} construct Constructor function for the Runtime
 	*/
 	Runtime.addConstructor = function(type, construct) {
-		construct.prototype = o.eventTarget;
+		construct.prototype = new EventTarget();
 		runtimeConstructors[type] = construct;
 	};
 
@@ -296,16 +297,17 @@ define('moxie/runtime/Runtime', [
 	@property {String} cap Name of a capability to check
 	@property {Mixed} [value] If passed, capability will be checked against the value
 	*/
-	Runtime.can = function can(runtimeCaps, cap, value) {
-		if (!cap || o.typeOf(cap) === 'object' && o.isEmptyObj(cap)) {
+	Runtime.can = function(runtimeCaps, cap, value) {
+		if (!cap || Basic.typeOf(cap) === 'object' && Basic.isEmptyObj(cap)) {
 			return true;
 		}
 
 		// if cap var is a comma-separated list of caps, convert it to object (key/value)
-		if (o.typeOf(cap) === 'string' && value === undefined) {
+		if (Basic.typeOf(cap) === 'string' && value === undefined) {
 			cap = (function(arr) {
 				var obj = {};
-				o.each(arr, function(key) {
+
+				Basic.each(arr, function(key) {
 					obj[key] = true; // since no value supplied, we assume user meant it to be - true
 				});
 
@@ -313,7 +315,7 @@ define('moxie/runtime/Runtime', [
 			}(cap.split(',')));
 		}
 
-		if (o.typeOf(cap) === 'object') {
+		if (Basic.typeOf(cap) === 'object') {
 			for (var key in cap) {
 				if (!Runtime.can.call(this, runtimeCaps, key, cap[key])) {
 					return false;
@@ -324,7 +326,7 @@ define('moxie/runtime/Runtime', [
 		}
 
 		// check the individual cap
-		if (o.typeOf(runtimeCaps[cap]) === 'function') {
+		if (Basic.typeOf(runtimeCaps[cap]) === 'function') {
 			return runtimeCaps[cap].call(this, value);
 		}
 

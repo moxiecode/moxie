@@ -16,7 +16,7 @@ define("moxie/xhr/FormData", [
 	"moxie/core/utils/Basic",
 	"moxie/file/Blob",
 	"moxie/file/File"
-], function(x, o, Blob, File) {
+], function(x, Basic, Blob, File) {
 	/**
 	FormData
 
@@ -24,7 +24,7 @@ define("moxie/xhr/FormData", [
 	@constructor
 	*/
 	function FormData() {
-		o.extend(this, {
+		Basic.extend(this, {
 			_blob: null,
 
 			_fields: {},

@@ -14,7 +14,7 @@
 define("moxie/runtime/html5/image/ExifParser", [
 	"moxie/core/utils/Basic",
 	"moxie/runtime/html5/utils/BinaryReader"
-], function(o, BinaryReader) {
+], function(Basic, BinaryReader) {
 	return function() {
 		// Private ExifParser fields
 		var data, tags, offsets = {}, tagDescs;
@@ -378,7 +378,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 				Exif = extractTags(offsets.exifIFD, tags.exif);
 
 				// Fix formatting of some tags
-				if (Exif.ExifVersion && o.typeOf(Exif.ExifVersion) === 'array') {
+				if (Exif.ExifVersion && Basic.typeOf(Exif.ExifVersion) === 'array') {
 					for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
 						exifVersion += String.fromCharCode(Exif.ExifVersion[i]);
 					}
@@ -394,7 +394,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 				GPS = extractTags(offsets.gpsIFD, tags.gps);
 
 				// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
-				if (GPS.GPSVersionID && o.typeOf(GPS.GPSVersionID) === 'array') {
+				if (GPS.GPSVersionID && Basic.typeOf(GPS.GPSVersionID) === 'array') {
 					GPS.GPSVersionID = GPS.GPSVersionID.join('.');
 				}
 

@@ -18,8 +18,9 @@ define('moxie/file/FileDrop', [
 	'moxie/core/utils/Basic',
 	'moxie/file/File',
 	'moxie/runtime/RuntimeClient',
-	'moxie/core/EventTarget'
-], function(I18n, dom, x, o, File, RuntimeClient, EventTarget) {
+	'moxie/core/EventTarget',
+	'moxie/core/utils/Mime'
+], function(I18n, dom, x, Basic, File, RuntimeClient, EventTarget, Mime) {
 	var dispatches = ['ready', 'dragleave', 'dragenter', 'drop', 'error'];
 
 	function FileDrop(options) {
@@ -41,7 +42,7 @@ define('moxie/file/FileDrop', [
 			}
 		};
 		
-		options = typeof(options) === 'object' ? o.extend({}, defaults, options) : defaults;
+		options = typeof(options) === 'object' ? Basic.extend({}, defaults, options) : defaults;
 
 		// this will help us to find proper default container
 		options.container = dom.get(options.drop_zone) || document.body;
@@ -53,13 +54,13 @@ define('moxie/file/FileDrop', [
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
-			options.accept = o.mimes2extList(options.accept);
+			options.accept = Mime.mimes2extList(options.accept);
 		}
 
 		RuntimeClient.call(self);
 
-		o.extend(self, {
-			uid: o.guid('uid_'),
+		Basic.extend(self, {
+			uid: Basic.guid('uid_'),
 
 			ruid: null,
 
@@ -77,7 +78,7 @@ define('moxie/file/FileDrop', [
 
 						self.files = [];
 
-						o.each(files, function(file) {
+						Basic.each(files, function(file) {
 							self.files.push(new File(self.ruid, file));
 						});
 					}, 999);

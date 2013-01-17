@@ -17,15 +17,15 @@ define('moxie/file/BlobBuilder', [
 	'moxie/file/Blob',
 	'moxie/file/File',
 	'moxie/file/FileReaderSync'
-], function(o, x, Blob, File, FileReaderSync) {
+], function(Basic, x, Blob, File, FileReaderSync) {
 	function BlobBuilder() {
 		var sources = [];
 		
 		function _getData() {
 			var data = '';
 
-			o.each(sources, function(src) {
-				if (o.typeOf(src) === 'string') {
+			Basic.each(sources, function(src) {
+				if (Basic.typeOf(src) === 'string') {
 					data += src;
 				} else if (src instanceof Blob) {
 					var frs = new FileReaderSync();
@@ -36,11 +36,11 @@ define('moxie/file/BlobBuilder', [
 			return data;
 		}
 		
-		o.extend(this, {
-			uid: o.guid('uid_'),
+		Basic.extend(this, {
+			uid: Basic.guid('uid_'),
 	
 			append: function(data) {
-				if (o.typeOf(data) !== 'string' || !(data instanceof Blob)) {
+				if (Basic.typeOf(data) !== 'string' || !(data instanceof Blob)) {
 					throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
 				}
 				sources.push(data);

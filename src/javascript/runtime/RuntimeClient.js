@@ -8,14 +8,14 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, loopfunc:true */
 /*global define:true */
 
 define('moxie/runtime/RuntimeClient', [
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic',
 	'moxie/runtime/Runtime'
-], function(x, o, Runtime) {
+], function(x, Basic, Runtime) {
 	/**
 	Set of methods and properties, required by a component to acquire ability to connect to a runtime
 
@@ -24,8 +24,7 @@ define('moxie/runtime/RuntimeClient', [
 	return function() {
 		var self = this, runtime;
 
-		o.extend(this, {
-
+		Basic.extend(this, {
 			/**
 			Connects to the runtime specified by the options. Will either connect to existing runtime or create a new one
 
@@ -33,20 +32,20 @@ define('moxie/runtime/RuntimeClient', [
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
 			*/
 			connectRuntime: function(options) {
-				var ruid, i, construct, items = [], order, features, key;
+				var ruid, i, construct, items = [], order;
 
 				// check if a particular runtime was requested
-				if (o.typeOf(options) === 'string') {
+				if (Basic.typeOf(options) === 'string') {
 					ruid = options;
-				} else if (o.typeOf(options.ruid) === 'string') {
+				} else if (Basic.typeOf(options.ruid) === 'string') {
 					ruid = options.ruid;
 				}
 
 				if (ruid) {
-					runtime = getRuntime(ruid);
+					runtime = self.getRuntime(ruid);
 
 					if (runtime) {
-						/*if (o.typeOf(self.trigger) === 'function') { // connectRuntime might be called on non eventTarget object
+						/*if (Basic.typeOf(self.trigger) === 'function') { // connectRuntime might be called on non eventTarget object
 							self.trigger('RuntimeInit', runtime);
 						}*/
 						return runtime;

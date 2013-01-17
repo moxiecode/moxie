@@ -13,7 +13,7 @@
 
 define("moxie/core/I18n", [
 	"moxie/core/utils/Basic"
-], function(o) {
+], function(Basic) {
 	var i18n = {};
 
 	return {
@@ -23,8 +23,8 @@ define("moxie/core/I18n", [
 		 * @param {Object} pack Language pack items to add.
 		 * @return {Object} Extended language pack object.
 		 */
-		addI18n : function(pack) {
-			return o.extend(i18n, pack);
+		addI18n: function(pack) {
+			return Basic.extend(i18n, pack);
 		},
 
 		/**
@@ -33,17 +33,17 @@ define("moxie/core/I18n", [
 		 * @param {String} str String to look for.
 		 * @return {String} Translated string or the input string if it wasn't found.
 		 */
-		translate : function(str) {
+		translate: function(str) {
 			return i18n[str] || str;
 		},
-		
+
 		/**
 		 * Shortcut for translate function
 		 *
 		 * @param {String} str String to look for.
 		 * @return {String} Translated string or the input string if it wasn't found.
 		 */
-		_ : function(str) {
+		_: function(str) {
 			return this.translate(str);
 		}
 	};

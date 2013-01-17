@@ -14,7 +14,7 @@
 define('moxie/file/Blob', [
 	'moxie/core/utils/Basic',
 	'moxie/runtime/RuntimeClient'
-], function(o, RuntimeClient) {
+], function(Basic, RuntimeClient) {
 	var blobpool = {};
 
 	/**
@@ -28,15 +28,14 @@ define('moxie/file/Blob', [
 			blob = {};
 		}
 
-		o.extend(this, {
-			
+		Basic.extend(this, {
 			/**
 			Unique id of the component
 
 			@property uid
 			@type {String}
 			*/
-			uid: o.guid('uid_'),
+			uid: Basic.guid('uid_'),
 			
 			/**
 			Unique id of the connected runtime, if falsy, then runtime will have to be initialized
@@ -112,7 +111,7 @@ define('moxie/file/Blob', [
 			@return {Boolean}
 			*/
 			isDetached: function() {
-				return !this.ruid && o.typeOf(blobpool[this.uid]) === 'string';
+				return !this.ruid && Basic.typeOf(blobpool[this.uid]) === 'string';
 			},
 			
 			/**
@@ -135,13 +134,13 @@ define('moxie/file/Blob', [
 
 
 		function _getRuntime() {
-			if (o.typeOf(this.connectRuntime) !== 'function') {
+			if (Basic.typeOf(this.connectRuntime) !== 'function') {
 				RuntimeClient.call(this);
 			}
+
 			return this.connectRuntime(this.ruid);
 		}
 	}
-	
-	return (o.Blob = Blob);
 
+	return Blob;
 });

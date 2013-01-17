@@ -17,7 +17,7 @@ define("moxie/runtime/html5/image/JPEG", [
 	"moxie/runtime/html5/image/JPEGHeaders",
 	"moxie/runtime/html5/utils/BinaryReader",
 	"moxie/runtime/html5/image/ExifParser"
-], function(o, x, JPEGHeaders, BinaryReader, ExifParser) {
+], function(Basic, x, JPEGHeaders, BinaryReader, ExifParser) {
 	return function JPEG(binstr) {
 		var _binstr, _br, _hm, _ep, _info, hasExif;
 
@@ -61,7 +61,7 @@ define("moxie/runtime/html5/image/JPEG", [
 		// get dimensions
 		_info = _getDimensions.call(this);
 
-		o.extend(this, {
+		Basic.extend(this, {
 			type: 'image/jpeg',
 
 			size: _binstr.length,
@@ -75,8 +75,8 @@ define("moxie/runtime/html5/image/JPEG", [
 					return false; // or throw an exception
 				}
 
-				if (o.typeOf(tag) === 'object') {
-					o.each(tag, function(value, tag) {
+				if (Basic.typeOf(tag) === 'object') {
+					Basic.each(tag, function(value, tag) {
 						_ep.setExif(tag, value);
 					});
 				} else {

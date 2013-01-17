@@ -18,8 +18,9 @@ define('moxie/file/FileInput', [
 	'moxie/core/I18n',
 	'moxie/file/File',
 	'moxie/runtime/RuntimeClient',
-	'moxie/core/utils/Basic'
-], function(x, EventTarget, Dom, I18n, File, RuntimeClient, utils) {
+	'moxie/core/utils/Basic',
+	'moxie/core/utils/Mime'
+], function(x, EventTarget, Dom, I18n, File, RuntimeClient, Basic, Mime) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to o.File objects, to be used in conjunction with _o.Image_, preloaded in memory
@@ -142,11 +143,11 @@ define('moxie/file/FileInput', [
 			container: browseButton.parentNode || document.body
 		};
 		
-		options = typeof(options) === 'object' ? utils.extend({}, defaults, options) : defaults;
+		options = typeof(options) === 'object' ? Basic.extend({}, defaults, options) : defaults;
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
-			options.accept = o.mimes2extList(options.accept);
+			options.accept = Mime.mimes2extList(options.accept);
 		}
 
 		// make container relative, if they're not
@@ -158,8 +159,7 @@ define('moxie/file/FileInput', [
 						
 		RuntimeClient.call(self);
 		
-		utils.extend(self, {
-			
+		Basic.extend(self, {
 			/**
 			Unique id of the component
 
@@ -169,7 +169,7 @@ define('moxie/file/FileInput', [
 			@type {String}
 			@default UID
 			*/
-			uid: utils.guid('uid_'),
+			uid: Basic.guid('uid_'),
 			
 			/**
 			Unique id of the connected runtime, if any.
@@ -205,7 +205,7 @@ define('moxie/file/FileInput', [
 
 						self.files = [];
 
-						utils.each(files, function(file) {
+						Basic.each(files, function(file) {
 							self.files.push(new File(self.ruid, file));
 						});
 					}, 999);
@@ -222,7 +222,7 @@ define('moxie/file/FileInput', [
 							pos = Dom.getPos(browseButton, Dom.get(options.container));
 							size = Dom.getSize(browseButton);
 
-							utils.extend(runtime.getShimContainer().style, {
+							Basic.extend(runtime.getShimContainer().style, {
 								top     : pos.y + 'px',
 								left    : pos.x + 'px',
 								width   : size.w + 'px',

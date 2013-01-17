@@ -14,7 +14,7 @@
 define('moxie/core/EventTarget', [
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic'
-], function(x, o) {
+], function(x, Basic) {
 	/**
 	Parent object for all event dispatching components and objects
 
@@ -25,7 +25,7 @@ define('moxie/core/EventTarget', [
 		// hash of event listeners by object uid
 		var eventpool = {};
 				
-		o.extend(this, {
+		Basic.extend(this, {
 			
 			/**
 			Unique id of the event dispatcher, usually overriden by children
@@ -42,7 +42,7 @@ define('moxie/core/EventTarget', [
 			*/
 			init: function() {
 				if (!this.uid) {
-					this.uid = o.guid('uid_');
+					this.uid = Basic.guid('uid_');
 				}
 			},
 
@@ -58,11 +58,11 @@ define('moxie/core/EventTarget', [
 			addEventListener: function(type, fn, priority, scope) {
 				var self = this, list;
 				
-				type = o.trim(type);
+				type = Basic.trim(type);
 				
 				if (/\s/.test(type)) {
 					// multiple event types were passed for one handler
-					o.each(type.split(/\s+/), function(type) {
+					Basic.each(type.split(/\s+/), function(type) {
 						self.addEventListener(type, fn, priority, scope);
 					});
 
@@ -121,7 +121,7 @@ define('moxie/core/EventTarget', [
 						delete eventpool[this.uid][type];
 						
 						// and object specific entry in a hash if it has no more listeners attached
-						if (o.isEmptyObj(eventpool[this.uid])) {
+						if (Basic.isEmptyObj(eventpool[this.uid])) {
 							delete eventpool[this.uid];
 						}
 					}
@@ -150,11 +150,11 @@ define('moxie/core/EventTarget', [
 			dispatchEvent: function(type) {
 				var uid, list, args, tmpEvt, evt = {};
 				
-				if (o.typeOf(type) !== 'string') {
+				if (Basic.typeOf(type) !== 'string') {
 					// we can't use original object directly
 					tmpEvt = type;
 
-					if (o.typeOf(tmpEvt.type) === 'string') {
+					if (Basic.typeOf(tmpEvt.type) === 'string') {
 						type = tmpEvt.type;
 
 						if (tmpEvt.total && tmpEvt.loaded) { // progress event
@@ -193,7 +193,7 @@ define('moxie/core/EventTarget', [
 
 					// Dispatch event to all listeners
 					var queue = [];
-					o.each(list, function(handler) {
+					Basic.each(list, function(handler) {
 						// explicitly set the target, otherwise events fired from shims to not get it
 						args[0].target = handler.scope;
 						// if event is marked as async, detach the handler
@@ -210,7 +210,7 @@ define('moxie/core/EventTarget', [
 						}
 					});
 					if (queue.length) {
-						o.inSeries(queue);
+						Basic.inSeries(queue);
 					}
 				}
 				return true;
@@ -267,14 +267,14 @@ define('moxie/core/EventTarget', [
 			convertEventPropsToHandlers: function(handlers) {
 				var h;
 						
-				if (o.typeOf(handlers) !== 'array') {
+				if (Basic.typeOf(handlers) !== 'array') {
 					handlers = [handlers];
 				}
 
 				for (var i = 0; i < handlers.length; i++) {
 					h = 'on' + handlers[i];
 					
-					if (o.typeOf(this[h]) === 'function') {
+					if (Basic.typeOf(this[h]) === 'function') {
 						this.addEventListener(handlers[i], this[h]);
 					} else if (this[h] === undefined) {
 						this[h] = null; // object must have defined event properties, even if it doesn't make use of them

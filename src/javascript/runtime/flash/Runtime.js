@@ -11,13 +11,13 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true, escape:true */
 
-define("runtime/flash/Runtime", [
-	"o",
-	"runtime/Runtime",
+define("moxie/runtime/flash/Runtime", [
+	"moxie/core/utils/Basic",
+	"moxie/runtime/Runtime",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Env",
-	"runtime/flash/extensions"
-], function(o, R, x, Env, extensions) {
+	"moxie/runtime/flash/extensions"
+], function(Basic, Runtime, x, Env, extensions) {
 	var type = 'flash';
 
 	/**
@@ -26,9 +26,8 @@ define("runtime/flash/Runtime", [
 	@class RuntimeFlash
 	@extends Runtime
 	*/
-	R.addConstructor(type, (function() {
-
-		function Runtime(options) {
+	Runtime.addConstructor(type, (function() {
+		function FlashRuntime(options) {
 			var self = this;
 
 			/**
@@ -76,13 +75,13 @@ define("runtime/flash/Runtime", [
 			var defaults = {
 				swf_url: 'js/Moxie.swf'
 			};
-			self.options = options = o.extend({}, defaults, options);
 
-			o.Runtime.apply(this, [options, arguments[1] || type]);
+			self.options = options = Basic.extend({}, defaults, options);
 
-			o.extend(this, {
+			Runtime.apply(this, [options, arguments[1] || type]);
 
-				init : function() {
+			Basic.extend(this, {
+				init: function() {
 					var html, el, container;
 
 					// minimal requirement Flash Player 10
@@ -94,7 +93,7 @@ define("runtime/flash/Runtime", [
 					container = self.getShimContainer();
 
 					// if not the minimal height, shims are not initialized in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
-					o.extend(container.style, {
+					Basic.extend(container.style, {
 						position: 'absolute',
 						top: '-8px',
 						left: '-8px',
@@ -131,14 +130,13 @@ define("runtime/flash/Runtime", [
 			}, extensions);
 		}
 
-
-		Runtime.can = (function() {
+		FlashRuntime.can = (function() {
 			var has_to_urlstream = function() {
 					var required_caps = this.options.required_caps;
-					return !o.isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
+					return !Basic.isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
 				},
 
-				caps = o.extend({}, R.caps, {
+				caps = Basic.extend({}, Runtime.caps, {
 					access_binary: true,
 					access_image_binary: true,
 					display_media: true,
@@ -158,22 +156,24 @@ define("runtime/flash/Runtime", [
 					upload_filesize: function(size) {
 						var maxSize = has_to_urlstream.call(this) ? 2097152 : -1; // 200mb || unlimited
 
-						if (!~maxSize || o.parseSizeStr(size) <= maxSize) {
+						if (!~maxSize || Basic.parseSizeStr(size) <= maxSize) {
 							return true;
 						}
+
 						return false;
 					},
 					use_http_method: function(methods) {
-						if (o.typeOf(methods) !== 'array') {
+						if (Basic.typeOf(methods) !== 'array') {
 							methods = [methods];
 						}
 
 						for (var i in methods) {
 							// flash only supports GET, POST
-							if (!~o.inArray(methods[i].toUpperCase(), ['GET', 'POST'])) {
+							if (!~Basic.inArray(methods[i].toUpperCase(), ['GET', 'POST'])) {
 								return false;
 							}
 						}
+
 						return true;
 					}
 				});
@@ -181,11 +181,12 @@ define("runtime/flash/Runtime", [
 			function can() {
 				var args = [].slice.call(arguments);
 				args.unshift(caps);
-				return R.can.apply(this, args);
+				return Runtime.can.apply(this, args);
 			}
+
 			return can;
 		}());
 
-		return Runtime;
+		return FlashRuntime;
 	}()));
 });

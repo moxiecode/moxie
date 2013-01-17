@@ -13,7 +13,7 @@
 
 define('moxie/core/Exceptions', [
 	'moxie/core/utils/Basic'
-], function(utils) {
+], function(Basic) {
 	function _findKey(obj, value) {
 		var key;
 		for (key in obj) {
@@ -38,7 +38,7 @@ define('moxie/core/Exceptions', [
 				this.message = this.name + ": RuntimeError " + this.code;
 			}
 			
-			utils.extend(RuntimeError, namecodes);
+			Basic.extend(RuntimeError, namecodes);
 			RuntimeError.prototype = Error.prototype;
 			return RuntimeError;
 		}()),
@@ -50,7 +50,7 @@ define('moxie/core/Exceptions', [
 				this.name = 'OperationNotAllowedException';
 			}
 			
-			utils.extend(OperationNotAllowedException, {
+			Basic.extend(OperationNotAllowedException, {
 				NOT_ALLOWED_ERR: 1
 			});
 			
@@ -70,7 +70,7 @@ define('moxie/core/Exceptions', [
 				this.message = this.name + ": ImageError " + this.code;
 			}
 			
-			utils.extend(ImageError, namecodes);
+			Basic.extend(ImageError, namecodes);
 			ImageError.prototype = Error.prototype;
 
 			return ImageError;
@@ -94,7 +94,7 @@ define('moxie/core/Exceptions', [
 				this.message = this.name + ": FileException " + this.code;
 			}
 			
-			utils.extend(FileException, namecodes);
+			Basic.extend(FileException, namecodes);
 			FileException.prototype = Error.prototype;
 			return FileException;
 		}()),
@@ -134,7 +134,7 @@ define('moxie/core/Exceptions', [
 				this.message = this.name + ": DOMException " + this.code;
 			}
 			
-			utils.extend(DOMException, namecodes);
+			Basic.extend(DOMException, namecodes);
 			DOMException.prototype = Error.prototype;
 			return DOMException;
 		}()),
@@ -145,7 +145,7 @@ define('moxie/core/Exceptions', [
 				this.name = 'EventException';
 			}
 			
-			utils.extend(EventException, {
+			Basic.extend(EventException, {
 				UNSPECIFIED_EVENT_TYPE_ERR: 0
 			});
 			

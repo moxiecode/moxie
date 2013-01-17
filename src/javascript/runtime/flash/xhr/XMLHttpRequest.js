@@ -8,19 +8,18 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/flash/xhr/XMLHttpRequest", [
-		"o",
-		"file/Blob",
-		"file/File",
-		"file/FileReaderSync",
-		"xhr/FormData",
-		"runtime/Transporter"
-	],
-	function(o, Blob, File, FileReaderSync, FormData, Transporter) {
-
+define("moxie/runtime/flash/xhr/XMLHttpRequest", [
+	"moxie/core/utils/Basic",
+	"moxie/file/Blob",
+	"moxie/file/File",
+	"moxie/file/FileReaderSync",
+	"moxie/xhr/FormData",
+	"moxie/runtime/Transporter",
+	"moxie/core/JSON"
+], function(Basic, Blob, File, FileReaderSync, FormData, Transporter, JSON) {
 	return {
 		send: function(meta, data) {
 			var target = this, self = target.getRuntime();
@@ -48,16 +47,16 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 			}
 
 			// copy over the headers if any
-			if (!o.isEmptyObj(meta.headers)) {
-				o.each(_headers, function(value, header) {
+			if (!Basic.isEmptyObj(meta.headers)) {
+				// TODO: _headers doesn't exists?
+				Basic.each(_headers, function(value, header) {
 					self.shimExec.call(target, 'XMLHttpRequest', 'setRequestHeader', name, value.toString()); // Silverlight doesn't accept integers into the arguments of type object
 				});
 			}
 
-
 			// transfer over multipart params and blob itself
 			if (data instanceof FormData) {
-				o.each(data._fields, function(value, name) {
+				Basic.each(data._fields, function(value, name) {
 					if (!(value instanceof Blob)) {
 						self.shimExec.call(target, 'XMLHttpRequest', 'append', name, value.toString());
 					}
@@ -74,7 +73,7 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 						appendBlob(data._blob, blob);
 					}
 				}
-			} else if (data instanceof o.Blob) {
+			} else if (data instanceof Blob) {
 				data = data.uid; // something wrong here
 			} else {
 				send();
@@ -82,7 +81,7 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 		},
 
 		getResponse: function(responseType) {
-			var blob, self = this.getRuntime();
+			var frs, blob, self = this.getRuntime();
 
 			blob = self.shimExec.call(this, 'XMLHttpRequest', 'getResponseAsBlob');
 
@@ -91,15 +90,15 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 
 				if ('blob' === responseType) {
 					return blob;
-				} else if (!!~o.inArray(responseType, ["", "text"])) {
-					var frs = new FileReaderSync();
+				} else if (!!~Basic.inArray(responseType, ["", "text"])) {
+					frs = new FileReaderSync();
 					return frs.readAsText(blob);
 				} else if ('arraybuffer' === responseType) {
 
 					// do something
 
 				} else if ('json' === responseType) {
-					var frs = new FileReaderSync();
+					frs = new FileReaderSync();
 
 					this.bind('Exception', function(e, err) {
 						// throw JSON parse error
@@ -107,9 +106,10 @@ define("runtime/flash/xhr/XMLHttpRequest", [
 						console.info(err);
 					});
 
-					return o.JSON.parse(frs.readAsText(blob));
+					return JSON.parse(frs.readAsText(blob));
 				}
 			}
+
 			return null;
 		},
 

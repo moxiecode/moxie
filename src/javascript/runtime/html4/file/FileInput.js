@@ -11,22 +11,27 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/events"], function(o, dom, events) {
-
+define("moxie/runtime/html5/file/FileInput", [
+	"moxie/core/utils/Basic",
+	"moxie/core/utils/Dom",
+	"moxie/core/utils/Events",
+	"moxie/core/utils/Mime",
+	"moxie/core/utils/Env"
+], function(Basic, Dom, Events, Mime, Env) {
 	return function() {
 		var _uid, _files = [], _mimes = [], _options;
 
 		function addInput() {
 			var comp = this, I = comp.getRuntime(), shimContainer, browseButton, currForm, form, input, uid;
 
-			uid = o.guid('uid_');
+			uid = Basic.guid('uid_');
 
 			shimContainer = I.getShimContainer(); // we get new ref everytime to avoid memory leaks in IE
 
 			if (_uid) { // move previous form out of the view
-				currForm = o(_uid + '_form');
+				currForm = Dom.get(_uid + '_form');
 				if (currForm) {
-					o.extend(currForm.style, { top: '100%' });
+					Basic.extend(currForm.style, { top: '100%' });
 				}
 			}
 
@@ -37,7 +42,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 			form.setAttribute('enctype', 'multipart/form-data');
 			form.setAttribute('encoding', 'multipart/form-data');
 
-			o.extend(form.style, {
+			Basic.extend(form.style, {
 				overflow: 'hidden',
 				position: 'absolute',
 				top: 0,
@@ -52,7 +57,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 			input.setAttribute('name', 'Filedata');
 			input.setAttribute('accept', _mimes.join(','));
 
-			o.extend(input.style, {
+			Basic.extend(input.style, {
 				fontSize: '999px',
 				opacity: 0
 			});
@@ -61,7 +66,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 			shimContainer.appendChild(form);
 
 			// prepare file input to be placed underneath the browse_button element
-			o.extend(input.style, {
+			Basic.extend(input.style, {
 				position: 'absolute',
 				top: 0,
 				left: 0,
@@ -69,9 +74,8 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 				height: '100%'
 			});
 
-
-			if (o.ua.browser === 'IE' && o.ua.version < 10) {
-				plupload.extend(input.style, {
+			if (Env.browser === 'IE' && Env.version < 10) {
+				Basic.extend(input.style, {
 					filter : "progid:DXImageTransform.Microsoft.Alpha(opacity=0)"
 				});
 			}
@@ -98,7 +102,7 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 
 				// after file is initialized as o.File, we need to update form and input ids
 				comp.bind('change', function() {
-					var input = o(uid), form = o(uid + '_form'), file;
+					var input = Dom.get(uid), form = Dom.get(uid + '_form'), file;
 
 					if (comp.files.length && input && form) {
 						file = comp.files[0];
@@ -119,9 +123,9 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 
 			// route click event to the input
 			if (I.can('summon_file_dialog')) {
-				browseButton = o(_options.browse_button);
-				o.removeEvent(browseButton, 'click', comp.uid);
-				o.addEvent(browseButton, 'click', function(e) {
+				browseButton = Dom.get(_options.browse_button);
+				Events.removeEvent(browseButton, 'click', comp.uid);
+				Events.addEvent(browseButton, 'click', function(e) {
 					if (input && !input.disabled) { // for some reason FF (up to 8.0.1 so far) lets to click disabled input[type=file]
 						input.click();
 					}
@@ -134,29 +138,29 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 			shimContainer = currForm = browseButton = null;
 		}
 
-		o.extend(this, {
+		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, form, shimContainer;
 
 				// figure out accept string
 				_options = options;
-				_mimes = options.accept.mimes || o.extList2mimes(options.accept);
+				_mimes = options.accept.mimes || Mime.extList2mimes(options.accept);
 
+				// TODO: I is not defined?
 				shimContainer = I.getShimContainer();
 
 				(function() {
 					var browseButton, zIndex, top;
 
-					browseButton  = o(options.browse_button);
+					browseButton = Dom.get(options.browse_button);
 
 					// Route click event to the input[type=file] element for browsers that support such behavior
 					if (I.can('summon_file_dialog')) {
-
-						if (o.getStyle(browseButton, 'position') === 'static') {
+						if (Dom.getStyle(browseButton, 'position') === 'static') {
 							browseButton.style.position = 'relative';
 						}
 
-						zIndex = parseInt(o.getStyle(browseButton, 'z-index'), 10) || 1;
+						zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 1;
 
 						browseButton.style.zIndex = zIndex;
 						shimContainer.style.zIndex = zIndex - 1;
@@ -166,27 +170,26 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 					browse_button loses interactivity, so we restore it here */
 					top = I.can('summon_file_dialog') ? browseButton : shimContainer;
 
-					o.addEvent(top, 'mouseover', function() {
+					Events.addEvent(top, 'mouseover', function() {
 						comp.trigger('mouseenter');
 					}, comp.uid);
 
-					o.addEvent(top, 'mouseout', function() {
+					Events.addEvent(top, 'mouseout', function() {
 						comp.trigger('mouseleave');
 					}, comp.uid);
 
-					o.addEvent(top, 'mousedown', function() {
+					Events.addEvent(top, 'mousedown', function() {
 						comp.trigger('mousedown');
 					}, comp.uid);
 
-					o.addEvent(o(options.container), 'mouseup', function() {
+					Events.addEvent(Dom.get(options.container), 'mouseup', function() {
 						comp.trigger('mouseup');
 					}, comp.uid);
-
 				}());
 
 				addInput.call(this);
 
-				browsebutton = shimContainer = null;
+				shimContainer = null;
 			},
 
 			getFiles: function() {
@@ -195,7 +198,8 @@ define("runtime/html5/file/FileInput", ["o", "core/utils/dom", "core/utils/event
 
 			disable: function(state) {
 				var input;
-				if (input = o(_uid)) {
+
+				if ((input = Dom.get(_uid))) {
 					input.disabled = !!state;
 				}
 			}

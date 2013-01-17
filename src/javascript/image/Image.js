@@ -12,14 +12,20 @@
 /*global define:true */
 
 define("moxie/image/Image", [
-		"moxie/core/util/Basic",
-		"moxie/core/util/Dom",
+		"moxie/core/utils/Basic",
+		"moxie/core/utils/Dom",
 		"moxie/core/Exceptions",
 		"moxie/file/FileReaderSync",
 		"moxie/runtime/RuntimeClient",
 		"moxie/runtime/Transporter",
-		"moxie/core/util/Env"
-], function(o, dom, x, FileReaderSync, RuntimeClient, Transporter, Env) {
+		"moxie/core/utils/Env",
+		"moxie/core/EventTarget",
+		"moxie/file/File",
+		"moxie/file/Blob",
+		"moxie/core/utils/Url",
+		"moxie/core/utils/Encode",
+		"moxie/core/JSON"
+], function(Basic, Dom, x, FileReaderSync, RuntimeClient, Transporter, Env, EventTarget, File, Blob, Url, Encode, JSON) {
 	var dispatches = [
 		'loadstart',
 		'progress',
@@ -59,14 +65,14 @@ define("moxie/image/Image", [
 			
 		RuntimeClient.call(this);
 		
-		o.extend(this, {
+		Basic.extend(this, {
 			/**
 			Unique id of the component
 
 			@property uid
 			@type {String}
 			*/
-			uid: o.guid('uid_'),
+			uid: Basic.guid('uid_'),
 
 			/**
 			Unique id of the connected runtime, if any.
@@ -182,23 +188,23 @@ define("moxie/image/Image", [
 				this.convertEventPropsToHandlers(dispatches);
 
 				try {
-					if (src instanceof o.Image) {
+					if (src instanceof Image) {
 						if (!src.size) { // only preloaded image objects can be used as source
 							throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 						}
 						_loadFromImage.apply(this, arguments);
 					}
-					else if (src instanceof o.File || src instanceof o.Blob) {
-						if (!~o.inArray(src.type, ['image/jpeg', 'image/png'])) {
+					else if (src instanceof File || src instanceof Blob) {
+						if (!~Basic.inArray(src.type, ['image/jpeg', 'image/png'])) {
 							throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 						}
 						_loadFromBlob.apply(this, arguments);
 					}
-					else if (o.typeOf(src) === 'string' && /^http:\/\//.test(src)) {
+					else if (Basic.typeOf(src) === 'string' && /^http:\/\//.test(src)) {
 						_loadFromUrl.apply(this, arguments);
 					}
-					else if ((el = dom.get(src)) && el.nodeName === 'img') {
-						urlp = o.parseUrl(el.src); // src can be relative
+					else if ((el = Dom.get(src)) && el.nodeName === 'img') {
+						urlp = Url.parseUrl(el.src); // src can be relative
 
 						// manually resolve the url
 						url = urlp.scheme + '://' + urlp.host + (urlp.port !== 80 ? ':' + urlp.port : '') + urlp.path;
@@ -348,7 +354,7 @@ define("moxie/image/Image", [
 					var dataUrl, type = type || this.type || 'image/jpeg';
 
 					// if possible, embed a canvas element directly
-					if (o.ua.can('create_canvas')) {
+					if (Env.can('create_canvas')) {
 						var canvas = image.getAsCanvas();
 						if (canvas) {
 							el.appendChild(canvas);
@@ -364,7 +370,7 @@ define("moxie/image/Image", [
 						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 					}
 
-					if (o.ua.can('use_data_uri_of', image.size)) {
+					if (Env.can('use_data_uri_of', image.size)) {
 						el.innerHTML = '<img src="' + dataUrl + '" width="' + image.width + '" height="' + image.height + '" />';
 						image.destroy();
 						self.trigger('embedded');
@@ -376,7 +382,7 @@ define("moxie/image/Image", [
 						
 							self.bind("Embedded", function() {
 								// position and size properly
-								o.extend(runtime.getShimContainer().style, {
+								Basic.extend(runtime.getShimContainer().style, {
 									//position: 'relative',
 									top: '0px',
 									left: '0px',
@@ -398,7 +404,7 @@ define("moxie/image/Image", [
 							image.destroy();
 						});
 
-						tr.transport(o.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, o.extend({}, options, {
+						tr.transport(Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, Basic.extend({}, options, {
 							required_caps: {
 								display_media: true
 							},
@@ -407,7 +413,7 @@ define("moxie/image/Image", [
 					}
 				}
 
-				if (!(el = o(el))) {
+				if (!(el = Dom.get(el))) {
 					throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);
 				}
 
@@ -426,7 +432,7 @@ define("moxie/image/Image", [
 					height = options.height || width;
 				} else {
 					// if container element has > 0 dimensions, take them
-					dimensions = o.getSize(el);
+					dimensions = Dom.getSize(el);
 					if (dimensions.w && dimensions.h) { // both should be > 0
 						width = dimensions.w;
 						height = dimensions.h;
@@ -461,11 +467,10 @@ define("moxie/image/Image", [
 				this.unbindAll();
 			},
 			
-			constructor: o.Image
+			constructor: Image
 		});
 
-
-		o.defineProperty(this, 'src', {
+		Basic.defineProperty(this, 'src', {
 			configurable: false,
 
 			set: function(src) {
@@ -473,11 +478,9 @@ define("moxie/image/Image", [
 			}
 		});
 
-		
 		this.bind('load', function(e, info) {
 			_updateInfo.call(this, info);
 		}, 999);
-
 
 		function _updateInfo(info) {
 			if (!info) {
@@ -485,14 +488,14 @@ define("moxie/image/Image", [
 			}
 
 			if (info) {
-				if (o.typeOf(info.meta) === 'string') { // might be a JSON string
+				if (Basic.typeOf(info.meta) === 'string') { // might be a JSON string
 					try {
-						this.meta = o.JSON.parse(info.meta);
+						this.meta = JSON.parse(info.meta);
 					} catch(ex) {}
 				}
 			}
 
-			o.extend(this, { // info object might be non-enumerable (as returned from SilverLight for example)
+			Basic.extend(this, { // info object might be non-enumerable (as returned from SilverLight for example)
 				size: info.size,
 				width: info.width,
 				height: info.height,
@@ -568,7 +571,7 @@ define("moxie/image/Image", [
 		}
 	}
 	
-	Image.prototype = o.eventTarget;
-	
+	Image.prototype = new EventTarget();
+
 	return Image;
 });

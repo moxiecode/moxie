@@ -16,7 +16,7 @@ define('moxie/file/FileReader', [
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
 	'moxie/runtime/RuntimeClient'
-], function(o, x, EventTarget, RuntimeClient) {
+], function(Basic, x, EventTarget, RuntimeClient) {
 	/**
 	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
 	interface. Where possible uses native FileReader, where - not falls back to shims.
@@ -33,8 +33,8 @@ define('moxie/file/FileReader', [
 				
 		RuntimeClient.call(self);
 
-		o.extend(self, {
-			uid: o.guid('uid_'),
+		Basic.extend(self, {
+			uid: Basic.guid('uid_'),
 
 			/**
 			Contains current state of o.FileReader object. Can take values of o.FileReader.EMPTY, o.FileReader.LOADING
@@ -97,7 +97,7 @@ define('moxie/file/FileReader', [
 				
 				this.result = null;
 				
-				if (!!~o.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE])) {
+				if (!!~Basic.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE])) {
 					return;
 				} else if (this.readyState === FileReader.LOADING) {
 					this.readyState = FileReader.DONE;

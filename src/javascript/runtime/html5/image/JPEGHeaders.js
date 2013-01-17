@@ -34,7 +34,6 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 			},
 			headers = [], read, idx, marker, length = 0, limit;
 
-
 		read = new BinaryReader();
 		read.init(data);
 

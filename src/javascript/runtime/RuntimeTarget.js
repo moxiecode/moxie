@@ -15,7 +15,7 @@ define('moxie/runtime/RuntimeTarget', [
 	'moxie/core/utils/Basic',
 	'moxie/runtime/RuntimeClient',
 	"moxie/core/EventTarget"
-], function(o, RuntimeClient, EventTarget) {
+], function(Basic, RuntimeClient, EventTarget) {
 	/**
 	Instance of this class can be used as a target for the events dispatched by shims,
 	when allowing them onto components is for either reason inappropriate
@@ -26,7 +26,7 @@ define('moxie/runtime/RuntimeTarget', [
 	@extends EventTarget
 	*/
 	function RuntimeTarget() {
-		this.uid = o.guid('uid_');
+		this.uid = Basic.guid('uid_');
 		RuntimeClient.call(this);
 	}
 

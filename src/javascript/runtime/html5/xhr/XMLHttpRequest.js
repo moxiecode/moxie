@@ -18,12 +18,12 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/xhr/FormData",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Env"
-], function(o, File, Blob, FormData, x, Env) {
+], function(Basic, File, Blob, FormData, x, Env) {
 	return function() {
 		var I = this.getRuntime();
 		var _xhr2, filename;
 
-		o.extend(this, {
+		Basic.extend(this, {
 			send: function(meta, data) {
 				var target = this
 				, mustSendAsBinary = false
@@ -38,8 +38,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				_xhr2.open(meta.method, meta.url, meta.async, meta.user, meta.password);
 
 				// set request headers
-				if (!o.isEmptyObj(meta.headers)) {
-					o.each(meta.headers, function(value, header) {
+				if (!Basic.isEmptyObj(meta.headers)) {
+					Basic.each(meta.headers, function(value, header) {
 						_xhr2.setRequestHeader(header, value);
 					});
 				}
@@ -61,7 +61,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 					} else {
 						fd = new window.FormData();
 
-						o.each(data._fields, function(value, name) {
+						Basic.each(data._fields, function(value, name) {
 							if (value instanceof Blob) {
 								fd.append(name, value.getSource());
 							} else {
@@ -97,7 +97,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 					}
 
 					function removeEventListeners() {
-						o.each(events, function(name) {
+						Basic.each(events, function(name) {
 							_xhr2.removeEventListener(name, reDispatch);
 						});
 
@@ -108,7 +108,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						}
 					}
 
-					o.each(events, function(name) {
+					Basic.each(events, function(name) {
 						_xhr2.addEventListener(name, reDispatch);
 					});
 
@@ -151,11 +151,11 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				try {
 					if (_xhr2) {
 						if ('blob' === responseType) {
-							var file = new o.File(I.uid, _xhr2.response);
+							var file = new File(I.uid, _xhr2.response);
 							file.name = filename;
 							return file;
 						} else if ('json' === responseType && !Env.can('receive_response_type', 'json')) {
-							return o.JSON.parse(_xhr2.response);
+							return JSON.parse(_xhr2.response);
 						} else {
 							return _xhr2.response;
 						}
@@ -186,9 +186,9 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 			_xhr2.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 
 			// append multipart parameters
-			if (o.typeOf(params) === 'object') {
-				o.each(params, function(value, name) {
-					if (value instanceof o.Blob) {
+			if (Basic.typeOf(params) === 'object') {
+				Basic.each(params, function(value, name) {
+					if (value instanceof Blob) {
 						src = value.getSource();
 
 						// Build RFC2388 blob

@@ -20,8 +20,9 @@ define("moxie/xhr/XMLHttpRequest", [
 	"moxie/runtime/RuntimeTarget",
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
-	"moxie/core/utils/Env"
-], function(o, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData, Env) {
+	"moxie/core/utils/Env",
+	"moxie/core/utils/Mime"
+], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData, Env, Mime) {
 	var undef;
 
 	var httpCode = {
@@ -83,7 +84,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	};
 
 	function XMLHttpRequestUpload() {
-		this.uid = o.guid('uid_');
+		this.uid = Basic.guid('uid_');
 	}
 	
 	XMLHttpRequestUpload.prototype = new EventTarget();
@@ -229,14 +230,14 @@ define("moxie/xhr/XMLHttpRequest", [
 			_mode = NATIVE;
 
 		
-		o.extend(this, props, {
+		Basic.extend(this, props, {
 			/**
 			Unique id of the component
 
 			@property uid
 			@type String
 			*/
-			uid: 'uid_' + o.guid(),
+			uid: 'uid_' + Basic.guid(),
 			
 			/**
 			Target for Upload events
@@ -285,13 +286,13 @@ define("moxie/xhr/XMLHttpRequest", [
 				}
 
 				// 3
-				if (!!~o.inArray(method.toUpperCase(), ['CONNECT', 'DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'TRACE', 'TRACK'])) {
+				if (!!~Basic.inArray(method.toUpperCase(), ['CONNECT', 'DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'TRACE', 'TRACK'])) {
 					_method = method.toUpperCase();
 				}
 				
 				
 				// 4 - allowing these methods poses a security risk
-				if (!!~o.inArray(_method, ['CONNECT', 'TRACE', 'TRACK'])) {
+				if (!!~Basic.inArray(_method, ['CONNECT', 'TRACE', 'TRACK'])) {
 					throw new x.DOMException(x.DOMException.SECURITY_ERR);
 				}
 
@@ -390,10 +391,10 @@ define("moxie/xhr/XMLHttpRequest", [
 					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
 				}*/
 
-				header = o.trim(header).toLowerCase();
+				header = Basic.trim(header).toLowerCase();
 				
 				// setting of proxy-* and sec-* headers is prohibited by spec
-				if (!!~o.inArray(header, uaHeaders) || /^(proxy\-|sec\-)/.test(header)) {
+				if (!!~Basic.inArray(header, uaHeaders) || /^(proxy\-|sec\-)/.test(header)) {
 					return false;
 				}
 
@@ -422,12 +423,12 @@ define("moxie/xhr/XMLHttpRequest", [
 				var matches, charset;
 			
 				// 1
-				if (!!~o.inArray(_p('readyState'), [XMLHttpRequest.LOADING, XMLHttpRequest.DONE])) {
+				if (!!~Basic.inArray(_p('readyState'), [XMLHttpRequest.LOADING, XMLHttpRequest.DONE])) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 
 				// 2
-				mime = o.trim(mime.toLowerCase());
+				mime = Basic.trim(mime.toLowerCase());
 
 				if (/;/.test(mime) && (matches = mime.match(/^([^;]+)(?:;\scharset\=)?(.*)$/))) {
 					mime = matches[1];
@@ -436,7 +437,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					}
 				}
 
-				if (!o.mimes[mime]) {
+				if (!Mime.mimes[mime]) {
 					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
 				}
 
@@ -458,7 +459,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			send: function(data, options) {
 				var self = this;
 					
-				if (o.typeOf(options) === 'string') {
+				if (Basic.typeOf(options) === 'string') {
 					_options = { ruid: options };
 				} else if (!options) {
 					_options = {};
@@ -537,7 +538,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				_error_flag = true;
 				_sync_flag = false;
 
-				if (!~o.inArray(_p('readyState'), [XMLHttpRequest.UNSENT, XMLHttpRequest.OPENED, XMLHttpRequest.DONE])) {
+				if (!~Basic.inArray(_p('readyState'), [XMLHttpRequest.UNSENT, XMLHttpRequest.OPENED, XMLHttpRequest.DONE])) {
 					_p('readyState', XMLHttpRequest.DONE);
 					_send_flag = false;
 
@@ -553,7 +554,7 @@ define("moxie/xhr/XMLHttpRequest", [
 							this.upload.dispatchEvent('abort');
 							this.upload.dispatchEvent('loadend');
 						}
-					} else if (o.typeOf(_xhr.getRuntime) === 'function' && (runtime = _xhr.getRuntime())) {
+					} else if (Basic.typeOf(_xhr.getRuntime) === 'function' && (runtime = _xhr.getRuntime())) {
 						runtime.exec.call(_xhr, 'XMLHttpRequest', 'abort', _upload_complete_flag);
 					} else {
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
@@ -869,8 +870,8 @@ define("moxie/xhr/XMLHttpRequest", [
 			_xhr.open(_method, _url, _async, _user, _password);
 			
 			// set request headers
-			if (!o.isEmptyObj(_headers)) {
-				o.each(_headers, function(value, header) {
+			if (!Basic.isEmptyObj(_headers)) {
+				Basic.each(_headers, function(value, header) {
 					_xhr.setRequestHeader(header, value);
 				});
 			}
@@ -919,7 +920,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					
 					_p('response', runtime.exec.call(_xhr, 'XMLHttpRequest', 'getResponse', _p('responseType')));
 
-					if (!!~o.inArray(_p('responseType'), ['text', ''])) {
+					if (!!~Basic.inArray(_p('responseType'), ['text', ''])) {
 						_p('responseText', _p('response'));
 					} else if (_p('responseType') === 'document') {
 						_p('responseXML', _p('response'));
@@ -963,7 +964,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			}
 
 			// clarify our requirements
-			_options.required_caps = o.extend({}, _options.required_caps, {
+			_options.required_caps = Basic.extend({}, _options.required_caps, {
 				receive_response_type: props.responseType
 			});
 
@@ -996,7 +997,7 @@ define("moxie/xhr/XMLHttpRequest", [
 
 		function _canUseNativeXHR() {
 			return _method === 'HEAD' ||
-					(_method === 'GET' && !!~o.inArray(_p('responseType'), ["", "text", "document"])) ||
+					(_method === 'GET' && !!~Basic.inArray(_p('responseType'), ["", "text", "document"])) ||
 					(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded');
 		}
 		

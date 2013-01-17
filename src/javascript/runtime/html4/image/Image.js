@@ -11,6 +11,8 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/html4/image/Image", ["runtime/html5/image/Image"], function(Image) {
+define("moxie/runtime/html4/image/Image", [
+	"runtime/html5/image/Image"
+], function(Image) {
 	return Image;
 });

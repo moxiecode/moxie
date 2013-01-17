@@ -14,19 +14,20 @@
 define("moxie/runtime/html5/file/FileInput", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
-	"moxie/core/utils/Events"
-], function(o, Dom, Events) {
+	"moxie/core/utils/Events",
+	"moxie/core/utils/Mime"
+], function(Basic, Dom, Events, Mime) {
 	return function() {
 		var _files = [];
 
-		o.extend(this, {
+		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, I = comp.getRuntime(), input, shimContainer, mimes;
 
 				_files = [];
 
 				// figure out accept string
-				mimes = options.accept.mimes || o.extList2mimes(options.accept);
+				mimes = options.accept.mimes || Mime.extList2mimes(options.accept);
 
 				shimContainer = I.getShimContainer();
 
@@ -36,7 +37,7 @@ define("moxie/runtime/html5/file/FileInput", [
 				input = Dom.get(I.uid);
 
 				// prepare file input to be placed underneath the browse_button element
-				o.extend(input.style, {
+				Basic.extend(input.style, {
 					position: 'absolute',
 					top: 0,
 					left: 0,
@@ -84,7 +85,7 @@ define("moxie/runtime/html5/file/FileInput", [
 						comp.trigger('mousedown');
 					}, comp.uid);
 
-					Events.addEvent(o(options.container), 'mouseup', function() {
+					Events.addEvent(Dom.get(options.container), 'mouseup', function() {
 						comp.trigger('mouseup');
 					}, comp.uid);
 

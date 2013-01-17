@@ -18,11 +18,9 @@ define("moxie/runtime/html5/Runtime", [
 	//"moxie/runtime/html5/extensions",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/core/utils/Env"
-], function(o, x, R, /*extensions,*/ ImageInfo, Env) {
-	var type = 'html5';
-
-	R.addConstructor(type, (function() {
-		function Runtime(options) {
+], function(Basic, x, Runtime, /*extensions,*/ ImageInfo, Env) {
+	Runtime.addConstructor('html5', (function() {
+		function Html5Runtime(options) {
 			var I = this,
 			shim,
 			// allow to extend this runtime
@@ -31,11 +29,12 @@ define("moxie/runtime/html5/Runtime", [
 			defaults = {
 
 			};
-			options = typeof(options) === 'object' ? o.extend(defaults, options) : defaults;
 
-			R.apply(this, [options, arguments[1] || type]);
+			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
 
-			o.extend(this, {
+			Runtime.apply(this, [options, arguments[1] || 'html5']);
+
+			Basic.extend(this, {
 
 				init : function() {
 					if (!window.File) { // minimal requirement
@@ -55,7 +54,7 @@ define("moxie/runtime/html5/Runtime", [
 				}
 			});
 
-			/*shim = o.extend((function() {
+			/*shim = Basic.extend((function() {
 				var objpool = {};
 
 				return {
@@ -81,8 +80,8 @@ define("moxie/runtime/html5/Runtime", [
 			}()), extensions);*/
 		}
 
-		Runtime.can = (function() {
-			var caps = o.extend({}, R.caps, {
+		Html5Runtime.can = (function() {
+			var caps = Basic.extend({}, Runtime.caps, {
 					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
 					access_image_binary: function() {
 						return can('access_binary') && !!ImageInfo;
@@ -120,7 +119,7 @@ define("moxie/runtime/html5/Runtime", [
 					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
 						return  (Env.browser === 'Firefox' && Env.version >= 4)	||
 								(Env.browser === 'Opera' && Env.version >= 12)	||
-								!!~o.inArray(Env.browser, ['Chrome', 'Safari']);
+								!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 					}()),
 					upload_filesize: true
 				});
@@ -128,12 +127,12 @@ define("moxie/runtime/html5/Runtime", [
 			function can() {
 				var args = [].slice.call(arguments);
 				args.unshift(caps);
-				return R.can.apply(this, args);
+				return Runtime.can.apply(this, args);
 			}
+
 			return can;
 		}());
 
-		return Runtime;
+		return Html5Runtime;
 	}()));
-
 });

@@ -15,7 +15,7 @@ define("moxie/runtime/html5/image/PNG", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Basic",
 	"moxie/runtime/html5/utils/BinaryReader"
-], function(x, o, BinaryReader) {
+], function(x, Basic, BinaryReader) {
 	return function PNG(binstr) {
 		var _binstr, _br, _hm, _ep, _info;
 
@@ -58,8 +58,7 @@ define("moxie/runtime/html5/image/PNG", [
 
 		_info = _getDimensions.call(this);
 
-
-		o.extend(this, {
+		Basic.extend(this, {
 			type: 'image/png',
 
 			size: _binstr.length,

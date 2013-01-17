@@ -16,15 +16,16 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Encode",
 	"moxie/file/Blob",
-	"moxie/runtime/html5/image/ImageInfo"
-], function(o, x, Encode, Blob, ImageInfo) {
+	"moxie/runtime/html5/image/ImageInfo",
+	"moxie/core/utils/Mime"
+], function(Basic, x, Encode, Blob, ImageInfo, Mime) {
 	return function() {
 		var I = this.getRuntime(), me = this
 		, _img, _imgInfo, _canvas, _binStr, _srcBlob
 		, _modified = false // is set true whenever image is modified
 		;
 
-		o.extend(me, {
+		Basic.extend(me, {
 			loadFromBlob: function(blob, asBinary) {
 				var comp = this;
 
@@ -74,7 +75,7 @@ define("moxie/runtime/html5/image/Image", [
 				var info = {
 						width: _img && _img.width || 0,
 						height: _img && _img.height || 0,
-						type: _srcBlob && (_srcBlob.type || _srcBlob.name && o.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
+						type: _srcBlob && (_srcBlob.type || _srcBlob.name && Mime.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
 						size: _binStr && _binStr.length || _srcBlob.size || 0,
 						name: _srcBlob && _srcBlob.name || '',
 						meta: {}
@@ -85,7 +86,7 @@ define("moxie/runtime/html5/image/Image", [
 						_imgInfo.purge();
 					}
 					_imgInfo = new ImageInfo(_binStr);
-					o.extend(info, _imgInfo);
+					Basic.extend(info, _imgInfo);
 				}
 				return info;
 			},
@@ -121,7 +122,7 @@ define("moxie/runtime/html5/image/Image", [
 					_resize.call(this, this.width, this.height, false);
 				}
 
-				if (!_modified && !!~o.inArray(o.typeOf(_srcBlob), ['blob', 'file'])) {
+				if (!_modified && !!~Basic.inArray(Basic.typeOf(_srcBlob), ['blob', 'file'])) {
 					blob = new Blob(I.uid, _srcBlob);
 				} else {
 					var data = me.getAsBinaryString.call(this, type, quality);
@@ -201,6 +202,7 @@ define("moxie/runtime/html5/image/Image", [
 
 			destroy: function() {
 				_purge.call(this);
+
 				// TODO: objpool not defined, why?
 				delete objpool[this.uid];
 			}

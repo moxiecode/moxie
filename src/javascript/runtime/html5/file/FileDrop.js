@@ -16,11 +16,11 @@ define("moxie/runtime/html5/file/FileInput", [
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Env"
-], function(o, Dom, Events, Env) {
+], function(Basic, Dom, Events, Env) {
 	return function() {
 		var _files = [];
 
-		o.extend(this, {
+		Basic.extend(this, {
 			init: function() {
 				// TODO: Options comes from where??
 				var comp = this, I = this.getRuntime(), dropZone = options.container;
@@ -30,7 +30,7 @@ define("moxie/runtime/html5/file/FileInput", [
 				// TODO: Remove this logic once Safari has proper drag/drop support
 				if (Env.browser === "Safari" && Env.OS === "Windows" && Env.version < 5.2) {
 					if (Dom.getStyle(dropZone, 'position') === 'static') {
-						o.extend(dropZone.style, {
+						Basic.extend(dropZone.style, {
 							position : 'relative'
 						});
 					}
@@ -56,7 +56,7 @@ define("moxie/runtime/html5/file/FileInput", [
 							_files = [];
 							// there used to be a strange bug in Safari for Windows, when multiple files were dropped
 							// onto input[type=file] and they all basically resulted into the same file
-							o.each(this.files, function(file) {
+							Basic.each(this.files, function(file) {
 								if (!fileNames[file.name]) {
 									_files.push(file);
 									fileNames[file.name] = true; // remember file name
@@ -69,7 +69,7 @@ define("moxie/runtime/html5/file/FileInput", [
 							comp.trigger("drop");
 						};
 
-						o.extend(dropInput.style, {
+						Basic.extend(dropInput.style, {
 							position : 'absolute',
 							display : 'block',
 							top : 0,
@@ -84,7 +84,7 @@ define("moxie/runtime/html5/file/FileInput", [
 
 
 					Events.addEvent(dropZone, 'dragleave', function(e) {
-						var dropInput = o(I.uid + "_drop");
+						var dropInput = Dom.get(I.uid + "_drop");
 						if (!dropInput) {
 							dropInput.parentNode.removeChild(dropInput);
 						}

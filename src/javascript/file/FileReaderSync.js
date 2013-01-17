@@ -13,8 +13,9 @@
 
 define('moxie/file/FileReaderSync', [
 	'moxie/core/utils/Basic',
-	'moxie/runtime/RuntimeClient'
-], function(o, RuntimeClient) {
+	'moxie/runtime/RuntimeClient',
+	'moxie/core/utils/Encode'
+], function(Basic, RuntimeClient, Encode) {
 	/**
 	Synchronous FileReader implementation. Something like this is available in WebWorkers environment, here
 	it can be used to read only preloaded blobs/files and only below certain size (not yet sure what that'd be,
@@ -27,9 +28,8 @@ define('moxie/file/FileReaderSync', [
 	return function() {
 		RuntimeClient.call(this);
 
-		o.extend(this, {
-
-			uid: o.guid('uid_'),
+		Basic.extend(this, {
+			uid: Basic.guid('uid_'),
 
 			readAsBinaryString: function(blob) {
 				return _read.call(this, 'readAsBinaryString', blob);
@@ -55,7 +55,7 @@ define('moxie/file/FileReaderSync', [
 					case 'readAsBinaryString':
 						return src;
 					case 'readAsDataURL':
-						return 'data:' + blob.type + ';base64,' + o.btoa(src);
+						return 'data:' + blob.type + ';base64,' + Encode.btoa(src);
 					case 'readAsText':
 						var txt = '';
 						for (var i = 0, length = src.length; i < length; i++) {

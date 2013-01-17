@@ -13,8 +13,9 @@
 
 define('moxie/file/File', [
 	'moxie/core/utils/Basic',
+	'moxie/core/utils/Mime',
 	'moxie/file/Blob'
-], function(o, Blob) {
+], function(Basic, Mime, Blob) {
 	/**
 	@class File
 	@extends Blob
@@ -34,21 +35,21 @@ define('moxie/file/File', [
 
 		// figure out the type
 		if (!file.type) {
-			type = ext && o.mimes[ext[0].toLowerCase()] || 'application/octet-stream';
+			type = ext && Mime.mimes[ext[0].toLowerCase()] || 'application/octet-stream';
 		}
 
 		// sanitize file name or generate new one
 		if (file.name) {
 			name = file.name.replace(/\\/g, '/');
 			name = name.substr(name.lastIndexOf('/') + 1);
-		} else if (file.type && o.extensions[file.type]) {
-			ext = o.extensions[file.type][0];
-			name = o.guid(file.type.split('/')[0] + '_' || 'file_') + '.' + ext;
+		} else if (file.type && Mime.extensions[file.type]) {
+			ext = Mime.extensions[file.type][0];
+			name = Basic.guid(file.type.split('/')[0] + '_' || 'file_') + '.' + ext;
 		}
 
 		Blob.apply(this, arguments);
 		
-		o.extend(this, {
+		Basic.extend(this, {
 			type: file.type || type,
 
 			/**
