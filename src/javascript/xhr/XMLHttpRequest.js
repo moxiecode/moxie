@@ -7,9 +7,21 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
-define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/FormData"], function(o, RuntimeTarget, Blob, FormData) {
-	var undefined;
-	var x = o.Exceptions;
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
+/*global define:true */
+
+define("moxie/xhr/XMLHttpRequest", [
+	"moxie/core/utils/Basic",
+	"moxie/core/Exceptions",
+	"moxie/core/EventTarget",
+	"moxie/core/utils/Encode",
+	"moxie/core/utils/Url",
+	"runtime/RuntimeTarget",
+	"file/Blob",
+	"xhr/FormData"
+], function(o, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData) {
+	var undef;
 
 	var httpCode = {
 		100: 'Continue',
@@ -67,16 +79,14 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 		506: 'Variant Also Negotiates',
 		507: 'Insufficient Storage',
 		510: 'Not Extended'
-	};	
-
+	};
 
 	function XMLHttpRequestUpload() {
 		this.uid = o.guid('uid_');
 	}
 	
-	XMLHttpRequestUpload.prototype = o.eventTarget;
+	XMLHttpRequestUpload.prototype = EventTarget;
 
-	
 	/**
 	Implementation of XMLHttpRequest
 
@@ -89,7 +99,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 	
 	var NATIVE = 1, RUNTIME = 2;
 					
-	function XMLHttpRequest() {	
+	function XMLHttpRequest() {
 		var self = this,
 			// this (together with _p() @see below) is here to gracefully upgrade to setter/getter syntax where possible
 			props = {
@@ -120,12 +130,12 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 
 				@property readyState
 				@type Number
-				@default 0 (UNSENT)	
+				@default 0 (UNSENT)
 				*/
 				readyState: XMLHttpRequest.UNSENT,
 
 				/**
-				True when user credentials are to be included in a cross-origin request. False when they are to be excluded 
+				True when user credentials are to be included in a cross-origin request. False when they are to be excluded
 				in a cross-origin request and when cookies are to be ignored in its response. Initially false.
 
 				@property withCredentials
@@ -152,7 +162,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				statusText: "",
 
 				/**
-				Returns the response type. Can be set to change the response type. Values are: 
+				Returns the response type. Can be set to change the response type. Values are:
 				the empty string (default), "arraybuffer", "blob", "document", "json", and "text".
 				
 				@property responseType
@@ -161,7 +171,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				responseType: "",
 
 				/**
-				Returns the document response entity body. 
+				Returns the document response entity body.
 				
 				Throws an "InvalidStateError" exception if responseType is not the empty string or "document".
 
@@ -188,20 +198,20 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				@type Mixed
 				*/
 				response: null
-			}, 
+			},
 
 			_async = true,
-			_url, 
+			_url,
 			_method,
 			_headers = {},
 			_user,
-			_password, 
+			_password,
 			_encoding = null,
 			_mimeType = null,
 
 			// flags
 			_sync_flag = false,
-			_send_flag = false,		
+			_send_flag = false,
 			_upload_events_flag = false,
 			_upload_complete_flag = false,
 			_error_flag = false,
@@ -219,7 +229,6 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 
 		
 		o.extend(this, props, {
-			
 			/**
 			Unique id of the component
 
@@ -250,7 +259,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 			Throws an "InvalidAccessError" exception if one of the following is true:
 
 			Either user or password is passed as argument and the origin of url does not match the XMLHttpRequest origin.
-			There is an associated XMLHttpRequest document and either the timeout attribute is not zero, 
+			There is an associated XMLHttpRequest document and either the timeout attribute is not zero,
 			the withCredentials attribute is true, or the responseType attribute is not the empty string.
 
 
@@ -270,14 +279,14 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				}
 				
 				// 2 - check if any code point in method is higher than U+00FF or after deflating method it does not match the method
-				if (/[\u0100-\uffff]/.test(method) || o.utf8_encode(method) !== method) {						
+				if (/[\u0100-\uffff]/.test(method) || Encode.utf8_encode(method) !== method) {
 					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
-				} 
+				}
 
 				// 3
-				if (!!~o.inArray(method.toUpperCase(), ['CONNECT', 'DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'TRACE', 'TRACK'])) {						
+				if (!!~o.inArray(method.toUpperCase(), ['CONNECT', 'DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'TRACE', 'TRACK'])) {
 					_method = method.toUpperCase();
-				} 
+				}
 				
 				
 				// 4 - allowing these methods poses a security risk
@@ -286,14 +295,14 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				}
 
 				// 5
-				url = o.utf8_encode(url);
+				url = Encode.utf8_encode(url);
 				
 				// 6 - Resolve url relative to the XMLHttpRequest base URL. If the algorithm returns an error, throw a "SyntaxError".
-				urlp = o.parseUrl(url);
+				urlp = Url.parseUrl(url);
 																
 				// 7 - manually build up absolute url
-				_url = o.resolveUrl(url);
-								
+				_url = Url.resolveUrl(url);
+		
 				// 9-10, 12-13
 				if ((user || password) && !_sameOrigin(urlp)) {
 					throw new x.DOMException(x.DOMException.INVALID_ACCESS_ERR);
@@ -328,39 +337,39 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 			},
 			
 			/**
-			Appends an header to the list of author request headers, or if header is already 
+			Appends an header to the list of author request headers, or if header is already
 			in the list of author request headers, combines its value with value.
 
 			Throws an "InvalidStateError" exception if the state is not OPENED or if the send() flag is set.
-			Throws a "SyntaxError" exception if header is not a valid HTTP header field name or if value 
+			Throws a "SyntaxError" exception if header is not a valid HTTP header field name or if value
 			is not a valid HTTP header field value.
 			
 			@method setRequestHeader
 			@param {String} header
-			@param {String|Number} value 
+			@param {String|Number} value
 			*/
 			setRequestHeader: function(header, value) {
-				var uaHeaders = [ // these headers are controlled by the user agent 
-						"accept-charset", 
-						"accept-encoding", 
-						"access-control-request-headers", 
-						"access-control-request-method", 
-						"connection", 
-						"content-length", 
-						"cookie", 
-						"cookie2", 
-						"content-transfer-encoding", 
-						"date", 
-						"expect", 
-						"host", 
-						"keep-alive", 
-						"origin", 
-						"referer", 
-						"te", 
-						"trailer", 
-						"transfer-encoding", 
-						"upgrade", 
-						"user-agent", 
+				var uaHeaders = [ // these headers are controlled by the user agent
+						"accept-charset",
+						"accept-encoding",
+						"access-control-request-headers",
+						"access-control-request-method",
+						"connection",
+						"content-length",
+						"cookie",
+						"cookie2",
+						"content-transfer-encoding",
+						"date",
+						"expect",
+						"host",
+						"keep-alive",
+						"origin",
+						"referer",
+						"te",
+						"trailer",
+						"transfer-encoding",
+						"upgrade",
+						"user-agent",
 						"via"
 					];
 				
@@ -370,21 +379,21 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				}
 
 				// 3
-				if (/[\u0100-\uffff]/.test(header) || o.utf8_encode(header) !== header) {						
+				if (/[\u0100-\uffff]/.test(header) || Encode.utf8_encode(header) !== header) {
 					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
-				} 
+				}
 
-				// 4 
+				// 4
 				/* this step is seemingly bypassed in browsers, probably to allow various unicode characters in header values
-				if (/[\u0100-\uffff]/.test(value) || o.utf8_encode(value) !== value) {						
+				if (/[\u0100-\uffff]/.test(value) || Encode.utf8_encode(value) !== value) {
 					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
-				}*/ 
-								
+				}*/
+
 				header = o.trim(header).toLowerCase();
 				
 				// setting of proxy-* and sec-* headers is prohibited by spec
 				if (!!~o.inArray(header, uaHeaders) || /^(proxy\-|sec\-)/.test(header)) {
-					return false;	
+					return false;
 				}
 
 				// camelize
@@ -392,7 +401,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				// header = header.replace(/\b\w/g, function($1) { return $1.toUpperCase(); });
 				
 				if (!_headers[header]) {
-					_headers[header] = value;	
+					_headers[header] = value;
 				} else {
 					// http://tools.ietf.org/html/rfc2616#section-4.2 (last paragraph)
 					_headers[header] += ', ' + value;
@@ -436,7 +445,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 			},
 			
 			/**
-			Initiates the request. The optional argument provides the request entity body. 
+			Initiates the request. The optional argument provides the request entity body.
 			The argument is ignored if request method is GET or HEAD.
 
 			Throws an "InvalidStateError" exception if the state is not OPENED or if the send() flag is set.
@@ -449,14 +458,14 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				var self = this;
 					
 				if (o.typeOf(options) === 'string') {
-					_options = { ruid: options };	
+					_options = { ruid: options };
 				} else if (!options) {
 					_options = {};
 				} else {
 					_options = options;
 				}
 													
-				this.convertEventPropsToHandlers(dispatches);	
+				this.convertEventPropsToHandlers(dispatches);
 				this.upload.convertEventPropsToHandlers(dispatches);
 															
 				// 1-2
@@ -469,15 +478,15 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 					
 					// sending Blob
 					if (data instanceof Blob) {
-						_options.ruid = data.ruid;	
+						_options.ruid = data.ruid;
 						_mimeType = data.type;
-					} 
+					}
 					
 					// FormData
 					else if (data instanceof FormData) {
 						if (data._blob) {
 							var blob = data._fields[data._blob];
-							_options.ruid = blob.ruid;	
+							_options.ruid = blob.ruid;
 							_mimeType = blob.type;
 						}
 					}
@@ -488,12 +497,12 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 						_mimeType = 'text/plain;charset=UTF-8';
 						
 						// data should be converted to Unicode and encoded as UTF-8
-						data = o.utf8_encode(data);
+						data = Encode.utf8_encode(data);
 					}
-				} 
-								
+				}
+
 				// 4 - storage mutex
-				// 5	
+				// 5
 				_upload_events_flag = (!_sync_flag && this.upload.hasEventListener()); // DSAP
 				// 6
 				_error_flag = false;
@@ -513,7 +522,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 					}
 				}
 				// 8.5 - Return the send() method call, but continue running the steps in this algorithm.
-				_doXHR.call(self, data); 								
+				_doXHR.call(self, data);
 			},
 			
 			/**
@@ -527,7 +536,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				_error_flag = true;
 				_sync_flag = false;
 
-				if (!~o.inArray(_p('readyState'), [XMLHttpRequest.UNSENT, XMLHttpRequest.OPENED, XMLHttpRequest.DONE])) {	
+				if (!~o.inArray(_p('readyState'), [XMLHttpRequest.UNSENT, XMLHttpRequest.OPENED, XMLHttpRequest.DONE])) {
 					_p('readyState', XMLHttpRequest.DONE);
 					_send_flag = false;
 
@@ -546,23 +555,23 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 					} else if (o.typeOf(_xhr.getRuntime) === 'function' && (runtime = _xhr.getRuntime())) {
 						runtime.exec.call(_xhr, 'XMLHttpRequest', 'abort', _upload_complete_flag);
 					} else {
-						throw new o.DOMException(o.DOMException.INVALID_STATE_ERR);
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
 
-					_upload_complete_flag = true;					
+					_upload_complete_flag = true;
 				} else {
 					_p('readyState', XMLHttpRequest.UNSENT);
 				}
 			},
 			
 			toString: function() {
-				return "[object XMLHttpRequest]";	
+				return "[object XMLHttpRequest]";
 			}
 		});
 
 		/** this is nice, but maybe too lengthy
 
-		// if supported by JS version, set getters/setters for specific properties	
+		// if supported by JS version, set getters/setters for specific properties
 		o.defineProperty(this, 'readyState', {
 			configurable: false,
 
@@ -660,7 +669,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 			get: function() {
 				// 1
 				if (!~o.inArray(_p('responseType'), ['', 'text'])) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 
 				// 2-3
@@ -678,7 +687,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 			get: function() {
 				// 1
 				if (!~o.inArray(_p('responseType'), ['', 'document'])) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 
 				// 2-3
@@ -706,7 +715,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 
 				return _p('response');
 			}
-		});	
+		});
 
 		*/
 
@@ -724,24 +733,24 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				}
 			}
 		}
-
+/*
 		function _toASCII(str, AllowUnassigned, UseSTD3ASCIIRules) {
 			// TODO: http://tools.ietf.org/html/rfc3490#section-4.1
 			return str.toLowerCase();
 		}
-		
-		
+		*/
+
 		function _sameOrigin(url) {
 			function origin(url) {
 				return [url.scheme, url.host, url.port].join('/');
 			}
 				
 			if (typeof url === 'string') {
-				url = o.parseUrl(url);
+				url = Url.parseUrl(url);
 			}
 				
-			return origin(o.parseUrl()) === origin(url);
-		}	
+			return origin(Url.parseUrl()) === origin(url);
+		}
 		
 		function _getNativeXHR() {
 			if (window.XMLHttpRequest && !(o.ua.browser === 'IE' && o.ua.version < 8)) { // IE7 has native XHR but it's buggy
@@ -780,12 +789,12 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 			return rXML;
 		}
 		
-		function _doNativeXHR(data) {
+		function _doNativeXHR() {
 			var self = this,
 				total = 0;
 			
 			_mode = NATIVE;
-			_xhr = _getNativeXHR();			
+			_xhr = _getNativeXHR();
 			
 			_xhr.onreadystatechange = function onRSC() {
 				
@@ -802,15 +811,15 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				// fake Level 2 events
 				switch (_p('readyState')) {
 					
-					case XMLHttpRequest.OPENED:	
+					case XMLHttpRequest.OPENED:
 						// readystatechanged is triggered twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
-						if (onRSC.loadstartDispatched === undefined) {
+						if (onRSC.loadstartDispatched === undef) {
 							self.dispatchEvent('loadstart');
 							onRSC.loadstartDispatched = true;
 						}
 						break;
 					
-					// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions), hence we can't really use it	
+					// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions), hence we can't really use it
 					case XMLHttpRequest.HEADERS_RECEIVED:
 						try {
 							total = _xhr.getResponseHeader('Content-Length') || 0; // old Safari throws an exception here
@@ -823,7 +832,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 						try {
 							if (_xhr.responseText) { // responseText was introduced in IE7
 								loaded = _xhr.responseText.length;
-							} 
+							}
 						} catch (ex) {
 							loaded = 0;
 						}
@@ -833,16 +842,16 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 							lengthComputable: !!total,
 							total: parseInt(total, 10),
 							loaded: loaded
-						});	
+						});
 						break;
 						
 					case XMLHttpRequest.DONE:
 						// release readystatechange handler (mostly for IE)
-						_xhr.onreadystatechange = new Function;
+						_xhr.onreadystatechange = new Function();
 					
 						// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
-						if (_xhr.status === 0 || _xhr.status >= 400) {	
-							_error_flag = true;								
+						if (_xhr.status === 0 || _xhr.status >= 400) {
+							_error_flag = true;
 							self.dispatchEvent('error');
 						} else {
 							_p('responseText', _xhr.responseText);
@@ -853,8 +862,8 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 						
 						self.dispatchEvent('loadend');
 						break;
-				}							
-			}
+				}
+			};
 
 			_xhr.open(_method, _url, _async, _user, _password);
 			
@@ -868,14 +877,14 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 			_xhr.send();
 		}
 		
-		function _doRuntimeXHR(data) {		
+		function _doRuntimeXHR(data) {
 			var self = this;
 				
 			_mode = RUNTIME;
 
-			_xhr = new RuntimeTarget;	
+			_xhr = new RuntimeTarget();
 			
-			function exec(runtime) {				
+			function exec(runtime) {
 				_xhr.bind('LoadStart', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING);
 
@@ -896,14 +905,14 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 						self.upload.trigger({
 							type: 'progress',
 							lengthComputable: false,
-							total: e.total,	
+							total: e.total,
 							loaded: e.loaded
 						});
 					}
 				});
 				
-				_xhr.bind('Load', function(e) {		
-					_p('readyState', XMLHttpRequest.DONE);					
+				_xhr.bind('Load', function(e) {
+					_p('readyState', XMLHttpRequest.DONE);
 					_p('status', Number(runtime.exec.call(_xhr, 'XMLHttpRequest', 'getStatus') || 0));
 					_p('statusText', httpCode[_p('status')] || "");
 					
@@ -934,7 +943,7 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 					self.trigger('loadend');
 				});
 
-				_xhr.bind('LoadEnd', function(e) {
+				_xhr.bind('LoadEnd', function() {
 					_xhr.unbindAll();
 				});
 
@@ -957,7 +966,6 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 				receive_response_type: props.responseType
 			});
 
-
 			if (_options.ruid) { // we do not need to wait if we can connect directly
 				exec(_xhr.connectRuntime(_options));
 			} else {
@@ -965,28 +973,28 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 					exec(runtime);
 				});
 				_xhr.connectRuntime(_options);
-			}														
+			}
 		}
 		
 		function _doXHR(data) {
 			// mark down start time
-			_start_time = (new Date).getTime();
+			_start_time = new Date().getTime();
 
 			// if we can use native XHR Level 1, do
 			if (_canUseNativeXHR.call(this)) {
 				_doNativeXHR.call(this, data);
 			} else {
-				_doRuntimeXHR.call(this, data);	
-			}					
+				_doRuntimeXHR.call(this, data);
+			}
 			
 			// 9
 			if (!_sameOrigin(_url)) {
 				
 			}
 		}
-		
+
 		function _canUseNativeXHR() {
-			return 	_method === 'HEAD' ||
+			return _method === 'HEAD' ||
 					(_method === 'GET' && !!~o.inArray(_p('responseType'), ["", "text", "document"])) ||
 					(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded');
 		}
@@ -996,19 +1004,19 @@ define("xhr/XMLHttpRequest", ["o", "runtime/RuntimeTarget", "file/Blob", "xhr/Fo
 			_p('responseXML', null);
 			_p('response', null);
 			_p('status', 0);
-			_p('statusText', "");		
-			_start_time = undefined;
-			_timeoutset_time = undefined;
+			_p('statusText', "");
+			_start_time = undef;
+			_timeoutset_time = undef;
 		}
 	}
 
 	XMLHttpRequest.UNSENT = 0;
-	XMLHttpRequest.OPENED = 1; 
+	XMLHttpRequest.OPENED = 1;
 	XMLHttpRequest.HEADERS_RECEIVED = 2;
 	XMLHttpRequest.LOADING = 3;
 	XMLHttpRequest.DONE = 4;
 	
-	XMLHttpRequest.prototype = o.eventTarget;
-			
+	XMLHttpRequest.prototype = EventTarget;
+
 	return XMLHttpRequest;
 });

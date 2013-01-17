@@ -12,19 +12,17 @@
 /*global define:true */
 
 define('moxie/file/BlobBuilder', [
-	'o',
+	'moxie/core/util/Basic',
+	'moxie/core/Exceptions',
 	'moxie/file/Blob',
 	'moxie/file/File',
 	'moxie/file/FileReaderSync'
-], function(o, Blob, File, FileReaderSync) {
-
-	var x = o.Exceptions;
-
+], function(o, x, Blob, File, FileReaderSync) {
 	function BlobBuilder() {
 		var sources = [];
 		
 		function _getData() {
-			var blob, data = '';
+			var data = '';
 
 			o.each(sources, function(src) {
 				if (o.typeOf(src) === 'string') {
@@ -34,15 +32,15 @@ define('moxie/file/BlobBuilder', [
 					data += frs.readAsBinaryString(src);
 				}
 			});
+
 			return data;
 		}
 		
 		o.extend(this, {
-			
 			uid: o.guid('uid_'),
-						
+	
 			append: function(data) {
-				if (o.typeOf(data) !== 'string' || !(data instanceof o.Blob)) {
+				if (o.typeOf(data) !== 'string' || !(data instanceof Blob)) {
 					throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
 				}
 				sources.push(data);

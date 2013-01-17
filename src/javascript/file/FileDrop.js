@@ -12,10 +12,14 @@
 /*global define:true */
 
 define('moxie/file/FileDrop', [
+	'moxie/core/I18n',
+	'moxie/core/util/Dom',
 	'moxie/core/Exceptions',
+	'moxie/core/utils/Basic',
 	'moxie/file/File',
-	'moxie/runtime/RuntimeClient'
-], function(x, File, RuntimeClient) {
+	'moxie/runtime/RuntimeClient',
+	'moxie/core/EventTarget'
+], function(I18n, dom, x, o, File, RuntimeClient, EventTarget) {
 	var dispatches = ['ready', 'dragleave', 'dragenter', 'drop', 'error'];
 
 	function FileDrop(options) {
@@ -29,7 +33,7 @@ define('moxie/file/FileDrop', [
 		// figure out the options
 		defaults = {
 			accept: [{
-				title: o.translate('All Files'),
+				title: I18n.translate('All Files'),
 				extensions: '*'
 			}],
 			required_caps: {
@@ -40,10 +44,10 @@ define('moxie/file/FileDrop', [
 		options = typeof(options) === 'object' ? o.extend({}, defaults, options) : defaults;
 
 		// this will help us to find proper default container
-		options.container = o(options.drop_zone) || document.body;
+		options.container = dom.get(options.drop_zone) || document.body;
 
 		// make container relative, if they're not
-		if (o.getStyle(options.container, 'position') === 'static') {
+		if (dom.getStyle(options.container, 'position') === 'static') {
 			options.container.style.position = 'relative';
 		}
 					
@@ -51,15 +55,14 @@ define('moxie/file/FileDrop', [
 		if (typeof(options.accept) === 'string') {
 			options.accept = o.mimes2extList(options.accept);
 		}
-						
+
 		RuntimeClient.call(self);
-		
+
 		o.extend(self, {
-			
 			uid: o.guid('uid_'),
-			
+
 			ruid: null,
-			
+
 			files: null,
 
 			init: function() {
@@ -69,7 +72,7 @@ define('moxie/file/FileDrop', [
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
 
-					self.bind("Drop", function(e) {
+					self.bind("Drop", function() {
 						var files = runtime.exec.call(self, 'FileDrop', 'getFiles');
 
 						self.files = [];
@@ -89,8 +92,8 @@ define('moxie/file/FileDrop', [
 			}
 		});
 	}
-	
-	FileDrop.prototype = o.eventTarget;
-			
-	return (o.FileDrop = FileDrop);
+
+	FileDrop.prototype = EventTarget;
+
+	return FileDrop;
 });

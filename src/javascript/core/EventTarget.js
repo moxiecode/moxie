@@ -11,8 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Basic'], function(x, o) {
-	
+define('moxie/core/EventTarget', [
+	'moxie/core/Exceptions',
+	'moxie/core/utils/Basic'
+], function(x, o) {
 	/**
 	Parent object for all event dispatching components and objects
 
@@ -95,7 +97,7 @@ define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Bas
 
 			@method removeEventListener
 			@param {String} type Type or basically a name of the event
-			@param {Function} [fn] Handler to unregister 
+			@param {Function} [fn] Handler to unregister
 			*/
 			removeEventListener: function(type, fn) {
 				type = type.toLowerCase();
@@ -146,11 +148,11 @@ define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Bas
 			@return {Boolean} true by default and false if any handler returned false
 			*/
 			dispatchEvent: function(type) {
-				var uid, list, i, args, tmpEvt, evt = {};
+				var uid, list, args, tmpEvt, evt = {};
 				
 				if (o.typeOf(type) !== 'string') {
 					// we can't use original object directly
-					tmpEvt = type; 
+					tmpEvt = type;
 
 					if (o.typeOf(tmpEvt.type) === 'string') {
 						type = tmpEvt.type;
@@ -171,7 +173,7 @@ define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Bas
 						type = arr[1];
 					}(type.split('::')));
 				} else {
-					uid = this.uid;	
+					uid = this.uid;
 				}
 				
 				type = type.toLowerCase();
@@ -191,14 +193,14 @@ define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Bas
 
 					// Dispatch event to all listeners
 					var queue = [];
-					o.each(list, function(handler, i) {
+					o.each(list, function(handler) {
 						// explicitly set the target, otherwise events fired from shims to not get it
 						args[0].target = handler.scope;
 						// if event is marked as async, detach the handler
 						if (evt.async) {
 							queue.push(function(cb) {
 								setTimeout(function() {
-									cb(handler.fn.apply(handler.scope, args) === false); 
+									cb(handler.fn.apply(handler.scope, args) === false);
 								}, 1);
 							});
 						} else {
@@ -221,7 +223,7 @@ define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Bas
 			@protected
 			*/
 			bind: function() {
-				this.addEventListener.apply(this, arguments);	
+				this.addEventListener.apply(this, arguments);
 			},
 			
 			/**
@@ -234,7 +236,7 @@ define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Bas
 				this.removeEventListener.apply(this, arguments);
 			},
 			
-			/** 
+			/**
 			Alias for removeAllEventListeners
 
 			@method unbindAll
@@ -244,7 +246,7 @@ define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Bas
 				this.removeAllEventListeners.apply(this, arguments);
 			},
 			
-			/** 
+			/**
 			Alias for dispatchEvent
 
 			@method trigger
@@ -256,28 +258,28 @@ define('moxie/core/EventTarget', ['moxie/core/Exceptions', 'moxie/core/utils/Bas
 			
 			
 			/**
-			Converts properties of on[event] type to corresponding event handlers, 
+			Converts properties of on[event] type to corresponding event handlers,
 			is used to avoid extra hassle around the process of calling them back
 
 			@method convertEventPropsToHandlers
 			@private
 			*/
-			convertEventPropsToHandlers: function(handlers) {	
+			convertEventPropsToHandlers: function(handlers) {
 				var h;
 						
 				if (o.typeOf(handlers) !== 'array') {
-					handlers = [handlers];	
+					handlers = [handlers];
 				}
-			
+
 				for (var i = 0; i < handlers.length; i++) {
 					h = 'on' + handlers[i];
 					
 					if (o.typeOf(this[h]) === 'function') {
 						this.addEventListener(handlers[i], this[h]);
 					} else if (this[h] === undefined) {
-						this[h] = null; // object must have defined event properties, even if it doesn't make use of them	
+						this[h] = null; // object must have defined event properties, even if it doesn't make use of them
 					}
-				}	
+				}
 			}
 			
 		});

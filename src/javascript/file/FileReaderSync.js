@@ -12,21 +12,19 @@
 /*global define:true */
 
 define('moxie/file/FileReaderSync', [
-	'o',
+	'moxie/core/utils/Basic',
 	'moxie/runtime/RuntimeClient'
 ], function(o, RuntimeClient) {
-
 	/**
-	Synchronous FileReader implementation. Something like this is available in WebWorkers environment, here 
-	it can be used to read only preloaded blobs/files and only below certain size (not yet sure what that'd be, 
-	but probably < 1mb). Not meant to be used directly by user. 
+	Synchronous FileReader implementation. Something like this is available in WebWorkers environment, here
+	it can be used to read only preloaded blobs/files and only below certain size (not yet sure what that'd be,
+	but probably < 1mb). Not meant to be used directly by user.
 
 	@class FileReaderSync
 	@private
 	@constructor
 	*/
 	return function() {
-
 		RuntimeClient.call(this);
 
 		o.extend(this, {
@@ -34,7 +32,7 @@ define('moxie/file/FileReaderSync', [
 			uid: o.guid('uid_'),
 
 			readAsBinaryString: function(blob) {
-				return _read.call(this, 'readAsBinaryString', blob); 		 
+				return _read.call(this, 'readAsBinaryString', blob);
 			},
 			
 			readAsDataURL: function(blob) {
@@ -46,7 +44,7 @@ define('moxie/file/FileReaderSync', [
 			},*/
 			
 			readAsText: function(blob) {
-	 			return _read.call(this, 'readAsText', blob);
+				return _read.call(this, 'readAsText', blob);
 			}
 		});
 

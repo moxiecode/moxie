@@ -1,5 +1,5 @@
 /**
- * events.js
+ * Events.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -7,6 +7,9 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
 
 define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 	var eventhash = {}, uid;
@@ -18,8 +21,8 @@ define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 
 	function stopPropagation() {
 		this.cancelBubble = true;
-	}	
-		
+	}
+
 	/**
 	Adds an event handler to the specified object and store reference to the handler
 	in objects internal Plupload registry (@see removeEvent).
@@ -32,7 +35,7 @@ define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 	@param {String} (optional) key that might be used to add specifity to the event record.
 	*/
 	var addEvent = function(obj, name, callback) {
-		var func, events, types, key;
+		var func, events, key;
 		
 		// if passed in, event will be locked with this key - one would need to provide it to removeEvent
 		key = arguments[3];
@@ -50,7 +53,6 @@ define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 			
 			obj.addEventListener(name, func, false);
 		} else if (obj.attachEvent) {
-			
 			func = function() {
 				var evt = window.event;
 
@@ -63,7 +65,8 @@ define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 
 				callback(evt);
 			};
-			obj.attachEvent('on' + name, func);	
+
+			obj.attachEvent('on' + name, func);
 		}
 		
 		// Log event handler to objects internal mOxie registry
@@ -102,7 +105,7 @@ define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 	var removeEvent = function(obj, name) {
 		var type, callback, key;
 		
-		// match the handler either by callback or by key	
+		// match the handler either by callback or by key
 		if (typeof(arguments[2]) == "function") {
 			callback = arguments[2];
 		} else {
@@ -119,11 +122,11 @@ define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 		
 			
 		for (var i=type.length-1; i>=0; i--) {
-			// undefined or not, key should match			
+			// undefined or not, key should match
 			if (type[i].key === key || type[i].orig === callback) {
 					
 				if (obj.removeEventListener) {
-					obj.removeEventListener(name, type[i].func, false);		
+					obj.removeEventListener(name, type[i].func, false);
 				} else if (obj.detachEvent) {
 					obj.detachEvent('on'+name, type[i].func);
 				}
@@ -137,8 +140,8 @@ define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 				if (callback !== undefined) {
 					break;
 				}
-			}			
-		}	
+			}
+		}
 		
 		// If event array got empty, remove it
 		if (!type.length) {
@@ -176,9 +179,8 @@ define('moxie/core/utils/Events', ['core/utils/Basic'], function(o) {
 		
 		o.each(eventhash[obj[uid]], function(events, name) {
 			removeEvent(obj, name, key);
-		});		
+		});
 	};
-	
 
 	return {
 		addEvent: addEvent,

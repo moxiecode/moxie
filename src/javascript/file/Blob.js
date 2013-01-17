@@ -12,10 +12,9 @@
 /*global define:true */
 
 define('moxie/file/Blob', [
-	'o',
+	'moxie/core/util/Basic',
 	'moxie/runtime/RuntimeClient'
 ], function(o, RuntimeClient) {
-
 	var blobpool = {};
 
 	/**
@@ -116,7 +115,7 @@ define('moxie/file/Blob', [
 				return !this.ruid && o.typeOf(blobpool[this.uid]) === 'string';
 			},
 			
-			/** 
+			/**
 			Destroy Blob and free any resources it was using
 
 			@method destroy
@@ -131,12 +130,12 @@ define('moxie/file/Blob', [
 		if (blob.data) {
 			this.detach(blob.data); // auto-detach if payload has been passed
 		} else {
-			blobpool[this.uid] = blob;	
+			blobpool[this.uid] = blob;
 		}
 
 
 		function _getRuntime() {
-			if (o.typeOf(this.connectRuntime) !== 'function') {		
+			if (o.typeOf(this.connectRuntime) !== 'function') {
 				RuntimeClient.call(this);
 			}
 			return this.connectRuntime(this.ruid);

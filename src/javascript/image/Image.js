@@ -1,42 +1,55 @@
-define("image/Image", [
-		"o", 
-		"runtime/RuntimeClient"
-	], function(o, RuntimeClient) {
+/**
+ * Image.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
 
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
+/*global define:true */
+
+define("moxie/image/Image", [
+		"moxie/core/util/Basic",
+		"moxie/core/util/Dom",
+		"moxie/core/Exceptions",
+		"moxie/file/FileReaderSync",
+		"moxie/runtime/RuntimeClient"
+], function(o, dom, x, FileReaderSync, RuntimeClient) {
 	var dispatches = [
-	
-	'loadstart', 
+		'loadstart',
+		'progress',
 
-	'progress', 
+		/**
+		Dispatched when loading is complete.
 
-	/**
-	Dispatched when loading is complete.
+		@event load
+		@param {Object} event
+		*/
+		'load',
 
-	@event load
-	@param {Object} event
-	*/
-	'load', 
+		'error',
 
-	'error', 
+		'loadend',
 
-	'loadend', 
+		/**
+		Dispatched when resize operation is complete.
+		
+		@event resize
+		@param {Object} event
+		*/
+		'resize',
 
-	/**
-	Dispatched when resize operation is complete.
-	
-	@event resize
-	@param {Object} event
-	*/
-	'resize', 
+		/**
+		Dispatched when visual representation of the image is successfully embedded
+		into the corresponsing container.
 
-	/**
-	Dispatched when visual representation of the image is successfully embedded 
-	into the corresponsing container.
-
-	@event embedded
-	@param {Object} event
-	*/
-	'embedded'
+		@event embedded
+		@param {Object} event
+		*/
+		'embedded'
 	];
 	
 	function Image() {
@@ -128,11 +141,11 @@ define("image/Image", [
 			},
 
 			/**
-			Loads image from various sources. Currently the source for new image can be: o.Image, o.Blob/o.File or URL. 
+			Loads image from various sources. Currently the source for new image can be: o.Image, o.Blob/o.File or URL.
 			Depending on the type of the source, arguments - differ.
 
 			When source is:
-			  - o.Image: Loads image from another existing o.Image object (clones it). Might be fast by default (surface clone), 
+			  - o.Image: Loads image from another existing o.Image object (clones it). Might be fast by default (surface clone),
 				or a bit slower, if launched in exact mode (in-depth clone). Only exact mode (enabled by passing second argument
 				as - true) will copy over meta info, like Exif, GPS, IPTC data, etc.
 			  - o.Blob/o.File: Loads image from o.File or o.Blob object.
@@ -160,39 +173,39 @@ define("image/Image", [
 
 			@method load
 			@param {Image|Blob|File|String} src Source for the image
-			@param {Boolean|Object} [mixed] 
+			@param {Boolean|Object} [mixed]
 			*/
 			load: function(src) {
 				var el, url, urlp;
 
-				this.convertEventPropsToHandlers(dispatches);	
+				this.convertEventPropsToHandlers(dispatches);
 
 				try {
 					if (src instanceof o.Image) {
 						if (!src.size) { // only preloaded image objects can be used as source
-							throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+							throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 						}
 						_loadFromImage.apply(this, arguments);
-					} 
+					}
 					else if (src instanceof o.File || src instanceof o.Blob) {
 						if (!~o.inArray(src.type, ['image/jpeg', 'image/png'])) {
 							throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 						}
 						_loadFromBlob.apply(this, arguments);
-					} 
+					}
 					else if (o.typeOf(src) === 'string' && /^http:\/\//.test(src)) {
 						_loadFromUrl.apply(this, arguments);
-					} 
-					else if (el = o(src) && el.nodeName === 'img') {
+					}
+					else if ((el = dom.get(src)) && el.nodeName === 'img') {
 						urlp = o.parseUrl(el.src); // src can be relative
 
 						// manually resolve the url
 						url = urlp.scheme + '://' + urlp.host + (urlp.port !== 80 ? ':' + urlp.port : '') + urlp.path;
 
 						_loadFromUrl.apply(this, arguments);
-					} 
+					}
 					else {
-						throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);	
+						throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
 					}
 				} catch(ex) {
 					// for now simply trigger error event
@@ -212,11 +225,11 @@ define("image/Image", [
 				var runtime;
 
 				if (!this.size) { // only preloaded image objects can be used as source
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 
 				if (!width) {
-					throw new x.DOMException(x.DOMException.SYNTAX_ERR);	
+					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
 				}
 
 				if (!height) {
@@ -243,7 +256,7 @@ define("image/Image", [
 
 			getAsCanvas: function() {
 				if (!o.ua.can('create_canvas')) {
-					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);	
+					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 				}
 
 				var runtime = this.connectRuntime(this.ruid);
@@ -256,7 +269,7 @@ define("image/Image", [
 			},
 
 			/**
-			Retrieves image in it's current state as o.Blob object. Cannot be run on empty or image in progress (throws 
+			Retrieves image in it's current state as o.Blob object. Cannot be run on empty or image in progress (throws
 			DOMException.INVALID_STATE_ERR).
 
 			@method getAsBlob
@@ -266,7 +279,7 @@ define("image/Image", [
 			*/
 			getAsBlob: function(type, quality) {
 				if (!this.size) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 
 				if (!type) {
@@ -281,7 +294,7 @@ define("image/Image", [
 			},
 
 			/**
-			Retrieves image in it's current state as dataURL string. Cannot be run on empty or image in progress (throws 
+			Retrieves image in it's current state as dataURL string. Cannot be run on empty or image in progress (throws
 			DOMException.INVALID_STATE_ERR).
 
 			@method getAsDataURL
@@ -291,13 +304,13 @@ define("image/Image", [
 			*/
 			getAsDataURL: function(type, quality) {
 				if (!this.size) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
 			},
 
 			/**
-			Retrieves image in it's current state as binary string. Cannot be run on empty or image in progress (throws 
+			Retrieves image in it's current state as binary string. Cannot be run on empty or image in progress (throws
 			DOMException.INVALID_STATE_ERR).
 
 			@method getAsBinaryString
@@ -308,18 +321,18 @@ define("image/Image", [
 			getAsBinaryString: function(type, quality) {
 				var blob, frs;
 				blob = this.getAsBlob(type, quality);
-				frs = new o.FileReaderSync;
+				frs = new FileReaderSync();
 				return frs.readAsBinaryString(blob);
 			},
 
 			/**
-			Embeds the image, or better to say, it's visual representation into the specified node. Depending on the runtime 
-			in use, might be a canvas, or image (actual ) element or shim object (Flash or SilverLight - very rare, used for 
+			Embeds the image, or better to say, it's visual representation into the specified node. Depending on the runtime
+			in use, might be a canvas, or image (actual ) element or shim object (Flash or SilverLight - very rare, used for
 			legacy browsers that do not have canvas or proper dataURI support).
 
 			@method embed
 			@param {DOMElement} el DOM element to insert the image object into
-			@param {Object} options Set of key/value pairs controlling the mime type, dimensions and cropping factor of resulting 
+			@param {Object} options Set of key/value pairs controlling the mime type, dimensions and cropping factor of resulting
 			representation
 			*/
 			embed: function(el) {
@@ -355,7 +368,7 @@ define("image/Image", [
 						image.destroy();
 						self.trigger('embedded');
 					} else {
-						var tr = new o.Transporter;
+						var tr = new Transporter();
 
 						tr.bind("TransportingComplete", function() {
 							runtime = self.connectRuntime(this.result.ruid);
@@ -370,8 +383,8 @@ define("image/Image", [
 									height: image.height + 'px'
 								});
 
-								// some shims (Flash/SilverLight) reinitialize, if parent element is hidden, reordered or it's 
-								// position type changes (in Gecko), but since we basically need this only in IEs 6/7 and 
+								// some shims (Flash/SilverLight) reinitialize, if parent element is hidden, reordered or it's
+								// position type changes (in Gecko), but since we basically need this only in IEs 6/7 and
 								// sometimes 8 and they do not have this problem, we can comment this for now
 								/*tr.bind("RuntimeInit", function(e, runtime) {
 									tr.destroy();
@@ -394,17 +407,17 @@ define("image/Image", [
 				}
 
 				if (!(el = o(el))) {
-					throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);
 				}
 
 				if (!this.size) { // only preloaded image objects can be used as source
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);	
+					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 
 
 				type = options.type;
 				quality = options.quality || 90;
-				crop = options.crop !== undefined ? options.crop : false;
+				var crop = options.crop !== undefined ? options.crop : false;
 
 				// figure out dimensions for the thumb
 				if (options.width) {
@@ -419,7 +432,7 @@ define("image/Image", [
 					}
 				}
 				
-				image = new o.Image;
+				image = new Image();
 
 				image.bind("Resize", function() {
 					onResize.call(self);
@@ -429,9 +442,9 @@ define("image/Image", [
 					image.resize(width, height, crop);
 				});
 
-				image.clone(this, false);					
+				image.clone(this, false);
 
-				return image;	
+				return image;
 			},
 
 			/**
@@ -526,7 +539,8 @@ define("image/Image", [
 		function _loadFromUrl(url, options) {
 			var xhr;
 
-			xhr = new o.XMLHttpRequest;
+			// TODO: Needs to be the one from factory!
+			xhr = new XMLHttpRequest();
 
 			xhr.open('get', url);
 			xhr.responseType = 'blob';

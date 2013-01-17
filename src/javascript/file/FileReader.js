@@ -8,15 +8,17 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true */
 
 define('moxie/file/FileReader', [
+	'moxie/core/utils/Basic',
 	'moxie/core/Exceptions',
+	'moxie/core/EventTarget',
 	'moxie/runtime/RuntimeClient'
-], function(x, RuntimeClient) {	
+], function(o, x, EventTarget, RuntimeClient) {
 	/**
-	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader) 
+	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
 	interface. Where possible uses native FileReader, where - not falls back to shims.
 
 	@class FileReader
@@ -27,23 +29,22 @@ define('moxie/file/FileReader', [
 	var dispatches = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
 	
 	function FileReader() {
-		var self = this, _runtime;	
+		var self = this, _runtime;
 				
 		RuntimeClient.call(self);
-	
+
 		o.extend(self, {
-			
 			uid: o.guid('uid_'),
-			
+
 			/**
-			Contains current state of o.FileReader object. Can take values of o.FileReader.EMPTY, o.FileReader.LOADING 
+			Contains current state of o.FileReader object. Can take values of o.FileReader.EMPTY, o.FileReader.LOADING
 			and o.FileReader.DONE.
 
 			@property readyState
 			@type {Number}
 			@default FileReader.EMPTY
 			*/
-			readyState: FileReader.EMPTY,	
+			readyState: FileReader.EMPTY,
 			
 			result: null,
 			
@@ -57,7 +58,7 @@ define('moxie/file/FileReader', [
 			*/
 			readAsBinaryString: function(blob) {
 				this.result = '';
-				_read.call(this, 'readAsBinaryString', blob); 		 
+				_read.call(this, 'readAsBinaryString', blob);
 			},
 			
 			/**
@@ -81,7 +82,7 @@ define('moxie/file/FileReader', [
 			@param {Blob|File} blob Object to preload
 			*/
 			readAsText: function(blob) {
-	 			_read.call(this, 'readAsText', blob);
+				_read.call(this, 'readAsText', blob);
 			},
 			
 			/**
@@ -91,13 +92,13 @@ define('moxie/file/FileReader', [
 			*/
 			abort: function() {
 				if (!_runtime) {
-					return;	
+					return;
 				}
 				
 				this.result = null;
 				
 				if (!!~o.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE])) {
-					return;	
+					return;
 				} else if (this.readyState === FileReader.LOADING) {
 					this.readyState = FileReader.DONE;
 				}
@@ -105,28 +106,28 @@ define('moxie/file/FileReader', [
 				self.bind('Abort', function() {
 					self.trigger('loadend');
 				});
-				
-				_runtime.exec('FileReader', 'abort');					
+
+				_runtime.exec('FileReader', 'abort');
 			}
 		});
 		
 		
-		function _read(op, blob) {			
+		function _read(op, blob) {
 			self.readyState = FileReader.EMPTY;
 			self.error = null;
-						
+
 			if (self.readyState === FileReader.LOADING || !blob['ruid'] || !blob['uid']) {
 				throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-			}	
+			}
 			
-			this.convertEventPropsToHandlers(dispatches);			
+			this.convertEventPropsToHandlers(dispatches);
 						
-			_runtime = self.connectRuntime(blob.ruid);	
+			_runtime = self.connectRuntime(blob.ruid);
 			
 			self.bind('Error', function(e, error) {
 				self.readyState = FileReader.DONE;
 				self.result = null;
-				self.error = error; 
+				self.error = error;
 				self.trigger('loadend');
 			}, 999);
 			
@@ -135,17 +136,17 @@ define('moxie/file/FileReader', [
 				self.readyState = FileReader.LOADING;
 			}, 999);
 			
-			self.bind('Load', function(o) {
+			self.bind('Load', function() {
 				self.readyState = FileReader.DONE;
 				self.trigger('loadend');
 			}, 999);
-		
-			_runtime.exec.call(self, 'FileReader', 'read', op, blob);							 
+
+			_runtime.exec.call(self, 'FileReader', 'read', op, blob);
 		}
 	}
 	
 	/**
-	Initial FileReader state 
+	Initial FileReader state
 
 	@property EMPTY
 	@type {Number}
@@ -156,7 +157,7 @@ define('moxie/file/FileReader', [
 	FileReader.EMPTY = 0;
 
 	/**
-	FileReader switches to this state when it is preloading the source 
+	FileReader switches to this state when it is preloading the source
 
 	@property LOADING
 	@type {Number}
@@ -176,8 +177,8 @@ define('moxie/file/FileReader', [
 	@default 2
 	*/
 	FileReader.DONE = 2;
-	
-	FileReader.prototype = o.eventTarget;
-		
-	return (o.FileReader = FileReader);
+
+	FileReader.prototype = EventTarget;
+
+	return FileReader;
 });

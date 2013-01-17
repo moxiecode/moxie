@@ -1,5 +1,19 @@
-define('moxie/core/Exceptions', ['moxie/core/utils/Basic'], function(utils) {
+/**
+ * Exceptions.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
 
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define('moxie/core/Exceptions', [
+	'moxie/core/utils/Basic'
+], function(utils) {
 	function _findKey(obj, value) {
 		var key;
 		for (key in obj) {
@@ -24,7 +38,7 @@ define('moxie/core/Exceptions', ['moxie/core/utils/Basic'], function(utils) {
 				this.message = this.name + ": RuntimeError " + this.code;
 			}
 			
-			utils.extend(RuntimeError, namecodes);	
+			utils.extend(RuntimeError, namecodes);
 			RuntimeError.prototype = Error.prototype;
 			return RuntimeError;
 		}()),
@@ -56,7 +70,7 @@ define('moxie/core/Exceptions', ['moxie/core/utils/Basic'], function(utils) {
 				this.message = this.name + ": ImageError " + this.code;
 			}
 			
-			utils.extend(ImageError, namecodes);	
+			utils.extend(ImageError, namecodes);
 			ImageError.prototype = Error.prototype;
 
 			return ImageError;
@@ -98,7 +112,7 @@ define('moxie/core/Exceptions', ['moxie/core/utils/Basic'], function(utils) {
 				NOT_SUPPORTED_ERR: 9,
 				INUSE_ATTRIBUTE_ERR: 10,
 				INVALID_STATE_ERR: 11,
-				SYNTAX_ERR: 12, 
+				SYNTAX_ERR: 12,
 				INVALID_MODIFICATION_ERR: 13,
 				NAMESPACE_ERR: 14,
 				INVALID_ACCESS_ERR: 15,
@@ -120,7 +134,7 @@ define('moxie/core/Exceptions', ['moxie/core/utils/Basic'], function(utils) {
 				this.message = this.name + ": DOMException " + this.code;
 			}
 			
-			utils.extend(DOMException, namecodes);	
+			utils.extend(DOMException, namecodes);
 			DOMException.prototype = Error.prototype;
 			return DOMException;
 		}()),
@@ -128,7 +142,7 @@ define('moxie/core/Exceptions', ['moxie/core/utils/Basic'], function(utils) {
 		EventException: (function() {
 			function EventException(code) {
 				this.code = code;
-				this.name = 'EventException';	
+				this.name = 'EventException';
 			}
 			
 			utils.extend(EventException, {

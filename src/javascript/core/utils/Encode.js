@@ -1,5 +1,5 @@
 /**
- * encode.js
+ * Encode.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,8 +8,10 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('moxie/core/utils/Encode', [], function() {
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
+/*global define:true, escape: true, unescape: true */
 
+define('moxie/core/utils/Encode', [], function() {
 	/**
 	Encodes the specified string.
 	
@@ -27,7 +29,7 @@ define('moxie/core/utils/Encode', [], function() {
 	};
 
 	/**
-	Encode string with UTF-8  
+	Encode string with UTF-8
 
 	@method utf8_encode
 	@static
@@ -130,7 +132,7 @@ define('moxie/core/utils/Encode', [], function() {
 	*/
 	var btoa = function(data) {
 		if (typeof(window['btoa']) === 'function') {
-			return window.btoa(data);	
+			return window.btoa(data);
 		}
 		
 		// http://kevin.vanzonneveld.net

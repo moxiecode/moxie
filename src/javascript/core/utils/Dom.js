@@ -165,7 +165,6 @@ define('moxie/core/utils/Dom', [], function() {
 		};
 	};
 
-
 	return {
 		get: get,
 		hasClass: hasClass,

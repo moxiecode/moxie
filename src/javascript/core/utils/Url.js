@@ -1,5 +1,5 @@
 /**
- * url.js
+ * Url.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,10 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('moxie/core/utils/Url', [], function() {
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
 
+define('moxie/core/utils/Url', [], function() {
 	/**
-	Parse url into separate components and fill in absent parts with parts from current url,  
+	Parse url into separate components and fill in absent parts with parts from current url,
 	based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
 
 	@method parseUrl
@@ -19,7 +21,7 @@ define('moxie/core/utils/Url', [], function() {
 	@param {String} str Url to parse (defaults to empty string if undefined)
 	@return {Object} Hash containing extracted uri components
 	*/
-	var parseUrl = function(str) {			
+	var parseUrl = function(str) {
 		var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment']
 		, i = key.length
 		, ports = {
@@ -30,18 +32,18 @@ define('moxie/core/utils/Url', [], function() {
 		, regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/
 		, m = regex.exec(str || '') // default to empty string if undefined
 		;
-							
+					
 		while (i--) {
 			if (m[i]) {
-			  uri[key[i]] = m[i];  
+			  uri[key[i]] = m[i];
 			}
 		}
 
 		if (/^[^\/]/.test(uri.path) && !uri.scheme) { // when url is relative, we need to figure out the path ourselves
-			var path = document.location.pathname;	
+			var path = document.location.pathname;
 			// if path ends with a filename, strip it
 			if (!/(\/|\/[^\.]+)$/.test(path)) {
-				path = path.replace(/[^\/]+$/, ''); 
+				path = path.replace(/[^\/]+$/, '');
 			}
 			uri.host = document.location.hostname;
 			uri.path = path + (uri.path || ''); // site may reside at domain.com or domain.com/subdir
@@ -58,7 +60,7 @@ define('moxie/core/utils/Url', [], function() {
 		if (!uri.port) {
 			uri.port = ports[uri.scheme];
 		} else {
-			uri.port = parseInt(uri.port, 10); 
+			uri.port = parseInt(uri.port, 10);
 		}
 
 		if (!uri.path) {

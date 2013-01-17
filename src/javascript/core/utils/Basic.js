@@ -8,8 +8,10 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('moxie/core/utils/Basic', [], function() {
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
+/*global define:true */
 
+define('moxie/core/utils/Basic', [], function() {
 	/**
 	Get DOM Element by it's id.
 
@@ -19,7 +21,7 @@ define('moxie/core/utils/Basic', [], function() {
 	*/
 	var byId = function(id) {
 		if (typeof id !== 'string') {
-			return id;	
+			return id;
 		}
 		return document.getElementById(id);
 	};
@@ -61,7 +63,7 @@ define('moxie/core/utils/Basic', [], function() {
 			if (i > 0) {
 				each(arg, function(value, key) {
 					if (value !== undefined) {
-						if (typeOf(target[key]) === typeOf(value) && !!~inArray(typeOf(value), ['array', 'object'])) { 
+						if (typeOf(target[key]) === typeOf(value) && !!~inArray(typeOf(value), ['array', 'object'])) {
 							extend(target[key], value);
 						} else {
 							target[key] = value;
@@ -121,22 +123,22 @@ define('moxie/core/utils/Basic', [], function() {
 	@return {Boolean}
 	*/
 	var isEmptyObj = function(obj) {
-		if (!obj || typeOf(obj) !== 'object') { 
+		if (!obj || typeOf(obj) !== 'object') {
 			return true;
 		}
 		
 		for (var prop in obj) {
-			return false;	
+			return false;
 		}
-		
+
 		return true;
 	};
 
 	/**
 	Recieve an array of functions (usually async) to call in sequence, each  function
 	receives a callback as first argument that it should call, when it completes. Finally,
-	after everything is complete, main callback is called. Passing truthy value to the 
-	callback as a first argument will interrupt the sequence and invoke main callback 
+	after everything is complete, main callback is called. Passing truthy value to the
+	callback as a first argument will interrupt the sequence and invoke main callback
 	immediately.
 
 	@method inSeries
@@ -171,7 +173,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} array
 	@return {Int} Index of the element, or -1 if not found
 	*/
-	var inArray = function(needle, array) {			
+	var inArray = function(needle, array) {
 		if (array) {
 			if (Array.prototype.indexOf) {
 				return Array.prototype.indexOf.call(array, needle);
@@ -217,7 +219,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@method guid
 	@return {String} Virtually unique id.
 	*/
-	var guid = (function() { 
+	var guid = (function() {
 		var counter = 0;
 		
 		return function(prefix) {
@@ -228,10 +230,10 @@ define('moxie/core/utils/Basic', [], function() {
 			}
 			
 			return (prefix || 'o_') + guid + (counter++).toString(32);
-		}
+		};
 	}());
 	
-	
+
 	/**
 	Trims white spaces around the string
 	
@@ -242,9 +244,9 @@ define('moxie/core/utils/Basic', [], function() {
 	*/
 	var trim = function(str) {
 		if (!str) {
-			return str;	
+			return str;
 		}
-		return String.prototype.trim ? String.prototype.trim.call(str) : str.toString().replace(/^\s*/, '').replace(/\s*$/, '');	
+		return String.prototype.trim ? String.prototype.trim.call(str) : str.toString().replace(/^\s*/, '').replace(/\s*$/, '');
 	};
 
 
@@ -258,7 +260,7 @@ define('moxie/core/utils/Basic', [], function() {
 	*/
 	var parseSizeStr = function(size) {
 		if (typeof(size) !== 'string') {
-			return size;	
+			return size;
 		}
 		
 		var muls = {
@@ -274,7 +276,7 @@ define('moxie/core/utils/Basic', [], function() {
 		size = +size[1];
 		
 		if (muls.hasOwnProperty(mul)) {
-			size *= muls[mul];	
+			size *= muls[mul];
 		}
 		return size;
 	};

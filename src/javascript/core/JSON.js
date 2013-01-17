@@ -1,5 +1,17 @@
-define("moxie/core/JSON", [], function() {
+/**
+ * JSON.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
 
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define("moxie/core/JSON", [], function() {
 	/**
 	Parse string into the JSON object in a safe way
 	@credits Douglas Crockford: https://github.com/douglascrockford/JSON-js/blob/master/json_parse.js

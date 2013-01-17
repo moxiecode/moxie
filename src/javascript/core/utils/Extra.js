@@ -1,5 +1,17 @@
-define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
+/**
+ * Extra.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
 
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
 	/**
 	Defines property with specified descriptor on an object
 	
@@ -30,10 +42,9 @@ define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
 	@param {String} prop Property name
 	@param {Object} desc Set of key-value pairs defining descriptor for the property
 	*/
-	var defineGetter = function(obj, prop, desc)
-	{
+	var defineGetter = function(obj, prop, desc) {
 		return defineGSetter.call(obj, prop, desc, 'get');
-	}
+	};
 
 	/**
 	Defines setter for the property
@@ -44,10 +55,9 @@ define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
 	@param {String} prop Property name
 	@param {Object} desc Set of key-value pairs defining descriptor for the property
 	*/
-	var defineSetter = function(obj, prop, desc)
-	{
+	var defineSetter = function(obj, prop, desc) {
 		return defineGSetter.call(obj, prop, desc, 'set');
-	}
+	};
 
 	/**
 	Defines getter or setter, depending on a type param
@@ -61,8 +71,8 @@ define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
 	*/
 	var defineGSetter = function(prop, desc, type) {
 		var defaults = {
-			enumerable: true, 
-			configurable: true 
+			enumerable: true,
+			configurable: true
 		  }
 		, fn
 		, camelType
@@ -90,7 +100,7 @@ define("moxie/core/utils/Extra", ["moxie/core/utils/Basic"], function(o) {
 				return self['__define' + camelType + 'ter__'](prop, fn);
 			}
 		}
-	}
+	};
 
 	return {
 		defineGetter: defineGetter,

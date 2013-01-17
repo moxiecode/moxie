@@ -12,7 +12,7 @@
 /*global define:true */
 
 define('moxie/file/File', [
-	'o',
+	'moxie/core/util/Basic',
 	'moxie/file/Blob'
 ], function(o, Blob) {
 	/**
@@ -49,7 +49,6 @@ define('moxie/file/File', [
 		Blob.apply(this, arguments);
 		
 		o.extend(this, {
-
 			type: file.type || type,
 
 			/**
@@ -73,6 +72,6 @@ define('moxie/file/File', [
 	}
 
 	File.prototype = Blob.prototype;
- 
-	return (o.File = File);
+
+	return File;
 });
