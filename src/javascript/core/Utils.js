@@ -147,6 +147,10 @@ o.extend(o, {
 			cb = function() {};
 		}
 
+		if (!queue || !queue.length) {
+			cb();
+		}
+
 		function callNext(i) {
 			if (o.typeOf(queue[i]) === 'function') {
 				queue[i](function(error) {
