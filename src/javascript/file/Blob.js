@@ -15,6 +15,7 @@ define('moxie/file/Blob', [
 	'moxie/core/utils/Basic',
 	'moxie/runtime/RuntimeClient'
 ], function(Basic, RuntimeClient) {
+	
 	var blobpool = {};
 
 	/**
@@ -24,11 +25,37 @@ define('moxie/file/Blob', [
 	@param {Object} blob Object "Native" blob object, as it is represented in the runtime
 	*/
 	function Blob(ruid, blob) {
+
+		function _sliceDetached(start, end, type) {
+			var blob, data = blobpool[this.uid];
+
+			if (Basic.typeOf(data) !== 'string' || !data.length) {
+				return null; // or throw exception
+			}
+
+			blob = new Blob(null, {
+				type: type,
+				size: end - start
+			});
+			blob.detach(data.substr(start, blob.size));
+
+			return blob;
+		}
+
+		function _getRuntime() {
+			if (Basic.typeOf(this.connectRuntime) !== 'function') {		
+				RuntimeClient.call(this);
+			}
+			return this.connectRuntime(this.ruid);
+		}
+
+
 		if (!blob) {
 			blob = {};
 		}
 
 		Basic.extend(this, {
+			
 			/**
 			Unique id of the component
 
@@ -38,7 +65,7 @@ define('moxie/file/Blob', [
 			uid: Basic.guid('uid_'),
 			
 			/**
-			Unique id of the connected runtime, if falsy, then runtime will have to be initialized
+			Unique id of the connected runtime, if falsy, then runtime will have to be initialized 
 			before this Blob can be used, modified or sent
 
 			@property ruid
@@ -68,9 +95,11 @@ define('moxie/file/Blob', [
 			@method slice
 			@param {Number} [start=0]
 			*/
-			slice: function(start, end, type) {
-				var runtime = _getRuntime.call(this);
-				return runtime.exec.call(this, 'Blob', 'slice', this.getSource(), start, end, type);
+			slice: function(start, end, type) {		
+				if (this.isDetached()) {
+					return _sliceDetached.apply(this, arguments);
+				}
+				return _getRuntime.call(this).exec.call(this, 'Blob', 'slice', this.getSource(), start, end, type);
 			},
 
 			/**
@@ -81,13 +110,13 @@ define('moxie/file/Blob', [
 			*/
 			getSource: function() {
 				if (!blobpool[this.uid]) {
-					return null;
+					return null;	
 				}
 				
 				return blobpool[this.uid];
 			},
 
-			/**
+			/** 
 			Detaches blob from any runtime that it depends on and initialize with standalone value
 
 			@method detach
@@ -114,7 +143,7 @@ define('moxie/file/Blob', [
 				return !this.ruid && Basic.typeOf(blobpool[this.uid]) === 'string';
 			},
 			
-			/**
+			/** 
 			Destroy Blob and free any resources it was using
 
 			@method destroy
@@ -129,18 +158,9 @@ define('moxie/file/Blob', [
 		if (blob.data) {
 			this.detach(blob.data); // auto-detach if payload has been passed
 		} else {
-			blobpool[this.uid] = blob;
-		}
-
-
-		function _getRuntime() {
-			if (Basic.typeOf(this.connectRuntime) !== 'function') {
-				RuntimeClient.call(this);
-			}
-
-			return this.connectRuntime(this.ruid);
+			blobpool[this.uid] = blob;	
 		}
 	}
-
+	
 	return Blob;
 });
