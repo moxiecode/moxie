@@ -15,24 +15,8 @@ define("moxie/core/utils/Mime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/I18n"
 ], function(Basic, I18n) {
-	var mimes = {}, extensions = {};
-
-	// Parses the default mime types string into a mimes and extensions lookup maps
-	(function(mime_data) {
-		var items = mime_data.split(/,/), i, ii, ext;
-
-		for (i = 0; i < items.length; i += 2) {
-			ext = items[i + 1].split(/ /);
-
-			// extension to mime lookup
-			for (ii = 0; ii < ext.length; ii++) {
-				mimes[ext[ii]] = items[i];
-			}
-
-			// mime to extension lookup
-			extensions[items[i]] = ext;
-		}
-	})(
+	
+	var mimeData = "" +
 		"application/msword,doc dot," +
 		"application/pdf,pdf," +
 		"application/pgp-signature,pgp," +
@@ -45,7 +29,7 @@ define("moxie/core/utils/Mime", [
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx," +
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.template,dotx," +
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,xlsx," +
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx," +
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx," + 
 		"application/vnd.openxmlformats-officedocument.presentationml.template,potx," +
 		"application/vnd.openxmlformats-officedocument.presentationml.slideshow,ppsx," +
 		"application/x-javascript,js," +
@@ -77,66 +61,86 @@ define("moxie/core/utils/Mime", [
 		"video/3gpp2,3g2," +
 		"video/vnd.rn-realvideo,rv," +
 		"application/vnd.oasis.opendocument.formula-template,otf," +
-		"application/octet-stream,exe"
-	);
+		"application/octet-stream,exe";
+	
+	
+	var Mime = {
 
-	function extList2mimes(filters) {
-		var ext, i, ii, type, mimes = [];
+		mimes: {},
 
-		// Convert extensions to mime types list
-		no_type_restriction:
-		for (i = 0; i < filters.length; i++) {
-			ext = filters[i].extensions.split(/\s*,\s*/);
+		extensions: {},
 
-			for (ii = 0; ii < ext.length; ii++) {
-				
-				// If there's an asterisk in the list, then accept attribute is not required
-				if (ext[ii] === '*') {
-					mimes = [];
-					break no_type_restriction;
+		// Parses the default mime types string into a mimes and extensions lookup maps
+		addMimeType: function (mimeData) {
+			var items = mimeData.split(/,/), i, ii, ext;
+			
+			for (i = 0; i < items.length; i += 2) {
+				ext = items[i + 1].split(/ /);
+
+				// extension to mime lookup
+				for (ii = 0; ii < ext.length; ii++) {
+					this.mimes[ext[ii]] = items[i];
 				}
-				
-				type = mimes[ext[ii]];
+				// mime to extension lookup
+				this.extensions[items[i]] = ext;
+			}
+		},
 
-				if (type && !~Basic.inArray(type, mimes)) {
-					mimes.push(type);
+		extList2mimes: function (filters) {
+			var self = this, ext, i, ii, y, type, mimes = [];
+			
+			// Convert extensions to mime types list
+			no_type_restriction:
+			for (i = 0; i < filters.length; i++) {
+				ext = filters[i].extensions.split(/\s*,\s*/);
+
+				for (ii = 0; ii < ext.length; ii++) {
+					
+					// If there's an asterisk in the list, then accept attribute is not required
+					if (ext[ii] === '*') {
+						mimes = [];
+						break no_type_restriction;
+					}
+					
+					type = self.mimes[ext[ii]];
+
+					if (type && !~Basic.inArray(type, mimes)) {
+						mimes.push(type);
+					}
 				}
 			}
-		}
-		
-		return mimes;
-	}
+			return mimes;
+		},
 
-	function mimes2extList(mimes) {
-		var exts = '', accept = [];
 
-		mimes = Basic.trim(mimes);
-
-		if (mimes !== '*') {
-			Basic.each(mimes.split(/\s*,\s*/), function(mime) {
-				if (extensions[mime]) {
-					exts += extensions[mime].join(',');
-				}
+		mimes2extList: function(mimes) {
+			var self = this, exts = '', accept = [];
+			
+			mimes = Basic.trim(mimes);
+			
+			if (mimes !== '*') {
+				Basic.each(mimes.split(/\s*,\s*/), function(mime, i) {
+					if (self.extensions[mime]) {
+						exts += self.extensions[mime].join(',');
+					}
+				});
+			} else {
+				exts = mimes;	
+			}
+			
+			accept.push({
+				title: I18n.translate('Files'),
+				extensions: exts
 			});
-		} else {
-			exts = mimes;
+			
+			// save original mimes string
+			accept.mimes = mimes;
+							
+			return accept;
 		}
+	});
 
-		accept.push({
-			title: I18n.translate('Files'),
-			extensions: exts
-		});
+	Mime.addMimeType(mimeData);
 
-		// save original mimes string
-		accept.mimes = mimes;
-						
-		return accept;
-	}
-
-	return {
-		mimes: mimes,
-		extensions: extensions,
-		extList2mimes: extList2mimes,
-		mimes2extList: mimes2extList
-	};
+	return Mime;	
 });
