@@ -15,20 +15,15 @@ define("moxie/runtime/html5/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime",
-	//"moxie/runtime/html5/extensions",
+	"moxie/runtime/html5/extensions",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/core/utils/Env"
-], function(Basic, x, Runtime, /*extensions,*/ ImageInfo, Env) {
+], function(Basic, x, Runtime, extensions, ImageInfo, Env) {
+	
 	Runtime.addConstructor('html5', (function() {
+		
 		function Html5Runtime(options) {
-			var I = this,
-			shim,
-			// allow to extend this runtime
-
-			// figure out the options
-			defaults = {
-
-			};
+			var I = this, shim, defaults = {};
 
 			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
 
@@ -54,7 +49,7 @@ define("moxie/runtime/html5/Runtime", [
 				}
 			});
 
-			/*shim = Basic.extend((function() {
+			shim = Basic.extend((function() {
 				var objpool = {};
 
 				return {
@@ -77,7 +72,7 @@ define("moxie/runtime/html5/Runtime", [
 						return obj[fn].apply(this, args);
 					}
 				};
-			}()), extensions);*/
+			}()), extensions);
 		}
 
 		Html5Runtime.can = (function() {
@@ -105,7 +100,7 @@ define("moxie/runtime/html5/Runtime", [
 					resize_image: function() {
 						return can('access_binary') && Env.can('create_canvas');
 					},
-					select_multiple: !(Env.browser === 'Safari' && Env.os === 'Windows'),
+					select_multiple: !(Env.browser === 'Safari' && Env.OS === 'Windows'),
 					send_binary_string:
 						!!(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 					send_custom_headers: !!window.XMLHttpRequest,

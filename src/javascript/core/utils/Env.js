@@ -14,8 +14,8 @@
 define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
-	var browser = [
-		{
+	
+	var browser = [{
 			s1: navigator.userAgent, // string
 			s2: "Chrome", // substring
 			id: "Chrome" // identity
@@ -40,7 +40,7 @@ define("moxie/core/utils/Env", [
 			s1: navigator.vendor,
 			s2: "Camino",
 			id: "Camino"
-		},{
+		},{		
 			// for newer Netscapes (6+)
 			s1: navigator.userAgent,
 			s2: "Netscape",
@@ -56,7 +56,7 @@ define("moxie/core/utils/Env", [
 			id: "Mozilla",
 			sv: "rv"
 		}],
-		
+
 		os = [{
 			s1: navigator.platform,
 			s2: "Win",
@@ -66,16 +66,19 @@ define("moxie/core/utils/Env", [
 			s2: "Mac",
 			id: "Mac"
 		},{
-		   s1: navigator.userAgent,
-		   s2: "iPhone",
-		   id: "iPhone/iPod"
+			s1: navigator.userAgent,
+			s2: "iPhone",
+			id: "iOS"
+		},{
+			s1: navigator.userAgent,
+			s2: "iPad",
+			id: "iOS"
 		},{
 			s1: navigator.platform,
 			s2: "Linux",
 			id: "Linux"
-		}
-	],
-	version;
+		}]
+		, version;
 
 	function getStr(data) {
 		var str, prop;
@@ -107,7 +110,6 @@ define("moxie/core/utils/Env", [
 	}
 
 	var can = (function() {
-		// ideas for this heavily come from Modernizr (http://modernizr.com/)
 		var caps = {
 				define_property: (function() {
 					try { // as of IE8, getters/setters are supported only on DOM elements
@@ -154,6 +156,7 @@ define("moxie/core/utils/Env", [
 					return false;
 				},
 
+				// ideas for this heavily come from Modernizr (http://modernizr.com/)
 				use_data_uri: (function() {
 					var du = new Image();
 

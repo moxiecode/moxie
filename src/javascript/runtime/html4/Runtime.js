@@ -14,22 +14,16 @@
 define("moxie/runtime/html4/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
-	"runtime/Runtime",
+	"moxie/runtime/Runtime",
 	"moxie/core/utils/Env"
-	//"runtime/html4/extensions"
-], function(Basic, x, Runtime, Env/*, extensions*/) {
+	"moxie/runtime/html4/extensions"
+], function(Basic, x, Runtime, Env, extensions) {
 	var type = 'html4';
 
 	Runtime.addConstructor(type, (function() {
+		
 		function Html4Runtime(options) {
-			var I = this,
-			shim,
-			// allow to extend this runtime
-
-			// figure out the options
-			defaults = {
-
-			};
+			var I = this, shim, defaults = {};
 
 			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
 
@@ -49,7 +43,7 @@ define("moxie/runtime/html4/Runtime", [
 					return I.getShim().exec.call(this, this.uid, component, action, args);
 				}
 			});
-/*
+
 			shim = Basic.extend((function() {
 				var objpool = {};
 
@@ -73,7 +67,7 @@ define("moxie/runtime/html4/Runtime", [
 						return obj[fn].apply(this, args);
 					}
 				};
-			}()), extensions);*/
+			}()), extensions);
 		}
 
 		Html4Runtime.can = (function() {

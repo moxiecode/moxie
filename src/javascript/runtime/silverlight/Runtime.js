@@ -11,10 +11,14 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverlight/extensions"], function(o, R, extensions) {
-	var type = 'silverlight'
-	, x = o.Exceptions
-	;
+define("moxie/runtime/silverlight/Runtime", [
+	"moxie/core/utils/Basic", 
+	"moxie/core/utils/Env",
+	"moxie/runtime/Runtime", 
+	"moxie/runtime/silverlight/extensions"
+], function(Basic, Env, Runtime, extensions) {
+	
+	var type = 'silverlight', x = Basic.Exceptions;
 
 	/**
 	Constructor for the Flash Runtime
@@ -24,7 +28,7 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 	*/
 	R.addConstructor(type, (function() {
 
-		function Runtime(options) {
+		function SliverlightRuntime(options) {
 			var self = this;
 
 			function isInstalled(version) {
@@ -105,11 +109,11 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 			var defaults = {
 				xap_url: 'js/Moxie.xap'
 			};
-			self.options = options = o.extend({}, defaults, options);
+			self.options = options = Basic.extend({}, defaults, options);
 
-			R.apply(this, [options, arguments[1] || type]);
+			Runtime.apply(this, [options, arguments[1] || type]);
 
-			o.extend(this, {
+			Basic.extend(this, {
 
 				getShim: function() {
 					return o(this.uid).content.Moxie;
@@ -119,7 +123,7 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 					var container;
 
 					// minimal requirement Flash Player 10
-					if (!isInstalled('2.0.31005.0') || o.ua.browser === 'Opera') {
+					if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
 						self.destroy();
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 					}
@@ -140,14 +144,14 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 		}
 
 
-		Runtime.can = (function() {
-			var caps = o.extend({}, R.caps, {
+		SliverlightRuntime.can = (function() {
+			var caps = Basic.extend({}, Runtime.caps, {
 					access_binary: true,
 					access_image_binary: true,
 					display_media: true,
 					drag_and_drop: false,
 					receive_response_type: function(responseType) {
-						return !~o.inArray(responseType, ['blob']); // not implemented yet
+						return !~Basic.inArray(responseType, ['blob']); // not implemented yet
 					},
 					report_upload_progress: true,
 					resize_image: true,
@@ -161,13 +165,13 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 					summon_file_dialog: false,
 					upload_filesize: true,
 					use_http_method: function(methods) {
-						if (o.typeOf(methods) !== 'array') {
+						if (Basic.typeOf(methods) !== 'array') {
 							methods = [methods];
 						}
 
 						for (var i in methods) {
 							// flash only supports GET, POST
-							if (!~o.inArray(methods[i].toUpperCase(), ['GET', 'POST'])) {
+							if (!~Basic.inArray(methods[i].toUpperCase(), ['GET', 'POST'])) {
 								return false;
 							}
 						}
@@ -178,11 +182,11 @@ define("runtime/silverlight/Runtime", ["o", "runtime/Runtime", "runtime/silverli
 			function can() {
 				var args = [].slice.call(arguments);
 				args.unshift(caps);
-				return R.can.apply(this, args);
+				return Runtime.can.apply(this, args);
 			}
 			return can;
 		}());
 
-		return Runtime;
+		return SilverlightRuntime;
 	}()));
 });

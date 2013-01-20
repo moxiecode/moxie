@@ -13,9 +13,9 @@
 
 define("moxie/runtime/flash/Runtime", [
 	"moxie/core/utils/Basic",
+	"moxie/core/utils/Env",
 	"moxie/runtime/Runtime",
 	"moxie/core/Exceptions",
-	"moxie/core/utils/Env",
 	"moxie/runtime/flash/extensions"
 ], function(Basic, Runtime, x, Env, extensions) {
 	var type = 'flash';
