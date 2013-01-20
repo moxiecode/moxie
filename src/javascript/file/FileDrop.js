@@ -83,7 +83,7 @@ define('moxie/file/FileDrop', [
 						});
 					}, 999);
 
-					runtime.exec.call(self, 'FileDrop', 'init');
+					runtime.exec.call(self, 'FileDrop', 'init', options);
 
 					self.dispatchEvent('ready');
 				});

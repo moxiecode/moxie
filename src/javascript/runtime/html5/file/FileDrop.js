@@ -21,8 +21,7 @@ define("moxie/runtime/html5/file/FileInput", [
 		var _files = [];
 
 		Basic.extend(this, {
-			init: function() {
-				// TODO: Options comes from where??
+			init: function(options) {
 				var comp = this, I = this.getRuntime(), dropZone = options.container;
 
 				// Safari on Windows has drag/drop problems, so we fake it by moving a input type file
