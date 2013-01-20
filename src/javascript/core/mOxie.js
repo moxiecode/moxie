@@ -31,66 +31,70 @@ Global namespace
 	*/
 	o.ua = (function() {
 		var browser = [{
-				s1: navigator.userAgent, // string
-				s2: "Chrome", // substring
-				id: "Chrome" // identity
-			},{
-				s1: navigator.vendor,
-				s2: "Apple",
-				id: "Safari",
-				sv: "Version" // version
-			},{
-				prop: window.opera && window.opera.buildNumber,
-				id: "Opera",
-				sv: "Version"
-			},{
-				s1: navigator.vendor,
-				s2: "KDE",
-				id: "Konqueror"
-			},{
-				s1: navigator.userAgent,
-				s2: "Firefox",
-				id: "Firefox"
-			},{
-				s1: navigator.vendor,
-				s2: "Camino",
-				id: "Camino"
-			},{		
-				// for newer Netscapes (6+)
-				s1: navigator.userAgent,
-				s2: "Netscape",
-				id: "Netscape"
-			},{
-				s1: navigator.userAgent,
-				s2: "MSIE",
-				id: "IE",
-				sv: "MSIE"
-			},{
-				s1: navigator.userAgent,
-				s2: "Gecko",
-				id: "Mozilla",
-				sv: "rv"
-			}],
-			
-			os = [{
-				s1: navigator.platform,
-				s2: "Win",
-				id: "Windows"
-			},{
-				s1: navigator.platform,
-				s2: "Mac",
-				id: "Mac"
-			},{
-			   s1: navigator.userAgent,
-			   s2: "iPhone",
-			   id: "iPhone/iPod"
-			},{
-				s1: navigator.platform,
-				s2: "Linux",
-				id: "Linux"
-			}],
-			
-			version;
+			s1: navigator.userAgent, // string
+			s2: "Chrome", // substring
+			id: "Chrome" // identity
+		},{
+			s1: navigator.vendor,
+			s2: "Apple",
+			id: "Safari",
+			sv: "Version" // version
+		},{
+			prop: window.opera && window.opera.buildNumber,
+			id: "Opera",
+			sv: "Version"
+		},{
+			s1: navigator.vendor,
+			s2: "KDE",
+			id: "Konqueror"
+		},{
+			s1: navigator.userAgent,
+			s2: "Firefox",
+			id: "Firefox"
+		},{
+			s1: navigator.vendor,
+			s2: "Camino",
+			id: "Camino"
+		},{		
+			// for newer Netscapes (6+)
+			s1: navigator.userAgent,
+			s2: "Netscape",
+			id: "Netscape"
+		},{
+			s1: navigator.userAgent,
+			s2: "MSIE",
+			id: "IE",
+			sv: "MSIE"
+		},{
+			s1: navigator.userAgent,
+			s2: "Gecko",
+			id: "Mozilla",
+			sv: "rv"
+		}],
+
+		os = [{
+			s1: navigator.platform,
+			s2: "Win",
+			id: "Windows"
+		},{
+			s1: navigator.platform,
+			s2: "Mac",
+			id: "Mac"
+		},{
+			s1: navigator.userAgent,
+			s2: "iPhone",
+			id: "iOS"
+		},{
+			s1: navigator.userAgent,
+			s2: "iPad",
+			id: "iOS"
+		},{
+			s1: navigator.platform,
+			s2: "Linux",
+			id: "Linux"
+		}]
+		, version
+		;
 			
 		
 		function getStr(data) {

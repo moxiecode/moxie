@@ -882,8 +882,8 @@
 						return can('slice_blob') && can('send_multipart');
 					},
 					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
-						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4)	|| 
-								(o.ua.browser === 'Opera' && o.ua.version >= 12)	|| 
+						return  (o.ua.browser === 'Firefox' && o.ua.version >= 4) || 
+								(o.ua.browser === 'Opera' && o.ua.version >= 12) || 
 								!!~o.inArray(o.ua.browser, ['Chrome', 'Safari']);
 					}()),
 					upload_filesize: true
