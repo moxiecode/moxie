@@ -30,7 +30,7 @@ define('moxie/runtime/RuntimeTarget', [
 		RuntimeClient.call(this);
 	}
 
-	RuntimeTarget.prototype = new EventTarget();
+	RuntimeTarget.prototype = EventTarget.instance;
 
 	return RuntimeTarget;
 });

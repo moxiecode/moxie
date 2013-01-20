@@ -221,7 +221,7 @@ define('moxie/runtime/Runtime', [
 	@param {Function} construct Constructor function for the Runtime
 	*/
 	Runtime.addConstructor = function(type, construct) {
-		construct.prototype = new EventTarget();
+		construct.prototype = EventTarget.instance;
 		runtimeConstructors[type] = construct;
 	};
 

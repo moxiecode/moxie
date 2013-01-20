@@ -132,7 +132,7 @@ define("moxie/runtime/Transporter", [
 	Transporter.BUSY = 1;
 	Transporter.DONE = 2;
 
-	Transporter.prototype = new EventTarget();
+	Transporter.prototype = EventTarget.instance;
 
 	return Transporter;
 });

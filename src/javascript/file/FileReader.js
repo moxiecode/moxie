@@ -178,7 +178,7 @@ define('moxie/file/FileReader', [
 	*/
 	FileReader.DONE = 2;
 
-	FileReader.prototype = new EventTarget();
+	FileReader.prototype = EventTarget.instance;
 
 	return FileReader;
 });

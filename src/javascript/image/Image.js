@@ -571,7 +571,7 @@ define("moxie/image/Image", [
 		}
 	}
 	
-	Image.prototype = new EventTarget();
+	Image.prototype = EventTarget.instance;
 
 	return Image;
 });

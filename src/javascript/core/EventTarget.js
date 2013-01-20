@@ -21,7 +21,7 @@ define('moxie/core/EventTarget', [
 	@class EventTarget
 	@constructor EventTarget
 	*/
-	return function() {
+	function EventTarget() {
 		// hash of event listeners by object uid
 		var eventpool = {};
 				
@@ -283,5 +283,9 @@ define('moxie/core/EventTarget', [
 			}
 			
 		});
-	};
+	}
+
+	EventTarget.instance = new EventTarget(); 
+
+	return EventTarget;
 });

@@ -94,7 +94,7 @@ define('moxie/file/FileDrop', [
 		});
 	}
 
-	FileDrop.prototype = new EventTarget();
+	FileDrop.prototype = EventTarget.instance;
 
 	return FileDrop;
 });

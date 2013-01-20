@@ -255,7 +255,7 @@ define('moxie/file/FileInput', [
 		});
 	}
 
-	FileInput.prototype = new EventTarget();
+	FileInput.prototype = EventTarget.instance;
 
 	return FileInput;
 });

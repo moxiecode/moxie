@@ -87,7 +87,7 @@ define("moxie/xhr/XMLHttpRequest", [
 		this.uid = Basic.guid('uid_');
 	}
 	
-	XMLHttpRequestUpload.prototype = new EventTarget();
+	XMLHttpRequestUpload.prototype = EventTarget.instance;
 
 	/**
 	Implementation of XMLHttpRequest
@@ -1018,7 +1018,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	XMLHttpRequest.LOADING = 3;
 	XMLHttpRequest.DONE = 4;
 	
-	XMLHttpRequest.prototype = new EventTarget();
+	XMLHttpRequest.prototype = EventTarget.instance;
 
 	return XMLHttpRequest;
 });
