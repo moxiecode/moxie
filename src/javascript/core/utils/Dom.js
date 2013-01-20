@@ -12,6 +12,14 @@
 /*global define:true */
 
 define('moxie/core/utils/Dom', [], function() {
+
+	/**
+	Get DOM Element by it's id.
+
+	@method get
+	@param {String} id Identifier of the DOM Element
+	@return {DOMElement}
+	*/
 	var get = function(id) {
 		if (typeof id !== 'string') {
 			return id;

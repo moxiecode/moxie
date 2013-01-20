@@ -12,19 +12,6 @@
 /*global define:true */
 
 define('moxie/core/utils/Basic', [], function() {
-	/**
-	Get DOM Element by it's id.
-
-	@method byId
-	@param {String} id Identifier of the DOM Element
-	@return {DOMElement}
-	*/
-	var byId = function(id) {
-		if (typeof id !== 'string') {
-			return id;
-		}
-		return document.getElementById(id);
-	};
 
 	/**
 	Gets the true type of the built-in object (better version of typeof).
@@ -287,7 +274,6 @@ define('moxie/core/utils/Basic', [], function() {
 	
 
 	return {
-		byId: byId,
 		guid: guid,
 		typeOf: typeOf,
 		extend: extend,
