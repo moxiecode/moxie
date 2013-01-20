@@ -1,5 +1,5 @@
 /**
- * Extension.js
+ * extensions.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -12,20 +12,29 @@
 /*global define:true */
 
 (function() {
+	// when compiled dynamically @type@ and @modules@ will be replaced correspondingly with runtime type and modules to extend
 	var type = "@type@";
 	var modules = [@modules@];
 
-	var extensions = ["o"];
+	// define dependecies for extensions hash
+	var deps = ["Basic"];
 	for (var i in modules) {
-		extensions.push("runtime/" + type + "/" + modules[i]);
+		deps.push("moxie/runtime/" + type + "/" + modules[i]);
 	}
 
-	define("runtime/" + type + "/extensions", extensions, function(o) {
-		var extObj = {};
-		o.each(Array.prototype.slice.call(arguments, 1), function(ext, i) {
+	define("runtime/" + type + "/extensions", deps, function(Basic) {
+		// strip of Basic
+		var modules = [].slice.call(arguments, 1);
+		
+		// generate extensions hash
+		var extensions = {};
+		Basic.each(, function(ext, i) {
+			// extract class name
 			var name = modules[i].replace(/^[\s\S]+?\/([^\/]+)$/, '$1');
-			extObj[name] = ext;
+			// class name / extension id
+			extensions[name] = ext;
 		});
-		return extObj;
+
+		return extensions;
 	});
 }());
