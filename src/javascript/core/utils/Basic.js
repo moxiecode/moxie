@@ -153,6 +153,10 @@ define('moxie/core/utils/Basic', [], function() {
 			cb = function() {};
 		}
 
+		if (!queue || !queue.length) {
+			cb();
+		}
+
 		function callNext(i) {
 			if (typeOf(queue[i]) === 'function') {
 				queue[i](function(error) {
