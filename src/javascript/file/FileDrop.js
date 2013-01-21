@@ -20,7 +20,7 @@ define('moxie/file/FileDrop', [
 	'moxie/runtime/RuntimeClient',
 	'moxie/core/EventTarget',
 	'moxie/core/utils/Mime'
-], function(I18n, dom, x, Basic, File, RuntimeClient, EventTarget, Mime) {
+], function(I18n, Dom, x, Basic, File, RuntimeClient, EventTarget, Mime) {
 	var dispatches = ['ready', 'dragleave', 'dragenter', 'drop', 'error'];
 
 	function FileDrop(options) {
@@ -45,10 +45,10 @@ define('moxie/file/FileDrop', [
 		options = typeof(options) === 'object' ? Basic.extend({}, defaults, options) : defaults;
 
 		// this will help us to find proper default container
-		options.container = dom.get(options.drop_zone) || document.body;
+		options.container = Dom.get(options.drop_zone) || document.body;
 
 		// make container relative, if they're not
-		if (dom.getStyle(options.container, 'position') === 'static') {
+		if (Dom.getStyle(options.container, 'position') === 'static') {
 			options.container.style.position = 'relative';
 		}
 					

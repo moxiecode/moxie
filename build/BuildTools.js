@@ -30,11 +30,6 @@ var uglify = function (sourceFiles, outputFile, options) {
 	// Compress
 	var ast = jsp.parse(code);
 
-	// Write combined, but not minified version (just strip off the comments)
-	/*fs.writeFileSync(outputFile.replace(/\.min\./, '.full.'), pro.gen_code(ast, {
-		beautify: true
-	}));*/
-
 	ast = pro.ast_mangle(ast, options);
 	ast = pro.ast_squeeze(ast);
 	code = pro.gen_code(ast);

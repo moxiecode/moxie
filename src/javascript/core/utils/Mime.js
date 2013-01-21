@@ -138,7 +138,7 @@ define("moxie/core/utils/Mime", [
 							
 			return accept;
 		}
-	});
+	};
 
 	Mime.addMimeType(mimeData);
 

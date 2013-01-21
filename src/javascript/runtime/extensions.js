@@ -17,22 +17,22 @@
 	var modules = [@modules@];
 
 	// define dependecies for extensions hash
-	var deps = ["Basic"];
+	var depIds = ["Basic"];
 	for (var i in modules) {
-		deps.push("moxie/runtime/" + type + "/" + modules[i]);
+		depIds.push("moxie/runtime/" + type + "/" + modules[i]);
 	}
 
-	define("runtime/" + type + "/extensions", deps, function(Basic) {
+	define("moxie/runtime/" + type + "/extensions", depIds, function(Basic) { 
 		// strip of Basic
-		var modules = [].slice.call(arguments, 1);
+		var deps = [].slice.call(arguments, 1);
 		
 		// generate extensions hash
 		var extensions = {};
-		Basic.each(, function(ext, i) {
+		Basic.each(deps, function(dep, i) {
 			// extract class name
 			var name = modules[i].replace(/^[\s\S]+?\/([^\/]+)$/, '$1');
-			// class name / extension id
-			extensions[name] = ext;
+			// class name / extension
+			extensions[name] = dep;
 		});
 
 		return extensions;

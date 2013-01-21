@@ -39,8 +39,23 @@ task("jshint", [], function (params) {
 
 desc("Compile JS");
 task("mkjs", [], function () {
-/*	var modules = mkjs.resolveModules(arguments, "src/javascript");
+	var amdlc = require('amdlc');
+
 	var targetDir = "bin/js";
+
+	var options = {
+		compress: true,
+		baseDir: 'src/javascript',
+		rootNS: "moxie",
+		expose: ["o", "mOxie"],
+		verbose: true,
+		outputSource: targetDir + "/moxie.js",
+		outputMinified: targetDir + "/moxie.min.js",
+		outputDev: targetDir + "/moxie.dev.js"
+	};
+
+	var modules = mkjs.resolveModules(arguments, options);
+	
 
 	// start fresh
 	if (fs.existsSync(targetDir)) {
@@ -48,35 +63,9 @@ task("mkjs", [], function () {
 	}
 	jake.mkdirP(targetDir);
 
-	var options = {
-		compress: true,
-		excludeRootNamespaceFromPath: true,
-		verbose: true,
-		outputSource: targetDir + "/moxie.js",
-		outputMinified: targetDir + "/moxie.min.js",
-		outputDev: targetDir + "/moxie.dev.js"
-	};
-
 	amdlc.compileMinified(modules, options);
 	amdlc.compileSource(modules, options);
 	amdlc.compileDevelopment(modules, options);
-*/
-
-	compileAmd({
-		from: [
-			"src/javascript/core/**/*.js",
-			"src/javascript/file/**/*.js",
-			"src/javascript/xhr/**/*.js",
-			"src/javascript/runtime/html5/**/*.js"
-		],
-		baseDir: "src/javascript",
-		rootNS: "moxie",
-		outputSource: "js/moxie.js",
-		outputMinified: "js/moxie.min.js",
-		outputDev: "js/moxie.dev.js",
-		verbose: true,
-		expose: "public"
-	});
 });
 
 

@@ -1,9 +1,20 @@
 var fs = require("fs");
+var utils = require("./utils");
 
 var resolveModules = (function() {
 	var resolved = []; // cache
 
-	return function(modules, baseDir) {
+	return function(modules, options) {
+
+		function resolveId(id) {
+			id = id.replace(/\./g, '/');
+
+			if (options.rootNS) {
+				id = id.replace(options.rootNS.replace(/\./g, '/').replace(/[\/]$/, '') + '/', '');
+			}
+			return id;
+		}
+
 		// there is no need to reparse if we already did this once
 		if (resolved.length) {
 			return resolved;
@@ -19,7 +30,7 @@ var resolveModules = (function() {
 		}
 
 		// check if our template for runtime extensions file exists
-		var extTplPath = baseDir + '/runtime/extensions.js';
+		var extTplPath = options.baseDir + '/runtime/extensions.js';
 		if (!fs.existsSync(extTplPath)) {
 			console.info(extTplPath + ' cannot be found.');
 			process.exit(1);
@@ -27,11 +38,9 @@ var resolveModules = (function() {
 		var extTpl = fs.readFileSync(extTplPath).toString();
 
 		// get complete array of all involved modules
-		modules = amdlc.parseModules({
-		    from: modules,
-		    expose: ["o", "mOxie"],
-		    baseDir: baseDir
-		});
+		modules = amdlc.parseModules(utils.extend({}, options, {
+			from: modules
+		}));
 
 		// come up with the list of runtime modules to get included
 		var overrides = {};
@@ -40,14 +49,18 @@ var resolveModules = (function() {
 		if (runtimes.length) {
 			runtimes.forEach(function(type) {
 				var id = 'runtime/' + type + '/extensions';
+				if (options.rootNS) {
+					id = options.rootNS + '/' + id;
+				}
+
 				if (overrides[id]) {
 					return; // continue
 				}	
 
 				var runtimeModules = [];
 				modules.forEach(function(module) {
-					if (fs.existsSync(baseDir + '/runtime/' + type + '/' + module.id + '.js')) {
-						runtimeModules.push(module.id);
+					if (fs.existsSync(options.baseDir + '/runtime/' + type + '/' + resolveId(module.id) + '.js')) {
+						runtimeModules.push(resolveId(module.id));
 					}
 				});
 
@@ -62,17 +75,15 @@ var resolveModules = (function() {
 
 				overrides[id] = {
 					source: source,
-					filePath: id + '.js'
+					filePath: resolveId(id)
 				};
 			});
 
 			// add runtimes and their modules
-			Array.prototype.push.apply(modules, amdlc.parseModules({
+			Array.prototype.push.apply(modules, amdlc.parseModules(utils.extend({}, options, {
 				from: runtimes.map(function(type) { return 'runtime/' + type + '/Runtime.js'; }),
-				baseDir: baseDir,
-				expose: ["o", "mOxie"],
 				moduleOverrides: overrides
-			}));
+			})));
 
 			return (resolved = modules);
 		}
