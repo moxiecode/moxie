@@ -12,10 +12,10 @@
 /*global define:true */
 
 /**
-@class runtime/silverlight/file/FileDrop
+@class moxie/runtime/silverlight/file/FileDrop
 @private
 */
-define("runtime/silverlight/file/FileDrop", ["o", "core/utils/events"], function(o, events) {
+define("moxie/runtime/silverlight/file/FileDrop", ["o", "core/utils/events"], function(o, events) {
 	// not exactly useful, since works only in safari (...crickets...)
 	return {
 		init: function() {

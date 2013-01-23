@@ -12,9 +12,9 @@
 /*global define:true */
 
 /**
-@class runtime/silverlight/image/Image
+@class moxie/runtime/silverlight/image/Image
 @private
 */
-define("runtime/silverlight/image/Image", ["runtime/flash/image/Image"], function(Image) {
+define("moxie/runtime/silverlight/image/Image", ["runtime/flash/image/Image"], function(Image) {
 	return Image;
 });

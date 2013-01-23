@@ -12,10 +12,10 @@
 /*global define:true */
 
 /**
-@class runtime/silverlight/file/FileInput
+@class moxie/runtime/silverlight/file/FileInput
 @private
 */
-define("runtime/silverlight/file/FileInput", [], function() {
+define("moxie/runtime/silverlight/file/FileInput", [], function() {
 	return {
 		init: function(options) {
 			var self = this.getRuntime();

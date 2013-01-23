@@ -12,9 +12,9 @@
 /*global define:true */
 
 /**
-@class runtime/silverlight/file/Blob
+@class moxie/runtime/silverlight/file/Blob
 @private
 */
-define("runtime/silverlight/file/Blob", ["runtime/flash/file/Blob"], function(Blob) {
+define("moxie/runtime/silverlight/file/Blob", ["runtime/flash/file/Blob"], function(Blob) {
 	return Blob;
 });

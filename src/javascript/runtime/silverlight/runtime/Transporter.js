@@ -12,9 +12,9 @@
 /*global define:true */
 
 /**
-@class runtime/silverlight/runtime/Transporter
+@class moxie/runtime/silverlight/runtime/Transporter
 @private
 */
-define("runtime/silverlight/runtime/Transporter", ["runtime/flash/runtime/Transporter"], function(Transporter) {
+define("moxie/runtime/silverlight/runtime/Transporter", ["runtime/flash/runtime/Transporter"], function(Transporter) {
 	return Transporter;
 });

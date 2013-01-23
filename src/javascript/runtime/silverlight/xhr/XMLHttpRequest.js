@@ -12,9 +12,9 @@
 /*global define:true */
 
 /**
-@class runtime/silverlight/xhr/XMLHttpRequest
+@class moxie/runtime/silverlight/xhr/XMLHttpRequest
 @private
 */
-define("runtime/silverlight/xhr/XMLHttpRequest", ["runtime/flash/xhr/XMLHttpRequest"], function(XMLHttpRequest) {
+define("moxie/runtime/silverlight/xhr/XMLHttpRequest", ["runtime/flash/xhr/XMLHttpRequest"], function(XMLHttpRequest) {
 	return XMLHttpRequest;
 });

@@ -12,9 +12,9 @@
 /*global define:true */
 
 /**
-@class runtime/silverlight/file/FileReader
+@class moxie/runtime/silverlight/file/FileReader
 @private
 */
-define("runtime/silverlight/file/FileReader", ["runtime/flash/file/FileReader"], function(FileReader) {
+define("moxie/runtime/silverlight/file/FileReader", ["runtime/flash/file/FileReader"], function(FileReader) {
 	return FileReader;
 });
