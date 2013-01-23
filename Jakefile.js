@@ -19,7 +19,7 @@ var wiki = require("./build/wiki");
 var isImageLogicRequired = function(modules) {
 	var result = false;
 	utils.each(mkjs.resolveModules(modules), function(module) {
-		if (module.id == "image/Image") {
+		if (module.id == "moxie/image/Image") {
 			result = true;
 			return false;
 		}
@@ -47,15 +47,25 @@ task("mkjs", [], function () {
 		compress: true,
 		baseDir: 'src/javascript',
 		rootNS: "moxie",
-		expose: ["o", "mOxie"],
+		expose: "public",
 		verbose: true,
 		outputSource: targetDir + "/moxie.js",
 		outputMinified: targetDir + "/moxie.min.js",
 		outputDev: targetDir + "/moxie.dev.js"
 	};
 
-	var modules = mkjs.resolveModules(arguments, options);
-	
+	var modules = [].slice.call(arguments);
+	if (!modules.length) {
+		modules = ["file/FileInput", "xhr/XMLHttpRequest", "image/Image"];
+	}
+
+	// resolve dependencies
+	modules = mkjs.resolveModules(modules, options);	
+
+	// make sure we got entry point
+	[].push.apply(modules, amdlc.parseModules(utils.extend({}, options, {
+		from: ["o"]
+	})));
 
 	// start fresh
 	if (fs.existsSync(targetDir)) {

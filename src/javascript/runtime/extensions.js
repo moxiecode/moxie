@@ -13,15 +13,19 @@
 
 (function() {
 	// when compiled dynamically @type@ and @modules@ will be replaced correspondingly with runtime type and modules to extend
-	var type = "@type@";
-	var modules = [@modules@];
+	var type = "%type%";
+	var modules = [%modules%];
 
 	// define dependecies for extensions hash
-	var depIds = ["Basic"];
+	var depIds = ["moxie/core/utils/Basic"];
 	for (var i in modules) {
 		depIds.push("moxie/runtime/" + type + "/" + modules[i]);
 	}
 
+	/**
+	@class moxie/runtime/%type%/extensions
+	@private
+	*/
 	define("moxie/runtime/" + type + "/extensions", depIds, function(Basic) { 
 		// strip of Basic
 		var deps = [].slice.call(arguments, 1);

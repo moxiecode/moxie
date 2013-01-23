@@ -11,13 +11,19 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true, escape:true */
 
+/**
+Defines constructor for Flash runtime.
+
+@class moxie/runtime/flash/Runtime
+@private
+*/
 define("moxie/runtime/flash/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Env",
-	"moxie/runtime/Runtime",
 	"moxie/core/Exceptions",
+	"moxie/runtime/Runtime",
 	"moxie/runtime/flash/extensions"
-], function(Basic, Runtime, x, Env, extensions) {
+], function(Basic, Env, x, Runtime, extensions) {
 	var type = 'flash';
 
 	/**

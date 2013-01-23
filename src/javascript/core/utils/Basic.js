@@ -23,8 +23,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} o Object to check.
 	@return {String} Object [[Class]]
 	*/
-	var typeOf = function(o) {
-		// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
+	var typeOf = function(o) {	
 		var undef;
 		if (o === undef) {
 			return 'undefined';
@@ -33,6 +32,8 @@ define('moxie/core/utils/Basic', [], function() {
 		} else if (o.nodeType) {
 			return 'node';
 		}
+
+		// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
 		return ({}).toString.call(o).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
 	};
 		
@@ -282,6 +283,7 @@ define('moxie/core/utils/Basic', [], function() {
 		inSeries: inSeries,
 		inArray: inArray,
 		toArray: toArray,
-		trim: trim
+		trim: trim,
+		parseSizeStr: parseSizeStr
 	};
 });

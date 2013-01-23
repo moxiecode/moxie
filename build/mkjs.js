@@ -22,13 +22,6 @@ var resolveModules = (function() {
 
 		var amdlc = require('amdlc');
 
-		// if arguments array was passed directly, make sure we are working on real array
-		modules = Array.prototype.slice.call(modules);
-
-		if (!modules.length) {
-			modules = ["file/FileInput", "xhr/XMLHttpRequest", "image/Image"];
-		}
-
 		// check if our template for runtime extensions file exists
 		var extTplPath = options.baseDir + '/runtime/extensions.js';
 		if (!fs.existsSync(extTplPath)) {
@@ -64,7 +57,7 @@ var resolveModules = (function() {
 					}
 				});
 
-				var source = extTpl.replace(/@([^@]+)@/g, function($0, $1) {
+				var source = extTpl.replace(/%([\w]+)%/g, function($0, $1) {
 					switch ($1) { 
 						case 'type': 
 							return type;
