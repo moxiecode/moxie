@@ -10,6 +10,13 @@ package mxi
 		}
 		
 		
+		static public function sanitize(str:String) : String
+		{
+			// allow only [a-zA-Z0-9_]
+			return str.replace(/[^\w]/g, ''); 
+		}
+		
+		
 		static public function extend(obj1:*, obj2:*, strict:Boolean = false, propsOnly:Boolean = true) : *
 		{
 			if (!obj1)
