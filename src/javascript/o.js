@@ -1,5 +1,5 @@
 /**
- * FileInput.js
+ * o.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
