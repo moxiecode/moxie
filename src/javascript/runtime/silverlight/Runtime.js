@@ -20,11 +20,12 @@ Defines constructor for Silverlight runtime.
 define("moxie/runtime/silverlight/Runtime", [
 	"moxie/core/utils/Basic", 
 	"moxie/core/utils/Env",
+	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime", 
 	"moxie/runtime/silverlight/extensions"
-], function(Basic, Env, Runtime, extensions) {
+], function(Basic, Env, x, Runtime, extensions) {
 	
-	var type = 'silverlight', x = Basic.Exceptions;
+	var type = 'silverlight';
 
 	/**
 	Constructor for the Flash Runtime
