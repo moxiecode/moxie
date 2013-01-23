@@ -63,7 +63,7 @@ package
 			stage.scaleMode = StageScaleMode.EXACT_FIT;
 						
 			// Setup id
-			Moxie.uid = stage.loaderInfo.parameters["uid"];			
+			Moxie.uid = Utils.sanitize(stage.loaderInfo.parameters["uid"]);			
 			
 			//ExternalInterface.marshallExceptions = true; // propagate AS exceptions to JS and vice-versa
 			ExternalInterface.addCallback('exec', exec);
@@ -82,6 +82,8 @@ package
 		public function exec(uid:String, compName:String, action:String, args:* = null) : *
 		{			
 			// Moxie.log([uid, compName, action, args]);
+			
+			uid = Utils.sanitize(uid); // make it safe
 			
 			var result:*, comp:* = Moxie.comps.get(uid, compName);	
 			
