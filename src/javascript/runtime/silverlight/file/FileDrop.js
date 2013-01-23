@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+@class runtime/silverlight/file/FileDrop
+@private
+*/
 define("runtime/silverlight/file/FileDrop", ["o", "core/utils/events"], function(o, events) {
 	// not exactly useful, since works only in safari (...crickets...)
 	return {

@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+@class runtime/silverlight/image/Image
+@private
+*/
 define("runtime/silverlight/image/Image", ["runtime/flash/image/Image"], function(Image) {
 	return Image;
 });

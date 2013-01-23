@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
+/**
+@class moxie/runtime/html5/image/Image
+@private
+*/
 define("moxie/runtime/html5/image/Image", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",

@@ -26,7 +26,8 @@ define('o', [
 
 	var o = {};
 
-	// directly add some public classes
+	// directly add some public classes 
+	// (we do it dynamically here, since for custom builds we cannot know beforehand what modules were included)
 	Basic.each(exposedModules, function(id) {
 		var className = id.replace(/^[\s\S]+?\/([^\/]+)$/, '$1');
 		if (modules[id]) {

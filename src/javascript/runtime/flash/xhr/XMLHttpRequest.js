@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+@class moxie/runtime/flash/xhr/XMLHttpRequest
+@private
+*/
 define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Basic",
 	"moxie/file/Blob",

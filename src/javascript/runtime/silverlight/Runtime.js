@@ -11,6 +11,12 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+Defines constructor for Silverlight runtime.
+
+@class moxie/runtime/silverlight/Runtime
+@private
+*/
 define("moxie/runtime/silverlight/Runtime", [
 	"moxie/core/utils/Basic", 
 	"moxie/core/utils/Env",

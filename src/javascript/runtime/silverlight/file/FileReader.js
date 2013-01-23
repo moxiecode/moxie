@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+@class runtime/silverlight/file/FileReader
+@private
+*/
 define("runtime/silverlight/file/FileReader", ["runtime/flash/file/FileReader"], function(FileReader) {
 	return FileReader;
 });

@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
+/**
+@class moxie/runtime/html4/xhr/XMLHttpRequest
+@private
+*/
 define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",

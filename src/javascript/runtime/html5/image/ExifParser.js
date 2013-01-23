@@ -11,10 +11,15 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+@class moxie/runtime/html5/image/ExifParser
+@private
+*/
 define("moxie/runtime/html5/image/ExifParser", [
 	"moxie/core/utils/Basic",
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(Basic, BinaryReader) {
+	
 	return function() {
 		// Private ExifParser fields
 		var data, tags, offsets = {}, tagDescs;

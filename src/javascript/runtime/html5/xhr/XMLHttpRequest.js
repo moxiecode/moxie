@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
 /*global define:true, unescape:true */
 
+/**
+@class moxie/runtime/html5/xhr/XMLHttpRequest
+@private
+*/
 define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Basic",
 	"moxie/file/File",

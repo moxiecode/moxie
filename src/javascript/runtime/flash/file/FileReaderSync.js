@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+@class moxie/runtime/flash/file/FileReaderSync
+@private
+*/
 define("moxie/runtime/flash/file/FileReaderSync", [
 	"moxie/core/utils/Encode"
 ], function(Encode) {

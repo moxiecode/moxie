@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+@class runtime/silverlight/file/Blob
+@private
+*/
 define("runtime/silverlight/file/Blob", ["runtime/flash/file/Blob"], function(Blob) {
 	return Blob;
 });

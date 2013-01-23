@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
+/**
+@class moxie/runtime/html5/file/FileInput
+@private
+*/
 define("moxie/runtime/html5/file/FileInput", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",

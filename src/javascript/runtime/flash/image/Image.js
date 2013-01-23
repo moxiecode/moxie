@@ -11,6 +11,10 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
 /*global define:true */
 
+/**
+@class moxie/runtime/flash/image/Image
+@private
+*/
 define("moxie/runtime/flash/image/Image", [
 	"moxie/runtime/Transporter",
 	"moxie/file/Blob",

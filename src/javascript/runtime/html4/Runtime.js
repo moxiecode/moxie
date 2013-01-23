@@ -11,6 +11,12 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
 /*global define:true, File:true */
 
+/**
+Defines constructor for HTML4 runtime.
+
+@class moxie/runtime/html4/Runtime
+@private
+*/
 define("moxie/runtime/html4/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
