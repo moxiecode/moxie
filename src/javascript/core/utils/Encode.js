@@ -12,21 +12,6 @@
 /*global define:true, escape: true, unescape: true */
 
 define('moxie/core/utils/Encode', [], function() {
-	/**
-	Encodes the specified string.
-	
-	@method xmlEncode
-	@static
-	@param {String} s String to encode.
-	@return {String} Encoded string.
-	*/
-	var xmlEncode  = function(str) {
-		var xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'}, xmlEncodeRegExp = /[<>&\"\']/g;
-		
-		return str ? ('' + str).replace(xmlEncodeRegExp, function(chr) {
-			return xmlEncodeChars[chr] ? '&' + xmlEncodeChars[chr] + ';' : chr;
-		}) : str;
-	};
 
 	/**
 	Encode string with UTF-8
@@ -182,7 +167,6 @@ define('moxie/core/utils/Encode', [], function() {
 
 
 	return {
-		xmlEncode: xmlEncode,
 		utf8_encode: utf8_encode,
 		utf8_decode: utf8_decode,
 		atob: atob,
