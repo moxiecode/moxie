@@ -42,7 +42,7 @@ define('moxie/runtime/RuntimeClient', [
 				}
 
 				if (ruid) {
-					runtime = self.getRuntime(ruid);
+					runtime = Runtime.getRuntime(ruid);
 
 					if (runtime) {
 						/*if (Basic.typeOf(self.trigger) === 'function') { // connectRuntime might be called on non eventTarget object
