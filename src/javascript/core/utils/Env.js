@@ -112,6 +112,7 @@ define("moxie/core/utils/Env", [
 	var can = (function() {
 		var caps = {
 				define_property: (function() {
+					/* // currently too much extra code required, not exactly worth it
 					try { // as of IE8, getters/setters are supported only on DOM elements
 						var obj = {};
 						if (Object.defineProperty) {
@@ -125,7 +126,7 @@ define("moxie/core/utils/Env", [
 
 					if (Object.prototype.__defineGetter__ && Object.prototype.__defineSetter__) {
 						return true;
-					}
+					}*/
 					return false;
 				}()),
 
