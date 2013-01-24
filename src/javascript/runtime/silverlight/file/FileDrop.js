@@ -15,7 +15,11 @@
 @class moxie/runtime/silverlight/file/FileDrop
 @private
 */
-define("moxie/runtime/silverlight/file/FileDrop", ["o", "core/utils/events"], function(o, events) {
+define("moxie/runtime/silverlight/file/FileDrop", [
+	"moxie/core/utils/Dom", 
+	"moxie/core/utils/Events"
+], function(Dom, Events) {
+
 	// not exactly useful, since works only in safari (...crickets...)
 	return {
 		init: function() {
@@ -23,22 +27,22 @@ define("moxie/runtime/silverlight/file/FileDrop", ["o", "core/utils/events"], fu
 
 			dropZone = self.getShimContainer();
 
-			events.addEvent(dropZone, 'dragover', function(e) {
+			Events.addEvent(dropZone, 'dragover', function(e) {
 				e.preventDefault();
 				e.stopPropagation();
 				e.dataTransfer.dropEffect = 'copy';
 			}, comp.uid);
 
-			events.addEvent(dropZone, 'dragenter', function(e) {
+			Events.addEvent(dropZone, 'dragenter', function(e) {
 				e.preventDefault();
-				var flag = o(self.uid).dragEnter(e);
+				var flag = Dom.get(self.uid).dragEnter(e);
 			    // If handled, then stop propagation of event in DOM
 			    if (flag) {e.stopPropagation();}
 			}, comp.uid);
 
-			events.addEvent(dropZone, 'drop', function(e) {
+			Events.addEvent(dropZone, 'drop', function(e) {
 				e.preventDefault();
-				var flag = o(self.uid).dragDrop(e);
+				var flag = Dom.get(self.uid).dragDrop(e);
 			    // If handled, then stop propagation of event in DOM
 			    if (flag) {e.stopPropagation();}
 			}, comp.uid);

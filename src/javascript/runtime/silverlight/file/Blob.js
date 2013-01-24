@@ -15,6 +15,6 @@
 @class moxie/runtime/silverlight/file/Blob
 @private
 */
-define("moxie/runtime/silverlight/file/Blob", ["runtime/flash/file/Blob"], function(Blob) {
+define("moxie/runtime/silverlight/file/Blob", ["moxie/runtime/flash/file/Blob"], function(Blob) {
 	return Blob;
 });

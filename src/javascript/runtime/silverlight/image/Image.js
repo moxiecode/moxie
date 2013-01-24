@@ -15,6 +15,6 @@
 @class moxie/runtime/silverlight/image/Image
 @private
 */
-define("moxie/runtime/silverlight/image/Image", ["runtime/flash/image/Image"], function(Image) {
+define("moxie/runtime/silverlight/image/Image", ["moxie/runtime/flash/image/Image"], function(Image) {
 	return Image;
 });

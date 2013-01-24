@@ -15,6 +15,6 @@
 @class moxie/runtime/silverlight/file/FileReaderSync
 @private
 */
-define("moxie/runtime/silverlight/file/FileReaderSync", ["runtime/flash/file/FileReaderSync"], function(FileReaderSync) {
+define("moxie/runtime/silverlight/file/FileReaderSync", ["moxie/runtime/flash/file/FileReaderSync"], function(FileReaderSync) {
 	return FileReaderSync;
 });

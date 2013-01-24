@@ -20,10 +20,11 @@ Defines constructor for Silverlight runtime.
 define("moxie/runtime/silverlight/Runtime", [
 	"moxie/core/utils/Basic", 
 	"moxie/core/utils/Env",
+	"moxie/core/utils/Dom",
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime", 
 	"moxie/runtime/silverlight/extensions"
-], function(Basic, Env, x, Runtime, extensions) {
+], function(Basic, Env, Dom, x, Runtime, extensions) {
 	
 	var type = 'silverlight';
 
@@ -33,9 +34,9 @@ define("moxie/runtime/silverlight/Runtime", [
 	@class RuntimeFlash
 	@extends Runtime
 	*/
-	R.addConstructor(type, (function() {
+	Runtime.addConstructor(type, (function() {
 
-		function SliverlightRuntime(options) {
+		function SilverlightRuntime(options) {
 			var self = this;
 
 			function isInstalled(version) {
@@ -123,7 +124,7 @@ define("moxie/runtime/silverlight/Runtime", [
 			Basic.extend(this, {
 
 				getShim: function() {
-					return o(this.uid).content.Moxie;
+					return Dom.get(this.uid).content.Moxie;
 				},
 
 				init : function() {
@@ -151,7 +152,7 @@ define("moxie/runtime/silverlight/Runtime", [
 		}
 
 
-		SliverlightRuntime.can = (function() {
+		SilverlightRuntime.can = (function() {
 			var caps = Basic.extend({}, Runtime.caps, {
 					access_binary: true,
 					access_image_binary: true,
