@@ -18,6 +18,7 @@
 define("moxie/runtime/html5/file/FileReader", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
+	
 	return function() {
 		this.read = function(op, blob) {
 			var target = this, fr = new window.FileReader();

@@ -23,8 +23,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Env"
 ], function(Basic, File, Blob, FormData, x, Env) {
+	
 	return function() {
-		var I = this.getRuntime();
 		var _xhr2, filename;
 
 		Basic.extend(this, {
@@ -52,7 +52,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				if (data instanceof Blob) {
 					if (data.isDetached()) {
 						// if blob contains binary string, we have to manually build multipart blob
-						data = _prepareMultipart({ Filedata: data });
+						data = _prepareMultipart.call(target, { Filedata: data });
 						mustSendAsBinary = true;
 					} else {
 						data = data.getSource();
@@ -60,7 +60,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				} else if (data instanceof FormData) {
 					if (data._blob && data._fields[data._blob].isDetached()) {
 						// ... and here too
-						data = _prepareMultipart(data._fields);
+						data = _prepareMultipart.call(target, data._fields);
 						mustSendAsBinary = true;
 					} else {
 						fd = new window.FormData();
@@ -152,6 +152,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 			},
 
 			getResponse: function(responseType) {
+				var I = this.getRuntime();
+
 				try {
 					if (_xhr2) {
 						if ('blob' === responseType) {
@@ -175,12 +177,12 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 		});
 
 		function _prepareMultipart(params) {
-			var
-			  boundary = '----moxieboundary' + new Date().getTime()
+			var boundary = '----moxieboundary' + new Date().getTime()
 			, dashdash = '--'
 			, crlf = '\r\n'
 			, src
 			, multipart = ''
+			, I = this.getRuntime()
 			;
 
 			if (!I.can('send_binary_string')) {

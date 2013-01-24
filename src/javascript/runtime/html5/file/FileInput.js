@@ -21,6 +21,7 @@ define("moxie/runtime/html5/file/FileInput", [
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime"
 ], function(Basic, Dom, Events, Mime) {
+	
 	return function() {
 		var _files = [];
 

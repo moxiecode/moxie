@@ -23,15 +23,16 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/core/utils/Mime"
 ], function(Basic, x, Encode, Blob, ImageInfo, Mime) {
+	
 	return function() {
-		var I = this.getRuntime(), me = this
+		var me = this
 		, _img, _imgInfo, _canvas, _binStr, _srcBlob
 		, _modified = false // is set true whenever image is modified
 		;
 
 		Basic.extend(me, {
 			loadFromBlob: function(blob, asBinary) {
-				var comp = this;
+				var comp = this, I = comp.getRuntime();
 
 				if (!I.can('access_binary')) {
 					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
@@ -71,19 +72,20 @@ define("moxie/runtime/html5/image/Image", [
 					_loadFromBinaryString.call(this, img.getAsBinaryString());
 				} else {
 					_img = img.getAsImage();
-					this.trigger('load', me.getInfo());
+					this.trigger('load', me.getInfo.call(this));
 				}
 			},
 
 			getInfo: function() {
-				var info = {
-						width: _img && _img.width || 0,
-						height: _img && _img.height || 0,
-						type: _srcBlob && (_srcBlob.type || _srcBlob.name && Mime.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
-						size: _binStr && _binStr.length || _srcBlob.size || 0,
-						name: _srcBlob && _srcBlob.name || '',
-						meta: {}
-					};
+				var I = this.getRuntime()
+				, info = {
+					width: _img && _img.width || 0,
+					height: _img && _img.height || 0,
+					type: _srcBlob && (_srcBlob.type || _srcBlob.name && Mime.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
+					size: _binStr && _binStr.length || _srcBlob.size || 0,
+					name: _srcBlob && _srcBlob.name || '',
+					meta: {}
+				};
 
 				if (I.can('access_image_binary') && _binStr) {
 					if (_imgInfo) {
@@ -119,7 +121,7 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			getAsBlob: function(type, quality) {
-				var blob;
+				var blob, I = this.getRuntime();
 
 				if (type !== this.type) {
 					// if different mime type requested prepare image for conversion
@@ -228,7 +230,7 @@ define("moxie/runtime/html5/image/Image", [
 			};
 			_img.onload = function() {
 				_binStr = binStr;
-				comp.trigger('load', me.getInfo());
+				comp.trigger('load', me.getInfo.call(comp));
 			};
 
 			_img.src = 'data:' + (_srcBlob.type || '') + ';base64,' + Encode.btoa(binStr);
@@ -243,7 +245,7 @@ define("moxie/runtime/html5/image/Image", [
 				throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 			};
 			_img.onload = function() {
-				comp.trigger('load', me.getInfo());
+				comp.trigger('load', me.getInfo.call(comp));
 			};
 			_img.src = dataUrl;
 		}
