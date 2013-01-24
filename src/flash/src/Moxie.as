@@ -150,7 +150,7 @@ package
 		 */
 		private function _fireEvent(evt:*, obj:Object = null):void {
 			try {
-				ExternalInterface.call("mOxie.EventTarget.instance.dispatchEvent", evt, obj);
+				ExternalInterface.call("moxie.core.EventTarget.instance.dispatchEvent", evt, obj);
 			} catch(err:*) {
 				//_fireEvent("Exception", { name: 'RuntimeError', message: 4 });
 				
