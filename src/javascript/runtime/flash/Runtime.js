@@ -29,7 +29,7 @@ define("moxie/runtime/flash/Runtime", [
 	/**
 	Constructor for the Flash Runtime
 
-	@class RuntimeFlash
+	@class FlashRuntime
 	@extends Runtime
 	*/
 	Runtime.addConstructor(type, (function() {
@@ -58,23 +58,6 @@ define("moxie/runtime/flash/Runtime", [
 				}
 				version = version.match(/\d+/g);
 				return parseFloat(version[0] + '.' + version[1]);
-			}
-
-			function wait4shim(ms) {
-				if ( wait4shim.counter === undefined ) {
-					wait4shim.counter = 0; // initialize static variable
-				}
-
-				// wait for 5 sec
-				if (wait4shim.counter++ > ms) {
-					self.destroy();
-					throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
-				}
-
-				// if initialized properly, the shim will trigger Init event on widget itself
-				if (!self.initialized) {
-					setTimeout(function() { wait4shim.call(self, ms); }, 1);
-				}
 			}
 
 			// figure out the options
@@ -131,7 +114,13 @@ define("moxie/runtime/flash/Runtime", [
 						container.innerHTML = html;
 					}
 
-					wait4shim(5000); // Init will be dispatched by the shim
+					// Init is dispatched by the shim
+					setTimeout(function() {
+						if (!self.initialized) {
+							self.destroy();
+							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						}
+					}, 5000);
 				}
 			}, extensions);
 		}

@@ -29,9 +29,9 @@ define("moxie/runtime/silverlight/Runtime", [
 	var type = 'silverlight';
 
 	/**
-	Constructor for the Flash Runtime
+	Constructor for the Silverlight Runtime
 
-	@class RuntimeFlash
+	@class SilverlightRuntime
 	@extends Runtime
 	*/
 	Runtime.addConstructor(type, (function() {
@@ -96,23 +96,6 @@ define("moxie/runtime/silverlight/Runtime", [
 				return isVersionSupported;
 			}
 
-			function wait4shim(ms) {
-				if ( wait4shim.counter === undefined ) {
-					wait4shim.counter = 0; // initialize static variable
-				}
-
-				// wait for ms/1000 sec(s)
-				if (wait4shim.counter++ > ms) {
-					self.destroy();
-					throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
-				}
-
-				// if initialized properly, the shim will trigger Init event on widget itself
-				if (!self.initialized) {
-					setTimeout(function() { wait4shim.call(self, ms); }, 1);
-				}
-			}
-
 			// figure out the options
 			var defaults = {
 				xap_url: 'js/Moxie.xap'
@@ -146,7 +129,13 @@ define("moxie/runtime/silverlight/Runtime", [
 						'<param name="initParams" value="uid=' + self.uid + '"/>' +
 					'</object>';
 
-					wait4shim(10000); // Init will be dispatched by the shim
+					// Init is dispatched by the shim
+					setTimeout(function() {
+						if (!self.initialized) {
+							self.destroy();
+							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						}
+					}, 7000); // silverlight may take quite some time to initialize
 				}
 			}, extensions);
 		}
