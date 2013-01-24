@@ -130,7 +130,7 @@ namespace Moxiecode
 		/// </summary>
 		public ScriptObject EventTarget
 		{
-			get { return ((ScriptObject)HtmlPage.Window.Eval("mOxie.eventTarget")); }
+			get { return ((ScriptObject)HtmlPage.Window.Eval("moxie.core.EventTarget.instance")); }
 		}
 
 		/// <summary>
