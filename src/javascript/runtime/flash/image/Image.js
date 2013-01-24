@@ -20,6 +20,7 @@ define("moxie/runtime/flash/image/Image", [
 	"moxie/file/Blob",
 	"moxie/file/FileReaderSync"
 ], function(Transporter, Blob, FileReaderSync) {
+	
 	return {
 		loadFromBlob: function(blob) {
 			var comp = this, self = comp.getRuntime();
@@ -40,12 +41,12 @@ define("moxie/runtime/flash/image/Image", [
 		},
 
 		loadFromImage: function(img) {
-			var self = comp.getRuntime();
+			var self = this.getRuntime();
 			return self.shimExec.call(this, 'Image', 'loadFromImage', img.uid);
 		},
 
 		getAsBlob: function(type, quality) {
-			var self = comp.getRuntime()
+			var self = this.getRuntime()
 			, blob = self.shimExec.call(this, 'Image', 'getAsBlob', type, quality)
 			;
 			if (blob) {
@@ -55,7 +56,7 @@ define("moxie/runtime/flash/image/Image", [
 		},
 
 		getAsDataURL: function(type) {
-			var self = comp.getRuntime()
+			var self = this.getRuntime()
 			, blob = self.Image.getAsBlob.apply(this, arguments)
 			, frs
 			;

@@ -465,16 +465,6 @@ define("moxie/image/Image", [
 					runtime.exec.call(self, 'Image', 'destroy');
 				}
 				this.unbindAll();
-			},
-			
-			constructor: Image
-		});
-
-		Basic.defineProperty(this, 'src', {
-			configurable: false,
-
-			set: function(src) {
-				this.load(src);
 			}
 		});
 
