@@ -143,7 +143,7 @@ task("mkxap", [], function() {
 
 desc("Generate documentation using YUIDoc");
 task("docs", [], function (params) {
-	yuidoc("src/javascript/core", "docs");
+	yuidoc("src/javascript", "docs");
 }, true);
 
 
