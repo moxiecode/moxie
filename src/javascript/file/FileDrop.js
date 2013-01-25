@@ -21,7 +21,80 @@ define('moxie/file/FileDrop', [
 	'moxie/core/EventTarget',
 	'moxie/core/utils/Mime'
 ], function(I18n, Dom, x, Basic, File, RuntimeClient, EventTarget, Mime) {
-	var dispatches = ['ready', 'dragleave', 'dragenter', 'drop', 'error'];
+	/**
+	Turn arbitrary DOM element to a drop zone accepting files. Converts selected files to mOxie.File objects, to be used 
+	in conjunction with _mOxie.Image_, preloaded in memory with _mOxie.FileReader_ or uploaded to a server through 
+	_mOxie.XMLHttpRequest_.
+
+	@example
+	<div id="drop_zone">
+		Drop files here
+	</div>
+	<br />
+	<div id="filelist"></div>
+
+	<script type="text/javascript">
+		var fileDrop = new mOxie.FileDrop('drop_zone'), fileList = mOxie.get('filelist');
+
+		fileDrop.ondrop = function() {
+			mOxie.each(this.files, function(file) {
+				fileList.innerHTML += '<div>' + file.name + '</div>';
+			});
+		};
+
+		fileDrop.init();
+	</script>
+
+	@class FileDrop
+	@constructor
+	@extends EventTarget
+	@uses RuntimeClient
+	@param {Object|String} options If options has typeof string, argument is considered as options.drop_zone
+	@param {String|DOMElement} options.drop_zone DOM Element to turn into a drop zone
+	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
+	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
+	*/
+	var dispatches = [
+		/**
+		Dispatched when runtime is connected and drop zone is ready to accept files.
+
+		@event ready
+		@param {Object} event
+		*/
+		'ready', 
+
+		/**
+		Dispatched when dragging cursor enters the drop zone.
+
+		@event dragenter
+		@param {Object} event
+		*/
+		'dragenter',
+
+		/**
+		Dispatched when dragging cursor leaves the drop zone.
+
+		@event dragleave
+		@param {Object} event
+		*/
+		'dragleave', 
+
+		/**
+		Dispatched when file is dropped onto the drop zone.
+
+		@event drop
+		@param {Object} event
+		*/
+		'drop', 
+
+		/**
+		Dispatched if error occurs.
+
+		@event error
+		@param {Object} event
+		*/
+		'error'
+	];
 
 	function FileDrop(options) {
 		var self = this, defaults;
@@ -47,7 +120,7 @@ define('moxie/file/FileDrop', [
 		// this will help us to find proper default container
 		options.container = Dom.get(options.drop_zone) || document.body;
 
-		// make container relative, if they're not
+		// make container relative, if it is not
 		if (Dom.getStyle(options.container, 'position') === 'static') {
 			options.container.style.position = 'relative';
 		}

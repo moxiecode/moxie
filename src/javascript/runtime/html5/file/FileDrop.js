@@ -12,10 +12,10 @@
 /*global define:true */
 
 /**
-@class moxie/runtime/html5/file/FileInput
+@class moxie/runtime/html5/file/FileDrop
 @private
 */
-define("moxie/runtime/html5/file/FileInput", [
+define("moxie/runtime/html5/file/FileDrop", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",

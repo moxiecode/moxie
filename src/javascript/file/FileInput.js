@@ -23,8 +23,8 @@ define('moxie/file/FileInput', [
 ], function(Basic, Mime, Dom, x, EventTarget, I18n, File, RuntimeClient) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
-	converts selected files to o.File objects, to be used in conjunction with _o.Image_, preloaded in memory
-	with _o.FileReader_ or uploaded to a server through _o.XMLHttpRequest_.
+	converts selected files to mOxie.File objects, to be used in conjunction with _mOxie.Image_, preloaded in memory
+	with _mOxie.FileReader_ or uploaded to a server through _mOxie.XMLHttpRequest_.
 
 	@class FileInput
 	@constructor
@@ -39,27 +39,27 @@ define('moxie/file/FileInput', [
 	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 
 	@example
-		<div id="container">
-			<a id="file-picker" href="javascript:;">Browse...</a>
-		</div>
+	<div id="container">
+		<a id="file-picker" href="javascript:;">Browse...</a>
+	</div>
 
-		<script>
-			var fileInput = new o.FileInput({
-				browse_button: 'file-picker', // or document.getElementById('file-picker')
-				container: 'container'
-				accept: [
-					{title: "Image files", extensions: "jpg,gif,png"} // accept only images
-				],
-				multiple: true // allow multiple file selection
-			});
+	<script>
+		var fileInput = new mOxie.FileInput({
+			browse_button: 'file-picker', // or document.getElementById('file-picker')
+			container: 'container'
+			accept: [
+				{title: "Image files", extensions: "jpg,gif,png"} // accept only images
+			],
+			multiple: true // allow multiple file selection
+		});
 
-			fileInput.onchange = function(e) {
-				// do something to files array
-				console.info(e.target.files); // or this.files or fileInput.files
-			};
+		fileInput.onchange = function(e) {
+			// do something to files array
+			console.info(e.target.files); // or this.files or fileInput.files
+		};
 
-			fileInput.init(); // initialize
-		</script>
+		fileInput.init(); // initialize
+	</script>
 	*/
 	var dispatches = [
 		/**
@@ -187,7 +187,7 @@ define('moxie/file/FileInput', [
 			ruid: null,
 			
 			/**
-			Array of selected o.File objects
+			Array of selected mOxie.File objects
 
 			@property files
 			@type {Array}
