@@ -12,10 +12,10 @@
 /*global define:true */
 
 /**
-@class moxie/runtime/html5/file/FileInput
+@class moxie/runtime/html4/file/FileInput
 @private
 */
-define("moxie/runtime/html5/file/FileInput", [
+define("moxie/runtime/html4/file/FileInput", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
@@ -144,7 +144,7 @@ define("moxie/runtime/html5/file/FileInput", [
 
 		Basic.extend(this, {
 			init: function(options) {
-				var comp = this, form, shimContainer;
+				var comp = this, I = comp.getRuntime(), form, shimContainer;
 
 				// figure out accept string
 				_options = options;

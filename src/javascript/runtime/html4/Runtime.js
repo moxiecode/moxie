@@ -21,7 +21,7 @@ define("moxie/runtime/html4/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime",
-	"moxie/core/utils/Env"
+	"moxie/core/utils/Env",
 	"moxie/runtime/html4/extensions"
 ], function(Basic, x, Runtime, Env, extensions) {
 	var type = 'html4';
