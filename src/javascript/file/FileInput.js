@@ -150,11 +150,17 @@ define('moxie/file/FileInput', [
 			options.accept = Mime.mimes2extList(options.accept);
 		}
 
-		// make container relative, if they're not
 		container = Dom.get(options.container);
+		// make sure we have container
+		if (!container) {
+			container = document.body;
+		}
+
+		// make container relative, if it's not
 		if (Dom.getStyle(container, 'position') === 'static') {
 			container.style.position = 'relative';
 		}
+
 		container = browseButton = null; // IE
 						
 		RuntimeClient.call(self);
@@ -210,7 +216,11 @@ define('moxie/file/FileInput', [
 						});
 					}, 999);
 					
-					runtime.exec.call(self, 'FileInput', 'init', options);
+					runtime.exec.call(self, 'FileInput', 'init', {
+						name: options.name,
+						accept: options.accept,
+						multiple: options.multiple
+					});
 
 					// re-position and resize shim container
 					self.bind('Refresh', function() {
