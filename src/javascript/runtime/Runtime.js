@@ -106,7 +106,7 @@ define('moxie/runtime/Runtime', [
 					// create shim container and insert it at an absolute position into the outer container
 					shimContainer = document.createElement('div');
 					shimContainer.id = this.shimid;
-					shimContainer.className = 'mxi-shim mxi-shim-' + type;
+					shimContainer.className = 'moxie-shim moxie-shim-' + type;
 
 					Basic.extend(shimContainer.style, {
 						position: 'absolute',
