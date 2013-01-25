@@ -216,11 +216,7 @@ define('moxie/file/FileInput', [
 						});
 					}, 999);
 					
-					runtime.exec.call(self, 'FileInput', 'init', {
-						name: options.name,
-						accept: options.accept,
-						multiple: options.multiple
-					});
+					runtime.exec.call(self, 'FileInput', 'init', options);
 
 					// re-position and resize shim container
 					self.bind('Refresh', function() {
