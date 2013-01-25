@@ -189,6 +189,9 @@ define("moxie/core/utils/Env", [
 
 	var Env = {
 		can: can,
+		has: function(moduleId) {
+			return !!modules && !!modules[moduleId]; // check against global module registry
+		},
 		browser: getStr(browser),
 		version: getVer(navigator.userAgent) || getVer(navigator.appVersion),
 		OS: getStr(os)
