@@ -23,7 +23,7 @@ var resolveModules = (function() {
 		var amdlc = require('amdlc');
 
 		// check if our template for runtime extensions file exists
-		var extTplPath = options.baseDir + '/runtime/extensions.js';
+		var extTplPath = options.baseDir + '/runtime/tpl/extensions.js';
 		if (!fs.existsSync(extTplPath)) {
 			console.info(extTplPath + ' cannot be found.');
 			process.exit(1);

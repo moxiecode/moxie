@@ -27,23 +27,23 @@ define('moxie/file/FileDrop', [
 	_mOxie.XMLHttpRequest_.
 
 	@example
-	<div id="drop_zone">
-		Drop files here
-	</div>
-	<br />
-	<div id="filelist"></div>
+		<div id="drop_zone">
+			Drop files here
+		</div>
+		<br />
+		<div id="filelist"></div>
 
-	<script type="text/javascript">
-		var fileDrop = new mOxie.FileDrop('drop_zone'), fileList = mOxie.get('filelist');
+		<script type="text/javascript">
+			var fileDrop = new mOxie.FileDrop('drop_zone'), fileList = mOxie.get('filelist');
 
-		fileDrop.ondrop = function() {
-			mOxie.each(this.files, function(file) {
-				fileList.innerHTML += '<div>' + file.name + '</div>';
-			});
-		};
+			fileDrop.ondrop = function() {
+				mOxie.each(this.files, function(file) {
+					fileList.innerHTML += '<div>' + file.name + '</div>';
+				});
+			};
 
-		fileDrop.init();
-	</script>
+			fileDrop.init();
+		</script>
 
 	@class FileDrop
 	@constructor

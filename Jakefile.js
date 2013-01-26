@@ -143,7 +143,18 @@ task("mkxap", [], function() {
 
 desc("Generate documentation using YUIDoc");
 task("docs", [], function (params) {
-	yuidoc("src/javascript", "docs");
+	var baseDir = "src/javascript"
+	, exclude = [
+		"runtime/tpl",
+		"runtime/flash",
+		"runtime/silverlight",
+		"runtime/html5",
+		"runtime/html4"
+	];
+
+	yuidoc(baseDir, "docs", {
+		exclude: exclude.map(function(filePath) { return baseDir + "/" + filePath; }).join(",")
+	});
 }, true);
 
 

@@ -26,6 +26,13 @@ define("moxie/image/Image", [
 		"moxie/core/utils/Encode",
 		"moxie/core/JSON"
 ], function(Basic, Dom, x, FileReaderSync, RuntimeClient, Transporter, Env, EventTarget, File, Blob, Url, Encode, JSON) {
+	/**
+	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
+
+	@class Image
+	@constructor
+	@extends EventTarget
+	*/
 	var dispatches = [
 		'loadstart',
 		'progress',
@@ -161,21 +168,21 @@ define("moxie/image/Image", [
 			When source is URL, Image will be downloaded from remote destination and loaded in memory.
 
 			@example
-			var img = new o.Image();
-			img.onload = function() {
-				var blob = img.getAsBlob('image/png'); // convert to png and retrieve as blob, ready to be uploaded
-				
-				var formData = new o.FormData();
-				formData.append('file', blob);
+				var img = new o.Image();
+				img.onload = function() {
+					var blob = img.getAsBlob(); 
+					
+					var formData = new o.FormData();
+					formData.append('file', blob);
 
-				var xhr = new o.XMLHttpRequest();
-				xhr.onload = function() {
-					// upload complete
+					var xhr = new o.XMLHttpRequest();
+					xhr.onload = function() {
+						// upload complete
+					};
+					xhr.open('post', 'upload.php');
+					xhr.send(formData);
 				};
-				xhr.open('post', 'upload.php');
-				xhr.send(formData);
-			};
-			img.load("http://www.moxiecode.com/images/mox-logo.jpg"); // notice file extension (.jpg)
+				img.load("http://www.moxiecode.com/images/mox-logo.jpg"); // notice file extension (.jpg)
 			
 
 			@method load
