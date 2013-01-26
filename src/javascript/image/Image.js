@@ -144,7 +144,7 @@ define("moxie/image/Image", [
 			meta: {},
 
 			/**
-			Alias for load method, that takes another o.Image object as a source (see load).
+			Alias for load method, that takes another mOxie.Image object as a source (see load).
 
 			@method clone
 			@param {Image} src Source for the image
@@ -155,27 +155,27 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Loads image from various sources. Currently the source for new image can be: o.Image, o.Blob/o.File or URL.
+			Loads image from various sources. Currently the source for new image can be: mOxie.Image, mOxie.Blob/mOxie.File or URL.
 			Depending on the type of the source, arguments - differ.
 
 			When source is:
-			  - o.Image: Loads image from another existing o.Image object (clones it). Might be fast by default (surface clone),
+			  - mOxie.Image: Loads image from another existing mOxie.Image object (clones it). Might be fast by default (surface clone),
 				or a bit slower, if launched in exact mode (in-depth clone). Only exact mode (enabled by passing second argument
 				as - true) will copy over meta info, like Exif, GPS, IPTC data, etc.
-			  - o.Blob/o.File: Loads image from o.File or o.Blob object.
+			  - mOxie.Blob/mOxie.File: Loads image from mOxie.File or mOxie.Blob object.
 			  - URL: Image will be downloaded from remote destination and loaded in memory.
 
 			When source is URL, Image will be downloaded from remote destination and loaded in memory.
 
 			@example
-				var img = new o.Image();
+				var img = new mOxie.Image();
 				img.onload = function() {
 					var blob = img.getAsBlob(); 
 					
-					var formData = new o.FormData();
+					var formData = new mOxie.FormData();
 					formData.append('file', blob);
 
-					var xhr = new o.XMLHttpRequest();
+					var xhr = new mOxie.XMLHttpRequest();
 					xhr.onload = function() {
 						// upload complete
 					};
@@ -283,7 +283,7 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Retrieves image in it's current state as o.Blob object. Cannot be run on empty or image in progress (throws
+			Retrieves image in it's current state as mOxie.Blob object. Cannot be run on empty or image in progress (throws
 			DOMException.INVALID_STATE_ERR).
 
 			@method getAsBlob
@@ -462,7 +462,7 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Properly destroys the image and frees resources in use. If any. Recommended way to dispose o.Image object.
+			Properly destroys the image and frees resources in use. If any. Recommended way to dispose mOxie.Image object.
 
 			@method destroy
 			*/
