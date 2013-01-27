@@ -39,8 +39,7 @@ define("moxie/runtime/html5/file/Blob", [
 		}
 
 		this.slice = function() {
-			// TODO: What is I?
-			return new Blob(I.uid, w3cBlobSlice.apply(this, arguments));
+			return new Blob(this.getRuntime().uid, w3cBlobSlice.apply(this, arguments));
 		};
 	};
 });
