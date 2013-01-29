@@ -113,10 +113,9 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			getAsCanvas: function() {
-				if (!_canvas) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+				if (_canvas) {
+					_canvas.id = this.uid + '_canvas';
 				}
-				_canvas.id = this.uid + '_canvas';
 				return _canvas;
 			},
 
