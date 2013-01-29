@@ -208,9 +208,7 @@ define("moxie/runtime/html5/image/Image", [
 
 			destroy: function() {
 				_purge.call(this);
-
-				// TODO: objpool not defined, why?
-				delete objpool[this.uid];
+				this.getRuntime().getShim().unregisterInstance(this.uid);
 			}
 		});
 

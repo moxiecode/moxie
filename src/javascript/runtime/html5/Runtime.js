@@ -76,6 +76,10 @@ define("moxie/runtime/html5/Runtime", [
 						}
 
 						return obj[fn].apply(this, args);
+					},
+
+					unregisterInstance: function(uid) {
+						delete objpool[uid];
 					}
 				};
 			}()), extensions);
