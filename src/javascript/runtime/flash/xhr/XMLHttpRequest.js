@@ -105,8 +105,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 					this.bind('Exception', function(e, err) {
 						// throw JSON parse error
-						// TODO: This should not log to console.info
-						console.info(err);
+						// console.info(err);
 					});
 
 					return JSON.parse(frs.readAsText(blob));
