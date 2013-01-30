@@ -52,8 +52,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 			// copy over the headers if any
 			if (!Basic.isEmptyObj(meta.headers)) {
-				// TODO: _headers doesn't exists?
-				Basic.each(_headers, function(value, header) {
+				Basic.each(meta.headers, function(value, header) {
 					self.shimExec.call(target, 'XMLHttpRequest', 'setRequestHeader', name, value.toString()); // Silverlight doesn't accept integers into the arguments of type object
 				});
 			}
