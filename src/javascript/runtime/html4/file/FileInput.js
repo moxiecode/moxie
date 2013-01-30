@@ -150,7 +150,6 @@ define("moxie/runtime/html4/file/FileInput", [
 				_options = options;
 				_mimes = options.accept.mimes || Mime.extList2mimes(options.accept);
 
-				// TODO: I is not defined?
 				shimContainer = I.getShimContainer();
 
 				(function() {
