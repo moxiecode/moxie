@@ -16,6 +16,7 @@ define("moxie/image/Image", [
 		"moxie/core/utils/Dom",
 		"moxie/core/Exceptions",
 		"moxie/file/FileReaderSync",
+		"moxie/xhr/XMLHttpRequest",
 		"moxie/runtime/RuntimeClient",
 		"moxie/runtime/Transporter",
 		"moxie/core/utils/Env",
@@ -25,7 +26,7 @@ define("moxie/image/Image", [
 		"moxie/core/utils/Url",
 		"moxie/core/utils/Encode",
 		"moxie/core/JSON"
-], function(Basic, Dom, x, FileReaderSync, RuntimeClient, Transporter, Env, EventTarget, File, Blob, Url, Encode, JSON) {
+], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, File, Blob, Url, Encode, JSON) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -540,7 +541,6 @@ define("moxie/image/Image", [
 		function _loadFromUrl(url, options) {
 			var xhr;
 
-			// TODO: Needs to be the one from factory!
 			xhr = new XMLHttpRequest();
 
 			xhr.open('get', url);
