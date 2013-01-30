@@ -8,8 +8,8 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
-/*global define:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
+/*global define:true, modules:true */
 
 define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
@@ -40,7 +40,7 @@ define("moxie/core/utils/Env", [
 			s1: navigator.vendor,
 			s2: "Camino",
 			id: "Camino"
-		},{		
+		},{
 			// for newer Netscapes (6+)
 			s1: navigator.userAgent,
 			s2: "Netscape",

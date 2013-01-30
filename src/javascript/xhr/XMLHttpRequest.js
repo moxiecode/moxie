@@ -8,8 +8,8 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
-/*global define:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, evil:false */
+/*global define:true, ActiveXObject:true */
 
 define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Basic",
@@ -849,8 +849,8 @@ define("moxie/xhr/XMLHttpRequest", [
 						
 					case XMLHttpRequest.DONE:
 						// release readystatechange handler (mostly for IE)
-						_xhr.onreadystatechange = new Function();
-					
+						_xhr.onreadystatechange = function() {};
+
 						// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
 						if (_xhr.status === 0 || _xhr.status >= 400) {
 							_error_flag = true;

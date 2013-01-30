@@ -9,7 +9,7 @@
  */
 
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
+/*global define:true, exposedModules:true, modules:true */
 
 /**
 Globally exposed namespace with the most frequently used public classes and handy methods.
@@ -21,12 +21,12 @@ Globally exposed namespace with the most frequently used public classes and hand
 define('o', [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
-	"moxie/core/I18n"	
+	"moxie/core/I18n"
 ], function(Basic, Dom, I18n) {
 
 	var o = {};
 
-	// directly add some public classes 
+	// directly add some public classes
 	// (we do it dynamically here, since for custom builds we cannot know beforehand what modules were included)
 	Basic.each(exposedModules, function(id) {
 		var className = id.replace(/^[\s\S]+?\/([^\/]+)$/, '$1');

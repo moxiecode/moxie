@@ -63,7 +63,7 @@ define("moxie/runtime/html4/Runtime", [
 
 						obj = objpool[uid];
 						if (!obj) {
-							obj = objpool[uid] = new shim[comp];
+							obj = objpool[uid] = new shim[comp]();
 						}
 
 						if (!obj[fn]) {

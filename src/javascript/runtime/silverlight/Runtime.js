@@ -9,7 +9,7 @@
  */
 
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
+/*global define:true, ActiveXObject:true */
 
 /**
 Defines constructor for Silverlight runtime.
@@ -18,11 +18,11 @@ Defines constructor for Silverlight runtime.
 @private
 */
 define("moxie/runtime/silverlight/Runtime", [
-	"moxie/core/utils/Basic", 
+	"moxie/core/utils/Basic",
 	"moxie/core/utils/Env",
 	"moxie/core/utils/Dom",
 	"moxie/core/Exceptions",
-	"moxie/runtime/Runtime", 
+	"moxie/runtime/Runtime",
 	"moxie/runtime/silverlight/extensions"
 ], function(Basic, Env, Dom, x, Runtime, extensions) {
 	
@@ -148,7 +148,7 @@ define("moxie/runtime/silverlight/Runtime", [
 					display_media: true,
 					drag_and_drop: false,
 					receive_response_type: function(responseType) {
-						return !~Basic.inArray(responseType, ['blob']); // not implemented yet
+						return Basic.inArray(responseType, ['blob']) === -1; // not implemented yet
 					},
 					report_upload_progress: true,
 					resize_image: true,
@@ -168,7 +168,7 @@ define("moxie/runtime/silverlight/Runtime", [
 
 						for (var i in methods) {
 							// flash only supports GET, POST
-							if (!~Basic.inArray(methods[i].toUpperCase(), ['GET', 'POST'])) {
+							if (Basic.inArray(methods[i].toUpperCase(), ['GET', 'POST']) === -1) {
 								return false;
 							}
 						}

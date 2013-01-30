@@ -171,7 +171,7 @@ define("moxie/image/Image", [
 			@example
 				var img = new mOxie.Image();
 				img.onload = function() {
-					var blob = img.getAsBlob(); 
+					var blob = img.getAsBlob();
 					
 					var formData = new mOxie.FormData();
 					formData.append('file', blob);

@@ -55,7 +55,7 @@ define("moxie/runtime/flash/image/Image", [
 			return null;
 		},
 
-		getAsDataURL: function(type) {
+		getAsDataURL: function() {
 			var self = this.getRuntime()
 			, blob = self.Image.getAsBlob.apply(this, arguments)
 			, frs

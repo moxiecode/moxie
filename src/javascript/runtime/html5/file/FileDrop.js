@@ -18,16 +18,15 @@
 define("moxie/runtime/html5/file/FileDrop", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
-	"moxie/core/utils/Events",
-	"moxie/core/utils/Env"
-], function(Basic, Dom, Events, Env) {
+	"moxie/core/utils/Events"
+], function(Basic, Dom, Events) {
 	
 	return function() {
 		var _files = [];
 
 		Basic.extend(this, {
 			init: function(options) {
-				var comp = this, I = this.getRuntime(), dropZone = options.container;
+				var comp = this, dropZone = options.container;
 
 				Events.addEvent(dropZone, 'dragover', function(e) {
 					e.preventDefault();

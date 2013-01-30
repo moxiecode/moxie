@@ -144,7 +144,7 @@ define("moxie/runtime/html4/file/FileInput", [
 
 		Basic.extend(this, {
 			init: function(options) {
-				var comp = this, I = comp.getRuntime(), form, shimContainer;
+				var comp = this, I = comp.getRuntime(), shimContainer;
 
 				// figure out accept string
 				_options = options;

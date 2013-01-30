@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, sub:false */
 /*global define:true */
 
 /**
@@ -307,15 +307,15 @@ define("moxie/runtime/html5/image/ExifParser", [
 				return false;
 			}
 
-			offsets['IFD0'] = offsets.tiffHeader + data.LONG(idx += 2);
-			Tiff = extractTags(offsets['IFD0'], tags.tiff);
+			offsets.IFD0 = offsets.tiffHeader + data.LONG(idx += 2);
+			Tiff = extractTags(offsets.IFD0, tags.tiff);
 
 			if ('ExifIFDPointer' in Tiff) {
-				offsets['exifIFD'] = offsets.tiffHeader + Tiff.ExifIFDPointer;
+				offsets.exifIFD = offsets.tiffHeader + Tiff.ExifIFDPointer;
 			}
 
 			if ('GPSInfoIFDPointer' in Tiff) {
-				offsets['gpsIFD'] = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
+				offsets.gpsIFD = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
 			}
 			return true;
 		}

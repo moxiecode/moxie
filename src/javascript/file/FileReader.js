@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, sub:false */
 /*global define:true */
 
 define('moxie/file/FileReader', [
@@ -116,7 +116,7 @@ define('moxie/file/FileReader', [
 			self.readyState = FileReader.EMPTY;
 			self.error = null;
 
-			if (self.readyState === FileReader.LOADING || !blob['ruid'] || !blob['uid']) {
+			if (self.readyState === FileReader.LOADING || !blob.ruid || !blob.uid) {
 				throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 			}
 			

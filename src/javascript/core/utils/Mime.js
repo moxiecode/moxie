@@ -29,7 +29,7 @@ define("moxie/core/utils/Mime", [
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx," +
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.template,dotx," +
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,xlsx," +
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx," + 
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx," +
 		"application/vnd.openxmlformats-officedocument.presentationml.template,potx," +
 		"application/vnd.openxmlformats-officedocument.presentationml.slideshow,ppsx," +
 		"application/x-javascript,js," +
@@ -87,7 +87,7 @@ define("moxie/core/utils/Mime", [
 		},
 
 		extList2mimes: function (filters) {
-			var self = this, ext, i, ii, y, type, mimes = [];
+			var self = this, ext, i, ii, type, mimes = [];
 			
 			// Convert extensions to mime types list
 			no_type_restriction:
@@ -119,13 +119,13 @@ define("moxie/core/utils/Mime", [
 			mimes = Basic.trim(mimes);
 			
 			if (mimes !== '*') {
-				Basic.each(mimes.split(/\s*,\s*/), function(mime, i) {
+				Basic.each(mimes.split(/\s*,\s*/), function(mime) {
 					if (self.extensions[mime]) {
 						exts += self.extensions[mime].join(',');
 					}
 				});
 			} else {
-				exts = mimes;	
+				exts = mimes;
 			}
 			
 			accept.push({
@@ -142,5 +142,5 @@ define("moxie/core/utils/Mime", [
 
 	Mime.addMimeType(mimeData);
 
-	return Mime;	
+	return Mime;
 });

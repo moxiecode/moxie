@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, sub:false */
 /*global define:true */
 
 /**
@@ -91,13 +91,13 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 				// Check if data is jpeg
 				var jpegHeaders = new JPEGHeaders(data);
 
-				if (!jpegHeaders['headers']) {
+				if (!jpegHeaders.headers) {
 					return false;
 				}
 
 				// Delete any existing headers that need to be replaced
-				for (i = jpegHeaders['headers'].length; i > 0; i--) {
-					var hdr = jpegHeaders['headers'][i - 1];
+				for (i = jpegHeaders.headers.length; i > 0; i--) {
+					var hdr = jpegHeaders.headers[i - 1];
 					read.SEGMENT(hdr.start, hdr.length, '');
 				}
 				jpegHeaders.purge();

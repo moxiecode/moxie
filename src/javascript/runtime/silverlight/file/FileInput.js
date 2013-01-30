@@ -23,7 +23,7 @@ define("moxie/runtime/silverlight/file/FileInput", [], function() {
 			function toFilters(accept) {
 				var filter = '';
 				for (var i = 0; i < accept.length; i++) {
-					filter += (filter != '' ? '|' : '') + accept[i].title + " | *." + accept[i].extensions.replace(/,/g, ';*.');
+					filter += (filter !== '' ? '|' : '') + accept[i].title + " | *." + accept[i].extensions.replace(/,/g, ';*.');
 				}
 				return filter;
 			}

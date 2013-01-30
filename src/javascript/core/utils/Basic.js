@@ -23,7 +23,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} o Object to check.
 	@return {String} Object [[Class]]
 	*/
-	var typeOf = function(o) {	
+	var typeOf = function(o) {
 		var undef;
 		if (o === undef) {
 			return 'undefined';
@@ -111,11 +111,13 @@ define('moxie/core/utils/Basic', [], function() {
 	@return {Boolean}
 	*/
 	var isEmptyObj = function(obj) {
+		var prop;
+
 		if (!obj || typeOf(obj) !== 'object') {
 			return true;
 		}
-		
-		for (var prop in obj) {
+
+		for (prop in obj) {
 			return false;
 		}
 
@@ -148,6 +150,7 @@ define('moxie/core/utils/Basic', [], function() {
 		function callNext(i) {
 			if (typeOf(queue[i]) === 'function') {
 				queue[i](function(error) {
+					/*jshint expr:true */
 					++i < length && !error ? callNext(i) : cb(error);
 				});
 			}

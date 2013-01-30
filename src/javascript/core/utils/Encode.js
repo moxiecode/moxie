@@ -47,7 +47,7 @@ define('moxie/core/utils/Encode', [], function() {
 	@return {String} Decoded string
 	*/
 	var atob = function(data) {
-		if (typeof(window['atob']) === 'function') {
+		if (typeof(window.atob) === 'function') {
 			return window.atob(data);
 		}
 
@@ -65,7 +65,7 @@ define('moxie/core/utils/Encode', [], function() {
 	    // *     returns 1: 'Kevin van Zonneveld'
 	    // mozilla has this native
 	    // - but breaks in 2.0.0.12!
-	    //if (typeof this.window['atob'] == 'function') {
+	    //if (typeof this.window.atob == 'function') {
 	    //    return atob(data);
 	    //}
 	    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
@@ -116,7 +116,7 @@ define('moxie/core/utils/Encode', [], function() {
 	@return {String} Base64 encoded string
 	*/
 	var btoa = function(data) {
-		if (typeof(window['btoa']) === 'function') {
+		if (typeof(window.btoa) === 'function') {
 			return window.btoa(data);
 		}
 		

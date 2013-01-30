@@ -52,7 +52,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 			// copy over the headers if any
 			if (!Basic.isEmptyObj(meta.headers)) {
-				Basic.each(meta.headers, function(value, header) {
+				Basic.each(meta.headers, function(value) {
 					self.shimExec.call(target, 'XMLHttpRequest', 'setRequestHeader', name, value.toString()); // Silverlight doesn't accept integers into the arguments of type object
 				});
 			}
@@ -103,10 +103,12 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 				} else if ('json' === responseType) {
 					frs = new FileReaderSync();
 
+					/*
 					this.bind('Exception', function(e, err) {
 						// throw JSON parse error
-						// console.info(err);
+						console.info(err);
 					});
+					*/
 
 					return JSON.parse(frs.readAsText(blob));
 				}
