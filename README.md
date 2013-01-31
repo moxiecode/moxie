@@ -62,19 +62,20 @@ jake mkjs[file/FileInput,xhr/XMLHttpRequest] runtimes=html5,flash
 
 This will compile JavaScript file having support for the file picker and XMLHttpRequest Level 2 pollyfill with two runtimes - HTML5 and Flash (resulting file size ?).
 
-Currently there are only four major components that you should care about (the rest will be pulled in as dependecies automatically). These are:
+Currently there are only several major components that you should care about (the rest will be pulled in as dependecies automatically). These are:
 
-* file/FileInput
-* file/FileReader
-* xhr/XMLHttpRequest
-* image/Image
+* `file/FileInput`
+* `file/FileDrop`
+* `file/FileReader`
+* `xhr/XMLHttpRequest`
+* `image/Image`
 
 And four runtimes (Java is in production right now):
 
-* HTML5
-* Flash
-* Silverlight
-* HTML4
+* _HTML5_
+* _Flash_
+* _Silverlight_
+* _HTML4_
 
 Use combination of these in `jake mkjs` to acquire customized JavaScript file.
 
