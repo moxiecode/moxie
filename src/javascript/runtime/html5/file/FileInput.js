@@ -16,13 +16,14 @@
 @private
 */
 define("moxie/runtime/html5/file/FileInput", [
+	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime"
-], function(Basic, Dom, Events, Mime) {
+], function(extensions, Basic, Dom, Events, Mime) {
 	
-	return function() {
+	function FileInput() {
 		var _files = [];
 
 		Basic.extend(this, {
@@ -116,5 +117,7 @@ define("moxie/runtime/html5/file/FileInput", [
 				}
 			}
 		});
-	};
+	}
+
+	return (extensions.FileInput = FileInput);
 });

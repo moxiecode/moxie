@@ -16,12 +16,13 @@
 @private
 */
 define("moxie/runtime/html5/file/FileDrop", [
+	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events"
-], function(Basic, Dom, Events) {
+], function(extensions, Basic, Dom, Events) {
 	
-	return function() {
+	function FileDrop() {
 		var _files = [];
 
 		Basic.extend(this, {
@@ -58,5 +59,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 				return _files;
 			}
 		});
-	};
+	}
+
+	return (extensions.FileDrop = FileDrop);
 });

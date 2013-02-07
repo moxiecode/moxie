@@ -15,8 +15,11 @@
 @class moxie/runtime/silverlight/file/FileInput
 @private
 */
-define("moxie/runtime/silverlight/file/FileInput", [], function() {
-	return {
+define("moxie/runtime/silverlight/file/FileInput", [
+	"moxie/runtime/silverlight/Runtime"
+], function(extensions) {
+	
+	var FileInput = {
 		init: function(options) {
 			var self = this.getRuntime();
 
@@ -27,8 +30,9 @@ define("moxie/runtime/silverlight/file/FileInput", [], function() {
 				}
 				return filter;
 			}
-
 			return self.shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
 		}
 	};
+
+	return (extensions.FileInput = FileInput);
 });

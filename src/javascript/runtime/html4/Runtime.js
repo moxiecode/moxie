@@ -21,10 +21,9 @@ define("moxie/runtime/html4/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime",
-	"moxie/core/utils/Env",
-	"moxie/runtime/html4/extensions"
-], function(Basic, x, Runtime, Env, extensions) {
-	var type = 'html4';
+	"moxie/core/utils/Env"
+], function(Basic, x, Runtime, Env) {
+	var type = 'html4', extensions = {};
 
 	Runtime.addConstructor(type, (function() {
 		
@@ -114,4 +113,6 @@ define("moxie/runtime/html4/Runtime", [
 
 		return Html4Runtime;
 	}()));
+
+	return extensions;
 });

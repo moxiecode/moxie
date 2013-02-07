@@ -17,5 +17,6 @@ jscoverage
 *.bak
 *.log
 *.min.js
+*.sublime-*
 .DS_Store
 node_modules

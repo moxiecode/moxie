@@ -16,15 +16,16 @@
 @private
 */
 define("moxie/runtime/html5/image/Image", [
+	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Encode",
 	"moxie/file/Blob",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/core/utils/Mime"
-], function(Basic, x, Encode, Blob, ImageInfo, Mime) {
+], function(extensions, Basic, x, Encode, Blob, ImageInfo, Mime) {
 	
-	return function() {
+	function HTML5Image() {
 		var me = this
 		, _img, _imgInfo, _canvas, _binStr, _srcBlob
 		, _modified = false // is set true whenever image is modified
@@ -326,6 +327,7 @@ define("moxie/runtime/html5/image/Image", [
 			_binStr = _img = _canvas = null;
 			_modified = false;
 		}
+	}
 
-	};
+	return (extensions.Image = HTML5Image);
 });

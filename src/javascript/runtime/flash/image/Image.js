@@ -16,12 +16,14 @@
 @private
 */
 define("moxie/runtime/flash/image/Image", [
+	"moxie/runtime/flash/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/Transporter",
 	"moxie/file/Blob",
 	"moxie/file/FileReaderSync"
-], function(Transporter, Blob, FileReaderSync) {
+], function(extensions, Basic, Transporter, Blob, FileReaderSync) {
 	
-	return {
+	var Image = {
 		loadFromBlob: function(blob) {
 			var comp = this, self = comp.getRuntime();
 
@@ -67,4 +69,6 @@ define("moxie/runtime/flash/image/Image", [
 			return frs.readAsDataURL(blob);
 		}
 	};
+
+	return (extensions.Image = Image);
 });

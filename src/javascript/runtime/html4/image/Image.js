@@ -16,7 +16,8 @@
 @private
 */
 define("moxie/runtime/html4/image/Image", [
+	"moxie/runtime/html4/Runtime",
 	"moxie/runtime/html5/image/Image"
-], function(Image) {
-	return Image;
+], function(extensions, Image) {
+	return (extensions.Image = Image);
 });

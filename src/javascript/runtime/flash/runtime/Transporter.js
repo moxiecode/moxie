@@ -16,9 +16,11 @@
 @private
 */
 define("moxie/runtime/flash/runtime/Transporter", [
+	"moxie/runtime/flash/Runtime",
 	"moxie/file/Blob"
-], function(Blob) {
-	return {
+], function(extensions, Blob) {
+
+	var Transporter = {
 		getAsBlob: function(type) {
 			var self = this.getRuntime()
 			, blob = self.shimExec.call(this, 'Transporter', 'getAsBlob', type)
@@ -29,4 +31,6 @@ define("moxie/runtime/flash/runtime/Transporter", [
 			return null;
 		}
 	};
+
+	return (extensions.Transporter = Transporter);
 });

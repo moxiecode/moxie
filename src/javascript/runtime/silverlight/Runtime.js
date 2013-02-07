@@ -22,11 +22,10 @@ define("moxie/runtime/silverlight/Runtime", [
 	"moxie/core/utils/Env",
 	"moxie/core/utils/Dom",
 	"moxie/core/Exceptions",
-	"moxie/runtime/Runtime",
-	"moxie/runtime/silverlight/extensions"
-], function(Basic, Env, Dom, x, Runtime, extensions) {
+	"moxie/runtime/Runtime"
+], function(Basic, Env, Dom, x, Runtime) {
 	
-	var type = 'silverlight';
+	var type = 'silverlight', extensions = {};
 
 	/**
 	Constructor for the Silverlight Runtime
@@ -186,4 +185,6 @@ define("moxie/runtime/silverlight/Runtime", [
 
 		return SilverlightRuntime;
 	}()));
+
+	return extensions;
 });

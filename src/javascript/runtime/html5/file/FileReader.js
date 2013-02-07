@@ -16,10 +16,11 @@
 @private
 */
 define("moxie/runtime/html5/file/FileReader", [
+	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic"
-], function(Basic) {
+], function(extensions, Basic) {
 	
-	return function() {
+	function FileReader() {
 		this.read = function(op, blob) {
 			var target = this, fr = new window.FileReader();
 
@@ -53,5 +54,7 @@ define("moxie/runtime/html5/file/FileReader", [
 				fr[op](blob.getSource());
 			}
 		};
-	};
+	}
+
+	return (extensions.FileReader = FileReader);
 });

@@ -16,6 +16,7 @@
 @private
 */
 define("moxie/runtime/flash/xhr/XMLHttpRequest", [
+	"moxie/runtime/flash/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/file/Blob",
 	"moxie/file/File",
@@ -23,8 +24,9 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	"moxie/xhr/FormData",
 	"moxie/runtime/Transporter",
 	"moxie/core/JSON"
-], function(Basic, Blob, File, FileReaderSync, FormData, Transporter, JSON) {
-	return {
+], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter, JSON) {
+	
+	var XMLHttpRequest = {
 		send: function(meta, data) {
 			var target = this, self = target.getRuntime();
 
@@ -131,4 +133,6 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			}
 		}
 	};
+
+	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });

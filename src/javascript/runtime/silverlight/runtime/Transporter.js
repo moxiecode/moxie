@@ -15,6 +15,9 @@
 @class moxie/runtime/silverlight/runtime/Transporter
 @private
 */
-define("moxie/runtime/silverlight/runtime/Transporter", ["moxie/runtime/flash/runtime/Transporter"], function(Transporter) {
-	return Transporter;
+define("moxie/runtime/silverlight/runtime/Transporter", [
+	"moxie/runtime/silverlight/Runtime",
+	"moxie/runtime/flash/runtime/Transporter"
+], function(extensions, Transporter) {
+	return (extensions.Transporter = Transporter);
 });

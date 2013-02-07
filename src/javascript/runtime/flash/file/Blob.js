@@ -16,9 +16,11 @@
 @private
 */
 define("moxie/runtime/flash/file/Blob", [
+	"moxie/runtime/flash/Runtime",
 	"moxie/file/Blob"
-], function(Blob) {
-	return {
+], function(extensions, Blob) {
+
+	var FlashBlob = {
 		slice: function(blob, start, end, type) {
 			var self = this.getRuntime();
 
@@ -42,4 +44,6 @@ define("moxie/runtime/flash/file/Blob", [
 			return blob;
 		}
 	};
+
+	return (extensions.Blob = FlashBlob);
 });

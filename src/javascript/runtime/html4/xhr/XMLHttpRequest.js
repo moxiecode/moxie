@@ -16,6 +16,7 @@
 @private
 */
 define("moxie/runtime/html4/xhr/XMLHttpRequest", [
+	"moxie/runtime/html4/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/Exceptions",
@@ -23,8 +24,9 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/JSON"
-], function(Basic, Dom, x, Events, Blob, FormData, JSON) {
-	return function() {
+], function(extensions, Basic, Dom, x, Events, Blob, FormData, JSON) {
+	
+	function XMLHttpRequest() {
 		var _status, _response, _iframe;
 
 		function cleanup(cb) {
@@ -210,5 +212,7 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 				});
 			}
 		});
-	};
+	}
+
+	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });

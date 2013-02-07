@@ -15,8 +15,11 @@
 @class moxie/runtime/flash/file/FileInput
 @private
 */
-define("moxie/runtime/flash/file/FileInput", [], function() {
-	return {
+define("moxie/runtime/flash/file/FileInput", [
+	"moxie/runtime/flash/Runtime"
+], function(extensions) {
+	
+	var FileInput = {		
 		init: function(options) {
 			return this.getRuntime().shimExec.call(this, 'FileInput', 'init', {
 				name: options.name,
@@ -25,5 +28,7 @@ define("moxie/runtime/flash/file/FileInput", [], function() {
 			});
 		}
 	};
+
+	return (extensions.FileInput = FileInput);
 });
 

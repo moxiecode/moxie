@@ -16,8 +16,10 @@
 @private
 */
 define("moxie/runtime/flash/file/FileReaderSync", [
+	"moxie/runtime/flash/Runtime",
 	"moxie/core/utils/Encode"
-], function(Encode) {
+], function(extensions, Encode) {
+	
 	function _formatData(data, op) {
 		switch (op) {
 			case 'readAsText':
@@ -31,8 +33,8 @@ define("moxie/runtime/flash/file/FileReaderSync", [
 		return null;
 	}
 
-	return {
-		read : function(op, blob) {
+	var FileReaderSync = {
+		read: function(op, blob) {
 			var result, self = this.getRuntime();
 
 			result = self.shimExec.call(this, 'FileReaderSync', 'readAsBase64', blob.getSource().id);
@@ -48,4 +50,6 @@ define("moxie/runtime/flash/file/FileReaderSync", [
 			return _formatData(result, op, blob.type);
 		}
 	};
+
+	return (extensions.FileReaderSync = FileReaderSync);
 });

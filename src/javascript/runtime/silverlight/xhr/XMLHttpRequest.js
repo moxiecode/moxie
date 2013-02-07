@@ -15,6 +15,9 @@
 @class moxie/runtime/silverlight/xhr/XMLHttpRequest
 @private
 */
-define("moxie/runtime/silverlight/xhr/XMLHttpRequest", ["moxie/runtime/flash/xhr/XMLHttpRequest"], function(XMLHttpRequest) {
-	return XMLHttpRequest;
+define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
+	"moxie/runtime/silverlight/Runtime",
+	"moxie/runtime/flash/xhr/XMLHttpRequest"
+], function(extensions, XMLHttpRequest) {
+	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });

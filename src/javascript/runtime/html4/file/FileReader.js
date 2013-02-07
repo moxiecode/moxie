@@ -16,7 +16,8 @@
 @private
 */
 define("moxie/runtime/html4/file/FileReader", [
+	"moxie/runtime/html4/Runtime",
 	"moxie/runtime/html5/file/FileReader"
-], function(FileReader) {
-	return FileReader;
+], function(extensions, FileReader) {
+	return (extensions.FileReader = FileReader);
 });

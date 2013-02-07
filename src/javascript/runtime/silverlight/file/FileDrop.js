@@ -16,12 +16,13 @@
 @private
 */
 define("moxie/runtime/silverlight/file/FileDrop", [
+	"moxie/runtime/silverlight/Runtime",
 	"moxie/core/utils/Dom", 
 	"moxie/core/utils/Events"
-], function(Dom, Events) {
+], function(extensions, Dom, Events) {
 
 	// not exactly useful, since works only in safari (...crickets...)
-	return {
+	var FileDrop = {
 		init: function() {
 			var comp = this, self = comp.getRuntime(), dropZone;
 
@@ -50,4 +51,6 @@ define("moxie/runtime/silverlight/file/FileDrop", [
 			return self.shimExec.call(this, 'FileDrop', 'init');
 		}
 	};
+
+	return (extensions.FileDrop = FileDrop);
 });

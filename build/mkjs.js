@@ -22,60 +22,28 @@ var resolveModules = (function() {
 
 		var amdlc = require('amdlc');
 
-		// check if our template for runtime extensions file exists
-		var extTplPath = options.baseDir + '/runtime/tpl/extensions.js';
-		if (!fs.existsSync(extTplPath)) {
-			console.info(extTplPath + ' cannot be found.');
-			process.exit(1);
-		}
-		var extTpl = fs.readFileSync(extTplPath).toString();
-
 		// get complete array of all involved modules
 		modules = amdlc.parseModules(utils.extend({}, options, {
 			from: modules
 		}));
 
 		// come up with the list of runtime modules to get included
-		var overrides = {};
 		var runtimes = (process.env.runtimes || 'html5,flash,silverlight,html4').split(/,/);
 
+		var runtimeModules = [];
 		if (runtimes.length) {
 			runtimes.forEach(function(type) {
-				var id = 'runtime/' + type + '/extensions';
-				if (options.rootNS) {
-					id = options.rootNS + '/' + id;
-				}
-
-				if (overrides[id]) {
-					return; // continue
-				}	
-
-				var runtimeModules = [];
 				modules.forEach(function(module) {
-					if (fs.existsSync(options.baseDir + '/runtime/' + type + '/' + resolveId(module.id) + '.js')) {
-						runtimeModules.push(resolveId(module.id));
+					var id = 'runtime/' + type + '/' + resolveId(module.id);
+					if (fs.existsSync(options.baseDir + "/" + id + '.js')) {
+						runtimeModules.push(id);
 					}
 				});
-
-				var source = extTpl.replace(/%([\w]+)%/g, function($0, $1) {
-					switch ($1) { 
-						case 'type': 
-							return type;
-						case 'modules':
-							return '"' + runtimeModules.join('","')  +'"';
-					}
-				});
-
-				overrides[id] = {
-					source: source,
-					filePath: resolveId(id)
-				};
 			});
 
 			// add runtimes and their modules
 			Array.prototype.push.apply(modules, amdlc.parseModules(utils.extend({}, options, {
-				from: runtimes.map(function(type) { return 'runtime/' + type + '/Runtime.js'; }),
-				moduleOverrides: overrides
+				from: runtimeModules
 			})));
 
 			return (resolved = modules);

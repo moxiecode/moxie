@@ -21,10 +21,9 @@ define("moxie/runtime/flash/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Env",
 	"moxie/core/Exceptions",
-	"moxie/runtime/Runtime",
-	"moxie/runtime/flash/extensions"
-], function(Basic, Env, x, Runtime, extensions) {
-	var type = 'flash';
+	"moxie/runtime/Runtime"
+], function(Basic, Env, x, Runtime) {
+	var type = 'flash', extensions = {};
 
 	/**
 	Constructor for the Flash Runtime
@@ -33,6 +32,7 @@ define("moxie/runtime/flash/Runtime", [
 	@extends Runtime
 	*/
 	Runtime.addConstructor(type, (function() {
+		
 		function FlashRuntime(options) {
 			var self = this;
 
@@ -184,4 +184,6 @@ define("moxie/runtime/flash/Runtime", [
 
 		return FlashRuntime;
 	}()));
+
+	return extensions;
 });

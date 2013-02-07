@@ -16,13 +16,15 @@
 @private
 */
 define("moxie/runtime/html4/file/FileInput", [
+	"moxie/runtime/html4/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(Basic, Dom, Events, Mime, Env) {
-	return function() {
+], function(extensions, Basic, Dom, Events, Mime, Env) {
+	
+	function FileInput() {
 		var _uid, _files = [], _mimes = [], _options;
 
 		function addInput() {
@@ -207,5 +209,7 @@ define("moxie/runtime/html4/file/FileInput", [
 				}
 			}
 		});
-	};
+	}
+
+	return (extensions.FileInput = FileInput);
 });

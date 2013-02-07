@@ -21,19 +21,18 @@ define("moxie/runtime/html5/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime",
-	"moxie/runtime/html5/extensions",
-	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/core/utils/Env"
-], function(Basic, x, Runtime, extensions, ImageInfo, Env) {
+], function(Basic, x, Runtime, Env) {
+	var type = "html5", extensions = {};
 	
-	Runtime.addConstructor('html5', (function() {
+	Runtime.addConstructor(type, (function() {
 		
 		function Html5Runtime(options) {
 			var I = this, shim, defaults = {};
 
 			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
 
-			Runtime.apply(this, [options, arguments[1] || 'html5']);
+			Runtime.apply(this, [options, arguments[1] || type]);
 
 			Basic.extend(this, {
 
@@ -87,9 +86,9 @@ define("moxie/runtime/html5/Runtime", [
 
 		Html5Runtime.can = (function() {
 			var caps = Basic.extend({}, Runtime.caps, {
-					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
+					access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
 					access_image_binary: function() {
-						return can('access_binary') && !!ImageInfo;
+						return can('access_binary') && !!extensions.Image;
 					},
 					display_media: Env.can('create_canvas') || Env.can('use_data_uri_over32kb'),
 					drag_and_drop: (function() {
@@ -140,4 +139,6 @@ define("moxie/runtime/html5/Runtime", [
 
 		return Html5Runtime;
 	}()));
+
+	return extensions;
 });

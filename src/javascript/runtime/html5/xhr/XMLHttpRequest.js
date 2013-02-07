@@ -16,15 +16,16 @@
 @private
 */
 define("moxie/runtime/html5/xhr/XMLHttpRequest", [
+	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/file/File",
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Env"
-], function(Basic, File, Blob, FormData, x, Env) {
+], function(extensions, Basic, File, Blob, FormData, x, Env) {
 	
-	return function() {
+	function XMLHttpRequest() {
 		var _xhr2, filename;
 
 		Basic.extend(this, {
@@ -214,5 +215,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 			return multipart;
 		}
-	};
+	}
+
+	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });

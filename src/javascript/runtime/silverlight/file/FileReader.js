@@ -15,6 +15,9 @@
 @class moxie/runtime/silverlight/file/FileReader
 @private
 */
-define("moxie/runtime/silverlight/file/FileReader", ["moxie/runtime/flash/file/FileReader"], function(FileReader) {
-	return FileReader;
+define("moxie/runtime/silverlight/file/FileReader", [
+	"moxie/runtime/silverlight/Runtime",
+	"moxie/runtime/flash/file/FileReader"
+], function(extensions, FileReader) {
+	return (extensions.FileReader = FileReader);
 });

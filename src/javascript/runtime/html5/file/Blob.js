@@ -16,9 +16,11 @@
 @private
 */
 define("moxie/runtime/html5/file/Blob", [
+	"moxie/runtime/html5/Runtime",
 	"moxie/file/Blob"
-], function(Blob) {
-	return function() {
+], function(extensions, Blob) {
+
+	function HTML5Blob() {
 		function w3cBlobSlice(blob, start, end) {
 			var blobSlice;
 
@@ -41,5 +43,7 @@ define("moxie/runtime/html5/file/Blob", [
 		this.slice = function() {
 			return new Blob(this.getRuntime().uid, w3cBlobSlice.apply(this, arguments));
 		};
-	};
+	}
+
+	return (extensions.Blob = HTML5Blob);
 });
