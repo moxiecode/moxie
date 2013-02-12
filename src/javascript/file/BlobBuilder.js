@@ -40,7 +40,7 @@ define('moxie/file/BlobBuilder', [
 			uid: Basic.guid('uid_'),
 	
 			append: function(data) {
-				if (Basic.typeOf(data) !== 'string' || !(data instanceof Blob)) {
+				if (Basic.typeOf(data) !== 'string' && !(data instanceof Blob)) {
 					throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
 				}
 				sources.push(data);
