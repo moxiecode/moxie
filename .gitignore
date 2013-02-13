@@ -1,5 +1,3 @@
-js/
-bin/
 tests/
 !tests/js/
 src/silverlight/Bin/
@@ -16,7 +14,6 @@ jscoverage
 *.sln
 *.bak
 *.log
-*.min.js
 *.sublime-*
 .DS_Store
 node_modules
