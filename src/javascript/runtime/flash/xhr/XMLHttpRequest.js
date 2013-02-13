@@ -24,7 +24,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	"moxie/xhr/FormData",
 	"moxie/runtime/Transporter",
 	"moxie/core/JSON"
-], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter, JSON) {
+], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter, parseJSON) {
 	
 	var XMLHttpRequest = {
 		send: function(meta, data) {
@@ -61,21 +61,24 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 			// transfer over multipart params and blob itself
 			if (data instanceof FormData) {
-				Basic.each(data._fields, function(value, name) {
-					if (!(value instanceof Blob)) {
-						self.shimExec.call(target, 'XMLHttpRequest', 'append', name, value.toString());
+				var blobField;
+				data.each(function(value, name) {
+					if (value instanceof Blob) {
+						blobField = name;
+					} else {
+						self.shimExec.call(target, 'XMLHttpRequest', 'append', name, value);
 					}
 				});
 
-				if (!data._blob) {
+				if (!data.hasBlob()) {
 					data = null;
 					send();
 				} else {
-					var blob = data._fields[data._blob];
+					var blob = data.getBlob();
 					if (blob.isDetached()) {
-						attachBlob(data._blob, blob);
+						attachBlob(blobField, blob);
 					} else {
-						appendBlob(data._blob, blob);
+						appendBlob(blobField, blob);
 					}
 				}
 			} else if (data instanceof Blob) {
@@ -112,7 +115,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 					});
 					*/
 
-					return JSON.parse(frs.readAsText(blob));
+					return parseJSON(frs.readAsText(blob));
 				}
 			}
 

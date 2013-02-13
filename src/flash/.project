@@ -18,7 +18,7 @@
 		<link>
 			<name>bin-debug</name>
 			<type>2</type>
-			<location>/Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/js</location>
+			<location>/Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/bin/flash</location>
 		</link>
 		<link>
 			<name>bin-release</name>

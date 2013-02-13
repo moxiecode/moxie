@@ -79,13 +79,13 @@ define("moxie/runtime/html4/Runtime", [
 			var caps = Basic.extend({}, Runtime.caps, {
 					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
 					access_image_binary: false,
-					display_media: Env.has('moxie/image/Image') && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+					display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
 					drag_and_drop: false,
-					receive_response_type: function() {
-						return !!~Basic.inArray(Env.browser, ['json', 'text', 'document', '']);
+					receive_response_type: function(responseType) {
+						return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
 					},
 					resize_image: function() {
-						return Env.has('moxie/image/Image') && can('access_binary') && Env.can('create_canvas');
+						return extensions.Image && can('access_binary') && Env.can('create_canvas');
 					},
 					report_upload_progress: false,
 					return_response_headers: false,

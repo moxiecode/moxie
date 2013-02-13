@@ -24,7 +24,7 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/JSON"
-], function(extensions, Basic, Dom, x, Events, Blob, FormData, JSON) {
+], function(extensions, Basic, Dom, x, Events, Blob, FormData, parseJSON) {
 	
 	function XMLHttpRequest() {
 		var _status, _response, _iframe;
@@ -129,8 +129,8 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 
 				// prepare data to be sent and convert if required
 				if (data instanceof FormData) {
-					if (data._blob) {
-						blob = data._fields[data._blob];
+					if (data.hasBlob()) {
+						blob = data.getBlob();
 						uid = blob.uid;
 						input = Dom.get(uid);
 						form = Dom.get(uid + '_form');
@@ -151,7 +151,7 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 						//form.style.position = 'absolute';
 					}
 
-					Basic.each(data._fields, function(value, name) {
+					data.each(function(value, name) {
 						if (value instanceof Blob) {
 							if (input) {
 								input.setAttribute('name', name);
@@ -185,7 +185,7 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 			getResponse: function(responseType) {
 				if ('json' === responseType) {
 					// strip off <pre>..</pre> tags that might be enclosing the response
-					return JSON.parse(_response.replace(/^\s*<pre>/, '').replace(/<\/pre>\s*$/, ''));
+					return parseJSON(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
 				} else if ('document' === responseType) {
 
 				} else {

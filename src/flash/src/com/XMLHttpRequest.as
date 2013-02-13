@@ -77,7 +77,16 @@ package com
 		{
 			_multipart = true;
 			
-			if (name != 'Filename') { // Flash will add this by itself, so we need to omit potential duplicate
+			if (name == 'Filename') { // Flash will add this by itself, so we need to omit potential duplicate
+				return;
+			}
+			
+			if (/\[\]$/.test(name)) { // handle arrays
+				if (!_postData.hasOwnProperty(name)) {
+					_postData[name] = [];
+				}
+				_postData[name].push(value);
+			} else {
 				_postData[name] = value;
 			}
 		}
@@ -373,14 +382,20 @@ package com
 						
 			request.requestHeaders.push(new URLRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary));
 			
-			// append mutlipart parameters
-			for (var name:String in _postData) {
-				tmpBa.writeUTFBytes(
-					dashdash + boundary + crlf +
-					'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf +
-					_postData[name] + crlf
-				);
-			}
+			// recursively append mutltipart parameters
+			(function eachPostData(key:String, postData:*) : void {
+				for (var name:String in postData) {
+					if (postData[name] is Array) {
+						eachPostData(name, postData[name]); // name will be common for all elements of the array
+					} else {
+						tmpBa.writeUTFBytes(
+							dashdash + boundary + crlf +
+							'Content-Disposition: form-data; name="' + (key || name) + '"' + crlf + crlf +
+							postData[name] + crlf
+						);
+					}
+				}
+			}(null, _postData)); // self-invoke with global _postData object
 			
 			// append file if available
 			if (ba) {

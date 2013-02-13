@@ -22,8 +22,9 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/Exceptions",
-	"moxie/core/utils/Env"
-], function(extensions, Basic, File, Blob, FormData, x, Env) {
+	"moxie/core/utils/Env",
+	"moxie/core/JSON"
+], function(extensions, Basic, File, Blob, FormData, x, Env, parseJSON) {
 	
 	function XMLHttpRequest() {
 		var _xhr2, filename;
@@ -56,14 +57,14 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 					}
 					data = data.getSource();
 				} else if (data instanceof FormData) {
-					if (data._blob && data._fields[data._blob].isDetached()) {
+					if (data.hasBlob() && data.getBlob().isDetached()) {
 						// ... and here too
-						data = _prepareMultipart.call(target, data._fields);
+						data = _prepareMultipart.call(target, data);
 						mustSendAsBinary = true;
 					} else {
 						fd = new window.FormData();
 
-						Basic.each(data._fields, function(value, name) {
+						data.each(function(value, name) {
 							if (value instanceof Blob) {
 								fd.append(name, value.getSource());
 							} else {
@@ -159,7 +160,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 							file.name = filename;
 							return file;
 						} else if ('json' === responseType && !Env.can('receive_response_type', 'json')) {
-							return JSON.parse(_xhr2.response);
+							return parseJSON(_xhr2.response);
 						} else {
 							return _xhr2.response;
 						}
@@ -174,11 +175,10 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 			}
 		});
 
-		function _prepareMultipart(params) {
+		function _prepareMultipart(fd) {
 			var boundary = '----moxieboundary' + new Date().getTime()
 			, dashdash = '--'
 			, crlf = '\r\n'
-			, src
 			, multipart = ''
 			, I = this.getRuntime()
 			;
@@ -190,23 +190,19 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 			_xhr2.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 
 			// append multipart parameters
-			if (Basic.typeOf(params) === 'object') {
-				Basic.each(params, function(value, name) {
-					if (value instanceof Blob) {
-						src = value.getSource();
-
-						// Build RFC2388 blob
-						multipart += dashdash + boundary + crlf +
-							'Content-Disposition: form-data; name="' + name + '"; filename="' + unescape(encodeURIComponent(value.name || 'blob')) + '"' + crlf +
-							'Content-Type: ' + value.type + crlf + crlf +
-							src + crlf;
-					} else {
-						multipart += dashdash + boundary + crlf +
-							'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf +
-							unescape(encodeURIComponent(value)) + crlf;
-					}
-				});
-			}
+			fd.each(function(value, name) {
+				if (value instanceof Blob) {
+					// Build RFC2388 blob
+					multipart += dashdash + boundary + crlf +
+						'Content-Disposition: form-data; name="' + name + '"; filename="' + unescape(encodeURIComponent(value.name || 'blob')) + '"' + crlf +
+						'Content-Type: ' + value.type + crlf + crlf +
+						value.getSource() + crlf;
+				} else {
+					multipart += dashdash + boundary + crlf +
+						'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf +
+						unescape(encodeURIComponent(value)) + crlf;
+				}
+			});
 
 			multipart += dashdash + boundary + dashdash + crlf;
 
