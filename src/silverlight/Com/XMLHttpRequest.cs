@@ -55,7 +55,7 @@ namespace Moxiecode.Com
 		
 		private string _blobFieldName;
 		
-		private  Dictionary<string, string> _postData;
+		private  Dictionary<string, List<string>> _postData;
 		
 		private MemoryStream _response;
 
@@ -83,7 +83,15 @@ namespace Moxiecode.Com
 		public void append(object name, object value)
 		{
 			_multipart = true;
-			_postData.Add((string)name, (string)value);
+
+			List<string> postList;
+			if (!_postData.TryGetValue((string)name, out postList)) {
+				postList = new List<string>();
+			}
+			postList.Add((string)value);
+
+			_postData.Remove((string)name);
+			_postData.Add((string)name, postList);
 		}
 
 
@@ -209,13 +217,15 @@ namespace Moxiecode.Com
 				string boundary = "----moxieboundary" + DateTime.Now.Ticks, dashdash = "--", crlf = "\r\n";
 				string header = "";
 
-				// append mutlipart parameters
-				foreach (KeyValuePair<string, string> pair in _postData)
+				// append mutltipart parameters
+				foreach (KeyValuePair<string, List<string>> pair in _postData)
 				{
-					header +=
-						dashdash + boundary + crlf +
-						"Content-Disposition: form-data; name=\"" + pair.Key + '"' + crlf + crlf +
-						pair.Value + crlf;
+					foreach (string value in pair.Value) {
+						header +=
+							dashdash + boundary + crlf +
+							"Content-Disposition: form-data; name=\"" + pair.Key + '"' + crlf + crlf +
+							value + crlf;
+					}
 				}
 
 				// append multipart file header
@@ -430,7 +440,7 @@ namespace Moxiecode.Com
 			_headers = new Dictionary<string, string>();
 			_blob = null;
 			_blobName = "";
-			_postData = new Dictionary<string, string>();
+			_postData = new Dictionary<string, List<string>>();
 			_blobFieldName = "Filedata";
 
 			if (_response != null)
