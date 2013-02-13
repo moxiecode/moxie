@@ -128,13 +128,13 @@ task("mkxap", [], function() {
 		function(cb) {
 			mkxap({
 				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:BUILD=IMAGE,XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
+				output: "/p:XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		},
 		function(cb) {
 			mkxap({
 				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:XapFilename=Moxie.min.xap,OutputDir=..\\..\\" + targetDir
+				output: "/p:BUILD=NOIMAGE,XapFilename=Moxie.min.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		}
 	], complete);
