@@ -52,12 +52,9 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				// prepare data to be sent and convert if required
 				if (data instanceof Blob) {
 					if (data.isDetached()) {
-						// if blob contains binary string, we have to manually build multipart blob
-						data = _prepareMultipart.call(target, { Filedata: data });
 						mustSendAsBinary = true;
-					} else {
-						data = data.getSource();
 					}
+					data = data.getSource();
 				} else if (data instanceof FormData) {
 					if (data._blob && data._fields[data._blob].isDetached()) {
 						// ... and here too
