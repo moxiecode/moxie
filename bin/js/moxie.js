@@ -2750,11 +2750,11 @@ define("moxie/xhr/FormData", [
 				var self = this, valueType = Basic.typeOf(value);
 
 				if (value instanceof Blob) {
-					if (_blobField) { // we can only send single Blob in one FormData
+					if (_blobField) { 
 						delete _fields[_blobField];
 					}
 					_blobField = name; 
-					_fields[name] = [value];
+					_fields[name] = [value]; // unfortunately we can only send single Blob in one FormData
 				} else if ('array' === valueType) {
 					name += '[]';
 
@@ -3009,12 +3009,12 @@ define("moxie/core/utils/Env", [
 
 	var Env = {
 		can: can,
-		has: function(moduleId) {
-			return !!modules && !!modules[moduleId]; // check against global module registry
-		},
 		browser: getStr(browser),
 		version: getVer(navigator.userAgent) || getVer(navigator.appVersion),
-		OS: getStr(os)
+		OS: getStr(os),
+		swf_url: "../flash/Moxie.swf",
+		xap_url: "../silverlight/Moxie.xap",
+		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
 	};
 
 	return Env;
@@ -3510,8 +3510,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					
 					// FormData
 					else if (data instanceof FormData) {
-						if (data._blob) {
-							var blob = data._fields[data._blob];
+						if (data.hasBlob()) {
+							var blob = data.getBlob();
 							_options.ruid = blob.ruid;
 							_mimeType = blob.type;
 						}
@@ -7419,7 +7419,7 @@ define("moxie/runtime/flash/Runtime", [
 
 			// figure out the options
 			var defaults = {
-				swf_url: 'js/Moxie.swf'
+				swf_url: Env.swf_url
 			};
 
 			self.options = options = Basic.extend({}, defaults, options);
@@ -7457,7 +7457,7 @@ define("moxie/runtime/flash/Runtime", [
 
 					html += 'width="100%" height="100%" style="outline:0">'  +
 						'<param name="movie" value="' + options.swf_url + '" />' +
-						'<param name="flashvars" value="uid=' + escape(self.uid) + '" />' +
+						'<param name="flashvars" value="uid=' + escape(self.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
 						'<param name="wmode" value="transparent" />' +
 						'<param name="allowscriptaccess" value="always" />' +
 					'</object>';
@@ -8053,7 +8053,7 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			// figure out the options
 			var defaults = {
-				xap_url: 'js/Moxie.xap'
+				xap_url: Env.xap_url
 			};
 			self.options = options = Basic.extend({}, defaults, options);
 
@@ -8081,7 +8081,7 @@ define("moxie/runtime/silverlight/Runtime", [
 						'<param name="background" value="Transparent"/>' +
 						'<param name="windowless" value="true"/>' +
 						'<param name="enablehtmlaccess" value="true"/>' +
-						'<param name="initParams" value="uid=' + self.uid + '"/>' +
+						'<param name="initParams" value="uid=' + self.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
 					'</object>';
 
 					// Init is dispatched by the shim
@@ -8090,7 +8090,7 @@ define("moxie/runtime/silverlight/Runtime", [
 							self.destroy();
 							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 						}
-					}, 7000); // silverlight may take quite some time to initialize
+					}, 10000); // silverlight may take quite some time to initialize
 				}
 			}, extensions);
 		}
