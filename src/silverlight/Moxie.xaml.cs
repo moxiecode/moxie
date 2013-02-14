@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
 using System.Xml.Serialization;
+using System.Text.RegularExpressions;
 
 using Moxiecode.Com;
 using Moxiecode.Com.Events;
@@ -32,9 +33,8 @@ namespace Moxiecode
 
 		public static Dictionary<string, object> blobPile = new Dictionary<string, object>();
 
-		#region private fields
-
-		#endregion
+		private String eventDispatcherNamespace = "moxie.core.EventTarget.instance";
+		private String eventDispatcher = "dispatchEvent";
 
 		/// <summary>
 		///  Main constructor.
@@ -45,6 +45,19 @@ namespace Moxiecode
 			InitializeComponent();
 
 			Moxie.uid = init_params["uid"];
+
+			String target;
+			if (init_params.TryGetValue("target", out target)) {
+				string[] targetParts = Regex.Split(target, @"\.(?=[^\.]+$)"); // split on last dot
+				if (targetParts.Length == 1) {
+					eventDispatcherNamespace = "window";
+					eventDispatcher = targetParts[0];
+				} else {
+					eventDispatcherNamespace = targetParts[0];
+					eventDispatcher = targetParts[1];
+				}
+			}
+
 			HtmlPage.RegisterScriptableObject("Moxie", this);
 			this._fireEvent(Moxie.uid + "::Init");
 		}
@@ -130,7 +143,7 @@ namespace Moxiecode
 		/// </summary>
 		public ScriptObject EventTarget
 		{
-			get { return ((ScriptObject)HtmlPage.Window.Eval("moxie.core.EventTarget.instance")); }
+			get { return ((ScriptObject)HtmlPage.Window.Eval(eventDispatcherNamespace)); }
 		}
 
 		/// <summary>
@@ -139,13 +152,13 @@ namespace Moxiecode
 		/// <param name="name">Event name to fire.</param>
 		private void _fireEvent(string type, object args = null)
 		{
-			EventTarget.Invoke("dispatchEvent", new object[] { type, args });
+			EventTarget.Invoke(eventDispatcher, new object[] { type, args });
 		}
 
 
 		private void _fireEvent(object type, object args = null)
 		{
-			EventTarget.Invoke("dispatchEvent", new object[] { type, args });
+			EventTarget.Invoke(eventDispatcher, new object[] { type, args });
 		}
 
 
