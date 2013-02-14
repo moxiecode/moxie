@@ -37,11 +37,11 @@ define("moxie/xhr/FormData", [
 				var self = this, valueType = Basic.typeOf(value);
 
 				if (value instanceof Blob) {
-					if (_blobField) { // we can only send single Blob in one FormData
+					if (_blobField) { 
 						delete _fields[_blobField];
 					}
 					_blobField = name; 
-					_fields[name] = value;
+					_fields[name] = [value]; // unfortunately we can only send single Blob in one FormData
 				} else if ('array' === valueType) {
 					name += '[]';
 
@@ -79,7 +79,7 @@ define("moxie/xhr/FormData", [
 			@return {Object} Either Blob if found or null
 			*/
 			getBlob: function() {
-				return _fields[_blobField] || null;
+				return _fields[_blobField] && _fields[_blobField][0] || null;
 			},
 
 			/**

@@ -2754,7 +2754,7 @@ define("moxie/xhr/FormData", [
 						delete _fields[_blobField];
 					}
 					_blobField = name; 
-					_fields[name] = value;
+					_fields[name] = [value];
 				} else if ('array' === valueType) {
 					name += '[]';
 
@@ -2792,7 +2792,7 @@ define("moxie/xhr/FormData", [
 			@return {Object} Either Blob if found or null
 			*/
 			getBlob: function() {
-				return _fields[_blobField] || null;
+				return _fields[_blobField] && _fields[_blobField][0] || null;
 			},
 
 			/**
