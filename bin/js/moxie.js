@@ -2736,7 +2736,7 @@ define("moxie/xhr/FormData", [
 	@constructor
 	*/
 	function FormData() {
-		var _blobField, _fields = {};
+		var _blobField, _fields = {}, _name = "";
 
 		Basic.extend(this, {
 			/**
@@ -2744,26 +2744,34 @@ define("moxie/xhr/FormData", [
 
 			@method append
 			@param {String} name Name for the new field
-			@param {Mixed} value Value for the field, can be String, Number, File
+			@param {String|Blob|Array|Object} value Value for the field
 			*/
 			append: function(name, value) {
+				var self = this, valueType = Basic.typeOf(value);
+
 				if (value instanceof Blob) {
 					if (_blobField) { // we can only send single Blob in one FormData
 						delete _fields[_blobField];
 					}
 					_blobField = name; 
 					_fields[name] = value;
-				} else {
-					value = value.toString(); // value should be either Blob or String
+				} else if ('array' === valueType) {
+					name += '[]';
 
-					if (/\[\]$/.test(name)) { // if array detected
-						if (!_fields[name]) {
-							_fields[name] = [];
-						} 
-						_fields[name].push(value);
-					} else {
-						_fields[name] = value;
-					}
+					Basic.each(value, function(value) {
+						self.append.call(self, name, value);
+					});
+				} else if ('object' === valueType) {
+					Basic.each(value, function(value, key) {
+						self.append.call(self, name + '[' + key + ']', value);
+					});
+				} else {
+					value = value.toString(); // according to specs value might be either Blob or String
+
+					if (!_fields[name]) {
+						_fields[name] = [];
+					} 
+					_fields[name].push(value);
 				}
 			},
 
@@ -2793,26 +2801,13 @@ define("moxie/xhr/FormData", [
 			@method each
 			@param {Function} cb Callback to call for each field
 			*/
-			each: function() {
-				var self = this
-				, cb = arguments[arguments.length - 1]
-				, key
-				, fields
-				;
+			each: function(cb) {
+				var self = this;
 
-				if (arguments.length === 1) {
-					fields = _fields;
-				} else {
-					key = arguments[0];
-					fields = arguments[1];
-				}
-
-				Basic.each(fields, function(value, name) {
-					if (Basic.typeOf(value) === 'array') {
-						self.each(name, value, cb);
-					} else {
-						cb(value, key || name);
-					}
+				Basic.each(_fields, function(value, name) {
+					Basic.each(value, function(value) {
+						cb(value, name);
+					});
 				});
 			}
 		});
