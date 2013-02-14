@@ -62,7 +62,7 @@ define("moxie/runtime/flash/Runtime", [
 
 			// figure out the options
 			var defaults = {
-				swf_url: 'js/Moxie.swf'
+				swf_url: Env.swf_url
 			};
 
 			self.options = options = Basic.extend({}, defaults, options);
@@ -100,7 +100,7 @@ define("moxie/runtime/flash/Runtime", [
 
 					html += 'width="100%" height="100%" style="outline:0">'  +
 						'<param name="movie" value="' + options.swf_url + '" />' +
-						'<param name="flashvars" value="uid=' + escape(self.uid) + '" />' +
+						'<param name="flashvars" value="uid=' + escape(self.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
 						'<param name="wmode" value="transparent" />' +
 						'<param name="allowscriptaccess" value="always" />' +
 					'</object>';

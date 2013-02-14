@@ -97,7 +97,7 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			// figure out the options
 			var defaults = {
-				xap_url: 'js/Moxie.xap'
+				xap_url: Env.xap_url
 			};
 			self.options = options = Basic.extend({}, defaults, options);
 
@@ -125,7 +125,7 @@ define("moxie/runtime/silverlight/Runtime", [
 						'<param name="background" value="Transparent"/>' +
 						'<param name="windowless" value="true"/>' +
 						'<param name="enablehtmlaccess" value="true"/>' +
-						'<param name="initParams" value="uid=' + self.uid + '"/>' +
+						'<param name="initParams" value="uid=' + self.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
 					'</object>';
 
 					// Init is dispatched by the shim
@@ -134,7 +134,7 @@ define("moxie/runtime/silverlight/Runtime", [
 							self.destroy();
 							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 						}
-					}, 7000); // silverlight may take quite some time to initialize
+					}, 10000); // silverlight may take quite some time to initialize
 				}
 			}, extensions);
 		}

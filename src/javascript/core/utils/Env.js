@@ -189,12 +189,12 @@ define("moxie/core/utils/Env", [
 
 	var Env = {
 		can: can,
-		has: function(moduleId) {
-			return !!modules && !!modules[moduleId]; // check against global module registry
-		},
 		browser: getStr(browser),
 		version: getVer(navigator.userAgent) || getVer(navigator.appVersion),
-		OS: getStr(os)
+		OS: getStr(os),
+		swf_url: "../flash/Moxie.swf",
+		xap_url: "../silverlight/Moxie.xap",
+		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
 	};
 
 	return Env;

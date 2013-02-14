@@ -25,6 +25,8 @@ package
 	public class Moxie extends Sprite
 	{		
 		public static var uid:String;
+		
+		private var eventDispatcher:String = "moxie.core.EventTarget.instance.dispatchEvent";
 				
 		public static var comps:ComponentFactory;
 		
@@ -61,9 +63,16 @@ package
 			// Align and scale stage
 			stage.align = StageAlign.TOP_LEFT;
 			stage.scaleMode = StageScaleMode.EXACT_FIT;
+			
+			var params:Object = stage.loaderInfo.parameters;
 						
 			// Setup id
-			Moxie.uid = Utils.sanitize(stage.loaderInfo.parameters["uid"]);			
+			Moxie.uid = Utils.sanitize(params["uid"]);	
+			
+			// Event dispatcher
+			if (params.hasOwnProperty("target") && /^[\w\.]+$/.test(params["target"])) {
+				eventDispatcher = params["target"];
+			}
 			
 			//ExternalInterface.marshallExceptions = true; // propagate AS exceptions to JS and vice-versa
 			ExternalInterface.addCallback('exec', exec);
@@ -150,7 +159,7 @@ package
 		 */
 		private function _fireEvent(evt:*, obj:Object = null):void {
 			try {
-				ExternalInterface.call("moxie.core.EventTarget.instance.dispatchEvent", evt, obj);
+				ExternalInterface.call(eventDispatcher, evt, obj);
 			} catch(err:*) {
 				//_fireEvent("Exception", { name: 'RuntimeError', message: 4 });
 				
