@@ -486,8 +486,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					
 					// FormData
 					else if (data instanceof FormData) {
-						if (data._blob) {
-							var blob = data._fields[data._blob];
+						if (data.hasBlob()) {
+							var blob = data.getBlob();
 							_options.ruid = blob.ruid;
 							_mimeType = blob.type;
 						}
