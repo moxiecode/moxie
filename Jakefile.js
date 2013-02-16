@@ -72,6 +72,9 @@ task("mkjs", [], function () {
 	amdlc.compileSource(modules, options);
 	amdlc.compileDevelopment(modules, options);
 
+	var releaseInfo = tools.getReleaseInfo("./changelog.txt");
+	tools.addReleaseDetailsTo(targetDir, releaseInfo);
+
 	// add compatibility
 	if (process.env.compat !== 'no') {
 		tools.addCompat({

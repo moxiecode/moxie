@@ -288,7 +288,7 @@ var getReleaseInfo = function (srcPath) {
 	if (!fs.existsSync(srcPath)) {
 		console.info(srcPath + " cannot be found.");
 		process.exit(1);
-	}
+	} 
 	
 	var src = fs.readFileSync(srcPath).toString();
 
@@ -298,45 +298,52 @@ var getReleaseInfo = function (srcPath) {
 		process.exit(1);
 	}
 
-	// assume that very first file in array will have the copyright
-	var copyright = (function() {
-		var matches = fs.readFileSync(srcPath).toString().match(/^\/\*[\s\S]+?\*\//);
-		return matches ? matches[0] : null;
-	}());
-
 	return {
 		version: info[1],
 		releaseDate: info[2],
-		fileVersion: info[1].replace(/\./g, '_'),
-		headNote: copyright
-	};
+		fileVersion: info[1].replace(/\./g, '_')
+	}
 };
 
 // inject version details and copyright header if available to all js files in specified directory
-var addReleaseDetailsTo = function (dir, info) {
-	var contents, filePath;
+var addReleaseDetailsTo = function (destPath, info) {
+	var self = this, headNote, headNotePath = "./build/headnote.txt";
 
-	if (fs.existsSync(dir)) {
-		fs.readdirSync(dir).forEach(function(fileName) {
-			if (fileName && /\.js$/.test(fileName)) {
-				filePath = path.join(dir + "/" + fileName);
-				
-				if (info.headNote) {
-					contents = info.headNote + "\n" + fs.readFileSync(filePath).toString();
-				}
+	function processFile(filePath) {
 
-				contents = contents.replace(/\@@([^@]+)@@/g, function($0, $1) {
-					switch ($1) {
-						case "version": return info.version;
-						case "releasedate": return info.releaseDate;
-					}
-				});
+		if (headNote) {
+			contents = headNote + "\n" + fs.readFileSync(filePath);
+		}
 
-				fs.writeFileSync(filePath, contents);
+		contents = contents.replace(/@@([^@]+)@@/g, function($0, $1) {
+			switch ($1) {
+				case "version": return info.version;
+				case "releasedate": return info.releaseDate;
 			}
+		});
+
+		fs.writeFileSync(filePath, contents);
+	}
+
+	function isTextFile(filePath) {
+		return /\.(js|txt)$/.filePath;
+	}
+	
+	if (fs.existsSync(headNotePath)) {
+		headNote = fs.readFileSync(headNotePath).toString();
+	}
+
+	var stat = fs.statSync(destPath);
+
+	if (stat.isFile()) {
+		processFile(destPath);
+	} else if (stat.isDirectory()) {
+		fs.readdirSync(destPath).forEach(function(fileName) {
+			self.addReleaseDetailsTo(path.join(destPath, fileName), info);
 		});
 	}
 };
+
 
 function compileAmd(options) {
 	require("amdlc").compile(options);
