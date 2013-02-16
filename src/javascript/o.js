@@ -18,25 +18,24 @@ Globally exposed namespace with the most frequently used public classes and hand
 @static
 @private
 */
-define('o', [
-	"moxie/core/utils/Basic",
-	"moxie/core/utils/Dom",
-	"moxie/core/I18n"
-], function(Basic, Dom, I18n) {
-
+(function() {
 	var o = {};
 
 	// directly add some public classes
 	// (we do it dynamically here, since for custom builds we cannot know beforehand what modules were included)
-	Basic.each(exposedModules, function(id) {
-		var className = id.replace(/^[\s\S]+?\/([^\/]+)$/, '$1');
-		if (modules[id]) {
-			o[className] = modules[id];
+	(function addAlias(ns) {
+		for (name in ns) {
+			var itemType = typeof(ns[name]);
+			if (itemType === 'object') {
+				addAlias(ns[name]);
+			} else if (itemType === 'function') {
+				o[name] = ns[name];
+			}
 		}
-	});
+	})(window.moxie);
 
-	// add basic handy methods
-	Basic.extend(o, Basic, Dom, I18n);
+	// add Env manually
+	o.Env = moxie.core.utils.Env;
 
 	// expose globally
 	window.mOxie = o;
@@ -44,4 +43,4 @@ define('o', [
 		window.o = o;
 	}
 	return o;
-});
+})();

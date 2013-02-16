@@ -41,11 +41,11 @@ desc("Compile JS");
 task("mkjs", [], function () {
 	var amdlc = require('amdlc');
 
-	var targetDir = "bin/js";
+	var baseDir = "src/javascript", targetDir = "bin/js";
 
 	var options = {
 		compress: true,
-		baseDir: 'src/javascript',
+		baseDir: baseDir,
 		rootNS: "moxie",
 		expose: "public",
 		verbose: true,
@@ -62,11 +62,6 @@ task("mkjs", [], function () {
 	// resolve dependencies
 	modules = mkjs.resolveModules(modules, options);	
 
-	// make sure we got entry point
-	[].push.apply(modules, amdlc.parseModules(utils.extend({}, options, {
-		from: ["o"]
-	})));
-
 	// start fresh
 	if (fs.existsSync(targetDir)) {
 		jake.rmRf(targetDir);
@@ -76,6 +71,14 @@ task("mkjs", [], function () {
 	amdlc.compileMinified(modules, options);
 	amdlc.compileSource(modules, options);
 	amdlc.compileDevelopment(modules, options);
+
+	// add compatibility
+	if (process.env.compat !== 'no') {
+		tools.addCompat({
+			baseDir: baseDir,
+			targetDir: targetDir
+		});
+	}
 });
 
 

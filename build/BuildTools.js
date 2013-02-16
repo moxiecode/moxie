@@ -21,9 +21,10 @@ var uglify = function (sourceFiles, outputFile, options) {
 			if (options.sourceBase) {
 				filePath = path.join(options.sourceBase, filePath);
 			}
-
 			code += fs.readFileSync(filePath).toString();
 		});
+	} else {
+		code += fs.readFileSync(sourceFiles).toString();
 	}
 
 
@@ -34,7 +35,43 @@ var uglify = function (sourceFiles, outputFile, options) {
 	ast = pro.ast_squeeze(ast);
 	code = pro.gen_code(ast);
 
-	fs.writeFileSync(outputFile, ";" + code + ";");
+	if (outputFile) {
+		fs.writeFileSync(outputFile, code);
+	}
+	return code;
+};
+
+var addCompat = function(options) {
+	var buffer = fs.readFileSync(options.baseDir + '/o.js');
+
+	// add normal
+	if (fs.existsSync(options.targetDir + "/moxie.js")) {
+		fs.appendFileSync(options.targetDir + "/moxie.js", buffer);
+	}
+
+	// ... minified
+	if (fs.existsSync(options.targetDir + "/moxie.min.js")) {
+		fs.appendFileSync(options.targetDir + "/moxie.min.js", uglify(options.baseDir + '/o.js', null, {
+			sourceBase: options.baseDir
+		}));
+	}
+
+	// .. dev
+	if (fs.existsSync(options.targetDir + "/moxie.dev.js")) {
+		fs.appendFileSync(options.targetDir + "/moxie.dev.js", 
+			"\n(function() {\n" +
+			"	var baseDir = '';\n" +
+			"	var scripts = document.getElementsByTagName('script');\n" +
+			"	for (var i = 0; i < scripts.length; i++) {\n" +
+			"		var src = scripts[i].src;\n" +
+			"		if (src.indexOf('/moxie.dev.js') != -1) {\n" +
+			"			baseDir = src.substring(0, src.lastIndexOf('/'));\n" +
+			"		}\n" +
+			"	}\n" +
+			"	document.write('<script type=\"text/javascript\" src=\"' + baseDir + '/../../" + options.baseDir + "/o.js\"></script>');\n" +
+			"})();\n"
+		);
+	}
 };
 
 
@@ -312,6 +349,7 @@ utils.extend(exports, {
 	jshint: jshint,
 	zip: zip,
 	copySync: copySync,
+	addCompat: addCompat,
 	getReleaseInfo: getReleaseInfo,
 	addReleaseDetailsTo: addReleaseDetailsTo,
 	compileAmd: compileAmd
