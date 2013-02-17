@@ -1,11 +1,23 @@
 /**
+ * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
+ * v1.0a
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ *
+ * Date: 2012-11-13
+ */
+/**
  * Inline development version. Only to be used while developing since it uses document.write to load scripts.
  */
 
 /*jshint smarttabs:true, undef:true, latedef:true, curly:true, bitwise:true, camelcase:true */
 /*globals $code */
 
-(function(exports, undefined) {
+(function(exports) {
 	"use strict";
 
 	var html = "", baseDir;
@@ -106,8 +118,6 @@
 	exports.define = define;
 	exports.require = require;
 
-	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/core/utils/Env","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
-
 	load('../../src/javascript/core/utils/Basic.js');
 	load('../../src/javascript/core/I18n.js');
 	load('../../src/javascript/core/utils/Mime.js');
@@ -162,10 +172,21 @@
 	load('../../src/javascript/runtime/html4/file/FileInput.js');
 	load('../../src/javascript/runtime/html4/xhr/XMLHttpRequest.js');
 	load('../../src/javascript/runtime/html4/image/Image.js');
-	load('../../src/javascript/o.js');
+
+	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/core/utils/Env","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+
 
 	writeScripts();
-
-	exports.modules = modules;
-	exports.exposedModules = exposedModules;
 })(this);
+
+(function() {
+	var baseDir = '';
+	var scripts = document.getElementsByTagName('script');
+	for (var i = 0; i < scripts.length; i++) {
+		var src = scripts[i].src;
+		if (src.indexOf('/moxie.dev.js') != -1) {
+			baseDir = src.substring(0, src.lastIndexOf('/'));
+		}
+	}
+	document.write('<script type="text/javascript" src="' + baseDir + '/../../src/javascript/o.js"></script>');
+})();

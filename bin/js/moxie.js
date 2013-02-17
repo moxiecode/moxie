@@ -1,4 +1,16 @@
 /**
+ * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
+ * v1.0a
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ *
+ * Date: 2012-11-13
+ */
+/**
  * Compiled inline version. (Library mode)
  */
 
@@ -8,7 +20,7 @@
 (function(exports, undefined) {
 	"use strict";
 
-	var modules = {}, exposedModules = [];
+	var modules = {};
 
 	function require(ids, callback) {
 		var module, defs = [];
@@ -62,26 +74,25 @@
 		return target;
 	}
 
-	function register(id) {
-		var target = exports;
-		var fragments = id.split(/[.\/]/);
+	function expose(ids) {
+		for (var i = 0; i < ids.length; i++) {
+			var target = exports;
+			var id = ids[i];
+			var fragments = id.split(/[.\/]/);
 
-		for (var fi = 0; fi < fragments.length - 1; ++fi) {
-			if (target[fragments[fi]] === undefined) {
-				target[fragments[fi]] = {};
+			for (var fi = 0; fi < fragments.length - 1; ++fi) {
+				if (target[fragments[fi]] === undefined) {
+					target[fragments[fi]] = {};
+				}
+
+				target = target[fragments[fi]];
 			}
 
-			target = target[fragments[fi]];
+			target[fragments[fragments.length - 1]] = modules[id];
 		}
-
-		target[fragments[fragments.length - 1]] = modules[id];
 	}
 
-	function expose(ids) {
-		exposedModules = ids;
-	}
-
-expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/core/utils/Env","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Basic.js
+// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Basic.js
 
 /**
  * Basic.js
@@ -7300,19 +7311,20 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 		function _resize(width, height, crop) {
-			var ctx, scale, mathFn, imgWidth, imgHeight;
+			var ctx, scale, mathFn, x, y, imgWidth, imgHeight;
 
 			// unify dimensions
 			mathFn = !crop ? Math.min : Math.max;
 			scale = mathFn(width/this.width, height/this.height);
-			imgWidth = Math.round(this.width * scale);
-			imgHeight = Math.round(this.height * scale);
-
+		
 			// we only downsize here
-			if (scale > 1) {
+			if (scale > 1 && !crop) { // when cropping one of dimensions may still exceed max, so process it anyway
 				this.trigger('Resize');
 				return;
 			}
+
+			imgWidth = Math.round(this.width * scale);
+			imgHeight = Math.round(this.height * scale);
 
 			// prepare canvas if necessary
 			if (!_canvas) {
@@ -7330,10 +7342,15 @@ define("moxie/runtime/html5/image/Image", [
 				_canvas.height = imgHeight;
 			}
 
-			ctx.clearRect (0, 0 , _canvas.width, _canvas.height);
-			ctx.drawImage(_img, 0, 0, imgWidth, imgHeight);
+			// if dimensions of the resulting image still larger than canvas, center it
+			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
+			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
 
+			ctx.clearRect (0, 0 , _canvas.width, _canvas.height);
+			ctx.drawImage(_img, -x, -y, imgWidth, imgHeight);
+			
 			_modified = true;
+
 			this.trigger('Resize', {
 				width: crop ? width : imgWidth,
 				height: crop ? height : imgHeight
@@ -8961,8 +8978,8 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/o.js
-
+expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/core/utils/Env","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+})(this);
 /**
  * o.js
  *
@@ -8974,7 +8991,7 @@ define("moxie/runtime/html4/image/Image", [
  */
 
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true, exposedModules:true, modules:true */
+/*global window:true */
 
 /**
 Globally exposed namespace with the most frequently used public classes and handy methods.
@@ -8983,25 +9000,24 @@ Globally exposed namespace with the most frequently used public classes and hand
 @static
 @private
 */
-define('o', [
-	"moxie/core/utils/Basic",
-	"moxie/core/utils/Dom",
-	"moxie/core/I18n"
-], function(Basic, Dom, I18n) {
-
+(function() {
 	var o = {};
 
 	// directly add some public classes
 	// (we do it dynamically here, since for custom builds we cannot know beforehand what modules were included)
-	Basic.each(exposedModules, function(id) {
-		var className = id.replace(/^[\s\S]+?\/([^\/]+)$/, '$1');
-		if (modules[id]) {
-			o[className] = modules[id];
+	(function addAlias(ns) {
+		for (name in ns) {
+			var itemType = typeof(ns[name]);
+			if (itemType === 'object') {
+				addAlias(ns[name]);
+			} else if (itemType === 'function') {
+				o[name] = ns[name];
+			}
 		}
-	});
+	})(window.moxie);
 
-	// add basic handy methods
-	Basic.extend(o, Basic, Dom, I18n);
+	// add Env manually
+	o.Env = window.moxie.core.utils.Env;
 
 	// expose globally
 	window.mOxie = o;
@@ -9009,9 +9025,4 @@ define('o', [
 		window.o = o;
 	}
 	return o;
-});
-
-	for (var i = 0; i < exposedModules.length; i++) {
-		register(exposedModules[i]);
-	}
-})(this);
+})();
