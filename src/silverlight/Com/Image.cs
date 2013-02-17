@@ -148,7 +148,7 @@ namespace Moxiecode.Com
 					scale = Math.Max((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
 				}
 
-				if (scale > 1) {
+				if (scale > 1 && !(bool)crop) {
 					Resize(this, new DataEventArgs(getInfo()));
 					return;
 				} else {
