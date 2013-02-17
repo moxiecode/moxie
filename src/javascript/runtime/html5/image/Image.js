@@ -279,7 +279,7 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 		function _resize(width, height, crop) {
-			var ctx, scale, mathFn, imgWidth, imgHeight;
+			var ctx, scale, mathFn, x, y, imgWidth, imgHeight;
 
 			// unify dimensions
 			mathFn = !crop ? Math.min : Math.max;
@@ -310,11 +310,15 @@ define("moxie/runtime/html5/image/Image", [
 				_canvas.height = imgHeight;
 			}
 
-			ctx.clearRect (0, 0 , _canvas.width, _canvas.height);
-			ctx.drawImage(_img, 0, 0, imgWidth, imgHeight);
+			// if dimensions of the resulting image still larger than canvas, center it
+			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
+			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
 
-			_modified = true;
+			ctx.clearRect (0, 0 , _canvas.width, _canvas.height);
+			ctx.drawImage(_img, -x, -y, imgWidth, imgHeight);
 			
+			_modified = true;
+
 			this.trigger('Resize', {
 				width: crop ? width : imgWidth,
 				height: crop ? height : imgHeight
