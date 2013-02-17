@@ -9,7 +9,7 @@
  */
 
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true, exposedModules:true, modules:true */
+/*global window:true */
 
 /**
 Globally exposed namespace with the most frequently used public classes and handy methods.
@@ -35,7 +35,7 @@ Globally exposed namespace with the most frequently used public classes and hand
 	})(window.moxie);
 
 	// add Env manually
-	o.Env = moxie.core.utils.Env;
+	o.Env = window.moxie.core.utils.Env;
 
 	// expose globally
 	window.mOxie = o;

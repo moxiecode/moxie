@@ -284,14 +284,15 @@ define("moxie/runtime/html5/image/Image", [
 			// unify dimensions
 			mathFn = !crop ? Math.min : Math.max;
 			scale = mathFn(width/this.width, height/this.height);
-			imgWidth = Math.round(this.width * scale);
-			imgHeight = Math.round(this.height * scale);
-
+		
 			// we only downsize here
-			if (scale > 1) {
+			if (scale > 1 && !crop) { // when cropping one of dimensions may still exceed max, so process it anyway
 				this.trigger('Resize');
 				return;
 			}
+
+			imgWidth = Math.round(this.width * scale);
+			imgHeight = Math.round(this.height * scale);
 
 			// prepare canvas if necessary
 			if (!_canvas) {
@@ -313,6 +314,7 @@ define("moxie/runtime/html5/image/Image", [
 			ctx.drawImage(_img, 0, 0, imgWidth, imgHeight);
 
 			_modified = true;
+			
 			this.trigger('Resize', {
 				width: crop ? width : imgWidth,
 				height: crop ? height : imgHeight

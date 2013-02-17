@@ -207,7 +207,7 @@ package com
 						var matrix:Matrix, imgWidth:Number, imgHeight:Number;
 						
 						scale = selector(tmpWidth / output.width, tmpHeight / output.height);
-						if (scale > 1) {
+						if (scale > 1 && !crop) {
 							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, { width: output.width, height: output.height }));
 							return;
 						}
