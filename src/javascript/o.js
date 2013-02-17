@@ -26,7 +26,7 @@ Globally exposed namespace with the most frequently used public classes and hand
 	(function addAlias(ns) {
 		for (name in ns) {
 			var itemType = typeof(ns[name]);
-			if (itemType === 'object') {
+			if (itemType === 'object' && name !== 'Exceptions') {
 				addAlias(ns[name]);
 			} else if (itemType === 'function') {
 				o[name] = ns[name];
@@ -36,6 +36,7 @@ Globally exposed namespace with the most frequently used public classes and hand
 
 	// add Env manually
 	o.Env = window.moxie.core.utils.Env;
+	o.Exceptions = window.moxie.core.Exceptions;
 
 	// expose globally
 	window.mOxie = o;
