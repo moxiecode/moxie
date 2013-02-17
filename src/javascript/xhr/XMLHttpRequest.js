@@ -958,14 +958,14 @@ define("moxie/xhr/XMLHttpRequest", [
 					headers: _headers,
 					mimeType: _mimeType,
 					encoding: _encoding,
-					responseType: props.responseType,
+					responseType: self.responseType,
 					options: _options
 				}, data);
 			}
 
 			// clarify our requirements
 			_options.required_caps = Basic.extend({}, _options.required_caps, {
-				receive_response_type: props.responseType
+				receive_response_type: self.responseType
 			});
 
 			if (_options.ruid) { // we do not need to wait if we can connect directly
