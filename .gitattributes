@@ -1,7 +1,7 @@
 * text=auto
 
 *.csproj binary merge=union
-*..csproj.user binary merge=union
+*.csproj.user binary merge=union
 .actionScriptProperties binary merge=union
 .project binary merge=union
 
