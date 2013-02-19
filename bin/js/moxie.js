@@ -3993,14 +3993,14 @@ define("moxie/xhr/XMLHttpRequest", [
 					headers: _headers,
 					mimeType: _mimeType,
 					encoding: _encoding,
-					responseType: props.responseType,
+					responseType: self.responseType,
 					options: _options
 				}, data);
 			}
 
 			// clarify our requirements
 			_options.required_caps = Basic.extend({}, _options.required_caps, {
-				receive_response_type: props.responseType
+				receive_response_type: self.responseType
 			});
 
 			if (_options.ruid) { // we do not need to wait if we can connect directly
@@ -9008,7 +9008,7 @@ Globally exposed namespace with the most frequently used public classes and hand
 	(function addAlias(ns) {
 		for (name in ns) {
 			var itemType = typeof(ns[name]);
-			if (itemType === 'object') {
+			if (itemType === 'object' && name !== 'Exceptions') {
 				addAlias(ns[name]);
 			} else if (itemType === 'function') {
 				o[name] = ns[name];
@@ -9018,6 +9018,7 @@ Globally exposed namespace with the most frequently used public classes and hand
 
 	// add Env manually
 	o.Env = window.moxie.core.utils.Env;
+	o.Exceptions = window.moxie.core.Exceptions;
 
 	// expose globally
 	window.mOxie = o;
