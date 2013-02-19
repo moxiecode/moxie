@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
 <script src="http://code.jquery.com/qunit/qunit-git.js"></script>
 
-<script type="text/javascript" src="js/source.js"></script>
+<script type="text/javascript" src="../bin/js/moxie.dev.js"></script>
 <script type="text/javascript" src="js/inject.js"></script>
 
 <script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
@@ -41,8 +41,8 @@ module("XMLHttpRequest", {
 			runtimeOptions: {
 				runtime_order: "html5,flash,silverlight,html4",
 				container: "qunit-fixture",
-				swf_url: "../js/Moxie.swf",
-				xap_url: "../js/Moxie.xap"
+				swf_url: "../bin/flash/Moxie.swf",
+				xap_url: "../bin/silverlight/Moxie.xap"
 			},
 
 			getRandItem: function(arr) {
@@ -238,88 +238,101 @@ test('setRequestHeader()', function() {
 	// 6
 	stop();
 	xhr.onload = function() {
-		try {
-			var headers = o.JSON.parse(xhr.responseText);
-		} catch(ex) {
-			equal(1, xhr.responseText, "WTF?");
-		}
+		var headers = eval('(' + xhr.responseText + ')');
+		equal(headers['x-test'], "one, two", "Request headers sent successfully");
 		start();
 	};
 	xhr.send();
 });
 
 
-test('send() - get Blob (Binary)', function() {
-	expect(7);
+o.each("html5,flash".split(','), function(runtime) {
 
-	var x = this.x
-	, xhr = new this.XHR
-	, startTime = (new Date).getTime()
-	, endTime
-	, progressRate = 0
-	, events = {
-		loadstart: 0,
-		//loadend: 0,
-		//load: 0,
-		progress: 0,
-		timeout: 0,
-		abort: 0,
-		error: 0
-	}
-	;
+	test('send() - get Blob (Binary): ' + runtime, function() {
+		// expect(0);
 
-	xhr.open('GET', 'XMLHttpRequest/image.jpg');
-	xhr.responseType = 'blob';
-
-	o.each(events, function(times, e) {
-		if (e === 'progress') {
-			var prevTime = startTime;
-			xhr.onprogress = function(e) {
-				var time = (new Date).getTime();
-				progressRate += time - prevTime;
-				prevTime = time;
-				events.progress++;
-			};
-		} else {
-			xhr['on' + e] = function() {
-				events[e]++;
-			};
+		var x = this.x
+		, xhr = new this.XHR
+		, startTime = (new Date).getTime()
+		, endTime
+		, progressRate = 0
+		, events = {
+			loadstart: 0,
+			//loadend: 0,
+			//load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
 		}
-	});
-
-	xhr.onload = function() {
-		start();
-		
-		var 
-		  blob = xhr.response
-		, runtimeInfo = o.Runtime.getInfo(blob.ruid)
-		, img = new o.Image
 		;
 
-		ok(blob instanceof o.File, "XMLHttpRequest/image.jpg successfully received as File (Blob with a name); [using "+runtimeInfo.type+"]");
-		equal(blob.name, "image.jpg", "File name (image.jpg) extracted properly");
-		equal(blob.type, "image/jpeg", "Mime type (image/jpeg) figured out");
+		xhr.open('GET', 'XMLHttpRequest/image.jpg');
+		xhr.responseType = 'blob';
+
+		o.each(events, function(times, e) {
+			if (e === 'progress') {
+				var prevTime = startTime;
+				xhr.onprogress = function(e) {
+					var time = (new Date).getTime();
+					progressRate += time - prevTime;
+					prevTime = time;
+					events.progress++;
+				};
+			} else {
+				xhr['on' + e] = function() {
+					events[e]++;
+				};
+			}
+		});
+
+		xhr.onload = function() {
+			start();
+			
+			var 
+			  blob = xhr.response
+			, type = 'html5'
+			, img = new o.Image
+			;
+
+			if (blob.ruid) {
+				var runtimeInfo = o.Runtime.getInfo(blob.ruid);
+				type = runtimeInfo.type;
+			}
+
+			ok(blob instanceof o.File, "XMLHttpRequest/image.jpg successfully received as File (Blob with a name); [using "+type+"]");
+			equal(blob.name, "image.jpg", "File name (image.jpg) extracted properly");
+			equal(blob.type, "image/jpeg", "Mime type (image/jpeg) figured out");
+
+			stop();
+			img.onload = function() {
+				start();
+				deepEqual({ width: img.width, height: img.height }, { width: 460, height: 670 }, "Image retained it's properties");
+			};
+			img.load(blob);
+		};
+
+		xhr.onloadend = function() {
+			// test events
+			equal(events.loadstart, 1, "LoadStart fired");
+			ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+			ok(true, "LoadEnd fired");
+		};
 
 		stop();
-		img.onload = function() {
+		try {
+			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
 			start();
-			deepEqual({ width: img.width, height: img.height }, { width: 460, height: 670 }, "Image retained it's properties");
-		};
-		img.load(blob);
-	};
-
-	xhr.onloadend = function() {
-		// test events
-		equal(events.loadstart, 1, "LoadStart fired");
-		ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
-		ok(true, "LoadEnd fired");
-	};
-
-	stop();
-	xhr.send(null, this.runtimeOptions);
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw x; // pass further
+			}
+			ok(true, "Runtime not supported.");
+		}
+	});
 });
 
-
+/*
 test('send() - get JSON', function() {
 	expect(2);
 
@@ -530,6 +543,8 @@ test('send() - send FormData (with Blob)', function() {
 	xhr.send(fd, this.runtimeOptions);
 });
 
+*/
+
 
 // test send ArrayBuffer
 
@@ -545,6 +560,6 @@ test('send() - send FormData (with Blob)', function() {
 	<h2 id="qunit-userAgent"></h2>
 	<ol id="qunit-tests">
 	</ol>
-    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important;"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
 </body>
 </html>
