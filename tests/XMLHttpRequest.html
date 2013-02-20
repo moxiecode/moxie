@@ -332,80 +332,102 @@ o.each("html5,flash".split(','), function(runtime) {
 	});
 });
 
-/*
-test('send() - get JSON', function() {
-	expect(2);
+// send() - send Blob / get Text
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+	test('send() - send Blob / get Text: ' + runtime, function() {
+		var 
+		  x = this.x
+		, xhr = new this.XHR
+		, fd = new o.FormData
+		, blob
+		, binStr
+		, file
+		, fileName = 'image.jpg'
+		, fileFieldName = 'image'
+		, startTime = (new Date).getTime()
+		, endTime
+		;
 
-	var 
-	  x = this.x
-	, xhr = new this.XHR
-	, startTime
-	, endTime
-	;
+		binStr = o.atob(imgB64);
 
-	// 1
-	xhr.open('get', 'XMLHttpRequest/json.php');
-	xhr.responseType = 'json';
-	stop();
+		file = new o.File(null, {
+			name: fileName,
+			type: 'image/jpeg',
+			size: binStr.length,
+			data: binStr	
+		});
 
-	xhr.onload = function(e) {
-		start();
-		endTime = (new Date).getTime();
-		ok(xhr.response, "Response received");
-		if (xhr.response) {
-			deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
+
+		xhr.open('post', 'XMLHttpRequest/formdata.php');
+		xhr.responseType = 'text';
+
+		fd.append('one', "1");
+		fd.append(fileFieldName, file);
+
+		stop();
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+
+			ok(xhr.response && xhr.response !== '', "Response received");
+			equal(xhr.response, xhr.responseText, "xhr.response and xhr.responseText have the same content");
+		};
+
+		startTime = (new Date).getTime();
+		try {
+			xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
+			start();
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw x; // pass further
+			}
+			ok(true, "Runtime not supported.");
 		}
-	};
-		
-	startTime = (new Date).getTime();
-	xhr.send(null, this.runtimeOptions);
-});
-
-test('send() - send Blob / get Text (handled by runtime)', function() {
-	var 
-	  x = this.x
-	, xhr = new this.XHR
-	, fd = new o.FormData
-	, blob
-	, binStr
-	, file
-	, fileName = 'image.jpg'
-	, fileFieldName = 'image'
-	, startTime = (new Date).getTime()
-	, endTime
-	;
-
-	binStr = o.atob(imgB64);
-
-	file = new o.File(null, {
-		name: fileName,
-		type: 'image/jpeg',
-		size: binStr.length,
-		data: binStr	
 	});
-
-
-	xhr.open('post', 'XMLHttpRequest/formdata.php');
-	xhr.responseType = 'text';
-
-	fd.append('one', "1");
-	fd.append(fileFieldName, file);
-
-	stop();
-
-	xhr.onload = function(e) {
-		start();
-		endTime = (new Date).getTime();
-
-		ok(xhr.response && xhr.response !== '', "Response received");
-		equal(xhr.response, xhr.responseText, "xhr.response and xhr.responseText have the same content");
-	};
-
-	startTime = (new Date).getTime();
-	xhr.send(fd, this.runtimeOptions);
 });
 
 
+o.each("html5,flash,html4".split(','), function(runtime) {
+	test('send() - get JSON: ' + runtime, function() {
+		// expect(2);
+
+		var 
+		  x = this.x
+		, xhr = new this.XHR
+		, startTime
+		, endTime
+		;
+
+		// 1
+		xhr.open('get', 'XMLHttpRequest/json.php');
+		xhr.responseType = 'json';
+		stop();
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+			ok(xhr.response, "Response received");
+			if (xhr.response) {
+				deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
+			}
+		};
+			
+		startTime = (new Date).getTime();
+		try {
+			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
+			start();
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw x; // pass further
+			}
+			ok(true, "Runtime not supported.");
+		}
+	});
+});
+
+
+/*
 test('send() - send FormData', function() {
 	var 
 	  x = this.x

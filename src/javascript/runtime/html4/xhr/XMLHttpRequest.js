@@ -67,7 +67,14 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 				if (_iframe.parentNode) { // #382
 					_iframe.parentNode.removeChild(_iframe);
 				}
-				_iframe = null;
+
+				// check if shim container has any other children, if - not, remove it as well
+				var shimContainer = target.getRuntime().getShimContainer();
+				if (!shimContainer.children.length) {
+					shimContainer.parentNode.removeChild(shimContainer);
+				}
+
+				shimContainer = _iframe = null;
 				cb();
 			}, 1);
 		}
@@ -116,7 +123,7 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 						// get result
 						_response = Basic.trim(el.body.innerHTML);
 
-						cleanup.call(this, function() {
+						cleanup.call(target, function() {
 							target.trigger({
 								type: 'uploadprogress',
 								loaded: blob && blob.size || 1025,
@@ -128,29 +135,28 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 				} // end createIframe
 
 				// prepare data to be sent and convert if required
-				if (data instanceof FormData) {
-					if (data.hasBlob()) {
-						blob = data.getBlob();
-						uid = blob.uid;
-						input = Dom.get(uid);
-						form = Dom.get(uid + '_form');
-						if (!form) {
-							throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
-						}
-					} else {
-						uid = Basic.guid('uid_');
-
-						form = document.createElement('form');
-						form.setAttribute('id', uid + '_form');
-						form.setAttribute('method', 'post');
-						form.setAttribute('enctype', 'multipart/form-data');
-						form.setAttribute('encoding', 'multipart/form-data');
-						form.setAttribute("target", uid + '_iframe');
-
-
-						//form.style.position = 'absolute';
+				if (data instanceof FormData && data.hasBlob()) {
+					blob = data.getBlob();
+					uid = blob.uid;
+					input = Dom.get(uid);
+					form = Dom.get(uid + '_form');
+					if (!form) {
+						throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
 					}
+				} else {
+					uid = Basic.guid('uid_');
 
+					form = document.createElement('form');
+					form.setAttribute('id', uid + '_form');
+					form.setAttribute('method', meta.method);
+					form.setAttribute('enctype', 'multipart/form-data');
+					form.setAttribute('encoding', 'multipart/form-data');
+					form.setAttribute('target', uid + '_iframe');
+
+					I.getShimContainer().appendChild(form);
+				}
+
+				if (data instanceof FormData) {
 					data.each(function(value, name) {
 						if (value instanceof Blob) {
 							if (input) {
@@ -168,14 +174,14 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 							form.appendChild(hidden);
 						}
 					});
-
-					// set destination url
-					form.setAttribute("action", meta.url);
-
-					createIframe();
-					form.submit();
-					target.trigger('loadstart');
 				}
+
+				// set destination url
+				form.setAttribute("action", meta.url);
+
+				createIframe();
+				form.submit();
+				target.trigger('loadstart');
 			},
 
 			getStatus: function() {
