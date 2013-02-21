@@ -94,7 +94,7 @@ define("moxie/runtime/html5/Runtime", [
 					drag_and_drop: (function() {
 						// this comes directly from Modernizr: http://www.modernizr.com/
 						var div = document.createElement('div');
-						return ('draggable' in div) || ('ondragstart' in div && 'ondrop' in div);
+						return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 					}()),
 					receive_response_type: function(responseType) {
 						if (responseType === 'json') {
