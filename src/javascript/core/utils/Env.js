@@ -16,6 +16,11 @@ define("moxie/core/utils/Env", [
 ], function(Basic) {
 	
 	var browser = [{
+			s1: navigator.userAgent,
+			s2: "Android",
+			id: "Android Browser", // default or Dolphin
+			sv: "Version" 
+		},{
 			s1: navigator.userAgent, // string
 			s2: "Chrome", // substring
 			id: "Chrome" // identity
@@ -73,6 +78,10 @@ define("moxie/core/utils/Env", [
 			s1: navigator.userAgent,
 			s2: "iPad",
 			id: "iOS"
+		},{
+			s1: navigator.userAgent,
+			s2: "Android",
+			id: "Android"
 		},{
 			s1: navigator.platform,
 			s2: "Linux",
