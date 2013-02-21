@@ -129,7 +129,10 @@ define('moxie/file/Blob', [
 					this.ruid = null;
 				}
 
-				blobpool[this.uid] = data || '';
+				data = data || '';
+				this.size = data.length;
+
+				blobpool[this.uid] = data;
 			},
 
 			/**
