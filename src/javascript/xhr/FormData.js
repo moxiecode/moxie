@@ -83,6 +83,16 @@ define("moxie/xhr/FormData", [
 			},
 
 			/**
+			Retrieves blob field name.
+
+			@method geBlobName
+			@return {String} Either Blob field name or null
+			*/
+			getBlobName: function() {
+				return _blobField || null;
+			},
+
+			/**
 			Loop over the fields in FormData and invoke the callback for each of them.
 
 			@method each
