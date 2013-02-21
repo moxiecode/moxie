@@ -39,7 +39,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				// Gecko 2/5/6 can't send blob in FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
 				// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
 				var blob, fr
-				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.version >= 4 Env.version < 7)
+				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.version >= 4 && Env.version < 7)
 				, isAndroidBrowser = Env.browser === 'Android Browser'
 				;
 				// here we go... ugly fix for ugly bug

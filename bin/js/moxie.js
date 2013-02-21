@@ -5296,7 +5296,8 @@ define("moxie/runtime/html5/Runtime", [
 					drag_and_drop: (function() {
 						// this comes directly from Modernizr: http://www.modernizr.com/
 						var div = document.createElement('div');
-						return ('draggable' in div) || ('ondragstart' in div && 'ondrop' in div);
+						// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
+						return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 					}()),
 					receive_response_type: function(responseType) {
 						if (responseType === 'json') {
@@ -5829,7 +5830,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				// Gecko 2/5/6 can't send blob in FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
 				// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
 				var blob, fr
-				, isGecko2_5_6 = (Env.browser === 'Mozilla' && window.FormData && window.FileReader && !window.FileReader.prototype.readAsArrayBuffer)
+				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.version >= 4 && Env.version < 7)
 				, isAndroidBrowser = Env.browser === 'Android Browser'
 				;
 				// here we go... ugly fix for ugly bug

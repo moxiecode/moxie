@@ -94,6 +94,7 @@ define("moxie/runtime/html5/Runtime", [
 					drag_and_drop: (function() {
 						// this comes directly from Modernizr: http://www.modernizr.com/
 						var div = document.createElement('div');
+						// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
 						return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 					}()),
 					receive_response_type: function(responseType) {
