@@ -22,3 +22,4 @@
 *.swc binary
 *.xap binary
 *.min.js binary
+bin/js/moxie.js binary
