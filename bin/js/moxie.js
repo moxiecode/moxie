@@ -8899,22 +8899,20 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 								_status = 200;
 								// get result
 								_response = Basic.trim(el.body.innerHTML);
+
+								target.trigger({
+									type: 'uploadprogress',
+									loaded: blob && blob.size || 1025,
+									total: blob && blob.size || 1025
+								});
 							}
 						} catch (ex) {
-							// probably a permission denied error
-							_status = 403;
-							cleanup.call(target, function() {
-								target.trigger('error');
-							});
-							return;
+							// if response is sent with error code, iframe in IE gets redirected to res://ieframe.dll/http_x.htm
+							// which obviously results to cross domain error (wtf?)
+							_status = 404;
 						}	
 					
 						cleanup.call(target, function() {
-							target.trigger({
-								type: 'uploadprogress',
-								loaded: blob && blob.size || 1025,
-								total: blob && blob.size || 1025
-							});
 							target.trigger('load');
 						});
 					}, target.uid);
