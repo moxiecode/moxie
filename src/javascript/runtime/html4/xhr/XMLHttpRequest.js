@@ -189,7 +189,11 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 				if ('json' === responseType) {
 					// strip off <pre>..</pre> tags that might be enclosing the response
 					if (Basic.typeOf(_response) === 'string') {
-						return parseJSON(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
+						try {
+							return parseJSON(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
+						} catch (ex) {
+							return null;
+						}
 					} 
 				} else if ('document' === responseType) {
 
