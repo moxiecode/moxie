@@ -9059,13 +9059,16 @@ Globally exposed namespace with the most frequently used public classes and hand
 @private
 */
 (function() {
+	"use strict";
+
 	var o = {};
 
 	// directly add some public classes
 	// (we do it dynamically here, since for custom builds we cannot know beforehand what modules were included)
 	(function addAlias(ns) {
+		var name, itemType;
 		for (name in ns) {
-			var itemType = typeof(ns[name]);
+			itemType = typeof(ns[name]);
 			if (itemType === 'object' && name !== 'Exceptions') {
 				addAlias(ns[name]);
 			} else if (itemType === 'function') {
