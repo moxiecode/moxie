@@ -76,6 +76,7 @@ module("XMLHttpRequest", {
 
 // test object creation and initial state
 
+
 test('open()', function() {
 	var url = "XMLHttpRequest/sample.html",
 		xhr = new o.XMLHttpRequest,
@@ -474,6 +475,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	});
 });
 
+
 o.each("html5,flash,silverlight".split(','), function(runtime) {
 	test('send() - send FormData (with Blob): ' + runtime, function() {
 		//expect(4);
@@ -584,9 +586,90 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 });
 
 
+
 // test send ArrayBuffer
 
 // test receive Document
+
+o.each("html5,flash,html4".split(','), function(runtime) {
+	test("wrong url: " + runtime, function() {
+		var self = this, xhr = new self.XHR, x = self.x;
+
+		var events = {
+			loadstart: 0,
+			//loadend: 0,
+			load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
+		};
+
+		o.each(events, function(times, e) {
+			xhr['on' + e] = function() {
+				events[e]++;
+			};
+		});
+
+		xhr.open('POST', '/unknown');
+		xhr.responseType = 'json'; // force bypassing default XMLHttpRequest
+
+		stop();
+		xhr.onloadend = function() {
+			start();
+
+			equal(events.error, 0, "error event not fired.");
+			ok(events.load > 0, "load event fired.");
+			equal(xhr.readyState, self.XHR.DONE, "readyState switched to DONE.");
+			equal(xhr.status, 404, "status code 404.");
+			equal(xhr.statusText, "Not Found", "statusText - Not Found.");
+			equal(xhr.response, null, "response is null.");
+		};
+
+		try {
+			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
+			start();
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw ex; // pass further
+			}
+			ok(true, "Runtime not supported.");
+		}
+	});
+});
+
+
+/*o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test("wrong protocol", function() {
+		var self = this, xhr = new self.XHR;
+
+		xhr.open('POST', 'some://unknown.html');
+		xhr.responseType = 'blob';
+
+		stop();
+		xhr.onerror = function() {
+			start();
+			ok(true, "Error detected.");
+			equal(xhr.readyState, self.XHR.DONE, "readyState switched to DONE.");
+
+		};
+
+		xhr.onloadend = function() {
+			start();
+
+		};
+
+		try {
+			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
+			start();
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw x; // pass further
+			}
+			ok(true, "Runtime not supported.");
+		}
+	});
+});*/
 
 
 // test receive ArrayBuffer

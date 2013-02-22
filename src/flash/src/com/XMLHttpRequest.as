@@ -184,7 +184,7 @@ package com
 		}
 		
 		
-		private function onOpen():void {
+		private function onOpen() : void {
 			dispatchEvent(new Event(Event.OPEN));
 		}
 		
@@ -218,7 +218,7 @@ package com
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
-		private function onComplete(e:*):void {
+		private function onComplete(e:*) : void {
 			// give upload complete event a chance to fire
 			_onCompleteTimeout = setTimeout(onUploadComplete, 500, e);
 		}
@@ -227,10 +227,16 @@ package com
 			_status = e.status;
 		}
 		
-		private function onError(e:*):void {
+		private function onIOError(e:IOErrorEvent) : void {
+			// assume that request succeeded, but url was wrong
+			_status = 404;
+			onUploadComplete(e);
+		}
+		
+		private function onError(e:*) : void {
 			removeEventListeners(e.target);
 			_readyState = XMLHttpRequest.DONE;
-			dispatchEvent(e);
+			dispatchEvent(new OErrorEvent(OErrorEvent.ERROR));
 		}
 		
 		private function removeEventListeners(target:*) : void {
@@ -241,7 +247,7 @@ package com
 			target.removeEventListener(Event.COMPLETE, onComplete);
 			target.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadComplete);
 			target.removeEventListener(HTTPStatusEvent.HTTP_STATUS, onStatus);
-			target.removeEventListener(IOErrorEvent.IO_ERROR, onError);
+			target.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
 			target.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
 		}
 		
@@ -262,7 +268,7 @@ package com
 			_conn.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadComplete);
 			_conn.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
 			_conn.addEventListener(HTTPStatusEvent.HTTP_STATUS, onStatus);
-			_conn.addEventListener(IOErrorEvent.IO_ERROR, onError);
+			_conn.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 			_conn.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
 			
 			// _conn.addEventListener(Event.OPEN, onOpen); doesn't fire, ideas?
@@ -332,7 +338,7 @@ package com
 			
 			// _conn.addEventListener(Event.OPEN, onOpen); // doesn't trigger (I remember it did), maybe adobe abandoned it?..
 			_conn.addEventListener(ProgressEvent.PROGRESS, onProgress);
-			_conn.addEventListener(IOErrorEvent.IO_ERROR, onError);
+			_conn.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 			_conn.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
 			_conn.addEventListener(HTTPStatusEvent.HTTP_STATUS, onStatus);
 			

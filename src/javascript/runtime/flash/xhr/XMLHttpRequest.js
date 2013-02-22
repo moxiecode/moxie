@@ -107,15 +107,12 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 				} else if ('json' === responseType) {
 					frs = new FileReaderSync();
-
-					/*
-					this.bind('Exception', function(e, err) {
-						// throw JSON parse error
-						console.info(err);
-					});
-					*/
-
-					return parseJSON(frs.readAsText(blob));
+					
+					try {
+						return parseJSON(frs.readAsText(blob));
+					} catch (ex) {
+						return null;
+					}
 				}
 			}
 

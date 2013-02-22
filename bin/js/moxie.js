@@ -5980,10 +5980,13 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 							file.name = filename;
 							return file;
 						} else if ('json' === responseType && !Env.can('receive_response_type', 'json')) {
-							return parseJSON(_xhr2.response);
-						} else {
-							return _xhr2.response;
+							if (_xhr2.status === 200) {
+								return parseJSON(_xhr2.response);
+							} else {
+								return null;
+							}
 						}
+						return _xhr2.response;
 					}
 				} catch(ex) {}
 			},
@@ -7814,15 +7817,12 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 				} else if ('json' === responseType) {
 					frs = new FileReaderSync();
-
-					/*
-					this.bind('Exception', function(e, err) {
-						// throw JSON parse error
-						console.info(err);
-					});
-					*/
-
-					return parseJSON(frs.readAsText(blob));
+					
+					try {
+						return parseJSON(frs.readAsText(blob));
+					} catch (ex) {
+						return null;
+					}
 				}
 			}
 
@@ -8895,21 +8895,20 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 							// try to detect some standard error pages
 							if (/^4\d{2}\s/.test(el.title) && el.getElementsByTagName('address').length) { // standard Apache style
 								_status = el.title.replace(/^(\d+).*$/, '$1');
-								target.trigger('error');
-								return;
+							} else {
+								_status = 200;
+								// get result
+								_response = Basic.trim(el.body.innerHTML);
 							}
-							_status = 200;
-
 						} catch (ex) {
 							// probably a permission denied error
-							_status = 404;
-							target.trigger('error');
+							_status = 403;
+							cleanup.call(target, function() {
+								target.trigger('error');
+							});
 							return;
-						}
-
-						// get result
-						_response = Basic.trim(el.body.innerHTML);
-
+						}	
+					
 						cleanup.call(target, function() {
 							target.trigger({
 								type: 'uploadprogress',
@@ -8978,12 +8977,13 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 			getResponse: function(responseType) {
 				if ('json' === responseType) {
 					// strip off <pre>..</pre> tags that might be enclosing the response
-					return parseJSON(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
+					if (Basic.typeOf(_response) === 'string') {
+						return parseJSON(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
+					} 
 				} else if ('document' === responseType) {
 
-				} else {
-					return _response;
 				}
+				return _response;
 			},
 
 			abort: function() {

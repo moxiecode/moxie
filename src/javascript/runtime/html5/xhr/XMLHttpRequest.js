@@ -189,10 +189,13 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 							file.name = filename;
 							return file;
 						} else if ('json' === responseType && !Env.can('receive_response_type', 'json')) {
-							return parseJSON(_xhr2.response);
-						} else {
-							return _xhr2.response;
+							if (_xhr2.status === 200) {
+								return parseJSON(_xhr2.response);
+							} else {
+								return null;
+							}
 						}
+						return _xhr2.response;
 					}
 				} catch(ex) {}
 			},
