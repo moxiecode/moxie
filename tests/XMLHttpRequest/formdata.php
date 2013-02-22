@@ -1,7 +1,5 @@
 <?php
 
-header('Content-type: text/json');
-
 $post = $_POST;
 $post['OK'] = 1;
 
