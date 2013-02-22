@@ -387,7 +387,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 	});
 });
 
-
+// send() - get JSON
 o.each("html5,flash,html4".split(','), function(runtime) {
 	test('send() - get JSON: ' + runtime, function() {
 		// expect(2);
@@ -427,145 +427,161 @@ o.each("html5,flash,html4".split(','), function(runtime) {
 });
 
 
-/*
-test('send() - send FormData', function() {
-	var 
-	  x = this.x
-	, xhr = new this.XHR
-	, fd = new o.FormData
-	, startTime
-	, endTime
-	;
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test('send() - send FormData: ' + runtime, function() {
+		var 
+		  x = this.x
+		, xhr = new this.XHR
+		, fd = new o.FormData
+		, startTime
+		, endTime
+		;
 
-	xhr.open('post', 'XMLHttpRequest/formdata.php');
-	xhr.responseType = 'json';
+		xhr.open('post', 'XMLHttpRequest/formdata.php');
+		xhr.responseType = 'json';
 
-	fd.append('one', "1");
-	fd.append('two', "2");
-	fd.append('three', "3");
+		fd.append('one', "1");
+		fd.append('two', "2");
+		fd.append('three', "3");
 
 
-	stop();
+		stop();
 
-	xhr.onload = function(e) {
-		start();
-		endTime = (new Date).getTime();
-		
-		if (xhr.response) {
-			deepEqual(xhr.response, {
-				OK: 1,
-				one: "1",
-				two: "2",
-				three: "3"
-			}, "FormData constructed out of primitive values, successfully sent (in: " + (endTime - startTime) + " ms)");
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+			
+			if (xhr.response) {
+				deepEqual(xhr.response, {
+					OK: 1,
+					one: "1",
+					two: "2",
+					three: "3"
+				}, "FormData constructed out of primitive values, successfully sent (in: " + (endTime - startTime) + " ms)");
+			}
+		};
+			
+		startTime = (new Date).getTime();
+		try {
+			xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
+			start();
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw x; // pass further
+			}
+			ok(true, "Runtime not supported.");
 		}
-	};
-		
-	startTime = (new Date).getTime();
-	xhr.send(fd, this.runtimeOptions);
-});
-
-
-test('send() - send FormData (with Blob)', function() {
-	//expect(4);
-
-	var 
-	  x = this.x
-	, xhr = new this.XHR
-	, fd = new o.FormData
-	, blob
-	, binStr
-	, file
-	, fileName = 'image.jpg'
-	, fileFieldName = 'image'
-	, startTime = (new Date).getTime()
-	, endTime
-	, progressRate = 0
-	, events = {
-		loadstart: 0,
-		//loadend: 0,
-		//load: 0,
-		progress: 0,
-		timeout: 0,
-		abort: 0,
-		error: 0
-	}
-	;
-
-	binStr = o.atob(imgB64);
-
-	file = new o.File(null, {
-		name: fileName,
-		type: 'image/jpeg',
-		size: binStr.length,
-		data: binStr	
 	});
-
-
-	xhr.open('post', 'XMLHttpRequest/formdata.php');
-	xhr.responseType = 'json';
-
-	if (xhr.upload) {
-		ok(xhr.upload, "Event target for upload events (xhr.upload) is present");
-
-		o.each(events, function(times, e) {
-			if (e === 'progress') {
-				var prevTime = startTime;
-				xhr.upload.onprogress = function(e) {
-					var time = (new Date).getTime();
-					progressRate += time - prevTime;
-					prevTime = time;
-					events.progress++;
-				};
-			} else {
-				xhr.upload['on' + e] = function() {
-					events[e]++;
-				};
-			}
-		});
-	}
-
-	fd.append('one', "1");
-	fd.append('two', "2");
-	fd.append('three', "3");
-	fd.append(fileFieldName, file);
-
-	stop();
-
-	xhr.onload = function(e) {
-		start();
-		endTime = (new Date).getTime();
-
-		ok(xhr.response, "Response received");
-		
-		if (xhr.response) {
-			deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
-
-			ok(xhr.response[fileFieldName], "File has been passed to a server with a field name of: " + fileFieldName);
-
-			if (xhr.response[fileFieldName]) {
-				equal(xhr.response[fileFieldName].error, 0, fileName + " uploaded, no errors detected during the upload");
-			}
-		}
-	};
-
-	xhr.onloadend = function() {
-		// test events
-		equal(events.loadstart, 1, "LoadStart fired");
-		if (events.progress != 0) {
-			ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
-		} else {
-			ok(!events.progress, "Progress event didn't fire");
-		}
-		
-		ok(true, "LoadEnd fired");
-	};
-		
-	startTime = (new Date).getTime();
-	xhr.send(fd, this.runtimeOptions);
 });
 
-*/
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+	test('send() - send FormData (with Blob): ' + runtime, function() {
+		//expect(4);
+
+		var 
+		  x = this.x
+		, xhr = new this.XHR
+		, fd = new o.FormData
+		, blob
+		, binStr
+		, file
+		, fileName = 'image.jpg'
+		, fileFieldName = 'image'
+		, startTime = (new Date).getTime()
+		, endTime
+		, progressRate = 0
+		, events = {
+			loadstart: 0,
+			//loadend: 0,
+			//load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
+		}
+		;
+
+		binStr = o.atob(imgB64);
+
+		file = new o.File(null, {
+			name: fileName,
+			type: 'image/jpeg',
+			size: binStr.length,
+			data: binStr	
+		});
+
+
+		xhr.open('post', 'XMLHttpRequest/formdata.php');
+		xhr.responseType = 'json';
+
+		if (xhr.upload) {
+			ok(xhr.upload, "Event target for upload events (xhr.upload) is present");
+
+			o.each(events, function(times, e) {
+				if (e === 'progress') {
+					var prevTime = startTime;
+					xhr.upload.onprogress = function(e) {
+						var time = (new Date).getTime();
+						progressRate += time - prevTime;
+						prevTime = time;
+						events.progress++;
+					};
+				} else {
+					xhr.upload['on' + e] = function() {
+						events[e]++;
+					};
+				}
+			});
+		}
+
+		fd.append('one', "1");
+		fd.append('two', "2");
+		fd.append('three', "3");
+		fd.append(fileFieldName, file);
+
+		stop();
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+
+			ok(xhr.response, "Response received");
+			
+			if (xhr.response) {
+				deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
+
+				ok(xhr.response[fileFieldName], "File has been passed to a server with a field name of: " + fileFieldName);
+
+				if (xhr.response[fileFieldName]) {
+					equal(xhr.response[fileFieldName].error, 0, fileName + " uploaded, no errors detected during the upload");
+				}
+			}
+		};
+
+		xhr.onloadend = function() {
+			// test events
+			equal(events.loadstart, 1, "LoadStart fired");
+			if (events.progress != 0) {
+				ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+			} else {
+				ok(!events.progress, "Progress event didn't fire");
+			}
+			
+			ok(true, "LoadEnd fired");
+		};
+			
+		startTime = (new Date).getTime();
+		try {
+			xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
+			start();
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw x; // pass further
+			}
+			ok(true, "Runtime not supported.");
+		}
+	});
+});
 
 
 // test send ArrayBuffer
