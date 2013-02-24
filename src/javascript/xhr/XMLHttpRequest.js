@@ -852,7 +852,7 @@ define("moxie/xhr/XMLHttpRequest", [
 						_xhr.onreadystatechange = function() {};
 
 						// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
-						if (_xhr.status === 0 || _xhr.status >= 400) {
+						if (_xhr.status === 0) {
 							_error_flag = true;
 							self.dispatchEvent('error');
 						} else {
@@ -925,12 +925,16 @@ define("moxie/xhr/XMLHttpRequest", [
 					} else if (_p('responseType') === 'document') {
 						_p('responseXML', _p('response'));
 					}
-
-					if (_upload_events_flag) {
-						self.upload.trigger(e);
-					}
 					
-					self.trigger(e);
+					if (_p('status') > 0) { // status 0 usually means that server is unreachable
+						if (_upload_events_flag) {
+							self.upload.trigger(e);
+						}
+						self.trigger(e);
+					} else {
+						_error_flag = true;
+						self.dispatchEvent('error');
+					}
 					self.trigger('loadend');
 				});
 
