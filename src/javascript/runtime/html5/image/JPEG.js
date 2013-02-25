@@ -22,7 +22,8 @@ define("moxie/runtime/html5/image/JPEG", [
 	"moxie/runtime/html5/utils/BinaryReader",
 	"moxie/runtime/html5/image/ExifParser"
 ], function(Basic, x, JPEGHeaders, BinaryReader, ExifParser) {
-	return function JPEG(binstr) {
+	
+	function JPEG(binstr) {
 		var _binstr, _br, _hm, _ep, _info, hasExif;
 
 		function _getDimensions() {
@@ -117,5 +118,7 @@ define("moxie/runtime/html5/image/JPEG", [
 			_br.init(null);
 			_hm = _ep = _br = null;
 		}
-	};
+	}
+
+	return JPEG;
 });

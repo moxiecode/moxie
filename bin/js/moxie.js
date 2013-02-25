@@ -6765,7 +6765,8 @@ define("moxie/runtime/html5/image/JPEG", [
 	"moxie/runtime/html5/utils/BinaryReader",
 	"moxie/runtime/html5/image/ExifParser"
 ], function(Basic, x, JPEGHeaders, BinaryReader, ExifParser) {
-	return function JPEG(binstr) {
+	
+	function JPEG(binstr) {
 		var _binstr, _br, _hm, _ep, _info, hasExif;
 
 		function _getDimensions() {
@@ -6860,7 +6861,9 @@ define("moxie/runtime/html5/image/JPEG", [
 			_br.init(null);
 			_hm = _ep = _br = null;
 		}
-	};
+	}
+
+	return JPEG;
 });
 
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/PNG.js
@@ -6887,7 +6890,8 @@ define("moxie/runtime/html5/image/PNG", [
 	"moxie/core/utils/Basic",
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(x, Basic, BinaryReader) {
-	return function PNG(binstr) {
+	
+	function PNG(binstr) {
 		var _binstr, _br, _hm, _ep, _info;
 
 		_binstr = binstr;
@@ -6961,7 +6965,9 @@ define("moxie/runtime/html5/image/PNG", [
 				CRC: CRC
 			};
 		}
-	};
+	}
+
+	return PNG;
 });
 
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/ImageInfo.js

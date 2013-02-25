@@ -20,7 +20,8 @@ define("moxie/runtime/html5/image/PNG", [
 	"moxie/core/utils/Basic",
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(x, Basic, BinaryReader) {
-	return function PNG(binstr) {
+	
+	function PNG(binstr) {
 		var _binstr, _br, _hm, _ep, _info;
 
 		_binstr = binstr;
@@ -94,5 +95,7 @@ define("moxie/runtime/html5/image/PNG", [
 				CRC: CRC
 			};
 		}
-	};
+	}
+
+	return PNG;
 });
