@@ -11,7 +11,7 @@
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define('moxie/core/utils/Dom', [], function() {
+define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 
 	/**
 	Get DOM Element by it's id.
@@ -128,7 +128,7 @@ define('moxie/core/utils/Dom', [], function() {
 		}
 
 		// Use getBoundingClientRect on IE 6 and IE 7 but not on IE 8 in standards mode
-		if (node && node.getBoundingClientRect && (navigator.userAgent.indexOf('MSIE') > 0 && doc.documentMode !== 8)) {
+		if (node && node.getBoundingClientRect && Env.browser === 'IE' && (!doc.documentMode || doc.documentMode < 8)) {
 			nodeRect = getIEPos(node);
 			rootRect = getIEPos(root);
 

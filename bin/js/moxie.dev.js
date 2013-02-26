@@ -121,6 +121,7 @@
 	load('../../src/javascript/core/utils/Basic.js');
 	load('../../src/javascript/core/I18n.js');
 	load('../../src/javascript/core/utils/Mime.js');
+	load('../../src/javascript/core/utils/Env.js');
 	load('../../src/javascript/core/utils/Dom.js');
 	load('../../src/javascript/core/Exceptions.js');
 	load('../../src/javascript/core/EventTarget.js');
@@ -134,7 +135,6 @@
 	load('../../src/javascript/core/utils/Url.js');
 	load('../../src/javascript/runtime/RuntimeTarget.js');
 	load('../../src/javascript/xhr/FormData.js');
-	load('../../src/javascript/core/utils/Env.js');
 	load('../../src/javascript/xhr/XMLHttpRequest.js');
 	load('../../src/javascript/file/FileReaderSync.js');
 	load('../../src/javascript/runtime/Transporter.js');
@@ -173,7 +173,7 @@
 	load('../../src/javascript/runtime/html4/xhr/XMLHttpRequest.js');
 	load('../../src/javascript/runtime/html4/image/Image.js');
 
-	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/core/utils/Env","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
 
 
 	writeScripts();

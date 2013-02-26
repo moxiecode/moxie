@@ -589,6 +589,219 @@ define("moxie/core/utils/Mime", [
 	return Mime;
 });
 
+// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Env.js
+
+/**
+ * Env.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
+/*global define:true, modules:true */
+
+define("moxie/core/utils/Env", [
+	"moxie/core/utils/Basic"
+], function(Basic) {
+	
+	var browser = [{
+			s1: navigator.userAgent,
+			s2: "Android",
+			id: "Android Browser", // default or Dolphin
+			sv: "Version" 
+		},{
+			s1: navigator.userAgent, // string
+			s2: "Chrome", // substring
+			id: "Chrome" // identity
+		},{
+			s1: navigator.vendor,
+			s2: "Apple",
+			id: "Safari",
+			sv: "Version" // version
+		},{
+			prop: window.opera && window.opera.buildNumber,
+			id: "Opera",
+			sv: "Version"
+		},{
+			s1: navigator.vendor,
+			s2: "KDE",
+			id: "Konqueror"
+		},{
+			s1: navigator.userAgent,
+			s2: "Firefox",
+			id: "Firefox"
+		},{
+			s1: navigator.vendor,
+			s2: "Camino",
+			id: "Camino"
+		},{
+			// for newer Netscapes (6+)
+			s1: navigator.userAgent,
+			s2: "Netscape",
+			id: "Netscape"
+		},{
+			s1: navigator.userAgent,
+			s2: "MSIE",
+			id: "IE",
+			sv: "MSIE"
+		},{
+			s1: navigator.userAgent,
+			s2: "Gecko",
+			id: "Mozilla",
+			sv: "rv"
+		}],
+
+		os = [{
+			s1: navigator.platform,
+			s2: "Win",
+			id: "Windows"
+		},{
+			s1: navigator.platform,
+			s2: "Mac",
+			id: "Mac"
+		},{
+			s1: navigator.userAgent,
+			s2: "iPhone",
+			id: "iOS"
+		},{
+			s1: navigator.userAgent,
+			s2: "iPad",
+			id: "iOS"
+		},{
+			s1: navigator.userAgent,
+			s2: "Android",
+			id: "Android"
+		},{
+			s1: navigator.platform,
+			s2: "Linux",
+			id: "Linux"
+		}]
+		, version;
+
+	function getStr(data) {
+		var str, prop;
+		
+		for (var i = 0; i < data.length; i++)	{
+			str = data[i].s1;
+			prop = data[i].prop;
+			version = data[i].sv || data[i].id;
+			
+			if (str) {
+				if (str.indexOf(data[i].s2) != -1) {
+					return data[i].id;
+				}
+			} else if (prop) {
+				return data[i].id;
+			}
+		}
+	}
+	
+	
+	function getVer(str) {
+		var index = str.indexOf(version);
+
+		if (index == -1) {
+			return;
+		}
+
+		return parseFloat(str.substring(index + version.length + 1));
+	}
+
+	var can = (function() {
+		var caps = {
+				define_property: (function() {
+					/* // currently too much extra code required, not exactly worth it
+					try { // as of IE8, getters/setters are supported only on DOM elements
+						var obj = {};
+						if (Object.defineProperty) {
+							Object.defineProperty(obj, 'prop', {
+								enumerable: true,
+								configurable: true
+							});
+							return true;
+						}
+					} catch(ex) {}
+
+					if (Object.prototype.__defineGetter__ && Object.prototype.__defineSetter__) {
+						return true;
+					}*/
+					return false;
+				}()),
+
+				create_canvas: (function() {
+					// On the S60 and BB Storm, getContext exists, but always returns undefined
+					// so we actually have to call getContext() to verify
+					// github.com/Modernizr/Modernizr/issues/issue/97/
+					var el = document.createElement('canvas');
+					return !!(el.getContext && el.getContext('2d'));
+				}()),
+
+				receive_response_type: function(responseType) {
+					if (!window.XMLHttpRequest) {
+						return false;
+					}
+					try {
+						var xhr = new XMLHttpRequest();
+						if (Basic.typeOf(xhr.responseType) !== 'undefined') {
+							xhr.open('get', 'infinity-8.me'); // otherwise Gecko throws an exception
+							xhr.responseType = responseType;
+							// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
+							if (xhr.responseType !== responseType) {
+								return false;
+							}
+							return true;
+						}
+					} catch (ex) {}
+					return false;
+				},
+
+				// ideas for this heavily come from Modernizr (http://modernizr.com/)
+				use_data_uri: (function() {
+					var du = new Image();
+
+					du.onload = function() {
+						caps.use_data_uri = (du.width === 1 && du.height === 1);
+					};
+					
+					setTimeout(function() {
+						du.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
+					}, 1);
+					return false;
+				}()),
+
+				use_data_uri_over32kb: function() { // IE8
+					return caps.use_data_uri && (Env.browser !== 'IE' || Env.version >= 9);
+				},
+
+				use_data_uri_of: function(bytes) {
+					return (caps.use_data_uri && bytes < 33000 || caps.use_data_uri_over32kb());
+				}
+			};
+
+		return function(cap) {
+			var args = [].slice.call(arguments);
+			args.shift(); // shift of cap
+			return Basic.typeOf(caps[cap]) === 'function' ? caps[cap].apply(this, args) : !!caps[cap];
+		};
+	}());
+
+	var Env = {
+		can: can,
+		browser: getStr(browser),
+		version: getVer(navigator.userAgent) || getVer(navigator.appVersion),
+		OS: getStr(os),
+		swf_url: "../flash/Moxie.swf",
+		xap_url: "../silverlight/Moxie.xap",
+		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
+	};
+
+	return Env;
+});
+
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Dom.js
 
 /**
@@ -604,7 +817,7 @@ define("moxie/core/utils/Mime", [
 /*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
 /*global define:true */
 
-define('moxie/core/utils/Dom', [], function() {
+define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 
 	/**
 	Get DOM Element by it's id.
@@ -721,7 +934,7 @@ define('moxie/core/utils/Dom', [], function() {
 		}
 
 		// Use getBoundingClientRect on IE 6 and IE 7 but not on IE 8 in standards mode
-		if (node && node.getBoundingClientRect && (navigator.userAgent.indexOf('MSIE') > 0 && doc.documentMode !== 8)) {
+		if (node && node.getBoundingClientRect && Env.browser === 'IE' && (!doc.documentMode || doc.documentMode < 8)) {
 			nodeRect = getIEPos(node);
 			rootRect = getIEPos(root);
 
@@ -2838,219 +3051,6 @@ define("moxie/xhr/FormData", [
 	}
 
 	return FormData;
-});
-
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Env.js
-
-/**
- * Env.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
-/*global define:true, modules:true */
-
-define("moxie/core/utils/Env", [
-	"moxie/core/utils/Basic"
-], function(Basic) {
-	
-	var browser = [{
-			s1: navigator.userAgent,
-			s2: "Android",
-			id: "Android Browser", // default or Dolphin
-			sv: "Version" 
-		},{
-			s1: navigator.userAgent, // string
-			s2: "Chrome", // substring
-			id: "Chrome" // identity
-		},{
-			s1: navigator.vendor,
-			s2: "Apple",
-			id: "Safari",
-			sv: "Version" // version
-		},{
-			prop: window.opera && window.opera.buildNumber,
-			id: "Opera",
-			sv: "Version"
-		},{
-			s1: navigator.vendor,
-			s2: "KDE",
-			id: "Konqueror"
-		},{
-			s1: navigator.userAgent,
-			s2: "Firefox",
-			id: "Firefox"
-		},{
-			s1: navigator.vendor,
-			s2: "Camino",
-			id: "Camino"
-		},{
-			// for newer Netscapes (6+)
-			s1: navigator.userAgent,
-			s2: "Netscape",
-			id: "Netscape"
-		},{
-			s1: navigator.userAgent,
-			s2: "MSIE",
-			id: "IE",
-			sv: "MSIE"
-		},{
-			s1: navigator.userAgent,
-			s2: "Gecko",
-			id: "Mozilla",
-			sv: "rv"
-		}],
-
-		os = [{
-			s1: navigator.platform,
-			s2: "Win",
-			id: "Windows"
-		},{
-			s1: navigator.platform,
-			s2: "Mac",
-			id: "Mac"
-		},{
-			s1: navigator.userAgent,
-			s2: "iPhone",
-			id: "iOS"
-		},{
-			s1: navigator.userAgent,
-			s2: "iPad",
-			id: "iOS"
-		},{
-			s1: navigator.userAgent,
-			s2: "Android",
-			id: "Android"
-		},{
-			s1: navigator.platform,
-			s2: "Linux",
-			id: "Linux"
-		}]
-		, version;
-
-	function getStr(data) {
-		var str, prop;
-		
-		for (var i = 0; i < data.length; i++)	{
-			str = data[i].s1;
-			prop = data[i].prop;
-			version = data[i].sv || data[i].id;
-			
-			if (str) {
-				if (str.indexOf(data[i].s2) != -1) {
-					return data[i].id;
-				}
-			} else if (prop) {
-				return data[i].id;
-			}
-		}
-	}
-	
-	
-	function getVer(str) {
-		var index = str.indexOf(version);
-
-		if (index == -1) {
-			return;
-		}
-
-		return parseFloat(str.substring(index + version.length + 1));
-	}
-
-	var can = (function() {
-		var caps = {
-				define_property: (function() {
-					/* // currently too much extra code required, not exactly worth it
-					try { // as of IE8, getters/setters are supported only on DOM elements
-						var obj = {};
-						if (Object.defineProperty) {
-							Object.defineProperty(obj, 'prop', {
-								enumerable: true,
-								configurable: true
-							});
-							return true;
-						}
-					} catch(ex) {}
-
-					if (Object.prototype.__defineGetter__ && Object.prototype.__defineSetter__) {
-						return true;
-					}*/
-					return false;
-				}()),
-
-				create_canvas: (function() {
-					// On the S60 and BB Storm, getContext exists, but always returns undefined
-					// so we actually have to call getContext() to verify
-					// github.com/Modernizr/Modernizr/issues/issue/97/
-					var el = document.createElement('canvas');
-					return !!(el.getContext && el.getContext('2d'));
-				}()),
-
-				receive_response_type: function(responseType) {
-					if (!window.XMLHttpRequest) {
-						return false;
-					}
-					try {
-						var xhr = new XMLHttpRequest();
-						if (Basic.typeOf(xhr.responseType) !== 'undefined') {
-							xhr.open('get', 'infinity-8.me'); // otherwise Gecko throws an exception
-							xhr.responseType = responseType;
-							// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
-							if (xhr.responseType !== responseType) {
-								return false;
-							}
-							return true;
-						}
-					} catch (ex) {}
-					return false;
-				},
-
-				// ideas for this heavily come from Modernizr (http://modernizr.com/)
-				use_data_uri: (function() {
-					var du = new Image();
-
-					du.onload = function() {
-						caps.use_data_uri = (du.width === 1 && du.height === 1);
-					};
-					
-					setTimeout(function() {
-						du.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
-					}, 1);
-					return false;
-				}()),
-
-				use_data_uri_over32kb: function() { // IE8
-					return caps.use_data_uri && (Env.browser !== 'IE' || Env.version >= 9);
-				},
-
-				use_data_uri_of: function(bytes) {
-					return (caps.use_data_uri && bytes < 33000 || caps.use_data_uri_over32kb());
-				}
-			};
-
-		return function(cap) {
-			var args = [].slice.call(arguments);
-			args.shift(); // shift of cap
-			return Basic.typeOf(caps[cap]) === 'function' ? caps[cap].apply(this, args) : !!caps[cap];
-		};
-	}());
-
-	var Env = {
-		can: can,
-		browser: getStr(browser),
-		version: getVer(navigator.userAgent) || getVer(navigator.appVersion),
-		OS: getStr(os),
-		swf_url: "../flash/Moxie.swf",
-		xap_url: "../silverlight/Moxie.xap",
-		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
-	};
-
-	return Env;
 });
 
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/xhr/XMLHttpRequest.js
@@ -9048,7 +9048,7 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/core/utils/Env","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
 })(this);
 /**
  * o.js
