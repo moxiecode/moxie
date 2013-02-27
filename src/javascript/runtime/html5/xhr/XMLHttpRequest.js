@@ -223,6 +223,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 			// append multipart parameters
 			fd.each(function(value, name) {
+				// Firefox 3.6 failed to convert multibyte characters to UTF-8 in sendAsBinary(), 
+				// so we try it here ourselves with: unescape(encodeURIComponent(value))
 				if (value instanceof Blob) {
 					// Build RFC2388 blob
 					multipart += dashdash + boundary + crlf +
