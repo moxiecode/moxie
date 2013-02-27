@@ -57,7 +57,7 @@ define('moxie/runtime/RuntimeClient', [
 				// initialize a fresh one, that fits runtime list and required features best
 				order = options.runtime_order || Runtime.order;
 
-				items = order.split(/\s?,\s?/);
+				items = order.split(/\s*,\s*/);
 
 				next_runtime:
 				for (i in items) {
