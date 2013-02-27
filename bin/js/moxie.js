@@ -2859,10 +2859,9 @@ define('moxie/core/utils/Url', [], function() {
 		}
 
 		if (!uri.port) {
-			uri.port = ports[uri.scheme];
-		} else {
-			uri.port = parseInt(uri.port, 10);
-		}
+			uri.port = document.location.port || ports[uri.scheme] || 80;
+		} 
+		uri.port = parseInt(uri.port, 10);
 
 		if (!uri.path) {
 			uri.path = "/";
