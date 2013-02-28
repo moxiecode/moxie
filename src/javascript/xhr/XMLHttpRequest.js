@@ -217,6 +217,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_upload_events_flag = false,
 			_upload_complete_flag = false,
 			_error_flag = false,
+			_same_origin_flag = false,
 
 			// times
 			_start_time,
@@ -298,6 +299,8 @@ define("moxie/xhr/XMLHttpRequest", [
 
 				// 5
 				url = Encode.utf8_encode(url);
+
+				_same_origin_flag = Url.hasSameOrigin(_url);
 				
 				// 6 - Resolve url relative to the XMLHttpRequest base URL. If the algorithm returns an error, throw a "SyntaxError".
 				urlp = Url.parseUrl(url);
@@ -306,7 +309,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				_url = Url.resolveUrl(url);
 		
 				// 9-10, 12-13
-				if ((user || password) && !_sameOrigin(urlp)) {
+				if ((user || password) && !_same_origin_flag) {
 					throw new x.DOMException(x.DOMException.INVALID_ACCESS_ERR);
 				}
 
@@ -741,18 +744,6 @@ define("moxie/xhr/XMLHttpRequest", [
 			return str.toLowerCase();
 		}
 		*/
-
-		function _sameOrigin(url) {
-			function origin(url) {
-				return [url.scheme, url.host, url.port].join('/');
-			}
-				
-			if (typeof url === 'string') {
-				url = Url.parseUrl(url);
-			}
-				
-			return origin(Url.parseUrl()) === origin(url);
-		}
 		
 		function _getNativeXHR() {
 			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
@@ -994,11 +985,6 @@ define("moxie/xhr/XMLHttpRequest", [
 				_doNativeXHR.call(this, data);
 			} else {
 				_doRuntimeXHR.call(this, data);
-			}
-			
-			// 9
-			if (!_sameOrigin(_url)) {
-				
 			}
 		}
 
