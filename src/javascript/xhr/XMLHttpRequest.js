@@ -876,7 +876,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_mode = RUNTIME;
 
 			_xhr = new RuntimeTarget();
-			
+
 			function exec(runtime) {
 				_xhr.bind('LoadStart', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING);
@@ -926,11 +926,13 @@ define("moxie/xhr/XMLHttpRequest", [
 						_error_flag = true;
 						self.dispatchEvent('error');
 					}
+					_xhr.unbindAll();
 					self.dispatchEvent('loadend');
 				});
 
 				_xhr.bind('Abort', function(e) {
 					self.dispatchEvent(e);
+					_xhr.unbindAll();
 					self.dispatchEvent('loadend');
 				});
 				
@@ -940,11 +942,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					self.dispatchEvent('readystatechange');
 					_upload_complete_flag = true;
 					self.dispatchEvent(e);
-					self.dispatchEvent('loadend');
-				});
-
-				_xhr.bind('LoadEnd', function() {
 					_xhr.unbindAll();
+					self.dispatchEvent('loadend');
 				});
 
 				runtime.exec.call(_xhr, 'XMLHttpRequest', 'send', {
