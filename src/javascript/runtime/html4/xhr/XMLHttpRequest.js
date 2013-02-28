@@ -19,12 +19,13 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 	"moxie/runtime/html4/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
+	"moxie/core/utils/Url",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Events",
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/JSON"
-], function(extensions, Basic, Dom, x, Events, Blob, FormData, parseJSON) {
+], function(extensions, Basic, Dom, Url, x, Events, Blob, FormData, parseJSON) {
 	
 	function XMLHttpRequest() {
 		var _status, _response, _iframe;
@@ -120,9 +121,16 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 								});
 							}
 						} catch (ex) {
-							// if response is sent with error code, iframe in IE gets redirected to res://ieframe.dll/http_x.htm
-							// which obviously results to cross domain error (wtf?)
-							_status = 404;
+							if (Url.hasSameOrigin(meta.url)) {
+								// if response is sent with error code, iframe in IE gets redirected to res://ieframe.dll/http_x.htm
+								// which obviously results to cross domain error (wtf?)
+								_status = 404;
+							} else {
+								cleanup.call(target, function() {
+									target.trigger('error');
+								});
+								return;
+							}
 						}	
 					
 						cleanup.call(target, function() {

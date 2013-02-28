@@ -1845,7 +1845,7 @@ define('moxie/runtime/RuntimeClient', [
 				// initialize a fresh one, that fits runtime list and required features best
 				order = options.runtime_order || Runtime.order;
 
-				items = order.split(/\s?,\s?/);
+				items = order.split(/\s*,\s*/);
 
 				next_runtime:
 				for (i in items) {
@@ -2890,9 +2890,29 @@ define('moxie/core/utils/Url', [], function() {
 		return urlp.scheme + '://' + urlp.host + (urlp.port !== ports[urlp.scheme] ? ':' + urlp.port : '') + urlp.path + (urlp.query ? urlp.query : '');
 	};
 
+	/**
+	Check if specified url has the same origin as the current document
+
+	@method hasSameOrigin
+	@param {String|Object} url
+	@return {Boolean}
+	*/
+	var hasSameOrigin = function(url) {
+		function origin(url) {
+			return [url.scheme, url.host, url.port].join('/');
+		}
+			
+		if (typeof url === 'string') {
+			url = parseUrl(url);
+		}	
+		
+		return origin(parseUrl()) === origin(url);
+	};
+
 	return {
 		parseUrl: parseUrl,
-		resolveUrl: resolveUrl
+		resolveUrl: resolveUrl,
+		hasSameOrigin: hasSameOrigin
 	};
 });
 
@@ -3273,6 +3293,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_upload_events_flag = false,
 			_upload_complete_flag = false,
 			_error_flag = false,
+			_same_origin_flag = false,
 
 			// times
 			_start_time,
@@ -3357,12 +3378,14 @@ define("moxie/xhr/XMLHttpRequest", [
 				
 				// 6 - Resolve url relative to the XMLHttpRequest base URL. If the algorithm returns an error, throw a "SyntaxError".
 				urlp = Url.parseUrl(url);
+
+				_same_origin_flag = Url.hasSameOrigin(urlp);
 																
 				// 7 - manually build up absolute url
 				_url = Url.resolveUrl(url);
 		
 				// 9-10, 12-13
-				if ((user || password) && !_sameOrigin(urlp)) {
+				if ((user || password) && !_same_origin_flag) {
 					throw new x.DOMException(x.DOMException.INVALID_ACCESS_ERR);
 				}
 
@@ -3797,18 +3820,6 @@ define("moxie/xhr/XMLHttpRequest", [
 			return str.toLowerCase();
 		}
 		*/
-
-		function _sameOrigin(url) {
-			function origin(url) {
-				return [url.scheme, url.host, url.port].join('/');
-			}
-				
-			if (typeof url === 'string') {
-				url = Url.parseUrl(url);
-			}
-				
-			return origin(Url.parseUrl()) === origin(url);
-		}
 		
 		function _getNativeXHR() {
 			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
@@ -3870,7 +3881,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				switch (_p('readyState')) {
 					
 					case XMLHttpRequest.OPENED:
-						// readystatechanged is triggered twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
+						// readystatechanged is fired twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
 						if (onRSC.loadstartDispatched === undef) {
 							self.dispatchEvent('loadstart');
 							onRSC.loadstartDispatched = true;
@@ -3946,21 +3957,21 @@ define("moxie/xhr/XMLHttpRequest", [
 				_xhr.bind('LoadStart', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING);
 
-					self.trigger(e);
+					self.dispatchEvent(e);
 					
 					if (_upload_events_flag) {
-						self.upload.trigger(e);
+						self.upload.dispatchEvent(e);
 					}
 				});
 				
 				_xhr.bind('Progress', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
-					self.trigger(e);
+					self.dispatchEvent(e);
 				});
 				
 				_xhr.bind('UploadProgress', function(e) {
 					if (_upload_events_flag) {
-						self.upload.trigger({
+						self.upload.dispatchEvent({
 							type: 'progress',
 							lengthComputable: false,
 							total: e.total,
@@ -3984,25 +3995,28 @@ define("moxie/xhr/XMLHttpRequest", [
 					
 					if (_p('status') > 0) { // status 0 usually means that server is unreachable
 						if (_upload_events_flag) {
-							self.upload.trigger(e);
+							self.upload.dispatchEvent(e);
 						}
-						self.trigger(e);
+						self.dispatchEvent(e);
 					} else {
 						_error_flag = true;
 						self.dispatchEvent('error');
 					}
-					self.trigger('loadend');
+					self.dispatchEvent('loadend');
 				});
 
 				_xhr.bind('Abort', function(e) {
-					self.trigger(e);
-					self.trigger('loadend');
+					self.dispatchEvent(e);
+					self.dispatchEvent('loadend');
 				});
 				
 				_xhr.bind('Error', function(e) {
 					_error_flag = true;
-					self.trigger(e);
-					self.trigger('loadend');
+					_p('readyState', XMLHttpRequest.DONE);
+					self.dispatchEvent('readystatechange');
+					_upload_complete_flag = true;
+					self.dispatchEvent(e);
+					self.dispatchEvent('loadend');
 				});
 
 				_xhr.bind('LoadEnd', function() {
@@ -4047,11 +4061,6 @@ define("moxie/xhr/XMLHttpRequest", [
 				_doNativeXHR.call(this, data);
 			} else {
 				_doRuntimeXHR.call(this, data);
-			}
-			
-			// 9
-			if (!_sameOrigin(_url)) {
-				
 			}
 		}
 
@@ -6017,6 +6026,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 			// append multipart parameters
 			fd.each(function(value, name) {
+				// Firefox 3.6 failed to convert multibyte characters to UTF-8 in sendAsBinary(), 
+				// so we try it here ourselves with: unescape(encodeURIComponent(value))
 				if (value instanceof Blob) {
 					// Build RFC2388 blob
 					multipart += dashdash + boundary + crlf +
@@ -8815,12 +8826,13 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 	"moxie/runtime/html4/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
+	"moxie/core/utils/Url",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Events",
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/JSON"
-], function(extensions, Basic, Dom, x, Events, Blob, FormData, parseJSON) {
+], function(extensions, Basic, Dom, Url, x, Events, Blob, FormData, parseJSON) {
 	
 	function XMLHttpRequest() {
 		var _status, _response, _iframe;
@@ -8916,9 +8928,16 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 								});
 							}
 						} catch (ex) {
-							// if response is sent with error code, iframe in IE gets redirected to res://ieframe.dll/http_x.htm
-							// which obviously results to cross domain error (wtf?)
-							_status = 404;
+							if (Url.hasSameOrigin(meta.url)) {
+								// if response is sent with error code, iframe in IE gets redirected to res://ieframe.dll/http_x.htm
+								// which obviously results to cross domain error (wtf?)
+								_status = 404;
+							} else {
+								cleanup.call(target, function() {
+									target.trigger('error');
+								});
+								return;
+							}
 						}	
 					
 						cleanup.call(target, function() {

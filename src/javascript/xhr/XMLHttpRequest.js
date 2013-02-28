@@ -299,11 +299,11 @@ define("moxie/xhr/XMLHttpRequest", [
 
 				// 5
 				url = Encode.utf8_encode(url);
-
-				_same_origin_flag = Url.hasSameOrigin(_url);
 				
 				// 6 - Resolve url relative to the XMLHttpRequest base URL. If the algorithm returns an error, throw a "SyntaxError".
 				urlp = Url.parseUrl(url);
+
+				_same_origin_flag = Url.hasSameOrigin(urlp);
 																
 				// 7 - manually build up absolute url
 				_url = Url.resolveUrl(url);

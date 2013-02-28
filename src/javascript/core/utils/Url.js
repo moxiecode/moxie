@@ -102,9 +102,10 @@ define('moxie/core/utils/Url', [], function() {
 		}
 			
 		if (typeof url === 'string') {
-			url = Url.parseUrl(url);
+			url = parseUrl(url);
 		}	
-		return origin(Url.parseUrl()) === origin(url);
+		
+		return origin(parseUrl()) === origin(url);
 	};
 
 	return {
