@@ -76,7 +76,6 @@ module("XMLHttpRequest", {
 
 // test object creation and initial state
 
-
 test('open()', function() {
 	var url = "XMLHttpRequest/sample.html",
 		xhr = new o.XMLHttpRequest,
@@ -594,7 +593,6 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 o.each("html5,flash,html4".split(','), function(runtime) {
 	test("wrong url: " + runtime, function() {
 		var self = this, xhr = new self.XHR, x = self.x;
-
 		var events = {
 			loadstart: 0,
 			//loadend: 0,
@@ -639,12 +637,29 @@ o.each("html5,flash,html4".split(','), function(runtime) {
 });
 
 
-/*o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
-	test("wrong protocol", function() {
-		var self = this, xhr = new self.XHR;
+o.each("html5,flash,html4".split(','), function(runtime) {
+	test("test cross-domain errors: " + runtime, function() {
+		var self = this, xhr = new self.XHR, x = self.x;
+		var events = {
+			loadstart: 0,
+			loadend: 0,
+			load: 0,
+			progress: 0,
+			timeout: 0,
+			//error: 0,
+			abort: 0
+			
+		};
 
-		xhr.open('POST', 'some://unknown.html');
-		xhr.responseType = 'blob';
+		o.each(events, function(times, e) {
+			xhr['on' + e] = function() {
+				events[e]++;
+			};
+		});
+
+
+		xhr.open('POST', 'http://plupload.com/index.php');
+		xhr.responseType = 'json';
 
 		stop();
 		xhr.onerror = function() {
@@ -655,8 +670,7 @@ o.each("html5,flash,html4".split(','), function(runtime) {
 		};
 
 		xhr.onloadend = function() {
-			start();
-
+			ok(true, "LoadEnd fired.");
 		};
 
 		try {
@@ -669,7 +683,7 @@ o.each("html5,flash,html4".split(','), function(runtime) {
 			ok(true, "Runtime not supported.");
 		}
 	});
-});*/
+});
 
 
 // test receive ArrayBuffer
