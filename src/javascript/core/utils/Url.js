@@ -89,8 +89,27 @@ define('moxie/core/utils/Url', [], function() {
 		return urlp.scheme + '://' + urlp.host + (urlp.port !== ports[urlp.scheme] ? ':' + urlp.port : '') + urlp.path + (urlp.query ? urlp.query : '');
 	};
 
+	/**
+	Check if specified url has the same origin as the current document
+
+	@method hasSameOrigin
+	@param {String|Object} url
+	@return {Boolean}
+	*/
+	var hasSameOrigin = function(url) {
+		function origin(url) {
+			return [url.scheme, url.host, url.port].join('/');
+		}
+			
+		if (typeof url === 'string') {
+			url = Url.parseUrl(url);
+		}	
+		return origin(Url.parseUrl()) === origin(url);
+	};
+
 	return {
 		parseUrl: parseUrl,
-		resolveUrl: resolveUrl
+		resolveUrl: resolveUrl,
+		hasSameOrigin: hasSameOrigin
 	};
 });
