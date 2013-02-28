@@ -945,6 +945,8 @@ define("moxie/xhr/XMLHttpRequest", [
 				
 				_xhr.bind('Error', function(e) {
 					_error_flag = true;
+					_p('readyState', XMLHttpRequest.DONE);
+					_upload_complete_flag = true;
 					self.trigger(e);
 					self.trigger('loadend');
 				});
