@@ -814,7 +814,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				switch (_p('readyState')) {
 					
 					case XMLHttpRequest.OPENED:
-						// readystatechanged is triggered twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
+						// readystatechanged is fired twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
 						if (onRSC.loadstartDispatched === undef) {
 							self.dispatchEvent('loadstart');
 							onRSC.loadstartDispatched = true;
@@ -890,21 +890,21 @@ define("moxie/xhr/XMLHttpRequest", [
 				_xhr.bind('LoadStart', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING);
 
-					self.trigger(e);
+					self.dispatchEvent(e);
 					
 					if (_upload_events_flag) {
-						self.upload.trigger(e);
+						self.upload.dispatchEvent(e);
 					}
 				});
 				
 				_xhr.bind('Progress', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
-					self.trigger(e);
+					self.dispatchEvent(e);
 				});
 				
 				_xhr.bind('UploadProgress', function(e) {
 					if (_upload_events_flag) {
-						self.upload.trigger({
+						self.upload.dispatchEvent({
 							type: 'progress',
 							lengthComputable: false,
 							total: e.total,
@@ -928,27 +928,28 @@ define("moxie/xhr/XMLHttpRequest", [
 					
 					if (_p('status') > 0) { // status 0 usually means that server is unreachable
 						if (_upload_events_flag) {
-							self.upload.trigger(e);
+							self.upload.dispatchEvent(e);
 						}
-						self.trigger(e);
+						self.dispatchEvent(e);
 					} else {
 						_error_flag = true;
 						self.dispatchEvent('error');
 					}
-					self.trigger('loadend');
+					self.dispatchEvent('loadend');
 				});
 
 				_xhr.bind('Abort', function(e) {
-					self.trigger(e);
-					self.trigger('loadend');
+					self.dispatchEvent(e);
+					self.dispatchEvent('loadend');
 				});
 				
 				_xhr.bind('Error', function(e) {
 					_error_flag = true;
 					_p('readyState', XMLHttpRequest.DONE);
+					self.dispatchEvent('readystatechange');
 					_upload_complete_flag = true;
-					self.trigger(e);
-					self.trigger('loadend');
+					self.dispatchEvent(e);
+					self.dispatchEvent('loadend');
 				});
 
 				_xhr.bind('LoadEnd', function() {
