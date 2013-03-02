@@ -75,7 +75,6 @@ module("XMLHttpRequest", {
 
 
 // test object creation and initial state
-/*
 test('open()', function() {
 	var url = "XMLHttpRequest/sample.html",
 		xhr = new o.XMLHttpRequest,
@@ -683,10 +682,10 @@ o.each("html5,flash,html4".split(','), function(runtime) {
 			ok(true, "Runtime not supported.");
 		}
 	});
-});*/
+});
 
 // send() - send Blob / get Text
-o.each("flash,silverlight".split(','), function(runtime) {
+o.each("html5,flash,silverlight".split(','), function(runtime) {
 	test('send() - send Blob / get Text: ' + runtime, function() {
 		var self = this
 		, x = this.x

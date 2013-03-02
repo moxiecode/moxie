@@ -185,8 +185,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 
 	/**
-	Returns the elements of the first array that are not present in second, if any. 
-	And false if there are none.
+	Returns elements of first array if they are not present in second. And false - otherwise.
 
 	@private
 	@method arrayDiff
