@@ -182,6 +182,37 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 		return -1;
 	};
+
+
+	/**
+	Returns the elements of the first array that are not present in second, if any. 
+	And false if there are none.
+
+	@private
+	@method arrayDiff
+	@param {Array} needles
+	@param {Array} array
+	@return {Array|Boolean}
+	*/
+	var arrayDiff = function(needles, array) {
+		var diff = [];
+
+		if (typeOf(needles) !== 'array') {
+			needles = [needles];
+		}
+
+		if (typeOf(array) !== 'array') {
+			array = [array];
+		}
+
+		for (var i in needles) {
+			if (inArray(needles[i], array) === -1) {
+				diff.push(needles[i]);
+			}	
+		}
+		return diff.length ? diff : false;
+	};
+
 	
 	/**
 	Forces anything into an array.
@@ -285,6 +316,7 @@ define('moxie/core/utils/Basic', [], function() {
 		isEmptyObj: isEmptyObj,
 		inSeries: inSeries,
 		inArray: inArray,
+		arrayDiff: arrayDiff,
 		toArray: toArray,
 		trim: trim,
 		parseSizeStr: parseSizeStr

@@ -75,7 +75,7 @@ module("XMLHttpRequest", {
 
 
 // test object creation and initial state
-
+/*
 test('open()', function() {
 	var url = "XMLHttpRequest/sample.html",
 		xhr = new o.XMLHttpRequest,
@@ -683,7 +683,77 @@ o.each("html5,flash,html4".split(','), function(runtime) {
 			ok(true, "Runtime not supported.");
 		}
 	});
+});*/
+
+// send() - send Blob / get Text
+o.each("flash,silverlight".split(','), function(runtime) {
+	test('send() - send Blob / get Text: ' + runtime, function() {
+		var self = this
+		, x = this.x
+		, blob
+		, binStr
+		, file
+		, fileName = 'image.jpg'
+		, fileFieldName = 'image'
+		, offset = 0
+		, chunkSize = 20 * 1024
+		;
+
+		binStr = o.atob(imgB64);
+
+		file = new o.File(null, {
+			name: fileName,
+			type: 'image/jpeg',
+			size: binStr.length,
+			data: binStr	
+		});
+
+
+		function uploadNextChunk() {
+			var blob = file.slice(offset, offset + chunkSize);
+			var xhr = new o.XMLHttpRequest();
+			var fd = new o.FormData();
+			fd.append("name", fileName);
+			fd.append("offset", offset);
+			fd.append("total", binStr.length);
+
+			xhr.open('post', 'XMLHttpRequest/session.php');
+			xhr.responseType = 'json';
+
+			xhr.onload = function() {
+				start();
+
+				if (xhr.response.OK == 1) {
+					offset += chunkSize;
+					if (offset < binStr.length) {
+						stop();
+						setTimeout(uploadNextChunk, 1);
+					} else {
+						ok(true, "Runtime supports sessions.");
+					}
+				} else {
+					ok(false, "Runtime supports sessions.");
+				}
+			};
+
+			try {
+				xhr.send(fd, o.extend({}, self.runtimeOptions, { runtime_order: runtime }));
+			} catch (ex) {
+				start();
+				if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+					throw x; // pass further
+				}
+				ok(true, "Runtime not supported.");
+				return;
+			}
+		}
+
+		stop();
+		uploadNextChunk();
+
+	});
 });
+
 
 
 // test receive ArrayBuffer

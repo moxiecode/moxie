@@ -278,6 +278,37 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 		return -1;
 	};
+
+
+	/**
+	Returns the elements of the first array that are not present in second, if any. 
+	And false if there are none.
+
+	@private
+	@method arrayDiff
+	@param {Array} needles
+	@param {Array} array
+	@return {Array|Boolean}
+	*/
+	var arrayDiff = function(needles, array) {
+		var diff = [];
+
+		if (typeOf(needles) !== 'array') {
+			needles = [needles];
+		}
+
+		if (typeOf(array) !== 'array') {
+			array = [array];
+		}
+
+		for (var i in needles) {
+			if (inArray(needles[i], array) === -1) {
+				diff.push(needles[i]);
+			}	
+		}
+		return diff.length ? diff : false;
+	};
+
 	
 	/**
 	Forces anything into an array.
@@ -381,6 +412,7 @@ define('moxie/core/utils/Basic', [], function() {
 		isEmptyObj: isEmptyObj,
 		inSeries: inSeries,
 		inArray: inArray,
+		arrayDiff: arrayDiff,
 		toArray: toArray,
 		trim: trim,
 		parseSizeStr: parseSizeStr
@@ -3952,7 +3984,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_mode = RUNTIME;
 
 			_xhr = new RuntimeTarget();
-			
+
 			function exec(runtime) {
 				_xhr.bind('LoadStart', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING);
@@ -4002,11 +4034,13 @@ define("moxie/xhr/XMLHttpRequest", [
 						_error_flag = true;
 						self.dispatchEvent('error');
 					}
+					_xhr.unbindAll();
 					self.dispatchEvent('loadend');
 				});
 
 				_xhr.bind('Abort', function(e) {
 					self.dispatchEvent(e);
+					_xhr.unbindAll();
 					self.dispatchEvent('loadend');
 				});
 				
@@ -4016,11 +4050,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					self.dispatchEvent('readystatechange');
 					_upload_complete_flag = true;
 					self.dispatchEvent(e);
-					self.dispatchEvent('loadend');
-				});
-
-				_xhr.bind('LoadEnd', function() {
 					_xhr.unbindAll();
+					self.dispatchEvent('loadend');
 				});
 
 				runtime.exec.call(_xhr, 'XMLHttpRequest', 'send', {
@@ -8186,37 +8217,44 @@ define("moxie/runtime/silverlight/Runtime", [
 
 
 		SilverlightRuntime.can = (function() {
-			var caps = Basic.extend({}, Runtime.caps, {
+			var use_clienthttp = function() {
+					var rc = this.options.required_caps || {};
+					return  rc.send_custom_headers || 
+							rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
+							rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
+				},
+
+				caps = Basic.extend({}, Runtime.caps, {
 					access_binary: true,
 					access_image_binary: true,
 					display_media: true,
 					drag_and_drop: false,
-					receive_response_type: function(responseType) {
-						return Basic.inArray(responseType, ['blob']) === -1; // not implemented yet
-					},
 					report_upload_progress: true,
 					resize_image: true,
-					return_response_headers: false,
+					return_response_headers: function() {
+						return use_clienthttp.call(this);
+					},
+					receive_response_type: function(type) {
+						return Basic.arrayDiff('blob', type); // not implemented yet
+					},
+					return_status_code: function(code) {
+						return use_clienthttp.call(this) || !Basic.arrayDiff(code, [200, 404]);
+					},
 					select_multiple: true,
 					send_binary_string: true,
-					send_custom_headers: true,
+					send_browser_cookies: function() {
+						return !use_clienthttp.call(this);
+					},
+					send_custom_headers: function() {
+						return use_clienthttp.call(this);
+					},
 					send_multipart: true,
 					slice_blob: true,
 					stream_upload: true,
 					summon_file_dialog: false,
 					upload_filesize: true,
 					use_http_method: function(methods) {
-						if (Basic.typeOf(methods) !== 'array') {
-							methods = [methods];
-						}
-
-						for (var i in methods) {
-							// flash only supports GET, POST
-							if (Basic.inArray(methods[i].toUpperCase(), ['GET', 'POST']) === -1) {
-								return false;
-							}
-						}
-						return true;
+						return use_clienthttp.call(this) || !Basic.arrayDiff(methods, ['GET', 'POST']);
 					}
 				});
 
@@ -8381,8 +8419,18 @@ define("moxie/runtime/silverlight/file/FileDrop", [
 */
 define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/xhr/XMLHttpRequest"
-], function(extensions, XMLHttpRequest) {
+], function(extensions, Basic, FlashXMLHttpRequest) {
+
+	var XMLHttpRequest = Basic.extend({}, FlashXMLHttpRequest, {
+	    send: function(meta, data) {
+    		var I = this.getRuntime();
+    		meta.transport = I.can('send_browser_cookies') ? 'browser' : 'client';
+    		FlashXMLHttpRequest.send.call(this, meta, data);
+    	}
+	});
+
 	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });
 

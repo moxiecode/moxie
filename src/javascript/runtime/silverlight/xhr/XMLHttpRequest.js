@@ -17,7 +17,17 @@
 */
 define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/xhr/XMLHttpRequest"
-], function(extensions, XMLHttpRequest) {
+], function(extensions, Basic, FlashXMLHttpRequest) {
+
+	var XMLHttpRequest = Basic.extend({}, FlashXMLHttpRequest, {
+	    send: function(meta, data) {
+    		var I = this.getRuntime();
+    		meta.transport = I.can('send_browser_cookies') ? 'browser' : 'client';
+    		FlashXMLHttpRequest.send.call(this, meta, data);
+    	}
+	});
+
 	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });

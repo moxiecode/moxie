@@ -141,37 +141,44 @@ define("moxie/runtime/silverlight/Runtime", [
 
 
 		SilverlightRuntime.can = (function() {
-			var caps = Basic.extend({}, Runtime.caps, {
+			var use_clienthttp = function() {
+					var rc = this.options.required_caps || {};
+					return  rc.send_custom_headers || 
+							rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
+							rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
+				},
+
+				caps = Basic.extend({}, Runtime.caps, {
 					access_binary: true,
 					access_image_binary: true,
 					display_media: true,
 					drag_and_drop: false,
-					receive_response_type: function(responseType) {
-						return Basic.inArray(responseType, ['blob']) === -1; // not implemented yet
-					},
 					report_upload_progress: true,
 					resize_image: true,
-					return_response_headers: false,
+					return_response_headers: function() {
+						return use_clienthttp.call(this);
+					},
+					receive_response_type: function(type) {
+						return Basic.arrayDiff('blob', type); // not implemented yet
+					},
+					return_status_code: function(code) {
+						return use_clienthttp.call(this) || !Basic.arrayDiff(code, [200, 404]);
+					},
 					select_multiple: true,
 					send_binary_string: true,
-					send_custom_headers: true,
+					send_browser_cookies: function() {
+						return !use_clienthttp.call(this);
+					},
+					send_custom_headers: function() {
+						return use_clienthttp.call(this);
+					},
 					send_multipart: true,
 					slice_blob: true,
 					stream_upload: true,
 					summon_file_dialog: false,
 					upload_filesize: true,
 					use_http_method: function(methods) {
-						if (Basic.typeOf(methods) !== 'array') {
-							methods = [methods];
-						}
-
-						for (var i in methods) {
-							// flash only supports GET, POST
-							if (Basic.inArray(methods[i].toUpperCase(), ['GET', 'POST']) === -1) {
-								return false;
-							}
-						}
-						return true;
+						return use_clienthttp.call(this) || !Basic.arrayDiff(methods, ['GET', 'POST']);
 					}
 				});
 
