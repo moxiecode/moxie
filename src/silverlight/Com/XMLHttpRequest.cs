@@ -65,7 +65,9 @@ namespace Moxiecode.Com
 
 		private HttpWebRequest _req;
 
-		private SynchronizationContext _syncContext; 
+		private SynchronizationContext _syncContext;
+
+		private static CookieContainer _cookieContainer = new CookieContainer();
 
 
 		public XMLHttpRequest()
@@ -157,10 +159,16 @@ namespace Moxiecode.Com
 				return;
 			}
 
-			_req = (HttpWebRequest)WebRequestCreator.ClientHttp.Create(new Uri(_options["url"]));
+			if (_options["transport"] == "browser") {
+				_req = (HttpWebRequest)WebRequestCreator.BrowserHttp.Create(new Uri(_options["url"]));
+			} else {
+				_req = (HttpWebRequest)WebRequestCreator.ClientHttp.Create(new Uri(_options["url"]));
+				_req.CookieContainer = _cookieContainer;
+				// disable buffering (this only works for ClientHttp version)
+				//_req.AllowWriteStreamBuffering = false; // causes silent crash on Mac OS X 10.8.x
+			}
+
 			_req.Method = _options["method"];
-			// disable buffering (this only works for ClientHttp version)
-			//_req.AllowWriteStreamBuffering = false; // causes silent crash on Mac OS X 10.8.x
 
 			// add custom headers
 			if (_headers.Count != 0)
@@ -400,7 +408,8 @@ namespace Moxiecode.Com
 				{ "method", "POST" },
 				{ "mimeType", "" },
 				{ "encoding", "UTF-8" },
-				{ "responseType", "" }
+				{ "responseType", "" },
+				{ "transport", "browser" }
 			};
 
 			Dictionary<string, string> options = new Dictionary<string, string>();
