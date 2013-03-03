@@ -42,6 +42,8 @@ namespace Moxiecode.Com
 
 		
 		private Dictionary<string, string> _options;
+
+		private Uri _url;
 		
 		private bool _multipart = false;
 		private byte[] _multipartHeader;
@@ -135,7 +137,7 @@ namespace Moxiecode.Com
 
 			BlobBuilder bb = new BlobBuilder();
 			bb.append(_response);
-			File blob = bb.getFile();
+			File blob = bb.getFile("", _url.LocalPath);
 			Moxie.blobPile.Add(blob.id, blob);
 			return blob.ToObject();
 		}
@@ -153,11 +155,12 @@ namespace Moxiecode.Com
 		public void send(ScriptObject args)
 		{
 			_options = _extractOptions(args);
-
+			_url = new Uri(_options["url"]);
+	
 			if (_options["transport"] == "browser") {
-				_req = (HttpWebRequest)WebRequestCreator.BrowserHttp.Create(new Uri(_options["url"]));
+				_req = (HttpWebRequest)WebRequestCreator.BrowserHttp.Create(_url);
 			} else {
-				_req = (HttpWebRequest)WebRequestCreator.ClientHttp.Create(new Uri(_options["url"]));
+				_req = (HttpWebRequest)WebRequestCreator.ClientHttp.Create(_url);
 				_req.CookieContainer = _cookieContainer;
 				// disable buffering (this only works for ClientHttp version)
 				//_req.AllowWriteStreamBuffering = false; // causes silent crash on Mac OS X 10.8.x
@@ -354,7 +357,18 @@ namespace Moxiecode.Com
 					using (Stream responseStream = response.GetResponseStream())
 					{
 						_response = new MemoryStream();
-						responseStream.CopyTo(_response);
+						
+						int bytesRead = 0;
+						long bytesLoaded = 0;
+						byte[] buffer = new byte[1024 * 50];
+
+						while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) != 0)
+						{
+							_response.Write(buffer, 0, bytesRead);
+							bytesLoaded += bytesRead;
+							_fireProgress(bytesLoaded, response.ContentLength);
+						}
+						
 						_response.Position = 0;
 					}
 				}
@@ -424,6 +438,14 @@ namespace Moxiecode.Com
 			options["method"] = options["method"].ToUpper();
 
 			return options;
+		}
+
+
+		private void _fireProgress(long loaded, long total)
+		{
+			_syncContext.Post(delegate {
+				Progress(this, new ProgressEventArgs(loaded, total));
+			}, this);
 		}
 
 
