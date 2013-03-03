@@ -494,9 +494,9 @@ define("moxie/image/Image", [
 			}
 
 			Basic.extend(this, { // info object might be non-enumerable (as returned from SilverLight for example)
-				size: info.size,
-				width: info.width,
-				height: info.height,
+				size: parseInt(info.size, 10),
+				width: parseInt(info.width, 10),
+				height: parseInt(info.height, 10),
 				type: info.type
 			});
 
