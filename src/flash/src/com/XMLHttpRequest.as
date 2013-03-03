@@ -112,9 +112,6 @@ package com
 				
 		public function send(meta:Object, blob:* = null) : void
 		{	
-			// whether to force the flow into URLStream mode
-			var urlstream:Boolean = (meta.options.hasOwnProperty('url_stream') && meta.options.url_stream);
-			
 			if (_blob) {
 				blob = _blob;
 			}
@@ -130,7 +127,7 @@ package com
 			}
 						
 			if (blob && _options.method == 'POST') {
-				if (!urlstream && _multipart && blob.isFileRef() && Utils.isEmptyObj(_options.headers)) {
+				if (_options.transport !== 'client' && _multipart && blob.isFileRef() && Utils.isEmptyObj(_options.headers)) {
 					_uploadFileRef(blob);
 				} else {
 					_preloadBlob(blob, _doURLStreamRequest);
