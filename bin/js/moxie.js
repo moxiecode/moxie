@@ -5163,9 +5163,9 @@ define("moxie/image/Image", [
 			}
 
 			Basic.extend(this, { // info object might be non-enumerable (as returned from SilverLight for example)
-				size: info.size,
-				width: info.width,
-				height: info.height,
+				size: parseInt(info.size, 10),
+				width: parseInt(info.width, 10),
+				height: parseInt(info.height, 10),
 				type: info.type
 			});
 
@@ -8230,9 +8230,7 @@ define("moxie/runtime/silverlight/Runtime", [
 					return_response_headers: function() {
 						return use_clienthttp.call(this);
 					},
-					return_response_type: function(type) {
-						return Basic.arrayDiff('blob', type); // not implemented yet
-					},
+					return_response_type: true,
 					return_status_code: function(code) {
 						return use_clienthttp.call(this) || !Basic.arrayDiff(code, [200, 404]);
 					},

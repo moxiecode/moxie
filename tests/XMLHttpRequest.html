@@ -244,8 +244,8 @@ test('setRequestHeader()', function() {
 	xhr.send();
 });
 
-
-o.each("html5,flash".split(','), function(runtime) {
+// send() - get Blob (Binary)
+o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 	test('send() - get Blob (Binary): ' + runtime, function() {
 		// expect(0);
@@ -387,7 +387,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 });
 
 // send() - get JSON
-o.each("html5,flash,html4".split(','), function(runtime) {
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	test('send() - get JSON: ' + runtime, function() {
 		// expect(2);
 
