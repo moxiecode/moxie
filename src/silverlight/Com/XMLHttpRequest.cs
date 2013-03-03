@@ -154,11 +154,6 @@ namespace Moxiecode.Com
 		{
 			_options = _extractOptions(args);
 
-			if (_options["method"] != "POST" && _options["method"] != "GET") {
-				// trigger error
-				return;
-			}
-
 			if (_options["transport"] == "browser") {
 				_req = (HttpWebRequest)WebRequestCreator.BrowserHttp.Create(new Uri(_options["url"]));
 			} else {
@@ -251,15 +246,16 @@ namespace Moxiecode.Com
 				_req.ContentLength += _multipartHeader.Length + _multipartFooter.Length;
 				_req.ContentType = "multipart/form-data; boundary=" + boundary;
 			}
-			else
-			{
-				_req.ContentType = "application/octet-stream";
-			}
 
 			LoadStart(this, null);
 
 			_syncContext = SynchronizationContext.Current;
-			IAsyncResult asyncResult = _req.BeginGetRequestStream(new AsyncCallback(_beginRequestStreamCallback), _req);
+
+			if (_req.ContentLength == 0) {
+				_req.BeginGetResponse(new AsyncCallback(_responseCallback), _req);
+			} else {
+				_req.BeginGetRequestStream(new AsyncCallback(_beginRequestStreamCallback), _req);
+			}
 		}
 
 
