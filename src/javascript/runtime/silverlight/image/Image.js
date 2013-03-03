@@ -17,7 +17,8 @@
 */
 define("moxie/runtime/silverlight/image/Image", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/image/Image"
-], function(extensions, Image) {
-	return (extensions.Image = Image);
+], function(extensions, Basic, Image) {
+	return (extensions.Image = Basic.extend({}, Image));
 });

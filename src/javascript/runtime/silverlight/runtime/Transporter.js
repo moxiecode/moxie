@@ -17,7 +17,8 @@
 */
 define("moxie/runtime/silverlight/runtime/Transporter", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/runtime/Transporter"
-], function(extensions, Transporter) {
-	return (extensions.Transporter = Transporter);
+], function(extensions, Basic, Transporter) {
+	return (extensions.Transporter = Basic.extend({}, Transporter));
 });

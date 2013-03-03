@@ -17,7 +17,8 @@
 */
 define("moxie/runtime/silverlight/file/FileReader", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/file/FileReader"
-], function(extensions, FileReader) {
-	return (extensions.FileReader = FileReader);
+], function(extensions, Basic, FileReader) {
+	return (extensions.FileReader = Basic.extend({}, FileReader));
 });

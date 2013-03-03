@@ -17,7 +17,8 @@
 */
 define("moxie/runtime/silverlight/file/FileReaderSync", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/file/FileReaderSync"
-], function(extensions, FileReaderSync) {
-	return (extensions.FileReaderSync = FileReaderSync);
+], function(extensions, Basic, FileReaderSync) {
+	return (extensions.FileReaderSync = Basic.extend({}, FileReaderSync));
 });

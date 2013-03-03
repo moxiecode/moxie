@@ -17,7 +17,8 @@
 */
 define("moxie/runtime/silverlight/file/Blob", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/file/Blob"
-], function(extensions, Blob) {
-	return (extensions.Blob = Blob);
+], function(extensions, Basic, Blob) {
+	return (extensions.Blob = Basic.extend({}, Blob));
 });

@@ -7608,8 +7608,8 @@ define("moxie/runtime/flash/Runtime", [
 
 		FlashRuntime.can = (function() {
 			var use_urlstream = function() {
-					var required_caps = this.options.required_caps;
-					return !Basic.isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
+					var rc = this.options.required_features || {};
+					return rc.access_binary || rc.send_custom_headers || rc.send_browser_cookies;
 				},
 
 				caps = Basic.extend({}, Runtime.caps, {
@@ -7782,10 +7782,12 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 ], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter, parseJSON) {
 	
 	var XMLHttpRequest = {
+
 		send: function(meta, data) {
 			var target = this, self = target.getRuntime();
 
 			function send() {
+				meta.transport = self.can('send_browser_cookies') ? 'browser' : 'client';
 				self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
 			}
 
@@ -8287,9 +8289,10 @@ define("moxie/runtime/silverlight/Runtime", [
 */
 define("moxie/runtime/silverlight/file/Blob", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/file/Blob"
-], function(extensions, Blob) {
-	return (extensions.Blob = Blob);
+], function(extensions, Basic, Blob) {
+	return (extensions.Blob = Basic.extend({}, Blob));
 });
 
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/file/FileInput.js
@@ -8415,17 +8418,8 @@ define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
 	"moxie/runtime/silverlight/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/xhr/XMLHttpRequest"
-], function(extensions, Basic, FlashXMLHttpRequest) {
-
-	var XMLHttpRequest = Basic.extend({}, FlashXMLHttpRequest, {
-	    send: function(meta, data) {
-    		var I = this.getRuntime();
-    		meta.transport = I.can('send_browser_cookies') ? 'browser' : 'client';
-    		FlashXMLHttpRequest.send.call(this, meta, data);
-    	}
-	});
-
-	return (extensions.XMLHttpRequest = XMLHttpRequest);
+], function(extensions, Basic, XMLHttpRequest) {
+	return (extensions.XMLHttpRequest = Basic.extend({}, XMLHttpRequest));
 });
 
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/file/FileReaderSync.js
@@ -8449,9 +8443,10 @@ define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
 */
 define("moxie/runtime/silverlight/file/FileReaderSync", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/file/FileReaderSync"
-], function(extensions, FileReaderSync) {
-	return (extensions.FileReaderSync = FileReaderSync);
+], function(extensions, Basic, FileReaderSync) {
+	return (extensions.FileReaderSync = Basic.extend({}, FileReaderSync));
 });
 
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/runtime/Transporter.js
@@ -8475,9 +8470,10 @@ define("moxie/runtime/silverlight/file/FileReaderSync", [
 */
 define("moxie/runtime/silverlight/runtime/Transporter", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/runtime/Transporter"
-], function(extensions, Transporter) {
-	return (extensions.Transporter = Transporter);
+], function(extensions, Basic, Transporter) {
+	return (extensions.Transporter = Basic.extend({}, Transporter));
 });
 
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/image/Image.js
@@ -8501,9 +8497,10 @@ define("moxie/runtime/silverlight/runtime/Transporter", [
 */
 define("moxie/runtime/silverlight/image/Image", [
 	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/image/Image"
-], function(extensions, Image) {
-	return (extensions.Image = Image);
+], function(extensions, Basic, Image) {
+	return (extensions.Image = Basic.extend({}, Image));
 });
 
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html4/Runtime.js

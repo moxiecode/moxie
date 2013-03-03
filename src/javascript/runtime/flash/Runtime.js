@@ -127,8 +127,8 @@ define("moxie/runtime/flash/Runtime", [
 
 		FlashRuntime.can = (function() {
 			var use_urlstream = function() {
-					var required_caps = this.options.required_caps;
-					return !Basic.isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
+					var rc = this.options.required_features || {};
+					return rc.access_binary || rc.send_custom_headers || rc.send_browser_cookies;
 				},
 
 				caps = Basic.extend({}, Runtime.caps, {

@@ -27,10 +27,12 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 ], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter, parseJSON) {
 	
 	var XMLHttpRequest = {
+
 		send: function(meta, data) {
 			var target = this, self = target.getRuntime();
 
 			function send() {
+				meta.transport = self.can('send_browser_cookies') ? 'browser' : 'client';
 				self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
 			}
 
