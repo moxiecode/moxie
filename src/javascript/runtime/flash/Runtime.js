@@ -136,7 +136,7 @@ define("moxie/runtime/flash/Runtime", [
 					access_image_binary: true,
 					display_media: true,
 					drag_and_drop: false,
-					receive_response_type: true,
+					return_response_type: true,
 					report_upload_progress: true,
 					resize_image: true,
 					return_response_headers: false,

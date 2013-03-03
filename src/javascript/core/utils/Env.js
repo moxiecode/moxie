@@ -147,7 +147,7 @@ define("moxie/core/utils/Env", [
 					return !!(el.getContext && el.getContext('2d'));
 				}()),
 
-				receive_response_type: function(responseType) {
+				return_response_type: function(responseType) {
 					if (!window.XMLHttpRequest) {
 						return false;
 					}

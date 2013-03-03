@@ -144,8 +144,8 @@ define("moxie/runtime/silverlight/Runtime", [
 			var use_clienthttp = function() {
 					var rc = this.options.required_caps || {};
 					return  rc.send_custom_headers || 
-							rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
-							rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
+						rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
+						rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
 				},
 
 				caps = Basic.extend({}, Runtime.caps, {
@@ -158,7 +158,7 @@ define("moxie/runtime/silverlight/Runtime", [
 					return_response_headers: function() {
 						return use_clienthttp.call(this);
 					},
-					receive_response_type: function(type) {
+					return_response_type: function(type) {
 						return Basic.arrayDiff('blob', type); // not implemented yet
 					},
 					return_status_code: function(code) {

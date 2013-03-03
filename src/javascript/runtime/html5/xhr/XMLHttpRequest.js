@@ -80,7 +80,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 				// request response type
 				if ("" !== meta.responseType) {
-					if ('json' === meta.responseType && !Env.can('receive_response_type', 'json')) { // we can fake this one
+					if ('json' === meta.responseType && !Env.can('return_response_type', 'json')) { // we can fake this one
 						_xhr2.responseType = 'text';
 					} else {
 						_xhr2.responseType = meta.responseType;
@@ -188,7 +188,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 							var file = new File(I.uid, _xhr2.response);
 							file.name = filename;
 							return file;
-						} else if ('json' === responseType && !Env.can('receive_response_type', 'json')) {
+						} else if ('json' === responseType && !Env.can('return_response_type', 'json')) {
 							if (_xhr2.status === 200) {
 								return parseJSON(_xhr2.response);
 							} else {

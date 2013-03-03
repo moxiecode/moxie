@@ -271,7 +271,7 @@ define('moxie/runtime/Runtime', [
 		access_binary: true,
 		display_media: false,
 		drag_and_drop: false,
-		receive_response_type: false,
+		return_response_type: false,
 		resize_image: false,
 		report_upload_progress: false,
 		return_response_headers: true,

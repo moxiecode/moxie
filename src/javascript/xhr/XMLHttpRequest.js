@@ -962,7 +962,7 @@ define("moxie/xhr/XMLHttpRequest", [
 
 			// clarify our requirements
 			_options.required_caps = Basic.extend({}, _options.required_caps, {
-				receive_response_type: self.responseType
+				return_response_type: self.responseType
 			});
 
 			if (_options.ruid) { // we do not need to wait if we can connect directly

@@ -81,7 +81,7 @@ define("moxie/runtime/html4/Runtime", [
 					access_image_binary: false,
 					display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
 					drag_and_drop: false,
-					receive_response_type: function(responseType) {
+					return_response_type: function(responseType) {
 						return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
 					},
 					resize_image: function() {

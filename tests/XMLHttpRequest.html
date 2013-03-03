@@ -684,9 +684,9 @@ o.each("html5,flash,html4".split(','), function(runtime) {
 	});
 });
 
-// send() - send Blob / get Text
+// send browser cookies (retain session)
 o.each("html5,flash,silverlight".split(','), function(runtime) {
-	test('send() - send Blob / get Text: ' + runtime, function() {
+	test('send browser cookies (retain session): ' + runtime, function() {
 		var self = this
 		, x = this.x
 		, blob
