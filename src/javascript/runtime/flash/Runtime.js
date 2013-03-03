@@ -126,7 +126,7 @@ define("moxie/runtime/flash/Runtime", [
 		}
 
 		FlashRuntime.can = (function() {
-			var has_to_urlstream = function() {
+			var use_urlstream = function() {
 					var required_caps = this.options.required_caps;
 					return !Basic.isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
 				},
@@ -136,41 +136,34 @@ define("moxie/runtime/flash/Runtime", [
 					access_image_binary: true,
 					display_media: true,
 					drag_and_drop: false,
-					return_response_type: true,
 					report_upload_progress: true,
 					resize_image: true,
 					return_response_headers: false,
+					return_response_type: true,
+					return_status_code: true,
 					select_multiple: true,
 					send_binary_string: true,
-					send_custom_headers: true,
+					send_browser_cookies: function() {
+						return use_urlstream.call(this);
+					},
+					send_custom_headers: function() {
+						return use_urlstream.call(this);
+					},
 					send_multipart: true,
 					slice_blob: true,
 					stream_upload: function(value) {
-						return !!value && !has_to_urlstream.call(this);
+						return !!value && !use_urlstream.call(this);
 					},
 					summon_file_dialog: false,
 					upload_filesize: function(size) {
-						var maxSize = has_to_urlstream.call(this) ? 2097152 : -1; // 200mb || unlimited
-
+						var maxSize = use_urlstream.call(this) ? 2097152 : -1; // 200mb || unlimited
 						if (!~maxSize || Basic.parseSizeStr(size) <= maxSize) {
 							return true;
 						}
-
 						return false;
 					},
 					use_http_method: function(methods) {
-						if (Basic.typeOf(methods) !== 'array') {
-							methods = [methods];
-						}
-
-						for (var i in methods) {
-							// flash only supports GET, POST
-							if (!~Basic.inArray(methods[i].toUpperCase(), ['GET', 'POST'])) {
-								return false;
-							}
-						}
-
-						return true;
+						return !Basic.arrayDiff(methods, ['GET', 'POST']);
 					}
 				});
 

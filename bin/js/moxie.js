@@ -281,8 +281,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 
 	/**
-	Returns the elements of the first array that are not present in second, if any. 
-	And false if there are none.
+	Returns elements of first array if they are not present in second. And false - otherwise.
 
 	@private
 	@method arrayDiff
@@ -772,7 +771,7 @@ define("moxie/core/utils/Env", [
 					return !!(el.getContext && el.getContext('2d'));
 				}()),
 
-				receive_response_type: function(responseType) {
+				return_response_type: function(responseType) {
 					if (!window.XMLHttpRequest) {
 						return false;
 					}
@@ -1751,13 +1750,15 @@ define('moxie/runtime/Runtime', [
 		access_binary: true,
 		display_media: false,
 		drag_and_drop: false,
-		receive_response_type: false,
 		resize_image: false,
 		report_upload_progress: false,
 		return_response_headers: true,
+		return_response_type: false,
+		return_status_code: true,
 		send_custom_headers: false,
 		select_multiple: true,
 		send_binary_string: false,
+		send_browser_cookies: true,
 		send_multipart: true,
 		slice_blob: false,
 		stream_upload: false,
@@ -4070,7 +4071,7 @@ define("moxie/xhr/XMLHttpRequest", [
 
 			// clarify our requirements
 			_options.required_caps = Basic.extend({}, _options.required_caps, {
-				receive_response_type: self.responseType
+				return_response_type: self.responseType
 			});
 
 			if (_options.ruid) { // we do not need to wait if we can connect directly
@@ -5342,11 +5343,11 @@ define("moxie/runtime/html5/Runtime", [
 						// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
 						return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 					}()),
-					receive_response_type: function(responseType) {
+					return_response_type: function(responseType) {
 						if (responseType === 'json') {
 							return true; // we can fake this one even if it's not supported
 						} else {
-							return Env.can('receive_response_type', responseType);
+							return Env.can('return_response_type', responseType);
 						}
 					},
 					report_upload_progress: function() {
@@ -5914,7 +5915,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 				// request response type
 				if ("" !== meta.responseType) {
-					if ('json' === meta.responseType && !Env.can('receive_response_type', 'json')) { // we can fake this one
+					if ('json' === meta.responseType && !Env.can('return_response_type', 'json')) { // we can fake this one
 						_xhr2.responseType = 'text';
 					} else {
 						_xhr2.responseType = meta.responseType;
@@ -6022,7 +6023,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 							var file = new File(I.uid, _xhr2.response);
 							file.name = filename;
 							return file;
-						} else if ('json' === responseType && !Env.can('receive_response_type', 'json')) {
+						} else if ('json' === responseType && !Env.can('return_response_type', 'json')) {
 							if (_xhr2.status === 200) {
 								return parseJSON(_xhr2.response);
 							} else {
@@ -7606,7 +7607,7 @@ define("moxie/runtime/flash/Runtime", [
 		}
 
 		FlashRuntime.can = (function() {
-			var has_to_urlstream = function() {
+			var use_urlstream = function() {
 					var required_caps = this.options.required_caps;
 					return !Basic.isEmptyObj(required_caps) && (required_caps.access_binary || required_caps.send_custom_headers);
 				},
@@ -7616,41 +7617,34 @@ define("moxie/runtime/flash/Runtime", [
 					access_image_binary: true,
 					display_media: true,
 					drag_and_drop: false,
-					receive_response_type: true,
 					report_upload_progress: true,
 					resize_image: true,
 					return_response_headers: false,
+					return_response_type: true,
+					return_status_code: true,
 					select_multiple: true,
 					send_binary_string: true,
-					send_custom_headers: true,
+					send_browser_cookies: function() {
+						return use_urlstream.call(this);
+					},
+					send_custom_headers: function() {
+						return use_urlstream.call(this);
+					},
 					send_multipart: true,
 					slice_blob: true,
 					stream_upload: function(value) {
-						return !!value && !has_to_urlstream.call(this);
+						return !!value && !use_urlstream.call(this);
 					},
 					summon_file_dialog: false,
 					upload_filesize: function(size) {
-						var maxSize = has_to_urlstream.call(this) ? 2097152 : -1; // 200mb || unlimited
-
+						var maxSize = use_urlstream.call(this) ? 2097152 : -1; // 200mb || unlimited
 						if (!~maxSize || Basic.parseSizeStr(size) <= maxSize) {
 							return true;
 						}
-
 						return false;
 					},
 					use_http_method: function(methods) {
-						if (Basic.typeOf(methods) !== 'array') {
-							methods = [methods];
-						}
-
-						for (var i in methods) {
-							// flash only supports GET, POST
-							if (!~Basic.inArray(methods[i].toUpperCase(), ['GET', 'POST'])) {
-								return false;
-							}
-						}
-
-						return true;
+						return !Basic.arrayDiff(methods, ['GET', 'POST']);
 					}
 				});
 
@@ -8220,8 +8214,8 @@ define("moxie/runtime/silverlight/Runtime", [
 			var use_clienthttp = function() {
 					var rc = this.options.required_caps || {};
 					return  rc.send_custom_headers || 
-							rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
-							rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
+						rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
+						rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
 				},
 
 				caps = Basic.extend({}, Runtime.caps, {
@@ -8234,7 +8228,7 @@ define("moxie/runtime/silverlight/Runtime", [
 					return_response_headers: function() {
 						return use_clienthttp.call(this);
 					},
-					receive_response_type: function(type) {
+					return_response_type: function(type) {
 						return Basic.arrayDiff('blob', type); // not implemented yet
 					},
 					return_status_code: function(code) {
@@ -8597,14 +8591,17 @@ define("moxie/runtime/html4/Runtime", [
 					access_image_binary: false,
 					display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
 					drag_and_drop: false,
-					receive_response_type: function(responseType) {
-						return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
-					},
 					resize_image: function() {
 						return extensions.Image && can('access_binary') && Env.can('create_canvas');
 					},
 					report_upload_progress: false,
 					return_response_headers: false,
+					return_response_type: function(responseType) {
+						return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
+					},
+					return_status_code: function(code) {
+						return !Basic.arrayDiff(code, [200, 404]);
+					},
 					select_multiple: false,
 					send_binary_string: false,
 					send_custom_headers: false,
@@ -8616,7 +8613,10 @@ define("moxie/runtime/html4/Runtime", [
 								(Env.browser === 'Opera' && Env.version >= 12)	||
 								!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 					}()),
-					upload_filesize: true
+					upload_filesize: true,
+					use_http_method: function(methods) {
+						return !Basic.arrayDiff(methods, ['GET', 'POST']);
+					}
 				});
 
 			function can() {

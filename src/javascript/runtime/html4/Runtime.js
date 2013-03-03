@@ -81,14 +81,17 @@ define("moxie/runtime/html4/Runtime", [
 					access_image_binary: false,
 					display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
 					drag_and_drop: false,
-					return_response_type: function(responseType) {
-						return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
-					},
 					resize_image: function() {
 						return extensions.Image && can('access_binary') && Env.can('create_canvas');
 					},
 					report_upload_progress: false,
 					return_response_headers: false,
+					return_response_type: function(responseType) {
+						return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
+					},
+					return_status_code: function(code) {
+						return !Basic.arrayDiff(code, [200, 404]);
+					},
 					select_multiple: false,
 					send_binary_string: false,
 					send_custom_headers: false,
@@ -100,7 +103,10 @@ define("moxie/runtime/html4/Runtime", [
 								(Env.browser === 'Opera' && Env.version >= 12)	||
 								!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 					}()),
-					upload_filesize: true
+					upload_filesize: true,
+					use_http_method: function(methods) {
+						return !Basic.arrayDiff(methods, ['GET', 'POST']);
+					}
 				});
 
 			function can() {
