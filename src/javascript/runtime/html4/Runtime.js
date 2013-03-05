@@ -36,6 +36,10 @@ define("moxie/runtime/html4/Runtime", [
 
 			Basic.extend(this, {
 				init : function() {
+					if (!Env.can('use_fileinput')) { // minimal requirement
+						I.destroy();
+						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+					}
 					I.trigger("Init");
 				},
 

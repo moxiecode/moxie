@@ -186,6 +186,12 @@ define("moxie/core/utils/Env", [
 
 				use_data_uri_of: function(bytes) {
 					return (caps.use_data_uri && bytes < 33000 || caps.use_data_uri_over32kb());
+				},
+
+				use_fileinput: function() {
+					var el = document.createElement('input');
+					el.setAttribute('type', 'file');
+					return !el.disabled;
 				}
 			};
 
