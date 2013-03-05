@@ -319,10 +319,7 @@ define("moxie/runtime/html5/image/Image", [
 			
 			_modified = true;
 
-			this.trigger('Resize', {
-				width: crop ? width : imgWidth,
-				height: crop ? height : imgHeight
-			});
+			this.trigger('Resize');
 		}
 
 		function _purge() {
