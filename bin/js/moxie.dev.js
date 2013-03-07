@@ -152,6 +152,7 @@
 	load('../../src/javascript/runtime/html5/image/JPEG.js');
 	load('../../src/javascript/runtime/html5/image/PNG.js');
 	load('../../src/javascript/runtime/html5/image/ImageInfo.js');
+	load('../../src/javascript/runtime/html5/image/MegaPixel.js');
 	load('../../src/javascript/runtime/html5/image/Image.js');
 	load('../../src/javascript/runtime/flash/Runtime.js');
 	load('../../src/javascript/runtime/flash/file/Blob.js');

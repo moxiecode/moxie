@@ -22,8 +22,9 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/core/utils/Encode",
 	"moxie/file/Blob",
 	"moxie/runtime/html5/image/ImageInfo",
+	"moxie/runtime/html5/image/MegaPixel",
 	"moxie/core/utils/Mime"
-], function(extensions, Basic, x, Encode, Blob, ImageInfo, Mime) {
+], function(extensions, Basic, x, Encode, Blob, ImageInfo, MegaPixel, Mime) {
 	
 	function HTML5Image() {
 		var me = this
@@ -314,11 +315,14 @@ define("moxie/runtime/html5/image/Image", [
 			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
 			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
 
-			ctx.clearRect (0, 0 , _canvas.width, _canvas.height);
-			ctx.drawImage(_img, -x, -y, imgWidth, imgHeight);
+			if (MegaPixel.subsampled(_img)) { // avoid squish bug in iOS6
+				MegaPixel.renderTo(_img, _canvas, { width: imgWidth, height: imgHeight, x: -x, y: -y});
+			} else {
+				ctx.clearRect(0, 0 , _canvas.width, _canvas.height);
+				ctx.drawImage(_img, -x, -y, imgWidth, imgHeight);
+			}
 			
 			_modified = true;
-
 			this.trigger('Resize');
 		}
 
