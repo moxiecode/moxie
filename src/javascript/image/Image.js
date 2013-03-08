@@ -21,12 +21,11 @@ define("moxie/image/Image", [
 		"moxie/runtime/Transporter",
 		"moxie/core/utils/Env",
 		"moxie/core/EventTarget",
-		"moxie/file/File",
 		"moxie/file/Blob",
 		"moxie/core/utils/Url",
 		"moxie/core/utils/Encode",
 		"moxie/core/JSON"
-], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, File, Blob, Url, Encode, JSON) {
+], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, Blob, Url, Encode, JSON) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -191,33 +190,33 @@ define("moxie/image/Image", [
 			@param {Boolean|Object} [mixed]
 			*/
 			load: function(src) {
-				var el, url, urlp;
+				var el, args = [].slice.call(arguments);
 
 				this.convertEventPropsToHandlers(dispatches);
 
 				try {
+					// if source is Image
 					if (src instanceof Image) {
 						if (!src.size) { // only preloaded image objects can be used as source
 							throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 						}
-						_loadFromImage.apply(this, arguments);
+						_loadFromImage.apply(this, args);
 					}
-					else if (src instanceof File || src instanceof Blob) {
+					// if source is Blob/File
+					else if (src instanceof Blob) {
 						if (!~Basic.inArray(src.type, ['image/jpeg', 'image/png'])) {
 							throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 						}
-						_loadFromBlob.apply(this, arguments);
+						_loadFromBlob.apply(this, args);
 					}
+					// if source looks like Url
 					else if (Basic.typeOf(src) === 'string' && /^http:\/\//.test(src)) {
-						_loadFromUrl.apply(this, arguments);
+						_loadFromUrl.apply(this, args);
 					}
+					// if source seems to be an img node
 					else if ((el = Dom.get(src)) && el.nodeName === 'img') {
-						urlp = Url.parseUrl(el.src); // src can be relative
-
-						// manually resolve the url
-						url = urlp.scheme + '://' + urlp.host + (urlp.port !== 80 ? ':' + urlp.port : '') + urlp.path;
-
-						_loadFromUrl.apply(this, arguments);
+						args.unshift(Url.resolveUrl(el.src));
+						_loadFromUrl.apply(this, args);
 					}
 					else {
 						throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
