@@ -36,6 +36,10 @@ define("moxie/runtime/html5/image/Image", [
 			loadFromBlob: function(blob, asBinary) {
 				var comp = this, I = comp.getRuntime();
 
+				if (Basic.typeOf(asBinary) === 'undefined') {
+					asBinary = true;
+				}
+
 				if (!I.can('access_binary')) {
 					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 				}
@@ -315,8 +319,8 @@ define("moxie/runtime/html5/image/Image", [
 			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
 			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
 
-			if (MegaPixel.subsampled(_img)) { // avoid squish bug in iOS6
-				MegaPixel.renderTo(_img, _canvas, { width: imgWidth, height: imgHeight, x: -x, y: -y});
+			if (MegaPixel.isSubsampled(_img)) { // avoid squish bug in iOS6
+				MegaPixel.renderTo(_img, _canvas, { width: imgWidth, height: imgHeight, x: -x, y: -y });
 			} else {
 				ctx.clearRect(0, 0 , _canvas.width, _canvas.height);
 				ctx.drawImage(_img, -x, -y, imgWidth, imgHeight);

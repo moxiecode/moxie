@@ -129,7 +129,7 @@ define("moxie/runtime/html5/image/MegaPixel", [], function() {
 	}
 
 	return {
-		subsampled: detectSubsampling,
+		isSubsampled: detectSubsampling,
 		renderTo: renderImageToCanvas
 	};
 });

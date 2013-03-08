@@ -22,7 +22,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 	
 	return function() {
 		// Private ExifParser fields
-		var data, tags, offsets = {}, tagDescs;
+		var data, tags, Tiff, offsets = {}, tagDescs;
 
 		data = new BinaryReader();
 
@@ -42,6 +42,10 @@ define("moxie/runtime/html5/image/ExifParser", [
 				9 - The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
 				*/
 				0x0112: 'Orientation',
+				0x010E: 'ImageDescription',
+				0x010F: 'Make',
+				0x0110: 'Model',
+				0x0131: 'Software',
 				0x8769: 'ExifIFDPointer',
 				0x8825:	'GPSInfoIFDPointer'
 			},
@@ -59,6 +63,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 				0x9207: 'MeteringMode',
 				0x9208: 'LightSource',
 				0x9209: 'Flash',
+				0x920A: 'FocalLength',
 				0xA402: 'ExposureMode',
 				0xA403: 'WhiteBalance',
 				0xA406: 'SceneCaptureType',
@@ -297,7 +302,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 		}
 
 		function getIFDOffsets() {
-			var Tiff, idx = offsets.tiffHeader;
+			var idx = offsets.tiffHeader;
 
 			// Set read order of multi-byte data
 			data.II(data.SHORT(idx) == 0x4949);
@@ -312,10 +317,12 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 			if ('ExifIFDPointer' in Tiff) {
 				offsets.exifIFD = offsets.tiffHeader + Tiff.ExifIFDPointer;
+				delete Tiff.ExifIFDPointer;
 			}
 
 			if ('GPSInfoIFDPointer' in Tiff) {
 				offsets.gpsIFD = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
+				delete Tiff.GPSInfoIFDPointer;
 			}
 			return true;
 		}
@@ -374,6 +381,10 @@ define("moxie/runtime/html5/image/ExifParser", [
 					return getIFDOffsets();
 				}
 				return false;
+			},
+
+			TIFF: function() {
+				return Tiff;
 			},
 
 			EXIF: function() {

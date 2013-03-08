@@ -107,6 +107,7 @@ define("moxie/runtime/html5/image/JPEG", [
 
 		if (hasExif) {
 			this.meta = {
+				tiff: _ep.TIFF(),
 				exif: _ep.EXIF(),
 				gps: _ep.GPS()
 			};

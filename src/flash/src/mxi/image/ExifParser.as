@@ -8,13 +8,16 @@
 
 package mxi.image {
 	import flash.events.EventDispatcher;
-	import flash.utils.ByteArray;
-	import mxi.BinaryReader;
 	import flash.external.ExternalInterface;
+	import flash.utils.ByteArray;
+	
+	import mxi.BinaryReader;
 	
 	public class ExifParser extends EventDispatcher {
 		
 		private var data:BinaryReader = new BinaryReader();
+		
+		private var Tiff:Object;
 		
 		private var offsets:Object = {
 			tiffHeader : 10
@@ -23,7 +26,11 @@ package mxi.image {
 		private var tags:Object = {
 			
 			tiff: {
-				0x0112: 'Orientation',				
+				0x0112: 'Orientation',
+				0x010E: 'ImageDescription',
+				0x010F: 'Make',
+				0x0110: 'Model',
+				0x0131: 'Software',
 				0x8769: 'ExifIFDPointer',
 				0x8825:	'GPSInfoIFDPointer'
 			},
@@ -42,6 +49,7 @@ package mxi.image {
 				0x9207: 'MeteringMode',
 				0x9208: 'LightSource',
 				0x9209: 'Flash',
+				0x920A: 'FocalLength',
 				0xA402: 'ExposureMode',
 				0xA403: 'WhiteBalance',
 				0xA406: 'SceneCaptureType',
@@ -182,11 +190,15 @@ package mxi.image {
 			return false;
 		}
 		
+		public function TIFF():Object {
+			return Tiff;
+		}
+		
 		
 		public function EXIF():Object {	
 			var Exif:Object;
 			
-			if (!offsets.hasOwnProperty('exifIFD') || offsets['exifIFD'] === null) {
+			if (!offsets.hasOwnProperty('exifIFD')) {
 				return null;
 			}
 			
@@ -210,7 +222,7 @@ package mxi.image {
 		public function GPS():Object {
 			var Gps:Object;
 			
-			if (!offsets.hasOwnProperty('gpsIFD') || offsets['gps'] === null) {
+			if (!offsets.hasOwnProperty('gpsIFD')) {
 				return null;
 			}
 			
@@ -247,7 +259,7 @@ package mxi.image {
 		
 		
 		private function getIFDOffsets():Boolean {
-			var Tiff:Object, idx:uint = offsets.tiffHeader;
+			var idx:uint = offsets.tiffHeader;
 			
 			// Set read order of multi-byte data
 			data.II(data.SHORT(idx) == 0x4949);
@@ -260,9 +272,15 @@ package mxi.image {
 			offsets['IFD0'] = offsets.tiffHeader + data.LONG(idx += 2);
 			Tiff = extractTags(offsets['IFD0'], tags.tiff);
 			
-			offsets['exifIFD'] = ('ExifIFDPointer' in Tiff ? offsets.tiffHeader + Tiff.ExifIFDPointer : null);
-			offsets['gpsIFD'] = ('GPSInfoIFDPointer' in Tiff ? offsets.tiffHeader + Tiff.GPSInfoIFDPointer : null);
+			if (Tiff.hasOwnProperty('ExifIFDPointer')) {
+				offsets['exifIFD'] = offsets.tiffHeader + Tiff.ExifIFDPointer;
+				delete Tiff.ExifIFDPointer;
+			}
 			
+			if (Tiff.hasOwnProperty('GPSInfoIFDPointer')) {
+				offsets['gpsIFD'] = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
+				delete Tiff.GPSInfoIFDPointer;
+			}			
 			return true;
 		}
 		

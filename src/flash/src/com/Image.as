@@ -246,7 +246,7 @@ package com
 								self.height = height;	
 							}		
 							_bm = new Bitmap(output, "auto", true);	
-							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, { width: output.width, height: output.height }));
+							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, getInfo()));
 						}
 					});
 				};

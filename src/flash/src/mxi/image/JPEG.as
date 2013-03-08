@@ -84,13 +84,18 @@ package mxi.image
 		public function metaInfo() : Object
 		{
 			var exifParser:ExifParser, headers:Array, 
-				meta:Object = {}, exif:Object, gps:Object;
+				meta:Object = {}, exif:Object, gps:Object, tiff:Object;
 			
 			headers = getHeaders('exif');
 			
 			if (headers.length) {
 				exifParser = new ExifParser;
 				if (exifParser.init(headers[0])) {	
+					
+					tiff = exifParser.TIFF();
+					if (tiff) {
+						meta['tiff'] = tiff;
+					}
 					
 					exif = exifParser.EXIF();
 					if (exif) {
@@ -101,7 +106,7 @@ package mxi.image
 					if (gps) {
 						meta['gps'] = gps;
 					}
-					
+	
 					exifParser.purge();
 				}
 			}

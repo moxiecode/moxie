@@ -192,6 +192,10 @@ define("moxie/image/Image", [
 			load: function(src) {
 				var el, args = [].slice.call(arguments);
 
+				this.bind('Load', function(e, info) {
+					_updateInfo.call(this, info);
+				}, 999);
+
 				this.convertEventPropsToHandlers(dispatches);
 
 				try {
@@ -489,6 +493,8 @@ define("moxie/image/Image", [
 					try {
 						this.meta = JSON.parse(info.meta);
 					} catch(ex) {}
+				} else {
+					this.meta = info.meta;
 				}
 			}
 
