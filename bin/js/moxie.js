@@ -4700,7 +4700,7 @@ define("moxie/image/Image", [
 		"moxie/core/utils/Url",
 		"moxie/core/utils/Encode",
 		"moxie/core/JSON"
-], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, Blob, Url, Encode, JSON) {
+], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, Blob, Url, Encode, parseJSON) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -5166,7 +5166,7 @@ define("moxie/image/Image", [
 			if (info) {
 				if (Basic.typeOf(info.meta) === 'string') { // might be a JSON string
 					try {
-						this.meta = JSON.parse(info.meta);
+						this.meta = parseJSON(info.meta);
 					} catch(ex) {}
 				} else {
 					this.meta = info.meta;
