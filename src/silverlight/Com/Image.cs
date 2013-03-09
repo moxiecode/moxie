@@ -17,6 +17,7 @@ using Moxie.PngEncoder;
 
 using Moxiecode.Com.Events;
 using Moxiecode.Com.Errors;
+using Moxiecode.MXI;
 using Moxiecode.MXI.Image;
 
 namespace Moxiecode.Com
@@ -101,7 +102,14 @@ namespace Moxiecode.Com
 
 			if (JPEG.test(stream)) {
 				_img = new JPEG(stream);
-				type = JPEG.MIME; 
+				type = JPEG.MIME;
+				((JPEG)_img).extractHeaders(); // preserve headers for later
+				meta = ((JPEG)_img).metaInfo();
+			} else if (PNG.test(stream)) {
+				_img = new PNG(stream);
+				type = PNG.MIME;
+			} else {
+				throw new ImageError(ImageError.WRONG_FORMAT);
 			}
 
 			Dictionary<string, int> info = _img.info();
@@ -126,7 +134,8 @@ namespace Moxiecode.Com
 				{ "height", height.ToString() },
 				{ "size", size.ToString() },
 				{ "type", type },
-				{ "name", name }
+				{ "name", name },
+				{ "meta", JsonWriter.stringify(meta) }
 			};
 		}
 
@@ -171,13 +180,11 @@ namespace Moxiecode.Com
 					int imgWidth = (int)Math.Round(_bm.PixelWidth * scale);
 					int imgHeight = (int)Math.Round(_bm.PixelHeight * scale);
 
-					if (imgWidth > w)
-					{
+					if (imgWidth > w) {
 						tg.Children.Add(new TranslateTransform() { X = -Math.Round((double)(imgWidth - w) / 2) });
 					}
 
-					if (imgHeight > h)
-					{
+					if (imgHeight > h) {
 						tg.Children.Add(new TranslateTransform() { Y = -Math.Round((double)(imgHeight - h) / 2) });
 					}
 
@@ -212,6 +219,13 @@ namespace Moxiecode.Com
 					this.width = resizedImage.Width;
 					this.height = resizedImage.Height;*/
 
+					if (type == JPEG.MIME && _img != null) {
+						// insert new values into exif headers
+						((JPEG)_img).updateDimensions(w, h);
+						// update image info
+						meta = ((JPEG)_img).metaInfo();	
+					}	
+
 					Resize(this, new DataEventArgs(getInfo()));
 					return;
 				}
@@ -241,7 +255,9 @@ namespace Moxiecode.Com
 				JpegEncoder jpegEncoder = new JpegEncoder(jpegImage, quality, imageStream);
 				jpegEncoder.Encode();
 
-				// TODO: restore jpeg headers here
+				if (_img != null) {
+					((JPEG)_img).insertHeaders(imageStream);
+				}
 			}
 			else if (type == PNG.MIME) // Encode as PNG
 			{

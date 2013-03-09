@@ -17,13 +17,19 @@ namespace Moxiecode.MXI.Image
 	{
 		BinaryReader data;
 
+		private Dictionary<string, object> Tiff;
+
 		private Dictionary<string, long> offsets;
 		
 		private Dictionary<string, Dictionary<int, string>> tags = new Dictionary<string, Dictionary<int, string>>() {
 			{ "tiff", new Dictionary<int, string>() {
-				{ 0x0112, "Orientation" },				
+				{ 0x0112, "Orientation" },		
+				{ 0x010E, "ImageDescription" },
+				{ 0x010F, "Make" },
+				{ 0x0110, "Model" },
+				{ 0x0131, "Software" },
 				{ 0x8769, "ExifIFDPointer" },
-				{ 0x8825,	"GPSInfoIFDPointer" }
+				{ 0x8825, "GPSInfoIFDPointer" }
 			} },
 			
 			{ "exif", new Dictionary<int, string>() {
@@ -40,6 +46,7 @@ namespace Moxiecode.MXI.Image
 				{ 0x9207, "MeteringMode" },
 				{ 0x9208, "LightSource" },
 				{ 0x9209, "Flash" },
+				{ 0x920A, "FocalLength" },
 				{ 0xA402, "ExposureMode" },
 				{ 0xA403, "WhiteBalance" },
 				{ 0xA406, "SceneCaptureType" },
@@ -197,6 +204,11 @@ namespace Moxiecode.MXI.Image
 			}
 			return false;
 		}
+
+		public Dictionary<string, object> TIFF()
+		{
+			return Tiff;
+		}
 		
 		
 		public Dictionary<string, object> EXIF() 
@@ -282,17 +294,19 @@ namespace Moxiecode.MXI.Image
 			
 			this.offsets.Add("IFD0", this.offsets["tiffHeader"] + data.LONG(idx += 2));
 
-			Dictionary<string, object> Tiff = extractTags(this.offsets["IFD0"], tags["tiff"]);
+			Tiff = extractTags(this.offsets["IFD0"], tags["tiff"]);
 
 			//Moxie.log(data.SHORT(idx).ToString("x"));
 			
 			object ExifIFDPointer, GPSInfoIFDPointer;
 			if (Tiff.TryGetValue("ExifIFDPointer", out ExifIFDPointer)) {
 				this.offsets.Add("exifIFD", this.offsets["tiffHeader"] + Convert.ToInt32(ExifIFDPointer));
+				Tiff.Remove("ExifIFDPointer");
 			}
 
 			if (Tiff.TryGetValue("GPSInfoIFDPointer", out GPSInfoIFDPointer)) {
 				this.offsets.Add("gpsIFD", this.offsets["tiffHeader"] + Convert.ToInt32(GPSInfoIFDPointer));
+				Tiff.Remove("GPSInfoIFDPointer");
 			}
 			return true;
 		}

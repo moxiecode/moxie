@@ -91,14 +91,19 @@ namespace Moxiecode.MXI.Image
 		public Dictionary<string, object> metaInfo()
 		{
 			ExifParser exifParser; 
-			Dictionary <string, object> exif, gps, meta;
+			Dictionary <string, object> tiff, exif, gps, meta;
 			
 			List<byte[]> headers = getHeaders("exif");
 			meta = new Dictionary<string, object>();
 			
 			if (headers.Count != 0) {
 				exifParser = new ExifParser();
-				if (exifParser.init(headers[0])) {	
+				if (exifParser.init(headers[0])) {
+
+					tiff = exifParser.TIFF();
+					if (tiff != null) {
+						meta.Add("tiff", tiff);
+					}
 					
 					exif = exifParser.EXIF();
 					if (exif != null) {
@@ -168,7 +173,7 @@ namespace Moxiecode.MXI.Image
 			List<byte[]> array = new List<byte[]>();
 			
 			for (int i = 0, max = headers.Count; i < max; i++) {
-				if (headers[i]["app"] == app.ToUpper()) {
+				if ((string)headers[i]["app"] == app.ToUpper()) {
 					array.Add((byte[])headers[i]["segment"]);
 				}
 			}
@@ -194,7 +199,7 @@ namespace Moxiecode.MXI.Image
 			}
 						
 			for (int i = 0, ii = 0, max = _headers.Count; i < max; i++) {
-				if (_headers[i]["app"] == app.ToUpper()) {
+				if ((string)_headers[i]["app"] == app.ToUpper()) {
 					_headers[i]["segment"] = array[ii];
 					_headers[i]["length"] = array[ii].Length;
 					ii++;
@@ -214,7 +219,7 @@ namespace Moxiecode.MXI.Image
 			
 			if (headers.Count != 0) {
 				exifParser = new ExifParser();
-				if (exifParser.init(headers[0])) {						
+				if (exifParser.init(headers[0])) {
 					
 					exifParser.setExif("PixelXDimension", width);
 					exifParser.setExif("PixelYDimension", height);

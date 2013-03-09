@@ -83,10 +83,11 @@ namespace Moxiecode.MXI
 		public byte[] SEGMENT(int idx = -1, int length = -1, byte[] segment = null) 
 		{
 			byte[] buffer;
-
+		
 			if (idx == -1) // return byte array representation of the whole stream
 			{
 				buffer = new byte[_stream.Length];
+				_stream.Position = 0;
 				_stream.Read(buffer, 0, buffer.Length);
 				return buffer;
 			}
@@ -158,14 +159,12 @@ namespace Moxiecode.MXI
 
 		private void _insert(byte[] segment, int idx, int size)
 		{
-			byte[] buffer = new byte[_stream.Length + segment.Length];
-			_stream.Position = 0;
-			_stream.Read(buffer, 0, idx);
-			System.Buffer.BlockCopy(segment, 0, buffer, idx, segment.Length);
+			byte[] buffer = new byte[_stream.Length - idx - size];
 			_stream.Position = idx + size;
-			_stream.Read(buffer, idx + segment.Length, (int)(_stream.Length - _stream.Position));
-			_stream.Close();
-			_stream = new MemoryStream(buffer);
+			_stream.Read(buffer, 0, buffer.Length);
+			_stream.Position = idx;
+			_stream.Write(segment, 0, segment.Length);
+			_stream.Write(buffer, 0, buffer.Length);
 		}
 	}
 }
