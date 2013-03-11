@@ -42,16 +42,18 @@ package mxi {
 					break;
 					
 				case 3:
-					position = args[0] + args[1];
-					readBytes(seg);
-					position = args[0];
-					writeBytes(args[2]);
+					seg.writeBytes(this, 0, args[0]);
+					if (args[2] is ByteArray) {
+						seg.writeBytes(args[2]);
+					}
+					seg.writeBytes(this, args[0] + args[1]);
+					clear();
 					writeBytes(seg);
-					break;
+					seg.clear();
+					return null;
 				
 				default:
-					position = 0;
-					readBytes(seg, 0, length);
+					seg.writeBytes(this);
 			}
 			
 			return seg;

@@ -48,8 +48,7 @@ define("moxie/runtime/html5/image/MegaPixel", [], function() {
 		var width = options.width, height = options.height;
 		var x = options.x || 0, y = options.y || 0;
 		var ctx = canvas.getContext('2d');
-		var subsampled = detectSubsampling(img);
-		if (subsampled) {
+		if (detectSubsampling(img)) {
 			iw /= 2;
 			ih /= 2;
 		}

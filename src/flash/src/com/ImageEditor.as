@@ -1,10 +1,13 @@
 package com
 {
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
 	import flash.filters.BlurFilter;
 	import flash.filters.ColorMatrixFilter;
 	import flash.filters.ConvolutionFilter;
 	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
 	import mxi.image.ascb.filters.ColorMatrixArrays;
@@ -12,58 +15,68 @@ package com
 	
 	
 	public class ImageEditor
-	{
-		private var _history:Array;
+	{	
+		private var _history:Array = [];
 		
-		private var _historyIndex:uint = 0;
+		private var _historyIndex:int = -1;
+		
+		private var _lastReleaseIndex:int = 0;
+		
+		private var _bdOriginal:BitmapData;
+		
+		private var _bd:BitmapData;
+		
+		public function get bitmapData() : BitmapData {
+			return (_bd ? _bd : _bdOriginal).clone();
+		}
 		
 		private var _crop:Rectangle = null;		
 		
-		private var _matrix:Matrix;
-		
-		private var _lastReleaseIndex:uint = 0;
-		
-		private var _renderAfterEveryModify:Boolean = true;
+		private var _matrix:Matrix = new Matrix();
+				
+		private var _commitAfterEveryModify:Boolean = false;
 		
 		
-		public function ImageEditor()
+		public function ImageEditor(bd:BitmapData)
 		{
+			_bdOriginal = bd.clone();
 		}
 		
 		
 		public function modify(op:String, ... args) : void
-		{
-			_historyIndex++;
-			
-			if (redoable()) {
-				_history.length = _historyIndex; // discard extra redoable ops
+		{	
+			if (canRedo()) {
+				_history.length = _historyIndex + 1; // discard extra redoable ops
 			}
 			
-			_history[_historyIndex] = {
+			_history.push({
 				'op': op,
 				'args': args
-			};	
-			
-			if (_renderAfterEveryModify) {
-				render();
+			});
+
+			if (_commitAfterEveryModify) {
+				commit();
 			}
+			
+			_historyIndex++;
 		}
 		
 		
-		public function render() : void
+		public function commit() : void
 		{
 			_doModifications(_lastReleaseIndex, _historyIndex); // do only incremental modifications if possible
 			_lastReleaseIndex = _historyIndex;
+			_matrix = new Matrix();
 		}
 		
 		
-		public function undoable() : Boolean
+		public function canUndo() : Boolean
 		{
 			return !!_history.length;
 		}
 		
 		
-		public function redoable() : Boolean
+		public function canRedo() : Boolean
 		{
 			return _historyIndex < _history.length;
 		}
@@ -71,18 +84,23 @@ package com
 		
 		public function undo() : void
 		{
-			if (undoable()) {	
+			if (canUndo()) {	
 				_historyIndex--;
 				
 				if (_historyIndex < _lastReleaseIndex) {
 					_lastReleaseIndex = 0;
+					if (_bd) {
+						_bd.dispose();
+						_bd = null;
+					}
+					_matrix = new Matrix();
 				}
 			}
 		}
 		
 		public function redo() : void
 		{
-			if (redoable()) {
+			if (canRedo()) {
 				_historyIndex++;
 			}	
 		}
@@ -90,60 +108,54 @@ package com
 		
 		public function purge() : void 
 		{
-			
+			if (_bd) {
+				_bd.dispose();
+			}
+			_bdOriginal.dispose();
 		}
 		
 		
-		
-		
-		
-		
-		protected function _doModifications(start:uint, end:uint) : void
-		{
-			if (!_bm) {
-				return; // throw an exception
+		protected function _doModifications(start:int, end:int) : void
+		{		
+			if (!_bd) {
+				_bd = _bdOriginal.clone();
 			}
 			
-			for (var i:uint = start, mod:Object; i <= end; mod = _history[i], i++) {
-				
-				if (typeof this[mod.op] === 'function') {
-					this[mod.op].apply(this, mod.args);
+			var mod:Object;
+			for (var i:int = start; i <= end; i++) {
+				mod = _history[i];
+				if (typeof(this[mod.op]) == 'function') {
+					this[mod.op].apply(null, mod.args);
 				} 
 			}
+			
+			_draw();
 		}
 		
 		
 		protected function rotate(angle:Number) : void
-		{
-			_matrix = new Matrix;
-			_matrix.translate(_bm.x - _bm.width/2, _bm.y -_bm.height/2);
+		{		
+			_matrix.translate(-_bd.width/2,-_bd.height/2);
 			_matrix.rotate(angle / 180 * Math.PI);
-			_matrix.translate(_bm.y + _bm.height/2, _bm.y + _bm.width/2);
-			_bm.transform.matrix = _matrix;			
+			_matrix.translate(_bd.width/2,_bd.height/2);
 		}
 		
 		protected function flipH() : void
 		{
-			_matrix = new Matrix;
 			_matrix.scale(-1, 1);
-			_matrix.translate(_bm.x + _bm.width, 0);
-			_bm.transform.matrix = _matrix;
+			_matrix.translate(_bd.width, 0);
 		}
 		
 		
 		protected function flipV() : void
 		{
-			_matrix = new Matrix;
 			_matrix.scale(1, -1);
-			_matrix.translate(0, _bm.y + _bm.height);
-			_bm.transform.matrix = _matrix;
+			_matrix.translate(0, _bd.height);
 		}
 		
 		protected function resize(w:Number, h:Number) : void
 		{
-			_matrix = new Matrix;
-			_matrix.scale(w / _bm.width, h / _bm.height);
-			_bm.transform.matrix = _matrix;
+			_matrix.scale(w / _bd.width, h / _bd.height);
 		}
 		
 		
@@ -199,7 +211,9 @@ package com
 		
 		protected function blur(value:Number = 0.02, quality:int = 1) : void
 		{
-			var filters:Array = _bm.filters;
+			if (!_bd) {
+				_bd = _bdOriginal.clone();
+			}
 			
 			value = Math.floor(255 * value);
 			
@@ -207,24 +221,54 @@ package com
 				value--; // even values are processed faster
 			}
 			
-			filters.push(new BlurFilter(value, value, quality));
-			_bm.filters = filters;
+			_bd.applyFilter(_bd, _bd.rect, new Point(0, 0), new BlurFilter(value, value, quality));
 		}
 		
 		
 		protected function applyConvolution(matrix:Array, devisor:Number = 1.0) : void
 		{
-			var filters:Array = _bm.filters;
-			filters.push(new ConvolutionFilter(3, 3, matrix, devisor));
-			_bm.filters = filters;
+			if (!_bd) {
+				_bd = _bdOriginal.clone();
+			}
+			_bd.applyFilter(_bd, _bd.rect, new Point(0, 0), new ConvolutionFilter(3, 3, matrix, devisor));
 		}
 		
 		
 		protected function applyColorMatrix(matrix:Array) : void
 		{
-			var filters:Array = _bm.filters;
-			filters.push(new ColorMatrixFilter(matrix));
-			_bm.filters = filters;
+			if (!_bd) {
+				_bd = _bdOriginal.clone();
+			}
+			_bd.applyFilter(_bd, _bd.rect, new Point(0, 0), new ColorMatrixFilter(matrix));
+		}
+		
+		
+		private function _draw() : void
+		{	
+			// Finding the four corners of the bounfing box after transformation
+			var tl:Point = _matrix.transformPoint(new Point(0, 0));
+			var tr:Point = _matrix.transformPoint(new Point(_bd.width, 0));
+			var bl:Point = _matrix.transformPoint(new Point(0, _bd.height));
+			var br:Point = _matrix.transformPoint(new Point(_bd.width, _bd.height));
+			
+			// Calculating "who" is "where"
+			var top:Number = Math.min(tl.y, tr.y, bl.y, br.y);
+			var bottom:Number = Math.max(tl.y, tr.y, bl.y, br.y);
+			var left:Number = Math.min(tl.x, tr.x, bl.x, br.x);
+			var right:Number = Math.max(tl.x, tr.x, bl.x, br.x);
+			
+			// Ajusting final position
+			_matrix.translate(-left, -top);
+			
+			// Calculating the size of the new BitmapData
+			var width:Number = right - left;
+			var height:Number = bottom - top;
+			
+			// Creating and drawing (with transformation)
+			var result:BitmapData = new BitmapData(width, height);
+			result.draw(_bd, _matrix);	
+			_bd.dispose();
+			_bd = result;
 		}
 		
 		

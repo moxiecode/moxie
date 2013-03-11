@@ -23,13 +23,15 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/file/Blob",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/runtime/html5/image/MegaPixel",
-	"moxie/core/utils/Mime"
-], function(extensions, Basic, x, Encode, Blob, ImageInfo, MegaPixel, Mime) {
+	"moxie/core/utils/Mime",
+	"moxie/core/utils/Env"
+], function(extensions, Basic, x, Encode, Blob, ImageInfo, MegaPixel, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
 		, _img, _imgInfo, _canvas, _binStr, _srcBlob
 		, _modified = false // is set true whenever image is modified
+		, _preserveHeaders = true
 		;
 
 		Basic.extend(me, {
@@ -68,6 +70,8 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			loadFromImage: function(img, exact) {
+				this.meta = img.meta;
+
 				_srcBlob = {
 					name: img.name,
 					size: img.size,
@@ -87,10 +91,10 @@ define("moxie/runtime/html5/image/Image", [
 				, info = {
 					width: _img && _img.width || 0,
 					height: _img && _img.height || 0,
-					type: _srcBlob && (_srcBlob.type || _srcBlob.name && Mime.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
+					type: (_srcBlob.type || _srcBlob.name && Mime.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
 					size: _binStr && _binStr.length || _srcBlob.size || 0,
-					name: _srcBlob && _srcBlob.name || '',
-					meta: {}
+					name: _srcBlob.name || '',
+					meta: this.meta || {}
 				};
 
 				if (I.can('access_image_binary') && _binStr) {
@@ -193,7 +197,7 @@ define("moxie/runtime/html5/image/Image", [
 
 					_binStr = _convertToBinary(dataUrl);
 
-					if (_imgInfo) {
+					if (_imgInfo && _preserveHeaders) {
 						// update dimensions info in exif
 						if (_imgInfo.meta && _imgInfo.meta.exif) {
 							_imgInfo.setExif({
@@ -217,9 +221,11 @@ define("moxie/runtime/html5/image/Image", [
 			}
 		});
 
+
 		function _convertToBinary(dataUrl) {
 			return Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
 		}
+
 
 		function _loadFromBinaryString(binStr) {
 			var comp = this;
@@ -283,21 +289,25 @@ define("moxie/runtime/html5/image/Image", [
 			}
 		}
 
-		function _resize(width, height, crop) {
-			var ctx, scale, mathFn, x, y, imgWidth, imgHeight;
+		function _resize(width, height, crop, preserveHeaders) {
+			var srcImg, ctx, scale, mathFn, x, y, imgWidth, imgHeight;
+
+			_preserveHeaders = preserveHeaders;
+
+			srcImg = _getSourceImage.call(this, _img);
 
 			// unify dimensions
 			mathFn = !crop ? Math.min : Math.max;
-			scale = mathFn(width/this.width, height/this.height);
+			scale = mathFn(width/srcImg.width, height/srcImg.height);
 		
 			// we only downsize here
-			if (scale > 1 && !crop) { // when cropping one of dimensions may still exceed max, so process it anyway
+			if (scale > 1 && (!crop || preserveHeaders)) { // when cropping one of dimensions may still exceed max, so process it anyway
 				this.trigger('Resize');
 				return;
 			}
 
-			imgWidth = Math.round(this.width * scale);
-			imgHeight = Math.round(this.height * scale);
+			imgWidth = Math.round(srcImg.width * scale);
+			imgHeight = Math.round(srcImg.height * scale);
 
 			// prepare canvas if necessary
 			if (!_canvas) {
@@ -319,16 +329,137 @@ define("moxie/runtime/html5/image/Image", [
 			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
 			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
 
-			if (MegaPixel.isSubsampled(_img)) { // avoid squish bug in iOS6
-				MegaPixel.renderTo(_img, _canvas, { width: imgWidth, height: imgHeight, x: -x, y: -y });
+			if (_preserveHeaders) {
+				_rotateToOrientaion(_canvas, _canvas.width, _canvas.height, _getOppositeOrientaion.call(this));
 			} else {
-				ctx.clearRect(0, 0 , _canvas.width, _canvas.height);
-				ctx.drawImage(_img, -x, -y, imgWidth, imgHeight);
+				this.width = _canvas.width;
+				this.height = _canvas.height;
 			}
-			
+
+			_drawToCanvas.call(this, srcImg, _canvas, -x, -y, imgWidth, imgHeight);
+
+			srcImg = null; // free resources
 			_modified = true;
 			this.trigger('Resize');
 		}
+
+
+		function _getSourceImage(img) {
+			var orientation = _getOrientation.call(this);
+
+			if (this.type !== 'image/jpeg' || orientation == 1) {
+				// no manipulation required
+				return img;
+			} else {
+				var canvas = document.createElement('canvas');
+				_rotateToOrientaion(canvas, img.width, img.height, orientation);
+				_drawToCanvas.call(this, img, canvas, 0, 0, img.width, img.height);
+				return canvas;
+			}
+		}
+
+
+		function _drawToCanvas(img, canvas, x, y, w, h) {
+			if (Env.os === 'iOS' || Env.os === 'Android') { 
+				// avoid squish bug in iOS6
+				MegaPixel.renderTo(img, canvas, { width: w, height: h, x: x, y: y });
+			} else {
+				var ctx = canvas.getContext('2d');
+				ctx.drawImage(img, x, y, w, h);
+			}
+		}
+
+
+		function _getOrientation() {
+			return (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+		}
+
+
+		function _getOppositeOrientaion() {
+			var orientationMap = {
+				2: 2,
+				3: 3,
+				4: 4,
+				5: 7,
+				6: 8,
+				7: 5,
+				8: 6
+			};
+			return orientationMap[_getOrientation.call(this)] || 1;
+		}
+
+
+		/**
+		* Transform canvas coordination according to specified frame size and orientation
+		* Orientation value is from EXIF tag
+		* @author Shinichi Tomita <shinichi.tomita@gmail.com>
+		*/
+		function _rotateToOrientaion(canvas, width, height, orientation) {
+			switch (orientation) {
+				case 5:
+				case 6:
+				case 7:
+				case 8:
+					canvas.width = height;
+					canvas.height = width;
+					break;
+				default:
+					canvas.width = width;
+					canvas.height = height;
+			}
+
+			/**
+			1 = The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side.
+			2 = The 0th row is at the visual top of the image, and the 0th column is the visual right-hand side.
+			3 = The 0th row is at the visual bottom of the image, and the 0th column is the visual right-hand side.
+			4 = The 0th row is at the visual bottom of the image, and the 0th column is the visual left-hand side.
+			5 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual top.
+			6 = The 0th row is the visual right-hand side of the image, and the 0th column is the visual top.
+			7 = The 0th row is the visual right-hand side of the image, and the 0th column is the visual bottom.
+			8 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
+			*/
+
+			var ctx = canvas.getContext('2d');
+			switch (orientation) {
+				case 2:
+					// horizontal flip
+					ctx.translate(width, 0);
+					ctx.scale(-1, 1);
+					break;
+				case 3:
+					// 180 rotate left
+					ctx.translate(width, height);
+					ctx.rotate(Math.PI);
+					break;
+				case 4:
+					// vertical flip
+					ctx.translate(0, height);
+					ctx.scale(1, -1);
+					break;
+				case 5:
+					// vertical flip + 90 rotate right
+					ctx.rotate(0.5 * Math.PI);
+					ctx.scale(1, -1);
+					break;
+				case 6:
+					// 90 rotate right
+					ctx.rotate(0.5 * Math.PI);
+					ctx.translate(0, -height);
+					break;
+				case 7:
+					// horizontal flip + 90 rotate right
+					ctx.rotate(0.5 * Math.PI);
+					ctx.translate(width, -height);
+					ctx.scale(-1, 1);
+					break;
+				case 8:
+					// 90 rotate left
+					ctx.rotate(-0.5 * Math.PI);
+					ctx.translate(-width, 0);
+					break;
+			}
+		}
+
 
 		function _purge() {
 			if (_imgInfo) {

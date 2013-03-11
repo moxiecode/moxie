@@ -43,7 +43,7 @@ package com
 		
 		private var _img:*;
 		
-		private var _bm:Bitmap;
+		private var _bd:BitmapData;
 		
 		public var size:uint = 0;
 		
@@ -56,6 +56,8 @@ package com
 		public var type:String = '';
 				
 		public var meta:Object = {}; // misc meta info (for JPEG it will be for example Exif and Gps)
+		
+		private var _preserveHeaders:Boolean = true;
 		
 		
 		public function loadFromImage(image:*, takeEncoded:Boolean = false) : void
@@ -131,7 +133,7 @@ package com
 		
 		public function loadFromBitmapData(bd:BitmapData) : void
 		{						
-			_bm = new Bitmap(bd, "auto", true);	
+			_bd = bd;
 			dispatchEvent(new ODataEvent(ODataEvent.DATA, getInfo()));
 		}
 				
@@ -197,9 +199,9 @@ package com
 		}
 			
 		
-		public function resize(width:uint, height:uint, crop:Boolean = false, oneGo:Boolean = true) : void
+		public function resize(width:uint, height:uint, crop:Boolean = false, preserveHeaders:Boolean = true) : void
 		{			
-			var self:Image = this, scale:Number, selector:Function, output:BitmapData,
+			var self:Image = this, scale:Number, orientation:uint = 1, selector:Function, output:BitmapData,
 				
 				// when scaled directly, Flash produces low quality result, so we do it here gradually
 				downScale:Function = function(tmpWidth:Number, tmpHeight:Number) : void {				
@@ -207,7 +209,7 @@ package com
 						var matrix:Matrix, imgWidth:Number, imgHeight:Number;
 						
 						scale = selector(tmpWidth / output.width, tmpHeight / output.height);
-						if (scale > 1 && !crop) {
+						if (scale > 1 && (!crop || preserveHeaders)) { // if we do not crop or strip off headers
 							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, { width: output.width, height: output.height }));
 							return;
 						}
@@ -233,25 +235,44 @@ package com
 							downScale(output.width / 2, output.height / 2); 
 						} else if (width < output.width || height < output.height) {
 							downScale(width, height);
-						} else {
+						} else {			
+							_bd.dispose();
+							_bd = output;	
+							
 							if (self.type == 'image/jpeg') {
-								if (_img) {
+								if (!_preserveHeaders) {
+									_rotateToOrientation(orientation);
+								} else if (_img) {
 									// insert new values into exif headers
-									_img.updateDimensions(width, height);
+									_img.updateDimensions(_bd.width, _bd.height);
 									// update image info
 									meta = _img.metaInfo();
 								} 
-								
-								self.width = width;
-								self.height = height;	
 							}		
-							_bm = new Bitmap(output, "auto", true);	
+							
+							self.width = _bd.width;
+							self.height = _bd.height;	
+							
 							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, getInfo()));
 						}
 					});
 				};
+			
+			_preserveHeaders = preserveHeaders; // memorize if we should preserve meta headers on JPEGs on save
 				
-			output = _bm.bitmapData;
+			output = _bd.clone();
+			
+			// take into account Orientation tag
+			if (self.type == 'image/jpeg' && meta.hasOwnProperty('tiff') && meta.tiff.hasOwnProperty('Orientation')) {
+				orientation = parseInt(meta.tiff.Orientation, 10);
+			}
+			
+			if ([5,6,7,8].indexOf(orientation) !== -1) { // values that have different orientation
+				// swap dimensions
+				var mem:uint = width;
+				width = height;
+				height = mem;
+			}
 			
 			if (!crop) { 
 				// retain proportions
@@ -263,7 +284,7 @@ package com
 				selector = Math.max;
 			}
 			
-			if (output.width / 2 > width && output.height / 2 > height && !oneGo) {
+			if (output.width / 2 > width && output.height / 2 > height) {
 				downScale(output.width / 2, output.height / 2); // modifies output internally
 			} else {
 				downScale(width, height);
@@ -274,11 +295,10 @@ package com
 		
 		public function getAsBitmapData() : BitmapData
 		{
-			if (!_bm) {
+			if (!_bd) {
 				return null;
 			}
-			
-			return _bm.bitmapData.clone();
+			return _bd.clone();
 		}
 		
 		
@@ -296,9 +316,14 @@ package com
 			} 
 			
 			if (type == 'image/jpeg') {		
-				ba = JPEGEncoder.encode(bd, quality);
+				ba = JPEGEncoder.encode(bd, quality);			
 				if (_img) {
-					_img.insertHeaders(ba);
+					// strip off any headers that might be left by encoder, etc
+					_img.stripHeaders(ba);
+					// restore the original headers if requested
+					if (_preserveHeaders) {
+						_img.insertHeaders(ba);
+					}
 				}
 			} else if (type == 'image/png') {
 				ba = PNGEncoder.encode(bd);
@@ -344,9 +369,9 @@ package com
 				_img.purge();					
 			}
 			
-			if (_bm) {
-				_bm.bitmapData.dispose();
-				_bm = null;
+			if (_bd) {
+				_bd.dispose();
+				_bd = null;
 			}
 			
 			// one call to mark any dereferenced objects and sweep away old marks, 			
@@ -375,7 +400,50 @@ package com
 			bc.create(width, height, true);
 		}
 		
-
+		
+		private function _rotateToOrientation(orientation:uint) : void
+		{
+			var imageEditor:ImageEditor = new ImageEditor(_bd);
+			
+			switch (orientation) {
+				case 2:
+					// horizontal flip
+					imageEditor.modify("flipH");
+					break;
+				case 3:
+					// 180 rotate left
+					imageEditor.modify("rotate", 180);
+					break;
+				case 4:
+					// vertical flip
+					imageEditor.modify("flipV");
+					break;
+				case 5:
+					// vertical flip + 90 rotate right
+					imageEditor.modify("flipV");
+					imageEditor.modify("rotate", 90);
+					break;
+				case 6:
+					// 90 rotate right
+					imageEditor.modify("rotate", 90);
+					break;
+				case 7:
+					// horizontal flip + 90 rotate right
+					imageEditor.modify("flipH");
+					imageEditor.modify("rotate", 90);
+					break;
+				case 8:
+					// 90 rotate left
+					imageEditor.modify("rotate", -90);
+					break;
+			}
+			
+			imageEditor.commit();
+			
+			_bd.dispose();
+			_bd = imageEditor.bitmapData;
+			imageEditor.purge();
+		}
 		
 	}
 }

@@ -238,8 +238,9 @@ define("moxie/image/Image", [
 			@param {Number} width Resulting width
 			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
 			@param {Boolean} [crop=false] Whether to crop the image to exact dimensions
+			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
-			resize: function(width, height, crop) {
+			resize: function(width, height, crop, preserveHeaders) {
 				var runtime;
 
 				if (!this.size) { // only preloaded image objects can be used as source
@@ -254,11 +255,14 @@ define("moxie/image/Image", [
 					height = width;
 				}
 
+				crop = (crop === undefined ? false : !!crop);
+				preserveHeaders = (preserveHeaders === undefined ? true : !!preserveHeaders);
+
 				runtime = this.connectRuntime(this.ruid);
 				self.bind('Resize', function(e, info) {
 					_updateInfo.call(this, info);
 				}, 999);
-				runtime.exec.call(self, 'Image', 'resize', width, height, (crop === undefined ? false : crop));
+				runtime.exec.call(self, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
 
 			/**
@@ -267,9 +271,10 @@ define("moxie/image/Image", [
 			@method crop
 			@param {Number} width Resulting width
 			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
+			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
-			crop: function(width, height) {
-				this.resize(width, height, true);
+			crop: function(width, height, preserveHeaders) {
+				this.resize(width, height, true, preserveHeaders);
 			},
 
 			getAsCanvas: function() {

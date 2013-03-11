@@ -154,6 +154,28 @@ package mxi.image
 			return _headers;
 		}
 		
+		
+		public function stripHeaders(binData:ByteArray) : void 
+		{
+			var img:JPEG = new JPEG(binData), headers:Array, br:BinaryReader = new BinaryReader();
+			
+			img.extractHeaders();
+			headers = img.getHeaders();
+			img.purge();
+						
+			if (headers.length) {
+				br.init(binData);
+				for (var i:int = headers.length - 1; i >= 0; i--) {
+					br.SEGMENT(headers[i].start, headers[i].length, null);
+				}
+				binData.clear();
+				binData.writeBytes(br.SEGMENT());
+				br.clear();
+			}
+		}
+		
+		
+		
 		public function getHeaders(app:String = null) : Array
 		{
 			var headers:Array, array:Array = [];
@@ -213,7 +235,7 @@ package mxi.image
 		}
 		
 		
-		public function insertHeaders(binData:ByteArray, headers:Array = null) : ByteArray
+		public function insertHeaders(binData:ByteArray, headers:Array = null) : void
 		{
 			var idx:uint, br:BinaryReader = new BinaryReader;
 			
@@ -236,7 +258,9 @@ package mxi.image
 					idx += headers[i].length;
 				}
 			}
-			return br.SEGMENT();
+			binData.clear();
+			binData.writeBytes(br.SEGMENT());
+			br.clear();
 		}
 		
 		public function purge() : void
