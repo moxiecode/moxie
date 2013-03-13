@@ -290,15 +290,23 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 		function _resize(width, height, crop, preserveHeaders) {
-			var srcImg, ctx, scale, mathFn, x, y, imgWidth, imgHeight;
+			var ctx, scale, mathFn, x, y, imgWidth, imgHeight, orientation;
 
-			_preserveHeaders = preserveHeaders;
+			_preserveHeaders = preserveHeaders; // we will need to check this on export
 
-			srcImg = _getSourceImage.call(this, _img);
+			// take into account orientation tag
+			orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+
+			if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
+				// swap dimensions
+				var mem = width;
+				width = height;
+				height = mem;
+			}
 
 			// unify dimensions
 			mathFn = !crop ? Math.min : Math.max;
-			scale = mathFn(width/srcImg.width, height/srcImg.height);
+			scale = mathFn(width/_img.width, height/_img.height);
 		
 			// we only downsize here
 			if (scale > 1 && (!crop || preserveHeaders)) { // when cropping one of dimensions may still exceed max, so process it anyway
@@ -306,8 +314,8 @@ define("moxie/runtime/html5/image/Image", [
 				return;
 			}
 
-			imgWidth = Math.round(srcImg.width * scale);
-			imgHeight = Math.round(srcImg.height * scale);
+			imgWidth = Math.round(_img.width * scale);
+			imgHeight = Math.round(_img.height * scale);
 
 			// prepare canvas if necessary
 			if (!_canvas) {
@@ -329,33 +337,17 @@ define("moxie/runtime/html5/image/Image", [
 			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
 			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
 
-			if (_preserveHeaders) {
-				_rotateToOrientaion(_canvas, _canvas.width, _canvas.height, _getOppositeOrientaion.call(this));
+			if (!_preserveHeaders) {
+				_rotateToOrientaion(_canvas, _canvas.width, _canvas.height, orientation);
 			} else {
 				this.width = _canvas.width;
 				this.height = _canvas.height;
 			}
 
-			_drawToCanvas.call(this, srcImg, _canvas, -x, -y, imgWidth, imgHeight);
+			_drawToCanvas.call(this, _img, _canvas, -x, -y, imgWidth, imgHeight);
 
-			srcImg = null; // free resources
 			_modified = true;
 			this.trigger('Resize');
-		}
-
-
-		function _getSourceImage(img) {
-			var orientation = _getOrientation.call(this);
-
-			if (this.type !== 'image/jpeg' || orientation == 1) {
-				// no manipulation required
-				return img;
-			} else {
-				var canvas = document.createElement('canvas');
-				_rotateToOrientaion(canvas, img.width, img.height, orientation);
-				_drawToCanvas.call(this, img, canvas, 0, 0, img.width, img.height);
-				return canvas;
-			}
 		}
 
 
@@ -367,25 +359,6 @@ define("moxie/runtime/html5/image/Image", [
 				var ctx = canvas.getContext('2d');
 				ctx.drawImage(img, x, y, w, h);
 			}
-		}
-
-
-		function _getOrientation() {
-			return (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
-		}
-
-
-		function _getOppositeOrientaion() {
-			var orientationMap = {
-				2: 2,
-				3: 3,
-				4: 4,
-				5: 7,
-				6: 8,
-				7: 5,
-				8: 6
-			};
-			return orientationMap[_getOrientation.call(this)] || 1;
 		}
 
 

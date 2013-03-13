@@ -462,7 +462,7 @@ define("moxie/image/Image", [
 				});
 
 				image.bind("Load", function() {
-					image.resize(width, height, crop);
+					image.resize(width, height, crop, false);
 				});
 
 				image.clone(this, false);
