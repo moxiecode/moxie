@@ -127,7 +127,7 @@ package com
 			}
 						
 			if (blob && _options.method == 'POST') {
-				if (_options.transport !== 'client' && _multipart && blob.isFileRef() && Utils.isEmptyObj(_options.headers)) {
+				if (_options.transport == 'client' && _multipart && blob.isFileRef() && Utils.isEmptyObj(_options.headers)) {
 					_uploadFileRef(blob);
 				} else {
 					_preloadBlob(blob, _doURLStreamRequest);
@@ -157,7 +157,7 @@ package com
 		
 		
 		public function getStatus() : int
-		{			
+		{		
 			return _status;
 		}
 		
@@ -201,6 +201,11 @@ package com
 				clearTimeout(_onCompleteTimeout);
 			}
 			
+			// if status still equal to zero, than we are ok
+			if (_status == 0) { 
+				_status = 200;
+			}
+			
 			// save response
 			_response = new ByteArray;
 			
@@ -220,13 +225,15 @@ package com
 			_onCompleteTimeout = setTimeout(onUploadComplete, 500, e);
 		}
 		
+		// The httpStatus event is dispatched only for upload failures.
 		private function onStatus(e:HTTPStatusEvent) : void {
 			_status = e.status;
 		}
 		
 		private function onIOError(e:IOErrorEvent) : void {
-			// assume that request succeeded, but url was wrong
-			_status = 404;
+			if (_status == 0) { // httpStatus might have already set status to some failure code (according to livedocs)
+				_status = 404; // assume that request succeeded, but url was wrong
+			}
 			onUploadComplete(e);
 		}
 		
