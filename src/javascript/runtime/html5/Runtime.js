@@ -28,17 +28,19 @@ define("moxie/runtime/html5/Runtime", [
 	Runtime.addConstructor(type, (function() {
 		
 		function Html5Runtime(options) {
-			var I = this, shim, defaults = {};
+			var I = this, shim, defaults = {}, superDestroy;
 
 			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
 
 			Runtime.apply(this, [options, arguments[1] || type]);
 
+			superDestroy = this.destroy; // save the reference to original destroy fn
+
 			Basic.extend(this, {
 
 				init : function() {
 					if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-						I.destroy();
+						this.destroy();
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 					}
 					I.trigger("Init");
@@ -51,6 +53,14 @@ define("moxie/runtime/html5/Runtime", [
 				shimExec: function(component, action) {
 					var args = [].slice.call(arguments, 2);
 					return I.getShim().exec.call(this, this.uid, component, action, args);
+				},
+
+				destroy: function() {
+					if (shim) {
+						shim.removeAllInstances(this);
+					}
+					superDestroy.call(this);
+					shim = I = null;
 				}
 			});
 
@@ -59,26 +69,37 @@ define("moxie/runtime/html5/Runtime", [
 
 				return {
 					exec: function(uid, comp, fn, args) {
-						var obj;
-
 						if (!shim[comp]) {
 							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 						}
 
-						obj = objpool[uid];
-						if (!obj) {
-							obj = objpool[uid] = new shim[comp]();
+						if (!objpool[uid]) {
+							objpool[uid] = {
+								context: this,
+								instance: new shim[comp]()
+							}
 						}
 
-						if (!obj[fn]) {
+						if (!objpool[uid].instance[fn]) {
 							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 						}
 
-						return obj[fn].apply(this, args);
+						return objpool[uid].instance[fn].apply(this, args);
 					},
 
-					unregisterInstance: function(uid) {
+					removeInstance: function(uid) {
 						delete objpool[uid];
+					},
+
+					removeAllInstances: function() {
+						var self = this;
+						
+						Basic.each(objpool, function(obj, uid) {
+							if (Basic.typeOf(obj.instance.destroy) === 'function') {
+								obj.instance.destroy.call(obj.instance.context);
+							}
+							self.removeInstance(uid);
+						});
 					}
 				};
 			}()), extensions);

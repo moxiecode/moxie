@@ -113,6 +113,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						if (_xhr2.upload) {
 							_xhr2.upload.removeEventListener('progress', dispatchUploadProgress);
 						}
+						_xhr2 = null;
 					}
 
 					Basic.each(events, function(name) {
@@ -204,6 +205,10 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				if (_xhr2) {
 					_xhr2.abort();
 				}
+			},
+
+			destroy: function() {
+				self = null;
 			}
 		});
 

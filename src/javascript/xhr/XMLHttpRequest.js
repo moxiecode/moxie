@@ -568,9 +568,21 @@ define("moxie/xhr/XMLHttpRequest", [
 					_p('readyState', XMLHttpRequest.UNSENT);
 				}
 			},
-			
-			toString: function() {
-				return "[object XMLHttpRequest]";
+
+			destroy: function() {
+				if (_xhr) {
+					if (Basic.typeOf(_xhr.destroy) === 'function') {
+						_xhr.destroy();
+					}
+					_xhr = null;
+				}
+
+				this.unbindAll();
+
+				if (this.upload) {
+					this.upload.unbindAll();
+					this.upload = null;
+				}
 			}
 		});
 
@@ -853,6 +865,7 @@ define("moxie/xhr/XMLHttpRequest", [
 							self.dispatchEvent('load');
 						}
 						
+						_xhr = null;
 						self.dispatchEvent('loadend');
 						break;
 				}
@@ -876,6 +889,12 @@ define("moxie/xhr/XMLHttpRequest", [
 			_mode = RUNTIME;
 
 			_xhr = new RuntimeTarget();
+
+			function loadEnd() {
+				_xhr.destroy();
+				self.dispatchEvent('loadend');
+				_xhr = self = null;
+			}
 
 			function exec(runtime) {
 				_xhr.bind('LoadStart', function(e) {
@@ -926,14 +945,12 @@ define("moxie/xhr/XMLHttpRequest", [
 						_error_flag = true;
 						self.dispatchEvent('error');
 					}
-					_xhr.unbindAll();
-					self.dispatchEvent('loadend');
+					loadEnd();
 				});
 
 				_xhr.bind('Abort', function(e) {
 					self.dispatchEvent(e);
-					_xhr.unbindAll();
-					self.dispatchEvent('loadend');
+					loadEnd();
 				});
 				
 				_xhr.bind('Error', function(e) {
@@ -942,8 +959,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					self.dispatchEvent('readystatechange');
 					_upload_complete_flag = true;
 					self.dispatchEvent(e);
-					_xhr.unbindAll();
-					self.dispatchEvent('loadend');
+					loadEnd();
 				});
 
 				runtime.exec.call(_xhr, 'XMLHttpRequest', 'send', {

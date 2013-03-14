@@ -217,7 +217,7 @@ define("moxie/runtime/html5/image/Image", [
 
 			destroy: function() {
 				_purge.call(this);
-				this.getRuntime().getShim().unregisterInstance(this.uid);
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 
