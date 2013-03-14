@@ -35,6 +35,9 @@ define('moxie/runtime/Runtime', [
 		, shimid = uid + '_container'
 		;
 
+		// register runtime in private hash
+		runtimes[uid] = this;
+
 		// public methods
 		Basic.extend(this, {
 			/**
@@ -69,6 +72,14 @@ define('moxie/runtime/Runtime', [
 			@type {String}
 			*/
 			shimid: shimid,
+
+			/**
+			Number of connected clients. If equal to zero, runtime can be destroyed
+
+			@property clients
+			@type {Number}
+			*/
+			clients: 0,
 
 			/**
 			Runtime initialization options
@@ -183,21 +194,6 @@ define('moxie/runtime/Runtime', [
 
 		});
 	}
-
-	/**
-	Registers runtime in private hash
-
-	@method registerRuntime
-	@private
-	@static
-	@param {String} uid Unique identifier of the runtime
-	@param {Runtime} runtime Runtime object to register
-	@return {Runtime}
-	*/
-	Runtime.registerRuntime = function(uid, runtime) {
-		runtimes[uid] = runtime;
-		return runtime;
-	};
 
 	/**
 	Retrieves runtime from private hash by it's uid

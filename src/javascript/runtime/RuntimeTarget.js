@@ -27,7 +27,13 @@ define('moxie/runtime/RuntimeTarget', [
 	*/
 	function RuntimeTarget() {
 		this.uid = Basic.guid('uid_');
+		
 		RuntimeClient.call(this);
+
+		this.destroy = function() {
+			this.disconnectRuntime();
+			this.unbindAll();
+		};
 	}
 
 	RuntimeTarget.prototype = EventTarget.instance;

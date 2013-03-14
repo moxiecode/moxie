@@ -21,7 +21,7 @@ define('moxie/runtime/RuntimeClient', [
 
 	@class RuntimeClient
 	*/
-	return function() {
+	return function RuntimeClient() {
 		var self = this, runtime;
 
 		Basic.extend(this, {
@@ -48,6 +48,7 @@ define('moxie/runtime/RuntimeClient', [
 						/*if (Basic.typeOf(self.trigger) === 'function') { // connectRuntime might be called on non eventTarget object
 							self.trigger('RuntimeInit', runtime);
 						}*/
+						runtime.clients++;
 						return runtime;
 					} else {
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
@@ -74,7 +75,6 @@ define('moxie/runtime/RuntimeClient', [
 					// try initializing the runtime
 					try {
 						runtime = new construct(options);
-						Runtime.registerRuntime(runtime.uid, runtime);
 
 						runtime.bind('Init', function() {
 							// mark runtime as initialized
@@ -84,14 +84,13 @@ define('moxie/runtime/RuntimeClient', [
 
 							// jailbreak ...
 							setTimeout(function() {
+								runtime.clients++;
 								// this will be triggered on component
 								self.trigger('RuntimeInit', runtime);
 							}, 1);
 						});
 
-						runtime.bind('Exception', function() {
-							// console.info(arguments);
-						});
+						/*runtime.bind('Exception', function() { });*/
 
 						runtime.init();
 						return;
@@ -117,13 +116,10 @@ define('moxie/runtime/RuntimeClient', [
 			@method disconnectRuntime
 			*/
 			disconnectRuntime: function() {
-
-				// check if runtime not occupied
-
-				// destroy runtime if not
-
-				// unregister runtime
-
+				if (runtime && --runtime.clients <= 0) {
+					runtime.destroy();
+					runtime = null;
+				}
 			}
 
 		});
