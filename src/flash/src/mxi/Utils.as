@@ -17,6 +17,20 @@ package mxi
 		}
 		
 		
+		static private var _guidCounter:uint = 0;
+		
+		static public function guid(prefix:String = '') : String
+		{
+			var guid:String = new Date().getTime().toString(32), i:int;
+			
+			for (i = 0; i < 5; i++) {
+				guid += Math.floor(Math.random() * 65535).toString(32);
+			}
+			
+			return (prefix || 'o_') + guid + (_guidCounter++).toString(32);
+		}
+		
+		
 		static public function extend(obj1:*, obj2:*, strict:Boolean = false, propsOnly:Boolean = true) : *
 		{
 			if (!obj1)

@@ -62,7 +62,7 @@ define('moxie/file/Blob', [
 			@property uid
 			@type {String}
 			*/
-			uid: Basic.guid('uid_'),
+			uid: blob.uid || Basic.guid('uid_'),
 			
 			/**
 			Unique id of the connected runtime, if falsy, then runtime will have to be initialized 

@@ -27,7 +27,7 @@ package com
 				ba:ByteArray = new ByteArray;
 			
 			if (typeof blob === 'string') {
-				blob = Moxie.blobPile.get(blob);
+				blob = Moxie.compFactory.get(blob);
 			}
 			
 			if (!blob || !(blob is Blob) || blob.isEmpty()) {

@@ -61,20 +61,11 @@ package com
 		}
 		
 		
-		public function getAsBlob(type:String = '') : * {
-			var bb:BlobBuilder, blob:*;
-			
-			bb = new BlobBuilder;
-			bb.append(_buffer);
-			blob = bb.getBlob(type);
-			
-			if (Moxie.blobPile.add(blob)) {
-				// adapt for outer world
-				blob = blob.toObject();
-				blob.ruid = Moxie.uid; // runtime uid
-				return blob;
-			}
-			return false;
+		public function getAsBlob(type:String = '') : Object 
+		{
+			var blob:Blob = new Blob([_buffer], { type: type });
+			Moxie.compFactory.add(blob.uid, blob);
+			return blob.toObject();
 		}
 	
 			

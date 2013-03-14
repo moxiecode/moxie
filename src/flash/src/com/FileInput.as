@@ -117,7 +117,7 @@ package com
 			var files:Array = [];
 			
 			for each (var file:File in _files) {
-				Moxie.blobPile.add(file);
+				Moxie.compFactory.add(file.uid, file);
 				files.push(file.toObject());
 			}
 			return files;
@@ -135,7 +135,7 @@ package com
 					break;
 				
 				case Event.SELECT:
-					var fileRefList:Array = [], bb:BlobBuilder, file:File;
+					var fileRefList:Array = [];
 					
 					if (!_options.multiple) {
 						fileRefList.push(_picker);
@@ -146,9 +146,7 @@ package com
 					_files = [];
 					
 					for (var i:uint = 0; i < fileRefList.length; i++) {
-						bb = new BlobBuilder;
-						bb.append(fileRefList[i]);
-						_files.push(bb.getFile());
+						_files.push(new File([fileRefList[i]]));
 					}
 																				
 					dispatchEvent(new FileInputEvent(FileInputEvent.SELECT));

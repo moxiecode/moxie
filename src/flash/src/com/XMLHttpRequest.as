@@ -99,7 +99,7 @@ package com
 			_blobName = fileName || 'blob' + new Date().getTime();
 			
 			if (typeof blob === 'string') {
-				blob = Moxie.blobPile.get(blob);
+				blob = Moxie.compFactory.get(blob);
 				if (!fileName && blob is File && blob.hasOwnProperty('name')) { 
 					_blobName = blob.name;
 				} 
@@ -120,7 +120,7 @@ package com
 			_options = meta;
 									
 			if (typeof blob === 'string') {
-				blob = Moxie.blobPile.get(blob);
+				blob = Moxie.compFactory.get(blob);
 				if (blob is File && blob.hasOwnProperty('name')) { 
 					_blobName = blob.name;
 				} 
@@ -139,20 +139,15 @@ package com
 		
 		public function getResponseAsBlob() : Object
 		{
-			var bb:BlobBuilder, blob:*;
+			var blob:Blob;
 			
 			if (!_response) {
 				return null;
 			}
 			
-			bb = new BlobBuilder;
-			bb.append(_response);
-			blob = bb.getFile('', _options.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase());
-			Moxie.blobPile.add(blob);
-			blob = blob.toObject();
-			blob.ruid = Moxie.uid;
-			
-			return blob;
+			blob = new File([_response], { name: _options.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase() });
+			Moxie.compFactory.add(blob.uid, blob);
+			return blob.toObject();
 		}
 		
 		

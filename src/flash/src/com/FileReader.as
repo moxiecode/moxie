@@ -94,7 +94,7 @@ package com
 		private function _read(blob:*) : void {
 						
 			if (typeof blob === 'string') {
-				blob = Moxie.blobPile.get(blob);
+				blob = Moxie.compFactory.get(blob);
 			}
 									
 			if (!blob || !(blob is Blob) || blob.isEmpty()) {

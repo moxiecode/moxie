@@ -28,9 +28,7 @@ package
 		
 		private var eventDispatcher:String = "moxie.core.EventTarget.instance.dispatchEvent";
 				
-		public static var comps:ComponentFactory;
-		
-		public static var blobPile:BlobPile;
+		public static var compFactory:ComponentFactory;
 		
 		public static var stageOccupied:Boolean = false; // whether a display facility is already occupied
 				
@@ -79,10 +77,7 @@ package
 			ExternalInterface.addCallback('isOccupied', isOccupied);
 			
 			// initialize component factory
-			Moxie.comps = new ComponentFactory;
-			
-			// blob registry
-			Moxie.blobPile = new BlobPile;
+			Moxie.compFactory = new ComponentFactory;
 						
 			_fireEvent(Moxie.uid + "::Init");			
 		}
@@ -94,14 +89,14 @@ package
 			
 			uid = Utils.sanitize(uid); // make it safe
 			
-			var result:*, comp:* = Moxie.comps.get(uid, compName);	
+			var comp:* = Moxie.compFactory.get(uid);	
 			
 			// Moxie.log([compName, action]);
 									
 			try {
 				// initialize corresponding com 
 				if (!comp) { 
-					comp = Moxie.comps.create(this, uid, compName);	
+					comp = Moxie.compFactory.create(this, uid, compName);	
 				}		
 			
 				// execute the action if available

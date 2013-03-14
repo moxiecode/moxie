@@ -8,6 +8,7 @@ package com.errors
 		public static const OUT_OF_MEMORY:uint = 5;
 		public static const INVALID_STATE_ERR:uint = 11;
 		public static const SYNTAX_ERR:uint = 12;
+		public static const COMP_CONFLICT:uint = 23;
 		
 		public function RuntimeError(id:* = 0) {
 			super("", id);

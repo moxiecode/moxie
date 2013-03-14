@@ -12,7 +12,7 @@ package com
 			}
 			// if source is not a FileReference return default name
 			if (!isFileRef()) {
-				return 'file_' + id;
+				return uid;
 			}
 			// otherwise return original name
 			return _sources[0].buffer.fileRef.name;
@@ -28,10 +28,12 @@ package com
 		}
 				
 		
-		public function File(sources:Array, size:Number, type:String = '', name:String = '')
+		public function File(sources:Array, properties:* = null)
 		{
-			_name = name;
-			super(sources, size, type);		
+			if (properties is Object && properties.hasOwnProperty('name')) {
+				_name = properties.name;
+			}
+			super(sources, properties);		
 		}
 		
 		

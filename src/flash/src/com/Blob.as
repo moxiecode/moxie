@@ -1,14 +1,17 @@
 package com
 {
+	import com.utils.Buffer;
+	
 	import flash.net.FileReference;
+	import flash.utils.ByteArray;
+	
+	import mxi.Utils;
 
 	public class Blob
-	{
-		private static var _counter:uint = 1;
-		
-		private var _id:String;
-		public function get id() : String {
-			return _id;
+	{	
+		private var _uid:String;
+		public function get uid() : String {
+			return _uid;
 		}		
 		
 		private var _size:Number;		
@@ -20,9 +23,6 @@ package com
 		public function get type() : String {
 			return _type;
 		}
-				
-		
-		public var _sources:Array = [];
 		
 		// cumulative size of all the sources this blob is part of
 		public function get realSize() : uint {
@@ -47,25 +47,70 @@ package com
 			return size;
 		}
 		
+		public var _sources:Array = [];
 		
-		public function Blob(sources:Array, size:Number, type:String = '') {
-			_id = (_counter++).toString();
+		protected var _pointer:Number = 0;
+		
+		
+		public function Blob(sources:Array, properties:* = null) 
+		{			
+			for each (var source:* in sources) {
+				if (source is FileReference) {
+					_sources.push({
+						buffer: new Buffer(source),
+						start: 0,
+						end: source.size
+					});
+					_pointer += source.size;
+				} else if (source is ByteArray) {
+					_sources.push({
+						buffer: new Buffer(source),
+						start: 0,
+						end: source.length
+					});
+					_pointer += source.length;
+				} else if (source is Blob) {
+					// increment reference counters for associated buffers
+					for (var i:uint = 0, max:uint = source._sources.length; i < max; i++) {
+						source._sources[i].buffer.refs++;
+					}
+					// simply copy over the sources
+					_sources.push.apply(source._sources);
+					_pointer += source.size;
+				} else if (source.hasOwnProperty('buffer') && source.buffer is Buffer) {
+					_sources.push({
+						buffer: source.buffer,
+						start: source.start,
+						end: source.end
+					});
+					_pointer += source.end - source.start;
+				}
+			}
 			
-			_sources = sources;
-			_size = size; 
-			_type = type;
+			if (properties is String) {
+				_type = properties;
+			} else if (properties is Object && properties.hasOwnProperty('type')) {
+				_type = properties.type;
+			}
+			
+			_size = _pointer;
+			_uid = Utils.guid('uid_');
 		}
 		
-		public function slice(... args) : Blob {
+		
+		public function slice(... args) : Object {
 			var src:Object, 
 				start:int = args[0] || 0, 
 				end:int = args[1] || _size, 
 				contentType:String = args[2] || '',
 				size:uint, offset:uint = 0,
+				blob:Blob,
 				sources:Array = [];
-			
+							
 			if (start > end) {
-				return new Blob([], 0, contentType);
+				blob = new Blob([], contentType);
+				Moxie.compFactory.add(blob.uid, blob);
+				return blob.toObject(); 
 			}
 			
 			for (var i:uint = 0, length:uint = _sources.length; i < length; i++) {
@@ -88,7 +133,9 @@ package com
 			}
 			
 			if (i == length || offset > end) {
-				return new Blob(sources, end - start, contentType);
+				blob = new Blob(sources, contentType);
+				Moxie.compFactory.add(blob.uid, blob);
+				return blob.toObject(); 
 			} 
 			
 			// loop for the end otherwise
@@ -106,7 +153,9 @@ package com
 				}
 			}
 			
-			return new Blob(sources, end - start, contentType); 
+			blob = new Blob(sources, contentType);
+			Moxie.compFactory.add(blob.uid, blob);
+			return blob.toObject(); 
 		}
 		
 		public function isEmpty() : Boolean {
@@ -131,29 +180,29 @@ package com
 		public function toObject() : Object 
 		{
 			return {
-				id: id,
+				uid: uid,
 				ruid: Moxie.uid,
 				size: size,
 				type: type
 			};
 		}
 		
-		public function purge() : void // this one simply clears out all FileReferences
-		{
-			var src:Object;
-			
-			for each (src in _sources) {
+		public function purge() : void
+		{			
+			for each (var src:Object in _sources) {
 				src.buffer.purge();	
 			}
 		}
 		
+		
 		public function destroy() : void
-		{
-			var src:Object;
-			
-			for each (src in _sources) {
-				src.buffer.destroy();	
+		{			
+			for each (var src:Object in _sources) {
+				if (--src.buffer.refs <= 0) {
+					src.buffer.destroy();	
+				}
 			}
+			Moxie.compFactory.remove(_uid);
 		}
 	}
 }

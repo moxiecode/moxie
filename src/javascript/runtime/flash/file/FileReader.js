@@ -48,7 +48,7 @@ define("moxie/runtime/flash/file/FileReader", [
 				}
 			}, 999);
 
-			return self.shimExec.call(this, 'FileReader', 'readAsBase64', blob.getSource().id);
+			return self.shimExec.call(this, 'FileReader', 'readAsBase64', blob.uid);
 		}
 	};
 

@@ -63,7 +63,7 @@ package com
 		public function loadFromImage(image:*, takeEncoded:Boolean = false) : void
 		{			
 			if (typeof image === 'string') {
-				image = Moxie.comps.get(image, 'Image');
+				image = Moxie.compFactory.get(image);
 			}
 			
 			if (!image) {
@@ -103,7 +103,7 @@ package com
 			var fr:FileReader; 
 			
 			if (typeof blob === 'string') {
-				blob = Moxie.blobPile.get(blob);
+				blob = Moxie.compFactory.get(blob);
 			}
 						
 			if (!blob) {
@@ -347,18 +347,15 @@ package com
 		
 		public function getAsBlob(type:String = null, quality:uint = 90) : Object
 		{
-			var ba:ByteArray, bb:BlobBuilder, blob:Blob;
+			var ba:ByteArray, blob:Blob;
 			
 			ba = getAsEncodedByteArray(type, quality);	
 			if (!ba) {
 				return null;
 			}
 
-			bb = new BlobBuilder;
-			bb.append(ba);
-			blob = bb.getBlob(type);
-			Moxie.blobPile.add(blob);
-
+			blob = new Blob([ba], { type: type });
+			Moxie.compFactory.add(blob.uid, blob);
 			return blob.toObject();
 		}
 		

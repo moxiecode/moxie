@@ -10,7 +10,7 @@ package
 	
 	public class ComponentFactory
 	{
-		FileInput, FileReader, FileReaderSync, BlobSlicer, XMLHttpRequest, Transporter;
+		FileInput, FileReader, FileReaderSync, Blob, File, XMLHttpRequest, Transporter;
 		
 		// depending on command-line params, conditionally compile image manipulation logic
 		BUILD::IMAGE {
@@ -19,10 +19,30 @@ package
 		
 		private var _registry:Object = {};
 		
-		public function get(uid:String, compName:String) : * 
-		{		
-			return _registry.hasOwnProperty(uid) && _registry[uid].hasOwnProperty(compName) ? _registry[uid][compName] : false;
+		public function add(uid:String, comp:*) : void
+		{
+			if (_registry.hasOwnProperty(uid)) {
+				throw new RuntimeError(RuntimeError.COMP_CONFLICT);
+			}
+			_registry[uid] = comp;
 		}
+		
+		
+		public function remove(uid:String) : Boolean
+		{
+			if (!_registry.hasOwnProperty(uid)) {
+				return false;
+			}
+			delete _registry.uid;
+			return true;
+		}
+		
+		
+		public function get(uid:String) : * 
+		{		
+			return _registry.hasOwnProperty(uid) ? _registry[uid] : false;
+		}
+		
 		
 		public function create(mOxie:Moxie, uid:String, compName:String) : *
 		{
@@ -53,18 +73,14 @@ package
 					mOxie.addChild(comp);
 				}
 				
-				if (!_registry.hasOwnProperty(uid)) {
-					_registry[uid] = {};
+				if (_registry.hasOwnProperty(uid)) {
+					throw new RuntimeError(RuntimeError.COMP_CONFLICT);
 				}
-				
-				_registry[uid][compName] = comp;
-				
-				return comp;
+				return (_registry[uid] = comp);
 			} else {
 				throw new RuntimeError(RuntimeError.NOT_SUPPORTED_ERR);
 			}	
-		}
-		
+		}	
 		
 	}
 }

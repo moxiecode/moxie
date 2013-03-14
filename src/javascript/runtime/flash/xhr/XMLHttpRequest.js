@@ -37,7 +37,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			}
 
 			function appendBlob(name, blob) {
-				self.shimExec.call(target, 'XMLHttpRequest', 'appendBlob', name, blob.getSource().id);
+				self.shimExec.call(target, 'XMLHttpRequest', 'appendBlob', name, blob.uid);
 				data = null;
 				send();
 			}

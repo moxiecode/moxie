@@ -36,7 +36,7 @@ define("moxie/runtime/flash/file/Blob", [
 				end = Math.min(end, blob.size);
 			}
 
-			blob = self.shimExec.call(this, 'BlobSlicer', 'slice', blob.id, start, end, type || '');
+			blob = self.shimExec.call(this, 'Blob', 'slice', start, end, type || '');
 
 			if (blob) {
 				blob = new Blob(self.uid, blob);

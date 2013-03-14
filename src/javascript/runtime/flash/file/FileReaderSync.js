@@ -37,7 +37,7 @@ define("moxie/runtime/flash/file/FileReaderSync", [
 		read: function(op, blob) {
 			var result, self = this.getRuntime();
 
-			result = self.shimExec.call(this, 'FileReaderSync', 'readAsBase64', blob.getSource().id);
+			result = self.shimExec.call(this, 'FileReaderSync', 'readAsBase64', blob.uid);
 			if (!result) {
 				return null; // or throw ex
 			}
