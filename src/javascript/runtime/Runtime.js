@@ -190,6 +190,7 @@ define('moxie/runtime/Runtime', [
 
 				this.unbindAll();
 				delete runtimes[this.uid];
+				uid = shimid = self = null;
 			}
 
 		});

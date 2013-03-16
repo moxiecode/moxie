@@ -227,7 +227,7 @@ define("moxie/image/Image", [
 					}
 				} catch(ex) {
 					// for now simply trigger error event
-					self.trigger('error');
+					this.trigger('error');
 				}
 			},
 
@@ -259,10 +259,10 @@ define("moxie/image/Image", [
 				preserveHeaders = (preserveHeaders === undefined ? true : !!preserveHeaders);
 
 				runtime = this.connectRuntime(this.ruid);
-				self.bind('Resize', function(e, info) {
+				this.bind('Resize', function(e, info) {
 					_updateInfo.call(this, info);
 				}, 999);
-				runtime.exec.call(self, 'Image', 'resize', width, height, crop, preserveHeaders);
+				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
 
 			/**
@@ -481,6 +481,7 @@ define("moxie/image/Image", [
 					runtime.exec.call(self, 'Image', 'destroy');
 				}
 				this.unbindAll();
+				self = null;
 			}
 		});
 

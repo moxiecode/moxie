@@ -208,7 +208,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 			},
 
 			destroy: function() {
-				self = null;
+				self = filename = null;
 			}
 		});
 

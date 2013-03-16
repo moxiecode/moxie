@@ -20,7 +20,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(Basic, BinaryReader) {
 	
-	return function() {
+	return function ExifParser() {
 		// Private ExifParser fields
 		var data, tags, Tiff, offsets = {}, tagDescs;
 
@@ -430,6 +430,8 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 			purge: function() {
 				data.init(null);
+				data = Tiff = null;
+				offsets = {};
 			}
 		};
 	};

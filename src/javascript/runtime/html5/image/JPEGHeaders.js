@@ -18,6 +18,7 @@
 define("moxie/runtime/html5/image/JPEGHeaders", [
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(BinaryReader) {
+	
 	return function JPEGHeaders(data) {
 		var markers = {
 				0xFFE1: {
@@ -149,6 +150,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 			purge: function() {
 				headers = [];
 				read.init(null);
+				read = null;
 			}
 		};
 	};

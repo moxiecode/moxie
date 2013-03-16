@@ -22,7 +22,7 @@ define('moxie/runtime/RuntimeClient', [
 	@class RuntimeClient
 	*/
 	return function RuntimeClient() {
-		var self = this, runtime;
+		var runtime;
 
 		Basic.extend(this, {
 			/**
@@ -32,7 +32,7 @@ define('moxie/runtime/RuntimeClient', [
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
 			*/
 			connectRuntime: function(options) {
-				var ruid, i, construct, items = [], order;
+				var self = this, ruid, i, construct, items = [], order;
 
 				// check if a particular runtime was requested
 				if (Basic.typeOf(options) === 'string') {

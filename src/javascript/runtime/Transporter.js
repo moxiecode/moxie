@@ -74,12 +74,11 @@ define("moxie/runtime/Transporter", [
 
 
 			destroy: function() {
-				_reset.call(this);
 				this.unbindAll();
-			},
-
-			constructor: Transporter
-
+				_runtime = null;
+				this.disconnectRuntime();
+				_reset.call(this);
+			}
 		});
 
 		function _reset() {

@@ -29,6 +29,7 @@ define("moxie/runtime/flash/image/Image", [
 
 			function exec(srcBlob) {
 				self.shimExec.call(comp, 'Image', 'loadFromBlob', srcBlob.uid);
+				comp = self = null;
 			}
 
 			if (blob.isDetached()) { // binary string

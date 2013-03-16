@@ -60,7 +60,7 @@ define("moxie/runtime/html5/Runtime", [
 						shim.removeAllInstances(this);
 					}
 					superDestroy.call(this);
-					shim = I = null;
+					superDestroy = shim = I = null;
 				}
 			});
 

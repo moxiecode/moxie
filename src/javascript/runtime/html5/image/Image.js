@@ -216,6 +216,7 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			destroy: function() {
+				me = null;
 				_purge.call(this);
 				this.getRuntime().getShim().removeInstance(this.uid);
 			}
@@ -266,7 +267,7 @@ define("moxie/runtime/html5/image/Image", [
 			if (window.FileReader) {
 				fr = new FileReader();
 				fr.onload = function() {
-					callback(fr.result);
+					callback(this.result);
 				};
 				fr.readAsBinaryString(file);
 			} else {
@@ -281,7 +282,7 @@ define("moxie/runtime/html5/image/Image", [
 			if (window.FileReader) {
 				fr = new FileReader();
 				fr.onload = function() {
-					callback(fr.result);
+					callback(this.result);
 				};
 				fr.readAsDataURL(file);
 			} else {
@@ -338,7 +339,7 @@ define("moxie/runtime/html5/image/Image", [
 			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
 
 			if (!_preserveHeaders) {
-				_rotateToOrientaion(_canvas, _canvas.width, _canvas.height, orientation);
+				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
 			} else {
 				this.width = _canvas.width;
 				this.height = _canvas.height;
@@ -367,18 +368,18 @@ define("moxie/runtime/html5/image/Image", [
 		* Orientation value is from EXIF tag
 		* @author Shinichi Tomita <shinichi.tomita@gmail.com>
 		*/
-		function _rotateToOrientaion(canvas, width, height, orientation) {
+		function _rotateToOrientaion(width, height, orientation) {
 			switch (orientation) {
 				case 5:
 				case 6:
 				case 7:
 				case 8:
-					canvas.width = height;
-					canvas.height = width;
+					_canvas.width = height;
+					_canvas.height = width;
 					break;
 				default:
-					canvas.width = width;
-					canvas.height = height;
+					_canvas.width = width;
+					_canvas.height = height;
 			}
 
 			/**
@@ -392,7 +393,7 @@ define("moxie/runtime/html5/image/Image", [
 			8 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
 			*/
 
-			var ctx = canvas.getContext('2d');
+			var ctx = _canvas.getContext('2d');
 			switch (orientation) {
 				case 2:
 					// horizontal flip

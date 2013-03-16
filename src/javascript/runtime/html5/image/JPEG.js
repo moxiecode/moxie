@@ -117,7 +117,7 @@ define("moxie/runtime/html5/image/JPEG", [
 			_ep.purge();
 			_hm.purge();
 			_br.init(null);
-			_hm = _ep = _br = null;
+			_binstr = _info = _hm = _ep = _br = null;
 		}
 	}
 

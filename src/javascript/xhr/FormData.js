@@ -106,6 +106,12 @@ define("moxie/xhr/FormData", [
 						cb(value, name);
 					});
 				});
+			},
+
+			destroy: function() {
+				_blobField = null;
+				_name = "";
+				_fields = {};
 			}
 		});
 	}

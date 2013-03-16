@@ -115,6 +115,9 @@ define("moxie/runtime/html5/image/ImageInfo", [
 
 		Basic.extend(this, _img);
 
-		this.purge = _img.purge;
+		this.purge = function() {
+			_img.purge();
+			_img = null;
+		};
 	};
 });

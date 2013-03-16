@@ -58,7 +58,7 @@ define("moxie/runtime/html5/image/PNG", [
 
 		function _purge() {
 			_br.init(null);
-			_hm = _ep = _br = null;
+			_binstr = _info = _hm = _ep = _br = null;
 		}
 
 		_info = _getDimensions.call(this);
