@@ -79,7 +79,7 @@ namespace Moxiecode.Com
 			foreach (File file in _files)
 			{
 				files.Add(file.ToObject());
-				Moxie.blobPile.Add(file.id, file);
+				Moxie.compFactory.add(file.uid, file);
 			}
 			return files.ToArray();
 		}
@@ -98,16 +98,9 @@ namespace Moxiecode.Com
 
 				if ((bool)dialog.ShowDialog())
 				{
-					BlobBuilder bb;
-					File blob;
-					FileReader fileReader = new FileReader();
-
 					foreach (FileInfo fileInfo in dialog.Files)
 					{
-						bb = new BlobBuilder();
-						bb.append(fileInfo);
-						blob = bb.getFile();
-						_files.Add(blob);
+						_files.Add(new File(new List<object>{ fileInfo }));
 					}
 					Change(this, null);
 				}

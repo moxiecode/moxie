@@ -62,13 +62,9 @@ namespace Moxiecode.Com
 		
 		public Dictionary<string, object> getAsBlob(object type)
 		{
-			BlobBuilder bb = new BlobBuilder();
-			bb.append(_buffer);
-			Blob blob = bb.getBlob((string)type);
-			Moxie.blobPile.Add(blob.id, blob);
+			Blob blob = new Blob(new List<object>{_buffer}, new Dictionary<string,string>{{ "type", (string)type }});
+			Moxie.compFactory.add(blob.uid, blob);
 			return blob.ToObject();
-		}
-	
-			
+		}	
 	}
 }

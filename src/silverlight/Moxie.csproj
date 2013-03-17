@@ -77,8 +77,6 @@
     </Compile>
     <Compile Include="ComponentFactory.cs" />
     <Compile Include="Com\Blob.cs" />
-    <Compile Include="Com\BlobBuilder.cs" />
-    <Compile Include="Com\BlobSlicer.cs" />
     <Compile Include="Com\Errors\ImageError.cs" />
     <Compile Include="Com\Errors\RuntimeError.cs" />
     <Compile Include="Com\Errors\DOMError.cs" />
@@ -94,8 +92,8 @@
     <Compile Include="Moxie.xaml.cs">
       <DependentUpon>Moxie.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MXI\JsonWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MXI\JsonReader.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(BUILD)' == 'IMAGE' ">
     <Compile Include="Com\Image.cs" />
@@ -186,5 +184,8 @@
   </ProjectExtensions>
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OutputDir)' != '' ">copy /Y $(XapFilename) ..\..\$(OutputDir)$(XapFilename)</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y $(XapFilename) ..\..\$(OutputDir)$(XapFilename)</PostBuildEvent>
   </PropertyGroup>
 </Project>

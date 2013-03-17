@@ -29,9 +29,7 @@ namespace Moxiecode
 	{
 		public static string uid;
 
-		public static ComponentFactory comps = new ComponentFactory();
-
-		public static Dictionary<string, object> blobPile = new Dictionary<string, object>();
+		public static ComponentFactory compFactory = new ComponentFactory();
 
 		private String eventDispatcherNamespace = "moxie.core.EventTarget.instance";
 		private String eventDispatcher = "dispatchEvent";
@@ -94,9 +92,9 @@ namespace Moxiecode
 		private dynamic _exec(string uid, string compName, string action, object[] args = null)
 		{
 			try {
-				object comp = Moxie.comps.get(uid, compName);
+				object comp = Moxie.compFactory.get(uid);
 				if (comp == null) {
-					comp = Moxie.comps.create(this, uid, compName);
+					comp = Moxie.compFactory.create(this, uid, compName);
 				}
 
 				// execute the action if available

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Browser;
 using System.Windows.Controls;
@@ -32,22 +33,32 @@ namespace Moxiecode.Com
 			}
 		}
 
-		public File(List<BufferRegion> sources, long size, string type = "", string name = "") : base(sources, size, type)
+		public File(List<object> sources, object properties = null) : base(sources, properties)
 		{
-			// figure out last modified date
-			sources.ForEach(delegate(BufferRegion source)
-			{
-				if (_lastModifiedDate == null || _lastModifiedDate.CompareTo(source.buffer.lastModifiedDate) < 0) 
-				{
-					_lastModifiedDate = source.buffer.lastModifiedDate;
-				}
-			});
+			object source = sources[0];
 
-			// if no name was passed take one from first file reference
-			if (name == "") {
-				_name = sources[0].buffer.name;
-			} else {
-				_name = name;
+			if (properties is Dictionary<string, string> && ((Dictionary<string, string>)properties).ContainsKey("name"))
+			{
+				_name = ((Dictionary<string, string>)properties)["name"];
+			}
+
+			if (source is FileInfo)
+			{
+				FileInfo fileInfo = (FileInfo)source;
+				if (_name == null) {
+					_name = fileInfo.Name;
+				}
+			}
+			else if (source is BufferRegion)
+			{
+				Buffer buffer = ((BufferRegion)source).buffer;
+				if (_lastModifiedDate == null || _lastModifiedDate.CompareTo(buffer.lastModifiedDate) < 0) {
+					_lastModifiedDate = buffer.lastModifiedDate;
+				}
+
+				if (_name == null) {
+					_name = buffer.name;
+				}
 			}
 		}
 

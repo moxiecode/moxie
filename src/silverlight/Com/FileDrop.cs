@@ -41,17 +41,11 @@ namespace Moxiecode.Com
 			{
 				_files.Clear();
 
-				BlobBuilder bb;
-				File blob;
-
 				FileInfo[] fileInfos = eventArgs.Data.GetData(DataFormats.FileDrop) as FileInfo[];
 
 				foreach (FileInfo fileInfo in fileInfos)
 				{
-					bb = new BlobBuilder();
-					bb.append(fileInfo);
-					blob = bb.getFile();
-					_files.Add(blob);
+					_files.Add(new File(new List<object> { fileInfo }));
 				}
 
 				Drop(this, null);
@@ -75,7 +69,7 @@ namespace Moxiecode.Com
 			foreach (File file in _files)
 			{
 				files.Add(file.ToObject());
-				Moxie.blobPile.Add(file.id, file);
+				Moxie.compFactory.add(file.uid, file);
 			}
 			return files.ToArray();
 		}

@@ -14,6 +14,7 @@ namespace Moxiecode.Com.Errors
 	public class RuntimeError : Exception
 	{
 		public const uint NOT_SUPPORTED_ERR = 1;
+		public const uint COMP_CONFLICT = 23;
 
 		public uint code;
 

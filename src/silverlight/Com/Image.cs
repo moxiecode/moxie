@@ -50,8 +50,8 @@ namespace Moxiecode.Com
 		public void loadFromBlob(object blob)
 		{
 			if (blob is string) {
-				if (!Moxie.blobPile.TryGetValue((string)blob, out blob)) {
-					throw new DOMError(DOMError.NOT_FOUND_ERR);
+				if ((blob = Moxie.compFactory.get((string)blob)) == null) {
+					throw new ImageError(ImageError.WRONG_FORMAT);
 				}
 			}
 
@@ -69,7 +69,7 @@ namespace Moxiecode.Com
 		public void loadFromImage(object source)
 		{
 			if (source is string) {
-				if ((source = Moxie.comps.get((string)source, "Image")) == null) {
+				if ((source = Moxie.compFactory.get((string)source)) == null) {
 					throw new ImageError(ImageError.WRONG_FORMAT);
 				}
 			}
@@ -140,7 +140,7 @@ namespace Moxiecode.Com
 		}
 
 
-		public void resize(object width, object height, object crop)
+		public void resize(object width, object height, object crop, object preserveHeaders)
 		{
 			try {
 				int w = Convert.ToInt32(width);
@@ -300,10 +300,11 @@ namespace Moxiecode.Com
 		{
 			MemoryStream stream = new MemoryStream(); 
 			getAsEncodedStream(stream, type, quality);	
-			BlobBuilder bb = new BlobBuilder();
-			bb.append(stream);
-			Blob blob = bb.getFile(type, this.name);
-			Moxie.blobPile.Add(blob.id, blob);
+			File blob = new File(new List<object>{stream}, new Dictionary<string,string>{
+				{ "name", this.name },
+				{ "type", type }
+			});
+			Moxie.compFactory.add(blob.uid, blob);
 			return blob.ToObject();
 		}
 

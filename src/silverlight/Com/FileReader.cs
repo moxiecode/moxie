@@ -50,8 +50,8 @@ namespace Moxiecode.Com
 		public void readAsBase64(object blob)
 		{
 			if (blob is string) {
-				if (!Moxie.blobPile.TryGetValue((string)blob, out blob)) {
-					throw new DOMError(DOMError.NOT_FOUND_ERR);
+				if ((blob = Moxie.compFactory.get((string)blob)) == null) {
+					throw new ImageError(ImageError.WRONG_FORMAT);
 				}
 			}
 
@@ -74,9 +74,9 @@ namespace Moxiecode.Com
 
 		public void ReadAsMemoryStream(object blob, Stream stream)
 		{
-			if (blob is string) {
-				if (!Moxie.blobPile.TryGetValue((string)blob, out blob)) {
-					throw new DOMError(DOMError.NOT_FOUND_ERR);
+			if (blob is string){
+				if ((blob = Moxie.compFactory.get((string)blob)) == null){
+					throw new ImageError(ImageError.WRONG_FORMAT);
 				}
 			}
 

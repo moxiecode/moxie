@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 
 using Moxiecode.Com.Events;
 using Moxiecode.Com.Errors;
+using Moxiecode.MXI;
 
 namespace Moxiecode.Com
 {
@@ -103,16 +104,19 @@ namespace Moxiecode.Com
 		{
 			_multipart = true;
 			_blobFieldName = (string)name;
-			_blob = blob;
+			_blobName = "blob" + Utils.getTime();
 
-			if (_blob is string) {
-				if (!Moxie.blobPile.TryGetValue((string)_blob, out _blob)) {
+			if (blob is string) {
+				if (!Moxie.compFactory.contains((string)blob)) {
 					throw new DOMError(DOMError.NOT_FOUND_ERR);
 				}
+				blob = Moxie.compFactory.get((string)blob);
 			}
 
-			if (_blob is Blob) {
-				_blobName = _blob is File && ((File)_blob).name != "" ? ((File)_blob).name : "blob" + DateTime.Now.Ticks;
+			_blob = blob;
+
+			if (_blob is File && ((File)_blob).name != "") {
+				_blobName = ((File)_blob).name;
 			}
 		}
 
@@ -135,10 +139,8 @@ namespace Moxiecode.Com
 				return null;
 			}
 
-			BlobBuilder bb = new BlobBuilder();
-			bb.append(_response);
-			File blob = bb.getFile("", _url.LocalPath);
-			Moxie.blobPile.Add(blob.id, blob);
+			File blob = new File(new List<object>{_response}, new Dictionary<string, string>{{"name", _url.LocalPath }});
+			Moxie.compFactory.add(blob.uid, blob);
 			return blob.ToObject();
 		}
 
@@ -220,7 +222,7 @@ namespace Moxiecode.Com
 
 			if (_multipart)
 			{
-				string boundary = "----moxieboundary" + DateTime.Now.Ticks, dashdash = "--", crlf = "\r\n";
+				string boundary = "----moxieboundary" + Utils.getTime().ToString(), dashdash = "--", crlf = "\r\n";
 				string header = "";
 
 				// append mutltipart parameters

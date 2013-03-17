@@ -11,25 +11,47 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Reflection;
 using Moxiecode.Com;
+using Moxiecode.Com.Errors;
 
 namespace Moxiecode
 {
 	public class ComponentFactory
 	{
-		private Dictionary<string, Dictionary<string, object>> _registry = new Dictionary<string, Dictionary<string, object>>();
+		private Dictionary<string, object> _registry = new Dictionary<string, object>();
 
-		public object get(String uid, String compName) 
+		public object get(String uid) 
 		{		
 			object comp = null;
-			Dictionary<string, object> dict = null;
 
-			if (_registry.TryGetValue(uid, out dict)) {
-				if (dict.TryGetValue(compName, out comp)) {
-					return comp;
-				}
+			if (_registry.TryGetValue(uid, out comp)) {
+				return comp;
 			} 
 			return null;
 		}
+
+		public Boolean contains(String uid)
+		{
+			return _registry.ContainsKey(uid);
+		}
+
+		public void add(String uid, object comp)
+		{
+			if (_registry.ContainsKey(uid)) {
+				throw new RuntimeError(RuntimeError.COMP_CONFLICT);
+			}
+			_registry.Add(uid, comp);
+		}
+		
+		
+		public Boolean remove(string uid) 
+		{
+			if (!_registry.ContainsKey(uid)) {
+				return false;
+			}
+			_registry.Remove(uid);
+			return true;
+		}
+
 		
 		public object create(Moxie mOxie, String uid, String compName)
 		{
@@ -58,11 +80,11 @@ namespace Moxiecode
 					mOxie.Layout.Children.Add((FrameworkElement)comp);
 				}
 				
-				if (!_registry.ContainsKey(uid)) {
-					_registry.Add(uid, new Dictionary<string, object>());
+				if (_registry.ContainsKey(uid)) {
+					throw new RuntimeError(RuntimeError.COMP_CONFLICT);
 				}
 				
-				_registry[uid].Add(compName, comp);
+				_registry.Add(uid, comp);
 				return comp;
 			} else {
 				// throw not supported exception
