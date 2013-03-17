@@ -168,6 +168,7 @@ namespace Moxiecode.Com
 			}
 			_sources.Clear();
 			_sources = null;
+			Moxie.compFactory.remove(_uid);
 		}
 	}
 
