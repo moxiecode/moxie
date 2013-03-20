@@ -34,7 +34,7 @@ define("moxie/runtime/flash/Runtime", [
 	Runtime.addConstructor(type, (function() {
 		
 		function FlashRuntime(options) {
-			var self = this;
+			var self = this, superDestroy;
 
 			/**
 			Get the version of the Flash Player
@@ -68,6 +68,8 @@ define("moxie/runtime/flash/Runtime", [
 			self.options = options = Basic.extend({}, defaults, options);
 
 			Runtime.apply(this, [options, arguments[1] || type]);
+
+			superDestroy = this.destroy; // save the reference to original destroy fn
 
 			Basic.extend(this, {
 				init: function() {
@@ -121,6 +123,11 @@ define("moxie/runtime/flash/Runtime", [
 							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 						}
 					}, 5000);
+				},
+
+				destroy: function() {
+					superDestroy.call(this);
+					superDestroy = self = null;
 				}
 			}, extensions);
 		}

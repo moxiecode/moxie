@@ -36,7 +36,7 @@ define("moxie/runtime/silverlight/Runtime", [
 	Runtime.addConstructor(type, (function() {
 
 		function SilverlightRuntime(options) {
-			var self = this;
+			var self = this, superDestroy;
 
 			function isInstalled(version) {
 				var isVersionSupported = false, control = null, actualVer,
@@ -103,6 +103,8 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			Runtime.apply(this, [options, arguments[1] || type]);
 
+			superDestroy = this.destroy; // save the reference to original destroy fn
+
 			Basic.extend(this, {
 
 				getShim: function() {
@@ -135,6 +137,11 @@ define("moxie/runtime/silverlight/Runtime", [
 							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 						}
 					}, 10000); // silverlight may take quite some time to initialize
+				},
+
+				destroy: function() {
+					superDestroy.call(this);
+					superDestroy = self = null;
 				}
 			}, extensions);
 		}
