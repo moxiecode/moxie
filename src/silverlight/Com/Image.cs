@@ -46,6 +46,8 @@ namespace Moxiecode.Com
 		private WriteableBitmap _bm;
 		private Format _img = null;
 
+		private bool _preserveHeaders = true;
+
 
 		public void loadFromBlob(object blob)
 		{
@@ -142,32 +144,40 @@ namespace Moxiecode.Com
 
 		public void resize(object width, object height, object crop, object preserveHeaders)
 		{
+			_preserveHeaders = (bool)preserveHeaders;
+
+			int orientation = 1;
+			if (meta.ContainsKey("tiff") && ((Dictionary<string, object>)meta["tiff"]).ContainsKey("Orientation")) {
+				orientation = Convert.ToInt32(((Dictionary<string, object>)meta["tiff"])["Orientation"]);
+			}
+
+			// swap dimensions
+			bool requiresSwapping = new List<int> { 5, 6, 7, 8 }.Contains(orientation);
+			if (requiresSwapping) {
+				object mem = width;
+				width = height;
+				height = mem;
+			}
+
+			int w = Convert.ToInt32(width);
+			int h = Convert.ToInt32(height);
+			
+			double scale;
+			if (!(bool)crop) {
+				// retain proportions
+				scale = Math.Min((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
+			} else {
+				// without explicit cast to double, result is implicitly cast back to int (wtf?)
+				scale = Math.Max((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
+			}
+
 			try {
-				int w = Convert.ToInt32(width);
-				int h = Convert.ToInt32(height);
-				double scale;
-
-				if (!(bool)crop) {
-					// retain proportions
-					scale = Math.Min((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
-					w = (int)Math.Round(_bm.PixelWidth * scale);
-					h = (int)Math.Round(_bm.PixelHeight * scale);
-				} else {
-					// without explicit cast to double, result is implicitly cast back to int (wtf?)
-					scale = Math.Max((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
-				}
-
-				if (scale > 1 && !(bool)crop) {
+				if (scale > 1 && (!(bool)crop || _preserveHeaders)) {
 					Resize(this, new DataEventArgs(getInfo()));
 					return;
 				} else {
-					System.Windows.Controls.Image image = new System.Windows.Controls.Image()
-					{
-						Source = _bm,
-						Stretch = Stretch.None
-					};
-
-					WriteableBitmap bm = new WriteableBitmap(w, h);
+					int imgWidth = (int)Math.Round(_bm.PixelWidth * scale);
+					int imgHeight = (int)Math.Round(_bm.PixelHeight * scale);
 
 					TransformGroup tg = new TransformGroup();
 					tg.Children.Add(new ScaleTransform()
@@ -177,24 +187,18 @@ namespace Moxiecode.Com
 					});
 
 					// center crop if required
-					int imgWidth = (int)Math.Round(_bm.PixelWidth * scale);
-					int imgHeight = (int)Math.Round(_bm.PixelHeight * scale);
+					if ((bool)crop) {
+						if (imgWidth > w) {
+							tg.Children.Add(new TranslateTransform() { X = -Math.Round((double)(imgWidth - w) / 2) });
+						}
 
-					if (imgWidth > w) {
-						tg.Children.Add(new TranslateTransform() { X = -Math.Round((double)(imgWidth - w) / 2) });
+						if (imgHeight > h) {
+							tg.Children.Add(new TranslateTransform() { Y = -Math.Round((double)(imgHeight - h) / 2) });
+						}
+					} else {
+						w = imgWidth;
+						h = imgHeight;
 					}
-
-					if (imgHeight > h) {
-						tg.Children.Add(new TranslateTransform() { Y = -Math.Round((double)(imgHeight - h) / 2) });
-					}
-
-					bm.Render(image, tg);
-					bm.Invalidate();
-
-					_bm = bm;
-
-					this.width = w;
-					this.height = h;
 
 					/* Alternative resize route - better quality, but slower and no crop
 	
@@ -219,12 +223,39 @@ namespace Moxiecode.Com
 					this.width = resizedImage.Width;
 					this.height = resizedImage.Height;*/
 
-					if (type == JPEG.MIME && _img != null) {
-						// insert new values into exif headers
-						((JPEG)_img).updateDimensions(w, h);
-						// update image info
-						meta = ((JPEG)_img).metaInfo();	
-					}	
+					WriteableBitmap bm = null;
+
+					if (type == JPEG.MIME) {
+						if (!_preserveHeaders) {
+							_rotateToOrientation(tg, orientation, w, h);
+							if (requiresSwapping) {
+								bm = new WriteableBitmap(h, w);
+							}
+						} else if (_img != null) {
+							// insert new values into exif headers
+							((JPEG)_img).updateDimensions(w, h);
+							// update image info
+							meta = ((JPEG)_img).metaInfo();
+						}
+					}
+
+					// if not initialized by now, do it the usuall way
+					if (bm == null) {
+						bm = new WriteableBitmap(w, h);
+					}
+					
+					System.Windows.Controls.Image image = new System.Windows.Controls.Image() {
+						Source = _bm,
+						Stretch = Stretch.None
+					};
+					
+					bm.Render(image, tg);
+					bm.Invalidate();
+				
+					_bm = bm;
+
+					this.width = _bm.PixelWidth;
+					this.height = _bm.PixelHeight;
 
 					Resize(this, new DataEventArgs(getInfo()));
 					return;
@@ -238,8 +269,10 @@ namespace Moxiecode.Com
 		}
 
 
-		public void getAsEncodedStream(Stream imageStream, string type = null, int quality = 90)
+		public MemoryStream getAsEncodedStream(string type = null, int quality = 90)
 		{
+			MemoryStream imageStream = new MemoryStream();
+
 			if (type != null) {
 				type = this.type != "" ? this.type : JPEG.MIME;
 			}
@@ -256,7 +289,12 @@ namespace Moxiecode.Com
 				jpegEncoder.Encode();
 
 				if (_img != null) {
-					((JPEG)_img).insertHeaders(imageStream);
+					// strip off any headers that might be left by encoder, etc
+					imageStream = new MemoryStream(((JPEG)_img).stripHeaders(imageStream));
+
+					if (_preserveHeaders) {
+						imageStream = new MemoryStream(((JPEG)_img).insertHeaders(imageStream));
+					}
 				}
 			}
 			else if (type == PNG.MIME) // Encode as PNG
@@ -268,7 +306,9 @@ namespace Moxiecode.Com
 			else
 			{
 				Error(this, null);
+				return null;
 			}
+			return imageStream;
 		}
 
 
@@ -298,14 +338,101 @@ namespace Moxiecode.Com
 
 		private Dictionary<string, object> _getAsBlob(string type = "image/jpeg", int quality = 90)
 		{
-			MemoryStream stream = new MemoryStream(); 
-			getAsEncodedStream(stream, type, quality);	
+			MemoryStream stream = getAsEncodedStream(type, quality);	
 			File blob = new File(new List<object>{stream}, new Dictionary<string,string>{
 				{ "name", this.name },
 				{ "type", type }
 			});
 			Moxie.compFactory.add(blob.uid, blob);
 			return blob.ToObject();
+		}
+
+		private void _rotateToOrientation(TransformGroup tg, int orientation, int width, int height)
+		{
+			switch (orientation)
+			{
+				case 2:
+					// horizontal flip
+					tg.Children.Add(new ScaleTransform()
+					{
+						ScaleX = -1,
+						ScaleY = 1
+					});
+					tg.Children.Add(new TranslateTransform() { 
+						X = width,
+ 						Y = 0
+					});
+					break;
+				case 3:
+					// 180 rotate left
+					tg.Children.Add(new RotateTransform() { 
+						Angle = 180
+					});
+					tg.Children.Add(new TranslateTransform()
+					{
+						X = width,
+						Y = height
+					});
+					break;
+				case 4:
+					// vertical flip
+					tg.Children.Add(new ScaleTransform()
+					{
+						ScaleX = 1,
+						ScaleY = -1
+					});
+					tg.Children.Add(new TranslateTransform() { 
+						X = 0,
+ 						Y = height
+					});
+					break;
+				case 5:
+					// vertical flip + 90 rotate right
+					tg.Children.Add(new ScaleTransform() {
+						ScaleX = 1,
+						ScaleY = -1
+					});
+					tg.Children.Add(new RotateTransform() { 
+						Angle = 90
+					});
+					break;
+				case 6:
+					// 90 rotate right
+					tg.Children.Add(new RotateTransform() { 
+						Angle = 90
+					});
+					tg.Children.Add(new TranslateTransform() { 
+						X = height,
+ 						Y = 0
+					});
+					break;
+				case 7:
+					// horizontal flip + 90 rotate right
+					tg.Children.Add(new ScaleTransform()
+					{
+						ScaleX = -1,
+						ScaleY = 1
+					});
+					tg.Children.Add(new RotateTransform() { 
+						Angle = 90
+					});
+					tg.Children.Add(new TranslateTransform() { 
+						X = height,
+ 						Y = width
+					});
+					break;
+				case 8:
+					// 90 rotate left
+					tg.Children.Add(new RotateTransform() {
+						Angle = -90
+					});
+					tg.Children.Add(new TranslateTransform()
+					{
+						X = 0,
+						Y = width
+					});
+					break;
+			}
 		}
 
 

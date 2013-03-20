@@ -93,6 +93,7 @@
       <DependentUpon>Moxie.xaml</DependentUpon>
     </Compile>
     <Compile Include="MXI\JsonWriter.cs" />
+    <Compile Include="MXI\Utils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(BUILD)' == 'IMAGE' ">
@@ -106,7 +107,7 @@
     <Compile Include="MXI\Image\JPEG.cs" />
     <Compile Include="MXI\Image\PNG.cs" />
     <Compile Include="MXI\Image\WriteableBitmapExtension.cs" />
-    <Compile Include="MXI\Utils.cs" />
+    
     <Compile Include="FJCore\DCT.cs" />
     <Compile Include="FJCore\DecodedJpeg.cs" />
     <Compile Include="FJCore\Decoder\HuffmanTable.cs" />

@@ -229,6 +229,19 @@ namespace Moxiecode.MXI.Image
 				exifParser.purge();
 			}
 		}
+
+		public byte[] stripHeaders(Stream stream)
+		{
+			JPEG img = new JPEG(stream);
+			List<Dictionary<string, object>> headers = img.extractHeaders();
+			BinaryReader br = new BinaryReader(stream);
+
+			for (int i = headers.Count - 1; i >= 0; i--)
+			{
+				br.SEGMENT(Convert.ToInt32(headers[i]["start"]), Convert.ToInt32(headers[i]["length"]), new byte[0]);
+			}
+			return br.SEGMENT();
+		}
 		
 		
 		public byte[] insertHeaders(Stream stream, List<Dictionary<string, object>> headers = null)

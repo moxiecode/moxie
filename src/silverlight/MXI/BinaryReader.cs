@@ -88,29 +88,27 @@ namespace Moxiecode.MXI
 			{
 				buffer = new byte[_stream.Length];
 				_stream.Position = 0;
-				_stream.Read(buffer, 0, buffer.Length);
-				return buffer;
+				
 			}
 			else if (length == -1) // extract segment from idx to the end
 			{ 
 				buffer = new byte[_stream.Length - idx];
 				_stream.Position = idx;
-				_stream.Read(buffer, 0, buffer.Length);
-				return buffer;
 			} 
 			else if (length != -1 && segment == null) // extract segment from idx and of specified length
 			{
 				buffer = new byte[length - idx];
 				_stream.Position = idx;
-				_stream.Read(buffer, 0, buffer.Length);
-				return buffer;
 			}
 			else if (segment != null) // insert segment starting at idx (alters internal stream)
 			{
 				_insert(segment, idx, length);
+				buffer = new byte[_stream.Length];
+			} else {
 				return null;
 			}
-			return null;
+			_stream.Read(buffer, 0, buffer.Length);
+			return buffer;
 		}
 
 
@@ -152,19 +150,29 @@ namespace Moxiecode.MXI
 			for (int i = 0; i < size; i++) {
 				buffer[i] = (byte)((num >> Math.Abs(mv + i*8)) & 255);
 			}
-
 			_insert(buffer, idx, size);
 		}
 
 
 		private void _insert(byte[] segment, int idx, int size)
 		{
-			byte[] buffer = new byte[_stream.Length - idx - size];
+			MemoryStream tmpStream = new MemoryStream();
+
+			byte[] buffer = new byte[idx];
+			_stream.Position = 0;
+			_stream.Read(buffer, 0, buffer.Length);
+			tmpStream.Write(buffer, 0, buffer.Length);
+
+			tmpStream.Write(segment, 0, segment.Length);
+
+			buffer = new byte[_stream.Length - idx - size];
 			_stream.Position = idx + size;
 			_stream.Read(buffer, 0, buffer.Length);
-			_stream.Position = idx;
-			_stream.Write(segment, 0, segment.Length);
-			_stream.Write(buffer, 0, buffer.Length);
+			tmpStream.Write(buffer, 0, buffer.Length);
+
+			_stream.Dispose();
+			tmpStream.Position = 0;
+			_stream = tmpStream;
 		}
 	}
 }
