@@ -3,7 +3,6 @@ package
 	import com.*;
 	import com.errors.RuntimeError;
 	import com.events.*;
-	import com.utils.BlobPile;
 	
 	import flash.display.LoaderInfo;
 	import flash.display.Sprite;

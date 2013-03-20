@@ -97,20 +97,24 @@ package com
 			_uid = Utils.guid('uid_');
 		}
 		
+		public function slice(... args) : Object 
+		{
+			var blob:Blob = _slice.apply(null, args);
+			Moxie.compFactory.add(blob.uid, blob);
+			return blob.toObject(); 
+		}
 		
-		public function slice(... args) : Object {
+		
+		private function _slice(... args) : Blob {
 			var src:Object, 
 				start:int = args[0] || 0, 
 				end:int = args[1] || _size, 
 				contentType:String = args[2] || '',
 				size:uint, offset:uint = 0,
-				blob:Blob,
 				sources:Array = [];
 							
 			if (start > end) {
-				blob = new Blob([], contentType);
-				Moxie.compFactory.add(blob.uid, blob);
-				return blob.toObject(); 
+				return new Blob([], contentType); 
 			}
 			
 			for (var i:uint = 0, length:uint = _sources.length; i < length; i++) {
@@ -133,9 +137,7 @@ package com
 			}
 			
 			if (i == length || offset > end) {
-				blob = new Blob(sources, contentType);
-				Moxie.compFactory.add(blob.uid, blob);
-				return blob.toObject(); 
+				return new Blob(sources, contentType);
 			} 
 			
 			// loop for the end otherwise
@@ -153,9 +155,7 @@ package com
 				}
 			}
 			
-			blob = new Blob(sources, contentType);
-			Moxie.compFactory.add(blob.uid, blob);
-			return blob.toObject(); 
+			return new Blob(sources, contentType);
 		}
 		
 		public function isEmpty() : Boolean {

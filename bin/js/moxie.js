@@ -1520,6 +1520,9 @@ define('moxie/runtime/Runtime', [
 		, shimid = uid + '_container'
 		;
 
+		// register runtime in private hash
+		runtimes[uid] = this;
+
 		// public methods
 		Basic.extend(this, {
 			/**
@@ -1554,6 +1557,14 @@ define('moxie/runtime/Runtime', [
 			@type {String}
 			*/
 			shimid: shimid,
+
+			/**
+			Number of connected clients. If equal to zero, runtime can be destroyed
+
+			@property clients
+			@type {Number}
+			*/
+			clients: 0,
 
 			/**
 			Runtime initialization options
@@ -1664,25 +1675,11 @@ define('moxie/runtime/Runtime', [
 
 				this.unbindAll();
 				delete runtimes[this.uid];
+				uid = shimid = self = null;
 			}
 
 		});
 	}
-
-	/**
-	Registers runtime in private hash
-
-	@method registerRuntime
-	@private
-	@static
-	@param {String} uid Unique identifier of the runtime
-	@param {Runtime} runtime Runtime object to register
-	@return {Runtime}
-	*/
-	Runtime.registerRuntime = function(uid, runtime) {
-		runtimes[uid] = runtime;
-		return runtime;
-	};
 
 	/**
 	Retrieves runtime from private hash by it's uid
@@ -1848,8 +1845,8 @@ define('moxie/runtime/RuntimeClient', [
 
 	@class RuntimeClient
 	*/
-	return function() {
-		var self = this, runtime;
+	return function RuntimeClient() {
+		var runtime;
 
 		Basic.extend(this, {
 			/**
@@ -1859,7 +1856,7 @@ define('moxie/runtime/RuntimeClient', [
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
 			*/
 			connectRuntime: function(options) {
-				var ruid, i, construct, items = [], order;
+				var self = this, ruid, i, construct, items = [], order;
 
 				// check if a particular runtime was requested
 				if (Basic.typeOf(options) === 'string') {
@@ -1875,6 +1872,7 @@ define('moxie/runtime/RuntimeClient', [
 						/*if (Basic.typeOf(self.trigger) === 'function') { // connectRuntime might be called on non eventTarget object
 							self.trigger('RuntimeInit', runtime);
 						}*/
+						runtime.clients++;
 						return runtime;
 					} else {
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
@@ -1901,7 +1899,6 @@ define('moxie/runtime/RuntimeClient', [
 					// try initializing the runtime
 					try {
 						runtime = new construct(options);
-						Runtime.registerRuntime(runtime.uid, runtime);
 
 						runtime.bind('Init', function() {
 							// mark runtime as initialized
@@ -1911,14 +1908,13 @@ define('moxie/runtime/RuntimeClient', [
 
 							// jailbreak ...
 							setTimeout(function() {
+								runtime.clients++;
 								// this will be triggered on component
 								self.trigger('RuntimeInit', runtime);
 							}, 1);
 						});
 
-						runtime.bind('Exception', function() {
-							// console.info(arguments);
-						});
+						/*runtime.bind('Exception', function() { });*/
 
 						runtime.init();
 						return;
@@ -1944,13 +1940,10 @@ define('moxie/runtime/RuntimeClient', [
 			@method disconnectRuntime
 			*/
 			disconnectRuntime: function() {
-
-				// check if runtime not occupied
-
-				// destroy runtime if not
-
-				// unregister runtime
-
+				if (runtime && --runtime.clients <= 0) {
+					runtime.destroy();
+					runtime = null;
+				}
 			}
 
 		});
@@ -2025,7 +2018,7 @@ define('moxie/file/Blob', [
 			@property uid
 			@type {String}
 			*/
-			uid: Basic.guid('uid_'),
+			uid: blob.uid || Basic.guid('uid_'),
 			
 			/**
 			Unique id of the connected runtime, if falsy, then runtime will have to be initialized 
@@ -2986,7 +2979,13 @@ define('moxie/runtime/RuntimeTarget', [
 	*/
 	function RuntimeTarget() {
 		this.uid = Basic.guid('uid_');
+		
 		RuntimeClient.call(this);
+
+		this.destroy = function() {
+			this.disconnectRuntime();
+			this.unbindAll();
+		};
 	}
 
 	RuntimeTarget.prototype = EventTarget.instance;
@@ -3104,6 +3103,12 @@ define("moxie/xhr/FormData", [
 						cb(value, name);
 					});
 				});
+			},
+
+			destroy: function() {
+				_blobField = null;
+				_name = "";
+				_fields = {};
 			}
 		});
 	}
@@ -3683,9 +3688,21 @@ define("moxie/xhr/XMLHttpRequest", [
 					_p('readyState', XMLHttpRequest.UNSENT);
 				}
 			},
-			
-			toString: function() {
-				return "[object XMLHttpRequest]";
+
+			destroy: function() {
+				if (_xhr) {
+					if (Basic.typeOf(_xhr.destroy) === 'function') {
+						_xhr.destroy();
+					}
+					_xhr = null;
+				}
+
+				this.unbindAll();
+
+				if (this.upload) {
+					this.upload.unbindAll();
+					this.upload = null;
+				}
 			}
 		});
 
@@ -3968,6 +3985,7 @@ define("moxie/xhr/XMLHttpRequest", [
 							self.dispatchEvent('load');
 						}
 						
+						_xhr = null;
 						self.dispatchEvent('loadend');
 						break;
 				}
@@ -3991,6 +4009,12 @@ define("moxie/xhr/XMLHttpRequest", [
 			_mode = RUNTIME;
 
 			_xhr = new RuntimeTarget();
+
+			function loadEnd() {
+				_xhr.destroy();
+				self.dispatchEvent('loadend');
+				_xhr = self = null;
+			}
 
 			function exec(runtime) {
 				_xhr.bind('LoadStart', function(e) {
@@ -4041,14 +4065,12 @@ define("moxie/xhr/XMLHttpRequest", [
 						_error_flag = true;
 						self.dispatchEvent('error');
 					}
-					_xhr.unbindAll();
-					self.dispatchEvent('loadend');
+					loadEnd();
 				});
 
 				_xhr.bind('Abort', function(e) {
 					self.dispatchEvent(e);
-					_xhr.unbindAll();
-					self.dispatchEvent('loadend');
+					loadEnd();
 				});
 				
 				_xhr.bind('Error', function(e) {
@@ -4057,8 +4079,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					self.dispatchEvent('readystatechange');
 					_upload_complete_flag = true;
 					self.dispatchEvent(e);
-					_xhr.unbindAll();
-					self.dispatchEvent('loadend');
+					loadEnd();
 				});
 
 				runtime.exec.call(_xhr, 'XMLHttpRequest', 'send', {
@@ -4284,12 +4305,11 @@ define("moxie/runtime/Transporter", [
 
 
 			destroy: function() {
-				_reset.call(this);
 				this.unbindAll();
-			},
-
-			constructor: Transporter
-
+				_runtime = null;
+				this.disconnectRuntime();
+				_reset.call(this);
+			}
 		});
 
 		function _reset() {
@@ -4902,7 +4922,7 @@ define("moxie/image/Image", [
 					}
 				} catch(ex) {
 					// for now simply trigger error event
-					self.trigger('error');
+					this.trigger('error');
 				}
 			},
 
@@ -4934,10 +4954,10 @@ define("moxie/image/Image", [
 				preserveHeaders = (preserveHeaders === undefined ? true : !!preserveHeaders);
 
 				runtime = this.connectRuntime(this.ruid);
-				self.bind('Resize', function(e, info) {
+				this.bind('Resize', function(e, info) {
 					_updateInfo.call(this, info);
 				}, 999);
-				runtime.exec.call(self, 'Image', 'resize', width, height, crop, preserveHeaders);
+				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
 
 			/**
@@ -5137,7 +5157,7 @@ define("moxie/image/Image", [
 				});
 
 				image.bind("Load", function() {
-					image.resize(width, height, crop);
+					image.resize(width, height, crop, false);
 				});
 
 				image.clone(this, false);
@@ -5156,6 +5176,7 @@ define("moxie/image/Image", [
 					runtime.exec.call(self, 'Image', 'destroy');
 				}
 				this.unbindAll();
+				self = null;
 			}
 		});
 
@@ -5290,17 +5311,19 @@ define("moxie/runtime/html5/Runtime", [
 	Runtime.addConstructor(type, (function() {
 		
 		function Html5Runtime(options) {
-			var I = this, shim, defaults = {};
+			var I = this, shim, defaults = {}, superDestroy;
 
 			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
 
 			Runtime.apply(this, [options, arguments[1] || type]);
 
+			superDestroy = this.destroy; // save the reference to original destroy fn
+
 			Basic.extend(this, {
 
 				init : function() {
 					if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-						I.destroy();
+						this.destroy();
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 					}
 					I.trigger("Init");
@@ -5313,6 +5336,14 @@ define("moxie/runtime/html5/Runtime", [
 				shimExec: function(component, action) {
 					var args = [].slice.call(arguments, 2);
 					return I.getShim().exec.call(this, this.uid, component, action, args);
+				},
+
+				destroy: function() {
+					if (shim) {
+						shim.removeAllInstances(this);
+					}
+					superDestroy.call(this);
+					superDestroy = shim = I = null;
 				}
 			});
 
@@ -5321,26 +5352,37 @@ define("moxie/runtime/html5/Runtime", [
 
 				return {
 					exec: function(uid, comp, fn, args) {
-						var obj;
-
 						if (!shim[comp]) {
 							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 						}
 
-						obj = objpool[uid];
-						if (!obj) {
-							obj = objpool[uid] = new shim[comp]();
+						if (!objpool[uid]) {
+							objpool[uid] = {
+								context: this,
+								instance: new shim[comp]()
+							}
 						}
 
-						if (!obj[fn]) {
+						if (!objpool[uid].instance[fn]) {
 							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 						}
 
-						return obj[fn].apply(this, args);
+						return objpool[uid].instance[fn].apply(this, args);
 					},
 
-					unregisterInstance: function(uid) {
+					removeInstance: function(uid) {
 						delete objpool[uid];
+					},
+
+					removeAllInstances: function() {
+						var self = this;
+						
+						Basic.each(objpool, function(obj, uid) {
+							if (Basic.typeOf(obj.instance.destroy) === 'function') {
+								obj.instance.destroy.call(obj.instance.context);
+							}
+							self.removeInstance(uid);
+						});
 					}
 				};
 			}()), extensions);
@@ -5964,6 +6006,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						if (_xhr2.upload) {
 							_xhr2.upload.removeEventListener('progress', dispatchUploadProgress);
 						}
+						_xhr2 = null;
 					}
 
 					Basic.each(events, function(name) {
@@ -6055,6 +6098,10 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				if (_xhr2) {
 					_xhr2.abort();
 				}
+			},
+
+			destroy: function() {
+				self = filename = null;
 			}
 		});
 
@@ -6232,6 +6279,7 @@ define("moxie/runtime/html5/utils/BinaryReader", [], function() {
 define("moxie/runtime/html5/image/JPEGHeaders", [
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(BinaryReader) {
+	
 	return function JPEGHeaders(data) {
 		var markers = {
 				0xFFE1: {
@@ -6363,6 +6411,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 			purge: function() {
 				headers = [];
 				read.init(null);
+				read = null;
 			}
 		};
 	};
@@ -6392,7 +6441,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(Basic, BinaryReader) {
 	
-	return function() {
+	return function ExifParser() {
 		// Private ExifParser fields
 		var data, tags, Tiff, offsets = {}, tagDescs;
 
@@ -6802,6 +6851,8 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 			purge: function() {
 				data.init(null);
+				data = Tiff = null;
+				offsets = {};
 			}
 		};
 	};
@@ -6928,7 +6979,7 @@ define("moxie/runtime/html5/image/JPEG", [
 			_ep.purge();
 			_hm.purge();
 			_br.init(null);
-			_hm = _ep = _br = null;
+			_binstr = _info = _hm = _ep = _br = null;
 		}
 	}
 
@@ -6997,7 +7048,7 @@ define("moxie/runtime/html5/image/PNG", [
 
 		function _purge() {
 			_br.init(null);
-			_hm = _ep = _br = null;
+			_binstr = _info = _hm = _ep = _br = null;
 		}
 
 		_info = _getDimensions.call(this);
@@ -7158,7 +7209,10 @@ define("moxie/runtime/html5/image/ImageInfo", [
 
 		Basic.extend(this, _img);
 
-		this.purge = _img.purge;
+		this.purge = function() {
+			_img.purge();
+			_img = null;
+		};
 	};
 });
 
@@ -7519,8 +7573,9 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			destroy: function() {
+				me = null;
 				_purge.call(this);
-				this.getRuntime().getShim().unregisterInstance(this.uid);
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 
@@ -7569,7 +7624,7 @@ define("moxie/runtime/html5/image/Image", [
 			if (window.FileReader) {
 				fr = new FileReader();
 				fr.onload = function() {
-					callback(fr.result);
+					callback(this.result);
 				};
 				fr.readAsBinaryString(file);
 			} else {
@@ -7584,7 +7639,7 @@ define("moxie/runtime/html5/image/Image", [
 			if (window.FileReader) {
 				fr = new FileReader();
 				fr.onload = function() {
-					callback(fr.result);
+					callback(this.result);
 				};
 				fr.readAsDataURL(file);
 			} else {
@@ -7593,15 +7648,23 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 		function _resize(width, height, crop, preserveHeaders) {
-			var srcImg, ctx, scale, mathFn, x, y, imgWidth, imgHeight;
+			var ctx, scale, mathFn, x, y, imgWidth, imgHeight, orientation;
 
-			_preserveHeaders = preserveHeaders;
+			_preserveHeaders = preserveHeaders; // we will need to check this on export
 
-			srcImg = _getSourceImage.call(this, _img);
+			// take into account orientation tag
+			orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+
+			if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
+				// swap dimensions
+				var mem = width;
+				width = height;
+				height = mem;
+			}
 
 			// unify dimensions
 			mathFn = !crop ? Math.min : Math.max;
-			scale = mathFn(width/srcImg.width, height/srcImg.height);
+			scale = mathFn(width/_img.width, height/_img.height);
 		
 			// we only downsize here
 			if (scale > 1 && (!crop || preserveHeaders)) { // when cropping one of dimensions may still exceed max, so process it anyway
@@ -7609,8 +7672,8 @@ define("moxie/runtime/html5/image/Image", [
 				return;
 			}
 
-			imgWidth = Math.round(srcImg.width * scale);
-			imgHeight = Math.round(srcImg.height * scale);
+			imgWidth = Math.round(_img.width * scale);
+			imgHeight = Math.round(_img.height * scale);
 
 			// prepare canvas if necessary
 			if (!_canvas) {
@@ -7632,33 +7695,17 @@ define("moxie/runtime/html5/image/Image", [
 			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
 			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
 
-			if (_preserveHeaders) {
-				_rotateToOrientaion(_canvas, _canvas.width, _canvas.height, _getOppositeOrientaion.call(this));
+			if (!_preserveHeaders) {
+				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
 			} else {
 				this.width = _canvas.width;
 				this.height = _canvas.height;
 			}
 
-			_drawToCanvas.call(this, srcImg, _canvas, -x, -y, imgWidth, imgHeight);
+			_drawToCanvas.call(this, _img, _canvas, -x, -y, imgWidth, imgHeight);
 
-			srcImg = null; // free resources
 			_modified = true;
 			this.trigger('Resize');
-		}
-
-
-		function _getSourceImage(img) {
-			var orientation = _getOrientation.call(this);
-
-			if (this.type !== 'image/jpeg' || orientation == 1) {
-				// no manipulation required
-				return img;
-			} else {
-				var canvas = document.createElement('canvas');
-				_rotateToOrientaion(canvas, img.width, img.height, orientation);
-				_drawToCanvas.call(this, img, canvas, 0, 0, img.width, img.height);
-				return canvas;
-			}
 		}
 
 
@@ -7673,42 +7720,23 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 
-		function _getOrientation() {
-			return (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
-		}
-
-
-		function _getOppositeOrientaion() {
-			var orientationMap = {
-				2: 2,
-				3: 3,
-				4: 4,
-				5: 7,
-				6: 8,
-				7: 5,
-				8: 6
-			};
-			return orientationMap[_getOrientation.call(this)] || 1;
-		}
-
-
 		/**
 		* Transform canvas coordination according to specified frame size and orientation
 		* Orientation value is from EXIF tag
 		* @author Shinichi Tomita <shinichi.tomita@gmail.com>
 		*/
-		function _rotateToOrientaion(canvas, width, height, orientation) {
+		function _rotateToOrientaion(width, height, orientation) {
 			switch (orientation) {
 				case 5:
 				case 6:
 				case 7:
 				case 8:
-					canvas.width = height;
-					canvas.height = width;
+					_canvas.width = height;
+					_canvas.height = width;
 					break;
 				default:
-					canvas.width = width;
-					canvas.height = height;
+					_canvas.width = width;
+					_canvas.height = height;
 			}
 
 			/**
@@ -7722,7 +7750,7 @@ define("moxie/runtime/html5/image/Image", [
 			8 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
 			*/
 
-			var ctx = canvas.getContext('2d');
+			var ctx = _canvas.getContext('2d');
 			switch (orientation) {
 				case 2:
 					// horizontal flip
@@ -7815,7 +7843,7 @@ define("moxie/runtime/flash/Runtime", [
 	Runtime.addConstructor(type, (function() {
 		
 		function FlashRuntime(options) {
-			var self = this;
+			var self = this, superDestroy;
 
 			/**
 			Get the version of the Flash Player
@@ -7849,6 +7877,8 @@ define("moxie/runtime/flash/Runtime", [
 			self.options = options = Basic.extend({}, defaults, options);
 
 			Runtime.apply(this, [options, arguments[1] || type]);
+
+			superDestroy = this.destroy; // save the reference to original destroy fn
 
 			Basic.extend(this, {
 				init: function() {
@@ -7902,6 +7932,11 @@ define("moxie/runtime/flash/Runtime", [
 							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 						}
 					}, 5000);
+				},
+
+				destroy: function() {
+					superDestroy.call(this);
+					superDestroy = self = null;
 				}
 			}, extensions);
 		}
@@ -8003,7 +8038,7 @@ define("moxie/runtime/flash/file/Blob", [
 				end = Math.min(end, blob.size);
 			}
 
-			blob = self.shimExec.call(this, 'BlobSlicer', 'slice', blob.id, start, end, type || '');
+			blob = self.shimExec.call(this, 'Blob', 'slice', start, end, type || '');
 
 			if (blob) {
 				blob = new Blob(self.uid, blob);
@@ -8092,7 +8127,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			}
 
 			function appendBlob(name, blob) {
-				self.shimExec.call(target, 'XMLHttpRequest', 'appendBlob', name, blob.getSource().id);
+				self.shimExec.call(target, 'XMLHttpRequest', 'appendBlob', name, blob.uid);
 				data = null;
 				send();
 			}
@@ -8235,7 +8270,7 @@ define("moxie/runtime/flash/file/FileReaderSync", [
 		read: function(op, blob) {
 			var result, self = this.getRuntime();
 
-			result = self.shimExec.call(this, 'FileReaderSync', 'readAsBase64', blob.getSource().id);
+			result = self.shimExec.call(this, 'FileReaderSync', 'readAsBase64', blob.uid);
 			if (!result) {
 				return null; // or throw ex
 			}
@@ -8323,7 +8358,8 @@ define("moxie/runtime/flash/image/Image", [
 			var comp = this, self = comp.getRuntime();
 
 			function exec(srcBlob) {
-				self.shimExec.call(comp, 'Image', 'loadFromBlob', srcBlob.id);
+				self.shimExec.call(comp, 'Image', 'loadFromBlob', srcBlob.uid);
+				comp = self = null;
 			}
 
 			if (blob.isDetached()) { // binary string
@@ -8408,7 +8444,7 @@ define("moxie/runtime/silverlight/Runtime", [
 	Runtime.addConstructor(type, (function() {
 
 		function SilverlightRuntime(options) {
-			var self = this;
+			var self = this, superDestroy;
 
 			function isInstalled(version) {
 				var isVersionSupported = false, control = null, actualVer,
@@ -8475,6 +8511,8 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			Runtime.apply(this, [options, arguments[1] || type]);
 
+			superDestroy = this.destroy; // save the reference to original destroy fn
+
 			Basic.extend(this, {
 
 				getShim: function() {
@@ -8507,6 +8545,11 @@ define("moxie/runtime/silverlight/Runtime", [
 							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 						}
 					}, 10000); // silverlight may take quite some time to initialize
+				},
+
+				destroy: function() {
+					superDestroy.call(this);
+					superDestroy = self = null;
 				}
 			}, extensions);
 		}
