@@ -57,6 +57,9 @@ define("moxie/runtime/html5/image/PNG", [
 		}
 
 		function _purge() {
+			if (!_br) {
+				return; // ignore any repeating purge requests
+			}
 			_br.init(null);
 			_binstr = _info = _hm = _ep = _br = null;
 		}

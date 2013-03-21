@@ -114,6 +114,9 @@ define("moxie/runtime/html5/image/JPEG", [
 		}
 
 		function _purge() {
+			if (!_ep || !_hm || !_br) { 
+				return; // ignore any repeating purge requests
+			}
 			_ep.purge();
 			_hm.purge();
 			_br.init(null);
