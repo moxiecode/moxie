@@ -2651,6 +2651,193 @@ define('moxie/file/FileDrop', [
 	return FileDrop;
 });
 
+// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/file/FileReader.js
+
+/**
+ * FileReader.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, sub:false */
+/*global define:true */
+
+define('moxie/file/FileReader', [
+	'moxie/core/utils/Basic',
+	'moxie/core/Exceptions',
+	'moxie/core/EventTarget',
+	'moxie/runtime/RuntimeClient'
+], function(Basic, x, EventTarget, RuntimeClient) {
+	/**
+	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
+	interface. Where possible uses native FileReader, where - not falls back to shims.
+
+	@class FileReader
+	@constructor FileReader
+	@extends EventTarget
+	@uses RuntimeClient
+	*/
+	var dispatches = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
+	
+	function FileReader() {
+		var self = this, _runtime;
+				
+		RuntimeClient.call(self);
+
+		Basic.extend(self, {
+			uid: Basic.guid('uid_'),
+
+			/**
+			Contains current state of o.FileReader object. Can take values of o.FileReader.EMPTY, o.FileReader.LOADING
+			and o.FileReader.DONE.
+
+			@property readyState
+			@type {Number}
+			@default FileReader.EMPTY
+			*/
+			readyState: FileReader.EMPTY,
+			
+			result: null,
+			
+			error: null,
+			
+			/**
+			Initiates reading of o.File/o.Blob object contents to binary string.
+
+			@method readAsBinaryString
+			@param {Blob|File} blob Object to preload
+			*/
+			readAsBinaryString: function(blob) {
+				this.result = '';
+				_read.call(this, 'readAsBinaryString', blob);
+			},
+			
+			/**
+			Initiates reading of o.File/o.Blob object contents to dataURL string.
+
+			@method readAsDataURL
+			@param {Blob|File} blob Object to preload
+			*/
+			readAsDataURL: function(blob) {
+				_read.call(this, 'readAsDataURL', blob);
+			},
+			
+			readAsArrayBuffer: function(blob) {
+				_read.call(this, 'readAsArrayBuffer', blob);
+			},
+			
+			/**
+			Initiates reading of o.File/o.Blob object contents to string.
+
+			@method readAsText
+			@param {Blob|File} blob Object to preload
+			*/
+			readAsText: function(blob) {
+				_read.call(this, 'readAsText', blob);
+			},
+			
+			/**
+			Aborts preloading process.
+
+			@method abort
+			*/
+			abort: function() {
+				if (!_runtime) {
+					return;
+				}
+				
+				this.result = null;
+				
+				if (!!~Basic.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE])) {
+					return;
+				} else if (this.readyState === FileReader.LOADING) {
+					this.readyState = FileReader.DONE;
+				}
+				
+				self.bind('Abort', function() {
+					self.trigger('loadend');
+				});
+
+				_runtime.exec('FileReader', 'abort');
+			}
+		});
+		
+		
+		function _read(op, blob) {
+			self.readyState = FileReader.EMPTY;
+			self.error = null;
+
+			if (self.readyState === FileReader.LOADING || !blob.ruid || !blob.uid) {
+				throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+			}
+			
+			this.convertEventPropsToHandlers(dispatches);
+						
+			_runtime = self.connectRuntime(blob.ruid);
+			
+			self.bind('Error', function(e, error) {
+				self.readyState = FileReader.DONE;
+				self.result = null;
+				self.error = error;
+				self.trigger('loadend');
+			}, 999);
+			
+			
+			self.bind('LoadStart', function() {
+				self.readyState = FileReader.LOADING;
+			}, 999);
+			
+			self.bind('Load', function() {
+				self.readyState = FileReader.DONE;
+				self.trigger('loadend');
+			}, 999);
+
+			_runtime.exec.call(self, 'FileReader', 'read', op, blob);
+		}
+	}
+	
+	/**
+	Initial FileReader state
+
+	@property EMPTY
+	@type {Number}
+	@final
+	@static
+	@default 0
+	*/
+	FileReader.EMPTY = 0;
+
+	/**
+	FileReader switches to this state when it is preloading the source
+
+	@property LOADING
+	@type {Number}
+	@final
+	@static
+	@default 1
+	*/
+	FileReader.LOADING = 1;
+
+	/**
+	Preloading is complete, this is a final state
+
+	@property DONE
+	@type {Number}
+	@final
+	@static
+	@default 2
+	*/
+	FileReader.DONE = 2;
+
+	FileReader.prototype = EventTarget.instance;
+
+	return FileReader;
+});
+
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Encode.js
 
 /**
@@ -5884,6 +6071,69 @@ define("moxie/runtime/html5/file/FileDrop", [
 	return (extensions.FileDrop = FileDrop);
 });
 
+// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/file/FileReader.js
+
+/**
+ * FileReader.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
+/*global define:true */
+
+/**
+@class moxie/runtime/html5/file/FileReader
+@private
+*/
+define("moxie/runtime/html5/file/FileReader", [
+	"moxie/runtime/html5/Runtime",
+	"moxie/core/utils/Basic"
+], function(extensions, Basic) {
+	
+	function FileReader() {
+		this.read = function(op, blob) {
+			var target = this, fr = new window.FileReader();
+
+			(function() {
+				var events = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
+
+				function reDispatch(e) {
+					if (!!~Basic.inArray(e.type, ['progress', 'load'])) {
+						target.result = fr.result;
+					}
+
+					target.trigger(e);
+				}
+
+				function removeEventListeners() {
+					Basic.each(events, function(name) {
+						fr.removeEventListener(name, reDispatch);
+					});
+
+					fr.removeEventListener('loadend', removeEventListeners);
+				}
+
+				Basic.each(events, function(name) {
+					fr.addEventListener(name, reDispatch);
+				});
+
+				fr.addEventListener('loadend', removeEventListeners);
+			}());
+
+			if (Basic.typeOf(fr[op]) === 'function') {
+				fr[op](blob.getSource());
+			}
+		};
+	}
+
+	return (extensions.FileReader = FileReader);
+});
+
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/xhr/XMLHttpRequest.js
 
 /**
@@ -8089,6 +8339,65 @@ define("moxie/runtime/flash/file/FileInput", [
 	return (extensions.FileInput = FileInput);
 });
 
+// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/file/FileReader.js
+
+/**
+ * FileReader.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+/**
+@class moxie/runtime/flash/file/FileReader
+@private
+*/
+define("moxie/runtime/flash/file/FileReader", [
+	"moxie/runtime/flash/Runtime",
+	"moxie/core/utils/Encode"
+], function(extensions, Encode) {
+
+	function _formatData(data, op) {
+		switch (op) {
+			case 'readAsText':
+			case 'readAsBinaryString':
+				return Encode.atob(data);
+
+			case 'readAsDataURL':
+				return data;
+
+		}
+		return null;
+	}
+
+	var FileReader = {
+		read: function(op, blob) {
+			var comp = this, self = comp.getRuntime();
+
+			// special prefix for DataURL read mode
+			if (op === 'readAsDataURL') {
+				comp.result = 'data:' + (blob.type || '') + ';base64,';
+			}
+
+			comp.bind('Progress', function(e, data) {
+				if (data) {
+					comp.result += _formatData(data, op);
+				}
+			}, 999);
+
+			return self.shimExec.call(this, 'FileReader', 'readAsBase64', blob.uid);
+		}
+	};
+
+	return (extensions.FileReader = FileReader);
+});
+
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/xhr/XMLHttpRequest.js
 
 /**
@@ -8739,6 +9048,33 @@ define("moxie/runtime/silverlight/file/FileDrop", [
 	return (extensions.FileDrop = FileDrop);
 });
 
+// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/file/FileReader.js
+
+/**
+ * FileReader.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+/**
+@class moxie/runtime/silverlight/file/FileReader
+@private
+*/
+define("moxie/runtime/silverlight/file/FileReader", [
+	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
+	"moxie/runtime/flash/file/FileReader"
+], function(extensions, Basic, FileReader) {
+	return (extensions.FileReader = Basic.extend({}, FileReader));
+});
+
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/xhr/XMLHttpRequest.js
 
 /**
@@ -9196,6 +9532,32 @@ define("moxie/runtime/html4/file/FileInput", [
 	return (extensions.FileInput = FileInput);
 });
 
+// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html4/file/FileReader.js
+
+/**
+ * FileReader.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+/**
+@class moxie/runtime/html4/file/FileReader
+@private
+*/
+define("moxie/runtime/html4/file/FileReader", [
+	"moxie/runtime/html4/Runtime",
+	"moxie/runtime/html5/file/FileReader"
+], function(extensions, FileReader) {
+	return (extensions.FileReader = FileReader);
+});
+
 // Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html4/xhr/XMLHttpRequest.js
 
 /**
@@ -9459,7 +9821,7 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Encode","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
 })(this);
 /**
  * o.js

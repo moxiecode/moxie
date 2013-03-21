@@ -56,7 +56,7 @@ task("mkjs", [], function () {
 
 	var modules = [].slice.call(arguments);
 	if (!modules.length) {
-		modules = ["file/FileInput", "file/FileDrop", "xhr/XMLHttpRequest", "image/Image"];
+		modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest", "image/Image"];
 	}
 
 	// resolve dependencies
