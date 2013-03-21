@@ -4981,11 +4981,6 @@ define("moxie/image/Image", [
 				return runtime.exec.call(self, 'Image', 'getAsCanvas');
 			},
 
-			getAsImage: function() {
-				var runtime = this.connectRuntime(this.ruid);
-				return runtime.exec.call(self, 'Image', 'getAsImage');
-			},
-
 			/**
 			Retrieves image in it's current state as mOxie.Blob object. Cannot be run on empty or image in progress (throws
 			DOMException.INVALID_STATE_ERR).
@@ -6976,6 +6971,9 @@ define("moxie/runtime/html5/image/JPEG", [
 		}
 
 		function _purge() {
+			if (!_ep || !_hm || !_br) { 
+				return; // ignore any repeating purge requests
+			}
 			_ep.purge();
 			_hm.purge();
 			_br.init(null);
@@ -7047,6 +7045,9 @@ define("moxie/runtime/html5/image/PNG", [
 		}
 
 		function _purge() {
+			if (!_br) {
+				return; // ignore any repeating purge requests
+			}
 			_br.init(null);
 			_binstr = _info = _hm = _ep = _br = null;
 		}
@@ -7438,29 +7439,26 @@ define("moxie/runtime/html5/image/Image", [
 				if (exact) {
 					_loadFromBinaryString.call(this, img.getAsBinaryString());
 				} else {
-					_img = img.getAsImage();
-					this.trigger('load', me.getInfo.call(this));
+					_loadFromDataUrl.call(this, img.getAsDataURL());
 				}
 			},
 
 			getInfo: function() {
-				var I = this.getRuntime()
-				, info = {
+				var I = this.getRuntime(), info;
+
+				if (!_imgInfo && _binStr && I.can('access_image_binary')) {
+					_imgInfo = new ImageInfo(_binStr);
+				}
+
+				info = {
 					width: _img && _img.width || 0,
 					height: _img && _img.height || 0,
 					type: (_srcBlob.type || _srcBlob.name && Mime.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
 					size: _binStr && _binStr.length || _srcBlob.size || 0,
 					name: _srcBlob.name || '',
-					meta: this.meta || {}
+					meta: _imgInfo && _imgInfo.meta || this.meta || {}
 				};
 
-				if (I.can('access_image_binary') && _binStr) {
-					if (_imgInfo) {
-						_imgInfo.purge();
-					}
-					_imgInfo = new ImageInfo(_binStr);
-					Basic.extend(info, _imgInfo);
-				}
 				return info;
 			},
 
@@ -7469,14 +7467,6 @@ define("moxie/runtime/html5/image/Image", [
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 				_resize.apply(this, arguments);
-			},
-
-			getAsImage: function() {
-				if (!_img) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-				}
-				_img.id = this.uid + '_img';
-				return _img;
 			},
 
 			getAsCanvas: function() {
@@ -7507,7 +7497,9 @@ define("moxie/runtime/html5/image/Image", [
 				return blob;
 			},
 
-			getAsDataURL: function(type, quality) {
+			getAsDataURL: function(type) {
+				var quality = arguments[1] || 90;
+
 				// if image has not been modified, return the source right away
 				if (!_modified) {
 					return _img.src;
@@ -7563,7 +7555,12 @@ define("moxie/runtime/html5/image/Image", [
 							});
 						}
 
+						// re-inject the headers
 						_binStr = _imgInfo.writeHeaders(_binStr);
+
+						// will be re-created from fresh on next getInfo call
+						_imgInfo.purge();
+						_imgInfo = null;
 					}
 				}
 
@@ -7648,7 +7645,7 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 		function _resize(width, height, crop, preserveHeaders) {
-			var ctx, scale, mathFn, x, y, imgWidth, imgHeight, orientation;
+			var self = this, ctx, scale, mathFn, x, y, imgWidth, imgHeight, orientation;
 
 			_preserveHeaders = preserveHeaders; // we will need to check this on export
 
@@ -7697,20 +7694,26 @@ define("moxie/runtime/html5/image/Image", [
 
 			if (!_preserveHeaders) {
 				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
-			} else {
-				this.width = _canvas.width;
-				this.height = _canvas.height;
 			}
 
 			_drawToCanvas.call(this, _img, _canvas, -x, -y, imgWidth, imgHeight);
 
+			this.width = _canvas.width;
+			this.height = _canvas.height;
+
 			_modified = true;
-			this.trigger('Resize');
+
+			// update internal image reference
+			_img = new Image();
+			_img.onload = function() {
+				self.trigger('Resize');
+			};
+			_img.src = me.getAsDataURL.call(this);
 		}
 
 
 		function _drawToCanvas(img, canvas, x, y, w, h) {
-			if (Env.os === 'iOS' || Env.os === 'Android') { 
+			if (Env.OS === 'iOS' || Env.OS === 'Android') { 
 				// avoid squish bug in iOS6
 				MegaPixel.renderTo(img, canvas, { width: w, height: h, x: x, y: y });
 			} else {
