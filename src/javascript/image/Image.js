@@ -286,11 +286,6 @@ define("moxie/image/Image", [
 				return runtime.exec.call(self, 'Image', 'getAsCanvas');
 			},
 
-			getAsImage: function() {
-				var runtime = this.connectRuntime(this.ruid);
-				return runtime.exec.call(self, 'Image', 'getAsImage');
-			},
-
 			/**
 			Retrieves image in it's current state as mOxie.Blob object. Cannot be run on empty or image in progress (throws
 			DOMException.INVALID_STATE_ERR).
