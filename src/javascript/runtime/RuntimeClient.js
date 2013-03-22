@@ -95,10 +95,7 @@ define('moxie/runtime/RuntimeClient', [
 						runtime.init();
 						return;
 					} catch(err) {
-						// destroy failed runtime's remnants and proceed to the next one
-						if (runtime) {
-							runtime.destroy();
-						}
+						runtime = null;
 					}
 				}
 
