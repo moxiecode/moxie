@@ -1508,7 +1508,7 @@ define('moxie/runtime/Runtime', [
 
 	@class Runtime
 	*/
-	function Runtime(options, type) {
+	function Runtime(type, options) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Triggers RuntimeInit on a connected component.
@@ -1597,12 +1597,12 @@ define('moxie/runtime/Runtime', [
 
 				// if no container for shim, create one
 				if (!shimContainer) {
-					container = options.container ? Dom.get(options.container) : document.body;
+					container = this.options.container ? Dom.get(this.options.container) : document.body;
 
 					// create shim container and insert it at an absolute position into the outer container
 					shimContainer = document.createElement('div');
 					shimContainer.id = this.shimid;
-					shimContainer.className = 'moxie-shim moxie-shim-' + type;
+					shimContainer.className = 'moxie-shim moxie-shim-' + this.type;
 
 					Basic.extend(shimContainer.style, {
 						position: 'absolute',
@@ -1856,7 +1856,51 @@ define('moxie/runtime/RuntimeClient', [
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
 			*/
 			connectRuntime: function(options) {
-				var self = this, ruid, i, construct, items = [], order;
+				var comp = this, ruid;
+
+				function initialize(items) {
+					var type, constructor;
+
+					// if we ran out of runtimes
+					if (!items.length) {
+						comp.trigger('RuntimeError', new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						runtime = null;
+						return;
+					}
+
+					type = items.shift();
+					constructor = Runtime.getConstructor(type);
+					if (!constructor || !constructor.can(options.required_caps)) {
+						initialize(items);
+					}
+
+					// try initializing the runtime
+					runtime = new constructor(options);
+
+					runtime.bind('Init', function() {
+						// mark runtime as initialized
+						runtime.initialized = true;
+
+						runtime.constructor = constructor;
+
+						// jailbreak ...
+						setTimeout(function() {
+							runtime.clients++;
+							// this will be triggered on component
+							comp.trigger('RuntimeInit', runtime);
+						}, 1);
+					});
+
+					runtime.bind('Error', function(e, err) {
+						runtime.destroy(); // runtime cannot destroy itself from inside at a right moment, thus we do it here
+						comp.trigger('RuntimeError', type, err);
+						initialize(items);
+					});
+
+					/*runtime.bind('Exception', function() { });*/
+
+					runtime.init();
+				}
 
 				// check if a particular runtime was requested
 				if (Basic.typeOf(options) === 'string') {
@@ -1867,64 +1911,17 @@ define('moxie/runtime/RuntimeClient', [
 
 				if (ruid) {
 					runtime = Runtime.getRuntime(ruid);
-
 					if (runtime) {
-						/*if (Basic.typeOf(self.trigger) === 'function') { // connectRuntime might be called on non eventTarget object
-							self.trigger('RuntimeInit', runtime);
-						}*/
 						runtime.clients++;
 						return runtime;
 					} else {
+						// there should be a runtime and there's none - weird case
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 					}
 				}
 
 				// initialize a fresh one, that fits runtime list and required features best
-				order = options.runtime_order || Runtime.order;
-
-				items = order.split(/\s*,\s*/);
-
-				next_runtime:
-				for (i in items) {
-					construct = Runtime.getConstructor(items[i]);
-					if (!construct) {
-						continue;
-					}
-
-					// check if runtime supports required features
-					if (!construct.can(options.required_caps)) {
-						continue next_runtime; // runtime fails to support some features
-					}
-
-					// try initializing the runtime
-					try {
-						runtime = new construct(options);
-
-						runtime.bind('Init', function() {
-							// mark runtime as initialized
-							runtime.initialized = true;
-
-							runtime.constructor = construct;
-
-							// jailbreak ...
-							setTimeout(function() {
-								runtime.clients++;
-								// this will be triggered on component
-								self.trigger('RuntimeInit', runtime);
-							}, 1);
-						});
-
-						/*runtime.bind('Exception', function() { });*/
-
-						runtime.init();
-						return;
-					} catch(err) {
-						runtime = null;
-					}
-				}
-
-				// if we ran out of runtimes
-				throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+				initialize((options.runtime_order || Runtime.order).split(/\s*,\s*/));
 			},
 
 			getRuntime: function() {
@@ -5485,27 +5482,24 @@ define("moxie/runtime/html5/Runtime", [
 	"moxie/runtime/Runtime",
 	"moxie/core/utils/Env"
 ], function(Basic, x, Runtime, Env) {
+	
 	var type = "html5", extensions = {};
 	
 	Runtime.addConstructor(type, (function() {
 		
 		function Html5Runtime(options) {
-			var I = this, shim, defaults = {}, superDestroy;
+			var I = this, shim;
 
-			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
-
-			Runtime.apply(this, [options, arguments[1] || type]);
-
-			superDestroy = this.destroy; // save the reference to original destroy fn
+			Runtime.call(this, type, Basic.extend({}, options));
 
 			Basic.extend(this, {
 
 				init : function() {
 					if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-						this.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						return;
 					}
-					I.trigger("Init");
+					this.trigger("Init");
 				},
 
 				getShim: function() {
@@ -5517,13 +5511,16 @@ define("moxie/runtime/html5/Runtime", [
 					return I.getShim().exec.call(this, this.uid, component, action, args);
 				},
 
-				destroy: function() {
-					if (shim) {
-						shim.removeAllInstances(this);
-					}
-					superDestroy.call(this);
-					superDestroy = shim = I = null;
-				}
+				destroy: (function(destroy) { // extend default destroy method
+					return function() {
+						if (shim) {
+							shim.removeAllInstances(I);
+						}
+						destroy.call(I);
+						destroy = shim = I = null;
+					};
+				}(this.destroy))
+
 			});
 
 			shim = Basic.extend((function() {
@@ -5531,22 +5528,18 @@ define("moxie/runtime/html5/Runtime", [
 
 				return {
 					exec: function(uid, comp, fn, args) {
-						if (!shim[comp]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
-						}
+						if (shim[comp]) {
+							if (!objpool[uid]) {
+								objpool[uid] = {
+									context: this,
+									instance: new shim[comp]()
+								}
+							}
 
-						if (!objpool[uid]) {
-							objpool[uid] = {
-								context: this,
-								instance: new shim[comp]()
+							if (objpool[uid].instance[fn]) {
+								return objpool[uid].instance[fn].apply(this, args);
 							}
 						}
-
-						if (!objpool[uid].instance[fn]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
-						}
-
-						return objpool[uid].instance[fn].apply(this, args);
 					},
 
 					removeInstance: function(uid) {
@@ -8082,6 +8075,7 @@ define("moxie/runtime/flash/Runtime", [
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime"
 ], function(Basic, Env, x, Runtime) {
+	
 	var type = 'flash', extensions = {};
 
 	/**
@@ -8093,7 +8087,7 @@ define("moxie/runtime/flash/Runtime", [
 	Runtime.addConstructor(type, (function() {
 		
 		function FlashRuntime(options) {
-			var self = this, superDestroy;
+			var I = this;
 
 			/**
 			Get the version of the Flash Player
@@ -8119,28 +8113,20 @@ define("moxie/runtime/flash/Runtime", [
 				return parseFloat(version[0] + '.' + version[1]);
 			}
 
-			// figure out the options
-			var defaults = {
-				swf_url: Env.swf_url
-			};
-
-			self.options = options = Basic.extend({}, defaults, options);
-
-			Runtime.apply(this, [options, arguments[1] || type]);
-
-			superDestroy = this.destroy; // save the reference to original destroy fn
+			Runtime.call(this, type, Basic.extend({ swf_url: Env.swf_url }, options));
 
 			Basic.extend(this, {
+
 				init: function() {
 					var html, el, container;
 
 					// minimal requirement Flash Player 10
 					if (getShimVersion() < 10) {
-						self.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						return;
 					}
 
-					container = self.getShimContainer();
+					container = this.getShimContainer();
 
 					// if not the minimal height, shims are not initialized in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
 					Basic.extend(container.style, {
@@ -8153,7 +8139,7 @@ define("moxie/runtime/flash/Runtime", [
 					});
 
 					// insert flash object
-					html = '<object id="' + self.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';
+					html = '<object id="' + this.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';
 
 					if (Env.browser === 'IE') {
 						html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
@@ -8161,7 +8147,7 @@ define("moxie/runtime/flash/Runtime", [
 
 					html += 'width="100%" height="100%" style="outline:0">'  +
 						'<param name="movie" value="' + options.swf_url + '" />' +
-						'<param name="flashvars" value="uid=' + escape(self.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
+						'<param name="flashvars" value="uid=' + escape(this.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
 						'<param name="wmode" value="transparent" />' +
 						'<param name="allowscriptaccess" value="always" />' +
 					'</object>';
@@ -8177,17 +8163,20 @@ define("moxie/runtime/flash/Runtime", [
 
 					// Init is dispatched by the shim
 					setTimeout(function() {
+						var self = I; // keep the reference, since I won't be available after destroy
 						if (!self.initialized) {
-							self.destroy();
-							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 						}
 					}, 5000);
 				},
 
-				destroy: function() {
-					superDestroy.call(this);
-					superDestroy = self = null;
-				}
+				destroy: (function(destroy) { // extend default destroy method
+					return function() {
+						destroy.call(I);
+						destroy = I = null;
+					};
+				}(this.destroy))
+
 			}, extensions);
 		}
 
@@ -8753,7 +8742,7 @@ define("moxie/runtime/silverlight/Runtime", [
 	Runtime.addConstructor(type, (function() {
 
 		function SilverlightRuntime(options) {
-			var self = this, superDestroy;
+			var I = this;
 
 			function isInstalled(version) {
 				var isVersionSupported = false, control = null, actualVer,
@@ -8812,15 +8801,7 @@ define("moxie/runtime/silverlight/Runtime", [
 				return isVersionSupported;
 			}
 
-			// figure out the options
-			var defaults = {
-				xap_url: Env.xap_url
-			};
-			self.options = options = Basic.extend({}, defaults, options);
-
-			Runtime.apply(this, [options, arguments[1] || type]);
-
-			superDestroy = this.destroy; // save the reference to original destroy fn
+			Runtime.call(this, type, Basic.extend({}, { xap_url: Env.xap_url }));
 
 			Basic.extend(this, {
 
@@ -8833,33 +8814,35 @@ define("moxie/runtime/silverlight/Runtime", [
 
 					// minimal requirement Flash Player 10
 					if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
-						self.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 					}
 
-					container = self.getShimContainer();
+					container = this.getShimContainer();
 
-					container.innerHTML = '<object id="' + self.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
+					container.innerHTML = '<object id="' + this.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
 						'<param name="source" value="' + options.xap_url + '"/>' +
 						'<param name="background" value="Transparent"/>' +
 						'<param name="windowless" value="true"/>' +
 						'<param name="enablehtmlaccess" value="true"/>' +
-						'<param name="initParams" value="uid=' + self.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
+						'<param name="initParams" value="uid=' + this.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
 					'</object>';
 
 					// Init is dispatched by the shim
 					setTimeout(function() {
+						var self = I; // keep the reference, since I won't be available after destroy
 						if (!self.initialized) {
-							self.destroy();
-							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 						}
 					}, 10000); // silverlight may take quite some time to initialize
 				},
 
-				destroy: function() {
-					superDestroy.call(this);
-					superDestroy = self = null;
-				}
+				destroy: (function(destroy) { // extend default destroy method
+					return function() {
+						destroy.call(I);
+						destroy = I = null;
+					};
+				}(this.destroy))
+
 			}, extensions);
 		}
 
@@ -9207,24 +9190,24 @@ define("moxie/runtime/html4/Runtime", [
 	"moxie/runtime/Runtime",
 	"moxie/core/utils/Env"
 ], function(Basic, x, Runtime, Env) {
+	
 	var type = 'html4', extensions = {};
 
 	Runtime.addConstructor(type, (function() {
 		
 		function Html4Runtime(options) {
-			var I = this, shim, defaults = {};
+			var I = this, shim;
 
-			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
-
-			Runtime.apply(this, [options, arguments[1] || type]);
+			Runtime.call(this, type, Basic.extend({}, options));
 
 			Basic.extend(this, {
+
 				init : function() {
 					if (!Env.can('use_fileinput')) { // minimal requirement
-						I.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						return;
 					}
-					I.trigger("Init");
+					this.trigger("Init");
 				},
 
 				getShim: function() {
@@ -9234,7 +9217,17 @@ define("moxie/runtime/html4/Runtime", [
 				shimExec: function(component, action) {
 					var args = [].slice.call(arguments, 2);
 					return I.getShim().exec.call(this, this.uid, component, action, args);
-				}
+				},
+
+				destroy: (function(destroy) { // extend default destroy method
+					return function() {
+						if (shim) {
+							shim.removeAllInstances(I);
+						}
+						destroy.call(I);
+						destroy = shim = I = null;
+					};
+				}(this.destroy))
 			});
 
 			shim = Basic.extend((function() {
@@ -9242,22 +9235,18 @@ define("moxie/runtime/html4/Runtime", [
 
 				return {
 					exec: function(uid, comp, fn, args) {
-						var obj;
+						if (shim[comp]) {
+							if (!objpool[uid]) {
+								objpool[uid] = {
+									context: this,
+									instance: new shim[comp]()
+								}
+							}
 
-						if (!shim[comp]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
+							if (objpool[uid].instance[fn]) {
+								return objpool[uid].instance[fn].apply(this, args);
+							}
 						}
-
-						obj = objpool[uid];
-						if (!obj) {
-							obj = objpool[uid] = new shim[comp]();
-						}
-
-						if (!obj[fn]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
-						}
-
-						return obj[fn].apply(this, args);
 					}
 				};
 			}()), extensions);
