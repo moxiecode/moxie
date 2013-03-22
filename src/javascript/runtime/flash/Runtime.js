@@ -23,6 +23,7 @@ define("moxie/runtime/flash/Runtime", [
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime"
 ], function(Basic, Env, x, Runtime) {
+	
 	var type = 'flash', extensions = {};
 
 	/**
@@ -34,7 +35,7 @@ define("moxie/runtime/flash/Runtime", [
 	Runtime.addConstructor(type, (function() {
 		
 		function FlashRuntime(options) {
-			var self = this, superDestroy;
+			var I = this;
 
 			/**
 			Get the version of the Flash Player
@@ -60,28 +61,20 @@ define("moxie/runtime/flash/Runtime", [
 				return parseFloat(version[0] + '.' + version[1]);
 			}
 
-			// figure out the options
-			var defaults = {
-				swf_url: Env.swf_url
-			};
-
-			self.options = options = Basic.extend({}, defaults, options);
-
-			Runtime.apply(this, [options, arguments[1] || type]);
-
-			superDestroy = this.destroy; // save the reference to original destroy fn
+			Runtime.call(this, type, Basic.extend({ swf_url: Env.swf_url }, options));
 
 			Basic.extend(this, {
+
 				init: function() {
 					var html, el, container;
 
 					// minimal requirement Flash Player 10
 					if (getShimVersion() < 10) {
-						self.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						return;
 					}
 
-					container = self.getShimContainer();
+					container = this.getShimContainer();
 
 					// if not the minimal height, shims are not initialized in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
 					Basic.extend(container.style, {
@@ -94,7 +87,7 @@ define("moxie/runtime/flash/Runtime", [
 					});
 
 					// insert flash object
-					html = '<object id="' + self.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';
+					html = '<object id="' + this.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';
 
 					if (Env.browser === 'IE') {
 						html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
@@ -102,7 +95,7 @@ define("moxie/runtime/flash/Runtime", [
 
 					html += 'width="100%" height="100%" style="outline:0">'  +
 						'<param name="movie" value="' + options.swf_url + '" />' +
-						'<param name="flashvars" value="uid=' + escape(self.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
+						'<param name="flashvars" value="uid=' + escape(this.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
 						'<param name="wmode" value="transparent" />' +
 						'<param name="allowscriptaccess" value="always" />' +
 					'</object>';
@@ -118,17 +111,20 @@ define("moxie/runtime/flash/Runtime", [
 
 					// Init is dispatched by the shim
 					setTimeout(function() {
+						var self = I; // keep the reference, since I won't be available after destroy
 						if (!self.initialized) {
-							self.destroy();
-							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 						}
 					}, 5000);
 				},
 
-				destroy: function() {
-					superDestroy.call(this);
-					superDestroy = self = null;
-				}
+				destroy: (function(destroy) { // extend default destroy method
+					return function() {
+						destroy.call(I);
+						destroy = I = null;
+					};
+				}(this.destroy))
+
 			}, extensions);
 		}
 

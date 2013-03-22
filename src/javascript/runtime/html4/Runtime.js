@@ -23,24 +23,24 @@ define("moxie/runtime/html4/Runtime", [
 	"moxie/runtime/Runtime",
 	"moxie/core/utils/Env"
 ], function(Basic, x, Runtime, Env) {
+	
 	var type = 'html4', extensions = {};
 
 	Runtime.addConstructor(type, (function() {
 		
 		function Html4Runtime(options) {
-			var I = this, shim, defaults = {};
+			var I = this, shim;
 
-			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
-
-			Runtime.apply(this, [options, arguments[1] || type]);
+			Runtime.call(this, type, Basic.extend({}, options));
 
 			Basic.extend(this, {
+
 				init : function() {
 					if (!Env.can('use_fileinput')) { // minimal requirement
-						I.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						return;
 					}
-					I.trigger("Init");
+					this.trigger("Init");
 				},
 
 				getShim: function() {
@@ -50,7 +50,17 @@ define("moxie/runtime/html4/Runtime", [
 				shimExec: function(component, action) {
 					var args = [].slice.call(arguments, 2);
 					return I.getShim().exec.call(this, this.uid, component, action, args);
-				}
+				},
+
+				destroy: (function(destroy) { // extend default destroy method
+					return function() {
+						if (shim) {
+							shim.removeAllInstances(I);
+						}
+						destroy.call(I);
+						destroy = shim = I = null;
+					};
+				}(this.destroy))
 			});
 
 			shim = Basic.extend((function() {
@@ -58,22 +68,18 @@ define("moxie/runtime/html4/Runtime", [
 
 				return {
 					exec: function(uid, comp, fn, args) {
-						var obj;
+						if (shim[comp]) {
+							if (!objpool[uid]) {
+								objpool[uid] = {
+									context: this,
+									instance: new shim[comp]()
+								}
+							}
 
-						if (!shim[comp]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
+							if (objpool[uid].instance[fn]) {
+								return objpool[uid].instance[fn].apply(this, args);
+							}
 						}
-
-						obj = objpool[uid];
-						if (!obj) {
-							obj = objpool[uid] = new shim[comp]();
-						}
-
-						if (!obj[fn]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
-						}
-
-						return obj[fn].apply(this, args);
 					}
 				};
 			}()), extensions);

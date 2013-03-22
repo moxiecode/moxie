@@ -23,27 +23,24 @@ define("moxie/runtime/html5/Runtime", [
 	"moxie/runtime/Runtime",
 	"moxie/core/utils/Env"
 ], function(Basic, x, Runtime, Env) {
+	
 	var type = "html5", extensions = {};
 	
 	Runtime.addConstructor(type, (function() {
 		
 		function Html5Runtime(options) {
-			var I = this, shim, defaults = {}, superDestroy;
+			var I = this, shim;
 
-			options = typeof(options) === 'object' ? Basic.extend(defaults, options) : defaults;
-
-			Runtime.apply(this, [options, arguments[1] || type]);
-
-			superDestroy = this.destroy; // save the reference to original destroy fn
+			Runtime.call(this, type, Basic.extend({}, options));
 
 			Basic.extend(this, {
 
 				init : function() {
 					if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-						this.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						return;
 					}
-					I.trigger("Init");
+					this.trigger("Init");
 				},
 
 				getShim: function() {
@@ -55,13 +52,16 @@ define("moxie/runtime/html5/Runtime", [
 					return I.getShim().exec.call(this, this.uid, component, action, args);
 				},
 
-				destroy: function() {
-					if (shim) {
-						shim.removeAllInstances(this);
-					}
-					superDestroy.call(this);
-					superDestroy = shim = I = null;
-				}
+				destroy: (function(destroy) { // extend default destroy method
+					return function() {
+						if (shim) {
+							shim.removeAllInstances(I);
+						}
+						destroy.call(I);
+						destroy = shim = I = null;
+					};
+				}(this.destroy))
+
 			});
 
 			shim = Basic.extend((function() {
@@ -69,22 +69,18 @@ define("moxie/runtime/html5/Runtime", [
 
 				return {
 					exec: function(uid, comp, fn, args) {
-						if (!shim[comp]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
-						}
+						if (shim[comp]) {
+							if (!objpool[uid]) {
+								objpool[uid] = {
+									context: this,
+									instance: new shim[comp]()
+								}
+							}
 
-						if (!objpool[uid]) {
-							objpool[uid] = {
-								context: this,
-								instance: new shim[comp]()
+							if (objpool[uid].instance[fn]) {
+								return objpool[uid].instance[fn].apply(this, args);
 							}
 						}
-
-						if (!objpool[uid].instance[fn]) {
-							throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
-						}
-
-						return objpool[uid].instance[fn].apply(this, args);
 					},
 
 					removeInstance: function(uid) {

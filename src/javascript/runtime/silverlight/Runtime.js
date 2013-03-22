@@ -36,7 +36,7 @@ define("moxie/runtime/silverlight/Runtime", [
 	Runtime.addConstructor(type, (function() {
 
 		function SilverlightRuntime(options) {
-			var self = this, superDestroy;
+			var I = this;
 
 			function isInstalled(version) {
 				var isVersionSupported = false, control = null, actualVer,
@@ -95,15 +95,7 @@ define("moxie/runtime/silverlight/Runtime", [
 				return isVersionSupported;
 			}
 
-			// figure out the options
-			var defaults = {
-				xap_url: Env.xap_url
-			};
-			self.options = options = Basic.extend({}, defaults, options);
-
-			Runtime.apply(this, [options, arguments[1] || type]);
-
-			superDestroy = this.destroy; // save the reference to original destroy fn
+			Runtime.call(this, type, Basic.extend({}, { xap_url: Env.xap_url }));
 
 			Basic.extend(this, {
 
@@ -116,33 +108,35 @@ define("moxie/runtime/silverlight/Runtime", [
 
 					// minimal requirement Flash Player 10
 					if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
-						self.destroy();
-						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 					}
 
-					container = self.getShimContainer();
+					container = this.getShimContainer();
 
-					container.innerHTML = '<object id="' + self.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
+					container.innerHTML = '<object id="' + this.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
 						'<param name="source" value="' + options.xap_url + '"/>' +
 						'<param name="background" value="Transparent"/>' +
 						'<param name="windowless" value="true"/>' +
 						'<param name="enablehtmlaccess" value="true"/>' +
-						'<param name="initParams" value="uid=' + self.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
+						'<param name="initParams" value="uid=' + this.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
 					'</object>';
 
 					// Init is dispatched by the shim
 					setTimeout(function() {
+						var self = I; // keep the reference, since I won't be available after destroy
 						if (!self.initialized) {
-							self.destroy();
-							throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 						}
 					}, 10000); // silverlight may take quite some time to initialize
 				},
 
-				destroy: function() {
-					superDestroy.call(this);
-					superDestroy = self = null;
-				}
+				destroy: (function(destroy) { // extend default destroy method
+					return function() {
+						destroy.call(I);
+						destroy = I = null;
+					};
+				}(this.destroy))
+
 			}, extensions);
 		}
 

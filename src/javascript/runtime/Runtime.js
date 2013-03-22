@@ -23,7 +23,7 @@ define('moxie/runtime/Runtime', [
 
 	@class Runtime
 	*/
-	function Runtime(options, type) {
+	function Runtime(type, options) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Triggers RuntimeInit on a connected component.
@@ -112,12 +112,12 @@ define('moxie/runtime/Runtime', [
 
 				// if no container for shim, create one
 				if (!shimContainer) {
-					container = options.container ? Dom.get(options.container) : document.body;
+					container = this.options.container ? Dom.get(this.options.container) : document.body;
 
 					// create shim container and insert it at an absolute position into the outer container
 					shimContainer = document.createElement('div');
 					shimContainer.id = this.shimid;
-					shimContainer.className = 'moxie-shim moxie-shim-' + type;
+					shimContainer.className = 'moxie-shim moxie-shim-' + this.type;
 
 					Basic.extend(shimContainer.style, {
 						position: 'absolute',

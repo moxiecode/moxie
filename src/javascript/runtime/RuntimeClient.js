@@ -32,7 +32,51 @@ define('moxie/runtime/RuntimeClient', [
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
 			*/
 			connectRuntime: function(options) {
-				var self = this, ruid, i, construct, items = [], order;
+				var comp = this, ruid;
+
+				function initialize(items) {
+					var type, constructor;
+
+					// if we ran out of runtimes
+					if (!items.length) {
+						comp.trigger('RuntimeError', new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						runtime = null;
+						return;
+					}
+
+					type = items.shift();
+					constructor = Runtime.getConstructor(type);
+					if (!constructor || !constructor.can(options.required_caps)) {
+						initialize(items);
+					}
+
+					// try initializing the runtime
+					runtime = new constructor(options);
+
+					runtime.bind('Init', function() {
+						// mark runtime as initialized
+						runtime.initialized = true;
+
+						runtime.constructor = constructor;
+
+						// jailbreak ...
+						setTimeout(function() {
+							runtime.clients++;
+							// this will be triggered on component
+							comp.trigger('RuntimeInit', runtime);
+						}, 1);
+					});
+
+					runtime.bind('Error', function(e, err) {
+						runtime.destroy(); // runtime cannot destroy itself from inside at a right moment, thus we do it here
+						comp.trigger('RuntimeError', type, err);
+						initialize(items);
+					});
+
+					/*runtime.bind('Exception', function() { });*/
+
+					runtime.init();
+				}
 
 				// check if a particular runtime was requested
 				if (Basic.typeOf(options) === 'string') {
@@ -43,64 +87,17 @@ define('moxie/runtime/RuntimeClient', [
 
 				if (ruid) {
 					runtime = Runtime.getRuntime(ruid);
-
 					if (runtime) {
-						/*if (Basic.typeOf(self.trigger) === 'function') { // connectRuntime might be called on non eventTarget object
-							self.trigger('RuntimeInit', runtime);
-						}*/
 						runtime.clients++;
 						return runtime;
 					} else {
+						// there should be a runtime and there's none - weird case
 						throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
 					}
 				}
 
 				// initialize a fresh one, that fits runtime list and required features best
-				order = options.runtime_order || Runtime.order;
-
-				items = order.split(/\s*,\s*/);
-
-				next_runtime:
-				for (i in items) {
-					construct = Runtime.getConstructor(items[i]);
-					if (!construct) {
-						continue;
-					}
-
-					// check if runtime supports required features
-					if (!construct.can(options.required_caps)) {
-						continue next_runtime; // runtime fails to support some features
-					}
-
-					// try initializing the runtime
-					try {
-						runtime = new construct(options);
-
-						runtime.bind('Init', function() {
-							// mark runtime as initialized
-							runtime.initialized = true;
-
-							runtime.constructor = construct;
-
-							// jailbreak ...
-							setTimeout(function() {
-								runtime.clients++;
-								// this will be triggered on component
-								self.trigger('RuntimeInit', runtime);
-							}, 1);
-						});
-
-						/*runtime.bind('Exception', function() { });*/
-
-						runtime.init();
-						return;
-					} catch(err) {
-						runtime = null;
-					}
-				}
-
-				// if we ran out of runtimes
-				throw new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR);
+				initialize((options.runtime_order || Runtime.order).split(/\s*,\s*/));
 			},
 
 			getRuntime: function() {
