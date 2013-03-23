@@ -84,7 +84,8 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 					}
 				}
 			} else if (data instanceof Blob) {
-				data = data.uid; // something wrong here
+				data = data.uid;
+				send();
 			} else {
 				send();
 			}

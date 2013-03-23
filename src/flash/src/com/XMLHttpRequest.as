@@ -329,7 +329,7 @@ package com
 			if (_multipart) {
 				request.data = _formatAsMultipart(ba, request);
 			} else if (ba) {
-				request.requestHeaders.push(new URLRequestHeader("Content-Type", "application/octet-stream"));
+				request.data = ba;
 			}		
 						
 			_conn = new URLStream;
