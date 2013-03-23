@@ -79,7 +79,7 @@ namespace Moxiecode
 					}
 				}
 			}
-			return this._exec(uid, compName, action, args.Count != 0 ? args.ToArray() : null);
+			return this._exec(uid, compName, action, args.Count != 0 ? args : null);
 		}
 
 		[ScriptableMember]
@@ -89,7 +89,7 @@ namespace Moxiecode
 		}
 
 
-		private dynamic _exec(string uid, string compName, string action, object[] args = null)
+		private dynamic _exec(string uid, string compName, string action, List<object> args = null)
 		{
 			try {
 				object comp = Moxie.compFactory.get(uid);
@@ -99,12 +99,18 @@ namespace Moxiecode
 
 				// execute the action if available
 				MethodInfo methodInfo = comp.GetType().GetMethod(action);
-				
+
 				if (methodInfo != null) {
-					return methodInfo.Invoke(comp, args);
-				} else {
-					//FireEvent(uid + "::Exception", { name: "RuntimeError", code: RuntimeError.NOT_SUPPORTED_ERR });
+					if (args != null) {
+						for (int i = 0; i < methodInfo.GetParameters().Length - args.Count; i++) {
+							args.Add(null); // make sure we got values for optional parameters as well
+						}
+						return methodInfo.Invoke(comp, args.ToArray());
+					}
+					return methodInfo.Invoke(comp, null);
 				}
+				
+				//FireEvent(uid + "::Exception", { name: "RuntimeError", code: RuntimeError.NOT_SUPPORTED_ERR });				
 			}
 			catch (Exception ex) {
 				// re-route exceptions thrown by components

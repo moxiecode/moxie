@@ -153,11 +153,21 @@ namespace Moxiecode.Com
 			}
 		}
 
-
-		public void send(ScriptObject args)
+		public void send(ScriptObject args, object blob = null)
 		{
 			_options = _extractOptions(args);
 			_url = new Uri(_options["url"]);
+
+			if (!_multipart) {
+				_blob = blob;
+			}
+
+			if (_blob is string) {
+				if (!Moxie.compFactory.contains((string)_blob)){
+					throw new DOMError(DOMError.NOT_FOUND_ERR);
+				}
+				_blob = Moxie.compFactory.get((string)_blob);
+			}
 	
 			if (_options["transport"] == "browser") {
 				_req = (HttpWebRequest)WebRequestCreator.BrowserHttp.Create(_url);
