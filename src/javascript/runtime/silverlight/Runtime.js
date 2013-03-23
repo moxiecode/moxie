@@ -95,7 +95,7 @@ define("moxie/runtime/silverlight/Runtime", [
 				return isVersionSupported;
 			}
 
-			Runtime.call(this, type, Basic.extend({}, { xap_url: Env.xap_url }));
+			Runtime.call(this, type, Basic.extend({}, { xap_url: Env.xap_url }, options));
 
 			Basic.extend(this, {
 
