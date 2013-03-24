@@ -137,6 +137,14 @@ define("moxie/core/utils/Mime", [
 			accept.mimes = mimes;
 							
 			return accept;
+		},
+
+		getFileExtension: function(fileName) {
+			return fileName.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase();
+		},
+
+		getFileMime: function(fileName) {
+			return this.mimes[this.getFileExtension(fileName)] || '';
 		}
 	};
 
