@@ -87,7 +87,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 			, type = file.type || Mime.getFileMime(file.name)
 			;
 
-			if (type && Basic.inArray(file.type, mimes) !== -1) {
+			if (!mimes.length || type && Basic.inArray(file.type, mimes) !== -1) {
 				return true;
 			}
 			return false;
