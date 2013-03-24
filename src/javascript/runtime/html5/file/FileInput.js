@@ -24,21 +24,23 @@ define("moxie/runtime/html5/file/FileInput", [
 ], function(extensions, Basic, Dom, Events, Mime) {
 	
 	function FileInput() {
-		var _files = [];
+		var _files = [], _options;
 
 		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, I = comp.getRuntime(), input, shimContainer, mimes;
 
+				_options = options;
 				_files = [];
 
 				// figure out accept string
-				mimes = options.accept.mimes || Mime.extList2mimes(options.accept);
+				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept);
 
 				shimContainer = I.getShimContainer();
 
 				shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;"' +
-					(options.multiple && I.can('select_multiple') ? 'multiple="multiple"' : '') + ' accept="' + mimes.join(',') + '" />';
+					(_options.multiple && I.can('select_multiple') ? 'multiple webkitdirectory' : '') + 
+					' accept="' + mimes.join(',') + '" />';
 
 				input = Dom.get(I.uid);
 
@@ -54,7 +56,7 @@ define("moxie/runtime/html5/file/FileInput", [
 				(function() {
 					var browseButton, zIndex, top;
 
-					browseButton = Dom.get(options.browse_button);
+					browseButton = Dom.get(_options.browse_button);
 
 					// Route click event to the input[type=file] element for browsers that support such behavior
 					if (I.can('summon_file_dialog')) {
@@ -91,14 +93,26 @@ define("moxie/runtime/html5/file/FileInput", [
 						comp.trigger('mousedown');
 					}, comp.uid);
 
-					Events.addEvent(Dom.get(options.container), 'mouseup', function() {
+					Events.addEvent(Dom.get(_options.container), 'mouseup', function() {
 						comp.trigger('mouseup');
 					}, comp.uid);
 
 				}());
 
 				input.onchange = function() { // there should be only one handler for this
-					_files = [].slice.call(this.files);
+					_files = [];
+
+					if (_options.multiple) {
+						// folders are represented by dots, filter them out (Chrome 21+)
+						Basic.each(this.files, function(file) {
+							if (file.name !== ".") { // if it doesn't looks like a folder
+								_files.push(file);
+							}
+						});
+					} else {
+						_files = [].slice.call(this.files);
+					}
+
 					// Clearing the value enables the user to select the same file again if they want to
 					this.value = '';
 					comp.trigger('change');
@@ -115,6 +129,18 @@ define("moxie/runtime/html5/file/FileInput", [
 				if ((input = Dom.get(I.uid))) {
 					input.disabled = !!state;
 				}
+			},
+
+			destroy: function() {
+				var I = this.getRuntime(), shimContainer = I.getShimContainer();
+
+				Events.removeAllEvents(shimContainer, this.uid);
+				Events.removeAllEvents(Dom.get(_options.container), this.uid);
+				Events.removeAllEvents(Dom.get(_options.browse_button), this.uid);
+
+				shimContainer.innerHTML = '';
+
+				_files = _options = null;
 			}
 		});
 	}

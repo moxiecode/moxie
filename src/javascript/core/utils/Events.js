@@ -13,8 +13,8 @@
 
 define('moxie/core/utils/Events', [
 	'moxie/core/utils/Basic'
-], function(o) {
-	var eventhash = {}, uid;
+], function(o, undefined) {
+	var eventhash = {}, uid = 'moxie_' + o.guid();
 	
 	// IE W3C like event funcs
 	function preventDefault() {
@@ -43,11 +43,6 @@ define('moxie/core/utils/Events', [
 		key = arguments[3];
 					
 		name = name.toLowerCase();
-					
-		// Initialize unique identifier if needed
-		if (uid === undefined) {
-			uid = 'Moxie_' + o.guid();
-		}
 
 		// Add event listener
 		if (obj.addEventListener) {
@@ -72,7 +67,7 @@ define('moxie/core/utils/Events', [
 		}
 		
 		// Log event handler to objects internal mOxie registry
-		if (obj[uid] === undefined) {
+		if (!obj[uid]) {
 			obj[uid] = o.guid();
 		}
 		
