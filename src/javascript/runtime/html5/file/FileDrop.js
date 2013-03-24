@@ -19,15 +19,19 @@ define("moxie/runtime/html5/file/FileDrop", [
 	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
-	"moxie/core/utils/Events"
-], function(extensions, Basic, Dom, Events) {
+	"moxie/core/utils/Events",
+	"moxie/core/utils/Mime"
+], function(extensions, Basic, Dom, Events, Mime) {
 	
 	function FileDrop() {
-		var _files = [];
+		var _files = [], _options;
 
 		Basic.extend(this, {
 			init: function(options) {
-				var comp = this, dropZone = options.container;
+				var comp = this, dropZone;
+
+				_options = options;
+				dropZone =  _options.container;
 
 				Events.addEvent(dropZone, 'dragover', function(e) {
 					e.preventDefault();
@@ -38,8 +42,26 @@ define("moxie/runtime/html5/file/FileDrop", [
 				Events.addEvent(dropZone, 'drop', function(e) {
 					e.preventDefault();
 					e.stopPropagation();
-					_files = e.dataTransfer.files;
-					comp.trigger("drop");
+
+					_files = [];
+
+					// Chrome 21+ accepts folders via Drag'n'Drop
+					if (e.dataTransfer.items && e.dataTransfer.items[0].webkitGetAsEntry) {
+						var entries = [];
+						Basic.each(e.dataTransfer.items, function(item) {
+							entries.push(item.webkitGetAsEntry());
+						});
+						_readEntries(entries, function() {
+							comp.trigger("drop");
+						});
+					} else {
+						Basic.each(e.dataTransfer.files, function(file) {
+							if (_isAcceptable(file)) {
+								_files.push(file);
+							}
+						});
+						comp.trigger("drop");
+					}
 				}, comp.uid);
 
 				Events.addEvent(dropZone, 'dragenter', function(e) {
@@ -59,6 +81,68 @@ define("moxie/runtime/html5/file/FileDrop", [
 				return _files;
 			}
 		});
+
+		function _isAcceptable(file) {
+			var mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept)
+			, type = file.type || Mime.getFileMime(file.name)
+			;
+
+			if (type && Basic.inArray(file.type, mimes) !== -1) {
+				return true;
+			}
+			return false;
+		}
+
+		function _readEntries(entries, cb) {
+			var queue = [];
+			Basic.each(entries, function(entry) {
+				queue.push(function(cbcb) {
+					_readEntry(entry, cbcb);
+				});
+			});
+			Basic.inSeries(queue, function(err) {
+				cb();
+			});
+		}
+
+		function _readEntry(entry, cb) {
+			if (entry.isFile) {
+				entry.file(function(file) {
+					if (_isAcceptable(file)) {
+						_files.push(file);
+					}
+					cb();
+				}, function(err) {
+					// fire an error event maybe
+					cb();
+				});
+			} else if (entry.isDirectory) {
+				_readDirEntry(entry, cb);
+			} else {
+				cb(); // not file, not directory? what then?..
+			}
+		}
+
+		function _readDirEntry(dirEntry, cb) {
+			var entries = [], dirReader = dirEntry.createReader();
+
+			// keep quering recursively till no more entries
+			function getEntries(cbcb) {
+				dirReader.readEntries(function(moreEntries) {
+					if (moreEntries.length) {
+						[].push.apply(entries, moreEntries);
+						getEntries(cbcb);
+					} else {
+						cbcb();
+					}
+				}, cbcb);
+			};
+
+			// ...and you thought FileReader was crazy...
+			getEntries(function() {
+				_readEntries(entries, cb);
+			}); 
+		}
 	}
 
 	return (extensions.FileDrop = FileDrop);
