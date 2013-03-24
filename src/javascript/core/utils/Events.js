@@ -13,7 +13,7 @@
 
 define('moxie/core/utils/Events', [
 	'moxie/core/utils/Basic'
-], function(o, undefined) {
+], function(o) {
 	var eventhash = {}, uid = 'moxie_' + o.guid();
 	
 	// IE W3C like event funcs
