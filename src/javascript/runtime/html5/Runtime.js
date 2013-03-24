@@ -127,6 +127,7 @@ define("moxie/runtime/html5/Runtime", [
 					resize_image: function() {
 						return can('access_binary') && Env.can('create_canvas');
 					},
+					select_folder: Env.browser === 'Chrome' && Env.version >= 21,
 					select_multiple: !(Env.browser === 'Safari' && Env.OS === 'Windows'),
 					send_binary_string:
 						!!(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),

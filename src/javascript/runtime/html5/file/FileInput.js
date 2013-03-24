@@ -40,7 +40,7 @@ define("moxie/runtime/html5/file/FileInput", [
 
 				shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;"' +
 					(_options.multiple && I.can('select_multiple') ? 'multiple' : '') + 
-					(_options.directory && I.can('select_multiple') ? 'webkitdirectory directory' : '') + // Chrome 21+
+					(_options.directory && I.can('select_folder') ? 'webkitdirectory directory' : '') + // Chrome 21+
 					' accept="' + mimes.join(',') + '" />';
 
 				input = Dom.get(I.uid);

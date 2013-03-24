@@ -35,6 +35,7 @@ define('moxie/file/FileInput', [
 	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
 	@param {String} [options.file='file'] Name of the file field (not the filename)
 	@param {Boolean} [options.multiple=false] Enable selection of multiple files
+	@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time)
 	@param {String|DOMElement} [options.container] DOM Element to use as acontainer for file-picker. Defaults to parentNode for options.browse_button
 	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 

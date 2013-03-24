@@ -274,6 +274,7 @@ define('moxie/runtime/Runtime', [
 		return_response_type: false,
 		return_status_code: true,
 		send_custom_headers: false,
+		select_folder: false,
 		select_multiple: true,
 		send_binary_string: false,
 		send_browser_cookies: true,
