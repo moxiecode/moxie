@@ -39,7 +39,8 @@ define("moxie/runtime/html5/file/FileInput", [
 				shimContainer = I.getShimContainer();
 
 				shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;"' +
-					(_options.multiple && I.can('select_multiple') ? 'multiple webkitdirectory' : '') + 
+					(_options.multiple && I.can('select_multiple') ? 'multiple' : '') + 
+					(_options.directory && I.can('select_multiple') ? 'webkitdirectory directory' : '') + // Chrome 21+
 					' accept="' + mimes.join(',') + '" />';
 
 				input = Dom.get(I.uid);
@@ -102,7 +103,7 @@ define("moxie/runtime/html5/file/FileInput", [
 				input.onchange = function() { // there should be only one handler for this
 					_files = [];
 
-					if (_options.multiple) {
+					if (_options.directory) {
 						// folders are represented by dots, filter them out (Chrome 21+)
 						Basic.each(this.files, function(file) {
 							if (file.name !== ".") { // if it doesn't looks like a folder
