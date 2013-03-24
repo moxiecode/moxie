@@ -175,7 +175,7 @@ define('moxie/core/utils/Events', [
 	var removeAllEvents = function(obj) {
 		var key = arguments[1];
 		
-		if (obj[uid] === undefined || !obj[uid]) {
+		if (!obj || !obj[uid]) {
 			return;
 		}
 		
