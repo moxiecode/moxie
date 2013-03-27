@@ -612,6 +612,14 @@ define("moxie/core/utils/Mime", [
 			accept.mimes = mimes;
 							
 			return accept;
+		},
+
+		getFileExtension: function(fileName) {
+			return fileName.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase();
+		},
+
+		getFileMime: function(fileName) {
+			return this.mimes[this.getFileExtension(fileName)] || '';
 		}
 	};
 
@@ -1759,6 +1767,7 @@ define('moxie/runtime/Runtime', [
 		return_response_type: false,
 		return_status_code: true,
 		send_custom_headers: false,
+		select_folder: false,
 		select_multiple: true,
 		send_binary_string: false,
 		send_browser_cookies: true,
@@ -1872,6 +1881,7 @@ define('moxie/runtime/RuntimeClient', [
 					constructor = Runtime.getConstructor(type);
 					if (!constructor || !constructor.can(options.required_caps)) {
 						initialize(items);
+						return;
 					}
 
 					// try initializing the runtime
@@ -2238,6 +2248,7 @@ define('moxie/file/FileInput', [
 	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
 	@param {String} [options.file='file'] Name of the file field (not the filename)
 	@param {Boolean} [options.multiple=false] Enable selection of multiple files
+	@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time)
 	@param {String|DOMElement} [options.container] DOM Element to use as acontainer for file-picker. Defaults to parentNode for options.browse_button
 	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 
@@ -5586,6 +5597,7 @@ define("moxie/runtime/html5/Runtime", [
 					resize_image: function() {
 						return can('access_binary') && Env.can('create_canvas');
 					},
+					select_folder: Env.browser === 'Chrome' && Env.version >= 21,
 					select_multiple: !(Env.browser === 'Safari' && Env.OS === 'Windows'),
 					send_binary_string:
 						!!(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
@@ -5905,7 +5917,8 @@ define("moxie/runtime/html5/file/FileInput", [
 				shimContainer = I.getShimContainer();
 
 				shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;"' +
-					(_options.multiple && I.can('select_multiple') ? 'multiple webkitdirectory' : '') + 
+					(_options.multiple && I.can('select_multiple') ? 'multiple' : '') + 
+					(_options.directory && I.can('select_folder') ? 'webkitdirectory directory' : '') + // Chrome 11+
 					' accept="' + mimes.join(',') + '" />';
 
 				input = Dom.get(I.uid);
@@ -5968,8 +5981,8 @@ define("moxie/runtime/html5/file/FileInput", [
 				input.onchange = function() { // there should be only one handler for this
 					_files = [];
 
-					if (_options.multiple) {
-						// folders are represented by dots, filter them out (Chrome 21+)
+					if (_options.directory) {
+						// folders are represented by dots, filter them out (Chrome 11+)
 						Basic.each(this.files, function(file) {
 							if (file.name !== ".") { // if it doesn't looks like a folder
 								_files.push(file);
@@ -6037,15 +6050,19 @@ define("moxie/runtime/html5/file/FileDrop", [
 	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
-	"moxie/core/utils/Events"
-], function(extensions, Basic, Dom, Events) {
+	"moxie/core/utils/Events",
+	"moxie/core/utils/Mime"
+], function(extensions, Basic, Dom, Events, Mime) {
 	
 	function FileDrop() {
-		var _files = [];
+		var _files = [], _options;
 
 		Basic.extend(this, {
 			init: function(options) {
-				var comp = this, dropZone = options.container;
+				var comp = this, dropZone;
+
+				_options = options;
+				dropZone = _options.container;
 
 				Events.addEvent(dropZone, 'dragover', function(e) {
 					e.preventDefault();
@@ -6056,8 +6073,26 @@ define("moxie/runtime/html5/file/FileDrop", [
 				Events.addEvent(dropZone, 'drop', function(e) {
 					e.preventDefault();
 					e.stopPropagation();
-					_files = e.dataTransfer.files;
-					comp.trigger("drop");
+
+					_files = [];
+
+					// Chrome 21+ accepts folders via Drag'n'Drop
+					if (e.dataTransfer.items && e.dataTransfer.items[0].webkitGetAsEntry) {
+						var entries = [];
+						Basic.each(e.dataTransfer.items, function(item) {
+							entries.push(item.webkitGetAsEntry());
+						});
+						_readEntries(entries, function() {
+							comp.trigger("drop");
+						});
+					} else {
+						Basic.each(e.dataTransfer.files, function(file) {
+							if (_isAcceptable(file)) {
+								_files.push(file);
+							}
+						});
+						comp.trigger("drop");
+					}
 				}, comp.uid);
 
 				Events.addEvent(dropZone, 'dragenter', function(e) {
@@ -6077,6 +6112,68 @@ define("moxie/runtime/html5/file/FileDrop", [
 				return _files;
 			}
 		});
+
+		function _isAcceptable(file) {
+			var mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept)
+			, type = file.type || Mime.getFileMime(file.name)
+			;
+
+			if (!mimes.length || type && Basic.inArray(file.type, mimes) !== -1) {
+				return true;
+			}
+			return false;
+		}
+
+		function _readEntries(entries, cb) {
+			var queue = [];
+			Basic.each(entries, function(entry) {
+				queue.push(function(cbcb) {
+					_readEntry(entry, cbcb);
+				});
+			});
+			Basic.inSeries(queue, function(err) {
+				cb();
+			});
+		}
+
+		function _readEntry(entry, cb) {
+			if (entry.isFile) {
+				entry.file(function(file) {
+					if (_isAcceptable(file)) {
+						_files.push(file);
+					}
+					cb();
+				}, function(err) {
+					// fire an error event maybe
+					cb();
+				});
+			} else if (entry.isDirectory) {
+				_readDirEntry(entry, cb);
+			} else {
+				cb(); // not file, not directory? what then?..
+			}
+		}
+
+		function _readDirEntry(dirEntry, cb) {
+			var entries = [], dirReader = dirEntry.createReader();
+
+			// keep quering recursively till no more entries
+			function getEntries(cbcb) {
+				dirReader.readEntries(function(moreEntries) {
+					if (moreEntries.length) {
+						[].push.apply(entries, moreEntries);
+						getEntries(cbcb);
+					} else {
+						cbcb();
+					}
+				}, cbcb);
+			};
+
+			// ...and you thought FileReader was crazy...
+			getEntries(function() {
+				_readEntries(entries, cb);
+			}); 
+		}
 	}
 
 	return (extensions.FileDrop = FileDrop);

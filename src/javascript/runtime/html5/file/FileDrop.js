@@ -31,7 +31,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 				var comp = this, dropZone;
 
 				_options = options;
-				dropZone =  _options.container;
+				dropZone = _options.container;
 
 				Events.addEvent(dropZone, 'dragover', function(e) {
 					e.preventDefault();
