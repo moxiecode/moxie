@@ -48,6 +48,7 @@ define('moxie/runtime/RuntimeClient', [
 					constructor = Runtime.getConstructor(type);
 					if (!constructor || !constructor.can(options.required_caps)) {
 						initialize(items);
+						return;
 					}
 
 					// try initializing the runtime
