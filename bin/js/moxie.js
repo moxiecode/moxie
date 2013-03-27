@@ -6115,10 +6115,10 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 		function _isAcceptable(file) {
 			var mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept)
-			, type = file.type || Mime.getFileMime(file.name)
+			, type = file.type || Mime.getFileMime(file.name) || ''
 			;
 
-			if (!mimes.length || type && Basic.inArray(file.type, mimes) !== -1) {
+			if (!mimes.length || Basic.inArray(type, mimes) !== -1) {
 				return true;
 			}
 			return false;
