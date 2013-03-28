@@ -355,7 +355,7 @@ define("moxie/runtime/html5/image/Image", [
 
 
 		function _drawToCanvas(img, canvas, x, y, w, h) {
-			if (Env.OS === 'iOS' || Env.OS === 'Android') { 
+			if (Env.OS === 'iOS') { 
 				// avoid squish bug in iOS6
 				MegaPixel.renderTo(img, canvas, { width: w, height: h, x: x, y: y });
 			} else {
