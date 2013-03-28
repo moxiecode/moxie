@@ -509,12 +509,12 @@ define("moxie/core/utils/Mime", [
 		"application/vnd.openxmlformats-officedocument.presentationml.slideshow,ppsx," +
 		"application/x-javascript,js," +
 		"application/json,json," +
-		"audio/mpeg,mpga mpega mp2 mp3," +
+		"audio/mpeg,mp3 mpga mpega mp2," +
 		"audio/x-wav,wav," +
 		"audio/mp4,m4a," +
 		"image/bmp,bmp," +
 		"image/gif,gif," +
-		"image/jpeg,jpeg jpg jpe," +
+		"image/jpeg,jpg jpeg jpe," +
 		"image/photoshop,psd," +
 		"image/png,png," +
 		"image/svg+xml,svg svgz," +
@@ -615,7 +615,11 @@ define("moxie/core/utils/Mime", [
 		},
 
 		getFileExtension: function(fileName) {
-			return fileName.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase();
+			var matches = fileName && fileName.match(/\.([^.]+)$/);
+			if (matches) {
+				return matches[1].toLowerCase();
+			}
+			return '';
 		},
 
 		getFileMime: function(fileName) {
@@ -2072,7 +2076,6 @@ define('moxie/file/Blob', [
 				if (!blobpool[this.uid]) {
 					return null;	
 				}
-				
 				return blobpool[this.uid];
 			},
 
@@ -2086,6 +2089,7 @@ define('moxie/file/Blob', [
 			detach: function(data) {
 				if (this.ruid) {
 					_getRuntime.call(this).exec.call(this, 'Blob', 'destroy', blobpool[this.uid]);
+					this.disconnectRuntime();
 					this.ruid = null;
 				}
 
@@ -2156,33 +2160,36 @@ define('moxie/file/File', [
 	@param {Object} file Object "Native" file object, as it is represented in the runtime
 	*/
 	function File(ruid, file) {
-		var name, ext, type;
+		var name, type;
 
 		if (!file) { // avoid extra errors in case we overlooked something
 			file = {};
 		}
 
-		// extract extension
-		ext = file.name && file.name.match(/[^\.]+$/);
-
 		// figure out the type
-		if (!file.type) {
-			type = ext && Mime.mimes[ext[0].toLowerCase()] || 'application/octet-stream';
+		if (file.type && file.type !== '') {
+			type = file.type;
+		} else {
+			type = Mime.getFileMime(file.name);
 		}
 
 		// sanitize file name or generate new one
 		if (file.name) {
 			name = file.name.replace(/\\/g, '/');
 			name = name.substr(name.lastIndexOf('/') + 1);
-		} else if (file.type && Mime.extensions[file.type]) {
-			ext = Mime.extensions[file.type][0];
-			name = Basic.guid(file.type.split('/')[0] + '_' || 'file_') + '.' + ext;
+		} else {
+			var prefix = type.split('/')[0];
+			name = Basic.guid((prefix !== '' ? prefix : 'file') + '_');
+			
+			if (Mime.extensions[type]) {
+				name += '.' + Mime.extensions[type][0]; // append proper extension if possible
+			}
 		}
 
 		Blob.apply(this, arguments);
 		
 		Basic.extend(this, {
-			type: file.type || type,
+			type: type || '',
 
 			/**
 			File name
@@ -2191,7 +2198,7 @@ define('moxie/file/File', [
 			@type {String}
 			@default ''
 			*/
-			name: name || '',
+			name: name || Basic.guid('file_'),
 			
 			/**
 			Date of last modification
@@ -2426,6 +2433,7 @@ define('moxie/file/FileInput', [
 						self.files = [];
 
 						Basic.each(files, function(file) {
+							runtime.clients++;
 							self.files.push(new File(self.ruid, file));
 						});
 					}, 999);
@@ -4204,8 +4212,9 @@ define("moxie/xhr/XMLHttpRequest", [
 
 			function loadEnd() {
 				_xhr.destroy();
+				_xhr = null;
 				self.dispatchEvent('loadend');
-				_xhr = self = null;
+				self = null;
 			}
 
 			function exec(runtime) {
@@ -4411,9 +4420,9 @@ define('moxie/file/FileReaderSync', [
 						return txt;
 				}
 			} else {
-				try { // runtime is not required to have this method
-					return this.connectRuntime(blob.ruid).exec.call(this, 'FileReaderSync', 'read', op, blob);
-				} catch(ex) {}
+				var result = this.connectRuntime(blob.ruid).exec.call(this, 'FileReaderSync', 'read', op, blob);
+				this.disconnectRuntime();
+				return result;
 			}
 		}
 	};
@@ -5143,11 +5152,12 @@ define("moxie/image/Image", [
 				}
 
 				crop = (crop === undefined ? false : !!crop);
-				preserveHeaders = (preserveHeaders === undefined ? true : !!preserveHeaders);
+				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
 				runtime = this.connectRuntime(this.ruid);
 				this.bind('Resize', function(e, info) {
 					_updateInfo.call(this, info);
+					this.disconnectRuntime();
 				}, 999);
 				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
@@ -5183,6 +5193,8 @@ define("moxie/image/Image", [
 			@return {Blob} Image as Blob
 			*/
 			getAsBlob: function(type, quality) {
+				var blob;
+
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
@@ -5195,7 +5207,9 @@ define("moxie/image/Image", [
 					quality = 90;
 				}
 
-				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsBlob', type, quality);
+				blob = this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsBlob', type, quality);
+				this.disconnectRuntime();
+				return blob;
 			},
 
 			/**
@@ -5208,10 +5222,14 @@ define("moxie/image/Image", [
 			@return {String} Image as dataURL string
 			*/
 			getAsDataURL: function(type, quality) {
+				var dataUrl;
+
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
-				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
+				dataUrl = this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
+				this.disconnectRuntime();
+				return dataUrl;
 			},
 
 			/**
@@ -5296,6 +5314,9 @@ define("moxie/image/Image", [
 									runtime.destroy();
 									onResize.call(self); // re-feed our image data
 								});*/
+
+								self.disconnectRuntime();
+								runtime = null;
 							}, 999);
 
 							runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);
@@ -5359,8 +5380,8 @@ define("moxie/image/Image", [
 			*/
 			destroy: function() {
 				if (this.ruid) {
-					var runtime = this.connectRuntime(this.ruid);
-					runtime.exec.call(self, 'Image', 'destroy');
+					this.connectRuntime(this.ruid).exec.call(self, 'Image', 'destroy');
+					this.disconnectRuntime();
 				}
 				this.unbindAll();
 				self = null;
@@ -5374,6 +5395,7 @@ define("moxie/image/Image", [
 		function _updateInfo(info) {
 			if (!info) {
 				info = this.connectRuntime(this.ruid).exec.call(this, 'Image', 'getInfo');
+				this.disconnectRuntime();
 			}
 
 			if (info) {
@@ -5404,6 +5426,7 @@ define("moxie/image/Image", [
 			var runtime = this.connectRuntime(img.ruid);
 			this.ruid = runtime.uid;
 			runtime.exec.call(self, 'Image', 'loadFromImage', img, (exact === undefined ? true : exact));
+			this.disconnectRuntime();
 		}
 
 
@@ -5414,6 +5437,7 @@ define("moxie/image/Image", [
 			function exec(runtime) {
 				self.ruid = runtime.uid;
 				runtime.exec.call(self, 'Image', 'loadFromBlob', blob, asBinary);
+				self.disconnectRuntime();
 			}
 
 			if (blob.isDetached()) {
@@ -7811,7 +7835,7 @@ define("moxie/runtime/html5/image/Image", [
 				info = {
 					width: _img && _img.width || 0,
 					height: _img && _img.height || 0,
-					type: (_srcBlob.type || _srcBlob.name && Mime.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
+					type: _srcBlob.type || Mime.getFileMime(_srcBlob.name),
 					size: _binStr && _binStr.length || _srcBlob.size || 0,
 					name: _srcBlob.name || '',
 					meta: _imgInfo && _imgInfo.meta || this.meta || {}
@@ -8071,7 +8095,7 @@ define("moxie/runtime/html5/image/Image", [
 
 
 		function _drawToCanvas(img, canvas, x, y, w, h) {
-			if (Env.OS === 'iOS' || Env.OS === 'Android') { 
+			if (Env.OS === 'iOS') { 
 				// avoid squish bug in iOS6
 				MegaPixel.renderTo(img, canvas, { width: w, height: h, x: x, y: y });
 			} else {
@@ -9951,7 +9975,7 @@ Globally exposed namespace with the most frequently used public classes and hand
 (function() {
 	"use strict";
 
-	var o = {};
+	var o = {}, inArray = moxie.core.utils.Basic.inArray;
 
 	// directly add some public classes
 	// (we do it dynamically here, since for custom builds we cannot know beforehand what modules were included)
@@ -9959,7 +9983,7 @@ Globally exposed namespace with the most frequently used public classes and hand
 		var name, itemType;
 		for (name in ns) {
 			itemType = typeof(ns[name]);
-			if (itemType === 'object' && name !== 'Exceptions') {
+			if (itemType === 'object' && !~inArray(name, ['Exceptions', 'Env', 'Mime'])) {
 				addAlias(ns[name]);
 			} else if (itemType === 'function') {
 				o[name] = ns[name];
@@ -9967,8 +9991,9 @@ Globally exposed namespace with the most frequently used public classes and hand
 		}
 	})(window.moxie);
 
-	// add Env manually
+	// add some manually
 	o.Env = window.moxie.core.utils.Env;
+	o.Mime = window.moxie.core.utils.Mime;
 	o.Exceptions = window.moxie.core.Exceptions;
 
 	// expose globally
