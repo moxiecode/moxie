@@ -892,8 +892,9 @@ define("moxie/xhr/XMLHttpRequest", [
 
 			function loadEnd() {
 				_xhr.destroy();
+				_xhr = null;
 				self.dispatchEvent('loadend');
-				_xhr = self = null;
+				self = null;
 			}
 
 			function exec(runtime) {
