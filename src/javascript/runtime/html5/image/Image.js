@@ -95,7 +95,7 @@ define("moxie/runtime/html5/image/Image", [
 				info = {
 					width: _img && _img.width || 0,
 					height: _img && _img.height || 0,
-					type: (_srcBlob.type || _srcBlob.name && Mime.mimes[_srcBlob.name.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase()]) || '',
+					type: _srcBlob.type || Mime.getFileMime(_srcBlob.name),
 					size: _binStr && _binStr.length || _srcBlob.size || 0,
 					name: _srcBlob.name || '',
 					meta: _imgInfo && _imgInfo.meta || this.meta || {}

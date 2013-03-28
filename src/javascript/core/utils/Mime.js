@@ -34,12 +34,12 @@ define("moxie/core/utils/Mime", [
 		"application/vnd.openxmlformats-officedocument.presentationml.slideshow,ppsx," +
 		"application/x-javascript,js," +
 		"application/json,json," +
-		"audio/mpeg,mpga mpega mp2 mp3," +
+		"audio/mpeg,mp3 mpga mpega mp2," +
 		"audio/x-wav,wav," +
 		"audio/mp4,m4a," +
 		"image/bmp,bmp," +
 		"image/gif,gif," +
-		"image/jpeg,jpeg jpg jpe," +
+		"image/jpeg,jpg jpeg jpe," +
 		"image/photoshop,psd," +
 		"image/png,png," +
 		"image/svg+xml,svg svgz," +
@@ -140,7 +140,11 @@ define("moxie/core/utils/Mime", [
 		},
 
 		getFileExtension: function(fileName) {
-			return fileName.replace(/^.+\.([^\.]+)$/, "$1").toLowerCase();
+			var matches = fileName && fileName.match(/\.([^.]+)$/);
+			if (matches) {
+				return matches[1].toLowerCase();
+			}
+			return '';
 		},
 
 		getFileMime: function(fileName) {

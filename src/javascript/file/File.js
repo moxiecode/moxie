@@ -24,33 +24,36 @@ define('moxie/file/File', [
 	@param {Object} file Object "Native" file object, as it is represented in the runtime
 	*/
 	function File(ruid, file) {
-		var name, ext, type;
+		var name, type;
 
 		if (!file) { // avoid extra errors in case we overlooked something
 			file = {};
 		}
 
-		// extract extension
-		ext = file.name && file.name.match(/[^\.]+$/);
-
 		// figure out the type
-		if (!file.type) {
-			type = ext && Mime.mimes[ext[0].toLowerCase()] || 'application/octet-stream';
+		if (file.type && file.type !== '') {
+			type = file.type;
+		} else {
+			type = Mime.getFileMime(file.name);
 		}
 
 		// sanitize file name or generate new one
 		if (file.name) {
 			name = file.name.replace(/\\/g, '/');
 			name = name.substr(name.lastIndexOf('/') + 1);
-		} else if (file.type && Mime.extensions[file.type]) {
-			ext = Mime.extensions[file.type][0];
-			name = Basic.guid(file.type.split('/')[0] + '_' || 'file_') + '.' + ext;
+		} else {
+			var prefix = type.split('/')[0];
+			name = Basic.guid((prefix !== '' ? prefix : 'file') + '_');
+			
+			if (Mime.extensions[type]) {
+				name += '.' + Mime.extensions[type][0]; // append proper extension if possible
+			}
 		}
 
 		Blob.apply(this, arguments);
 		
 		Basic.extend(this, {
-			type: file.type || type,
+			type: type || '',
 
 			/**
 			File name
@@ -59,7 +62,7 @@ define('moxie/file/File', [
 			@type {String}
 			@default ''
 			*/
-			name: name || '',
+			name: name || Basic.guid('file_'),
 			
 			/**
 			Date of last modification
