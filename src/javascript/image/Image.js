@@ -256,11 +256,12 @@ define("moxie/image/Image", [
 				}
 
 				crop = (crop === undefined ? false : !!crop);
-				preserveHeaders = (preserveHeaders === undefined ? true : !!preserveHeaders);
+				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
 				runtime = this.connectRuntime(this.ruid);
 				this.bind('Resize', function(e, info) {
 					_updateInfo.call(this, info);
+					this.disconnectRuntime();
 				}, 999);
 				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
@@ -296,6 +297,8 @@ define("moxie/image/Image", [
 			@return {Blob} Image as Blob
 			*/
 			getAsBlob: function(type, quality) {
+				var blob;
+
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
@@ -308,7 +311,9 @@ define("moxie/image/Image", [
 					quality = 90;
 				}
 
-				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsBlob', type, quality);
+				blob = this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsBlob', type, quality);
+				this.disconnectRuntime();
+				return blob;
 			},
 
 			/**
@@ -321,10 +326,14 @@ define("moxie/image/Image", [
 			@return {String} Image as dataURL string
 			*/
 			getAsDataURL: function(type, quality) {
+				var dataUrl;
+
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
-				return this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
+				dataUrl = this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
+				this.disconnectRuntime();
+				return dataUrl;
 			},
 
 			/**
@@ -409,6 +418,9 @@ define("moxie/image/Image", [
 									runtime.destroy();
 									onResize.call(self); // re-feed our image data
 								});*/
+
+								self.disconnectRuntime();
+								runtime = null;
 							}, 999);
 
 							runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);
@@ -472,8 +484,8 @@ define("moxie/image/Image", [
 			*/
 			destroy: function() {
 				if (this.ruid) {
-					var runtime = this.connectRuntime(this.ruid);
-					runtime.exec.call(self, 'Image', 'destroy');
+					this.connectRuntime(this.ruid).exec.call(self, 'Image', 'destroy');
+					this.disconnectRuntime();
 				}
 				this.unbindAll();
 				self = null;
@@ -487,6 +499,7 @@ define("moxie/image/Image", [
 		function _updateInfo(info) {
 			if (!info) {
 				info = this.connectRuntime(this.ruid).exec.call(this, 'Image', 'getInfo');
+				this.disconnectRuntime();
 			}
 
 			if (info) {
@@ -517,6 +530,7 @@ define("moxie/image/Image", [
 			var runtime = this.connectRuntime(img.ruid);
 			this.ruid = runtime.uid;
 			runtime.exec.call(self, 'Image', 'loadFromImage', img, (exact === undefined ? true : exact));
+			this.disconnectRuntime();
 		}
 
 
@@ -527,6 +541,7 @@ define("moxie/image/Image", [
 			function exec(runtime) {
 				self.ruid = runtime.uid;
 				runtime.exec.call(self, 'Image', 'loadFromBlob', blob, asBinary);
+				self.disconnectRuntime();
 			}
 
 			if (blob.isDetached()) {

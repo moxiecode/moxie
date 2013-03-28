@@ -213,6 +213,7 @@ define('moxie/file/FileInput', [
 						self.files = [];
 
 						Basic.each(files, function(file) {
+							runtime.clients++;
 							self.files.push(new File(self.ruid, file));
 						});
 					}, 999);

@@ -64,9 +64,9 @@ define('moxie/file/FileReaderSync', [
 						return txt;
 				}
 			} else {
-				try { // runtime is not required to have this method
-					return this.connectRuntime(blob.ruid).exec.call(this, 'FileReaderSync', 'read', op, blob);
-				} catch(ex) {}
+				var result = this.connectRuntime(blob.ruid).exec.call(this, 'FileReaderSync', 'read', op, blob);
+				this.disconnectRuntime();
+				return result;
 			}
 		}
 	};
