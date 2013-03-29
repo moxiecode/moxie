@@ -210,7 +210,7 @@ package com
 						
 						scale = selector(tmpWidth / output.width, tmpHeight / output.height);
 						if (scale > 1 && (!crop || preserveHeaders)) { // if we do not crop or strip off headers
-							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, { width: output.width, height: output.height }));
+							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, getInfo()));
 							return;
 						}
 						
