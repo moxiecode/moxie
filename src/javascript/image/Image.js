@@ -193,8 +193,6 @@ define("moxie/image/Image", [
 				var el, args = [].slice.call(arguments);
 
 				this.bind('Load', function(e, info) {
-					this.disconnectRuntime();
-
 					_updateInfo.call(this, info);
 				}, 999);
 
@@ -260,10 +258,9 @@ define("moxie/image/Image", [
 				crop = (crop === undefined ? false : !!crop);
 				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
-				runtime = this.connectRuntime(this.ruid);
+				runtime = this.getRuntime();
 				this.bind('Resize', function(e, info) {
 					_updateInfo.call(this, info);
-					this.disconnectRuntime();
 				}, 999);
 				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
@@ -313,9 +310,7 @@ define("moxie/image/Image", [
 					quality = 90;
 				}
 
-				blob = this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsBlob', type, quality);
-				this.disconnectRuntime();
-				return blob;
+				return this.getRuntime().exec.call(self, 'Image', 'getAsBlob', type, quality);
 			},
 
 			/**
@@ -333,9 +328,7 @@ define("moxie/image/Image", [
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
-				dataUrl = this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
-				this.disconnectRuntime();
-				return dataUrl;
+				return this.getRuntime().exec.call(self, 'Image', 'getAsDataURL', type, quality);
 			},
 
 			/**
@@ -486,7 +479,7 @@ define("moxie/image/Image", [
 			*/
 			destroy: function() {
 				if (this.ruid) {
-					this.connectRuntime(this.ruid).exec.call(self, 'Image', 'destroy');
+					this.getRuntime().exec.call(self, 'Image', 'destroy');
 					this.disconnectRuntime();
 				}
 				this.unbindAll();
@@ -500,8 +493,7 @@ define("moxie/image/Image", [
 
 		function _updateInfo(info) {
 			if (!info) {
-				info = this.connectRuntime(this.ruid).exec.call(this, 'Image', 'getInfo');
-				this.disconnectRuntime();
+				info = this.getRuntime().exec.call(this, 'Image', 'getInfo');
 			}
 
 			if (info) {
