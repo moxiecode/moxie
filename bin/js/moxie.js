@@ -1863,7 +1863,8 @@ define('moxie/runtime/RuntimeClient', [
 
 		Basic.extend(this, {
 			/**
-			Connects to the runtime specified by the options. Will either connect to existing runtime or create a new one
+			Connects to the runtime specified by the options. Will either connect to existing runtime or create a new one.
+			Increments number of clients connected to the specified runtime.
 
 			@method connectRuntime
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
@@ -1938,12 +1939,18 @@ define('moxie/runtime/RuntimeClient', [
 				initialize((options.runtime_order || Runtime.order).split(/\s*,\s*/));
 			},
 
+			/**
+			Returns the runtime to which the client is currently connected.
+
+			@method getRuntime
+			@return {Runtime} Runtime or null if client is not connected
+			*/
 			getRuntime: function() {
 				return runtime || null;
 			},
 
 			/**
-			Disconnect from the runtime
+			Disconnects from the runtime. Decrements number of clients connected to the specified runtime.
 
 			@method disconnectRuntime
 			*/
@@ -4308,6 +4315,9 @@ define("moxie/xhr/XMLHttpRequest", [
 				_xhr.bind('RuntimeInit', function(e, runtime) {
 					exec(runtime);
 				});
+				_xhr.bind('RuntimeError', function(e, err) {
+					self.dispatchEvent('RuntimeError', err);
+				});
 				_xhr.connectRuntime(_options);
 			}
 		}
@@ -4930,7 +4940,6 @@ define("moxie/image/Image", [
 	@extends EventTarget
 	*/
 	var dispatches = [
-		'loadstart',
 		'progress',
 
 		/**
@@ -4942,8 +4951,6 @@ define("moxie/image/Image", [
 		'load',
 
 		'error',
-
-		'loadend',
 
 		/**
 		Dispatched when resize operation is complete.
@@ -5088,8 +5095,8 @@ define("moxie/image/Image", [
 			load: function(src) {
 				var el, args = [].slice.call(arguments);
 
-				this.bind('Load', function(e, info) {
-					_updateInfo.call(this, info);
+				this.bind('Load', function(e) {
+					_updateInfo.call(this);
 				}, 999);
 
 				this.convertEventPropsToHandlers(dispatches);
@@ -5154,10 +5161,9 @@ define("moxie/image/Image", [
 				crop = (crop === undefined ? false : !!crop);
 				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
-				runtime = this.connectRuntime(this.ruid);
-				this.bind('Resize', function(e, info) {
-					_updateInfo.call(this, info);
-					this.disconnectRuntime();
+				runtime = this.getRuntime();
+				this.bind('Resize', function(e) {
+					_updateInfo.call(this);
 				}, 999);
 				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
@@ -5207,9 +5213,7 @@ define("moxie/image/Image", [
 					quality = 90;
 				}
 
-				blob = this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsBlob', type, quality);
-				this.disconnectRuntime();
-				return blob;
+				return this.getRuntime().exec.call(self, 'Image', 'getAsBlob', type, quality);
 			},
 
 			/**
@@ -5227,9 +5231,7 @@ define("moxie/image/Image", [
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
-				dataUrl = this.connectRuntime(this.ruid).exec.call(self, 'Image', 'getAsDataURL', type, quality);
-				this.disconnectRuntime();
-				return dataUrl;
+				return this.getRuntime().exec.call(self, 'Image', 'getAsDataURL', type, quality);
 			},
 
 			/**
@@ -5380,7 +5382,7 @@ define("moxie/image/Image", [
 			*/
 			destroy: function() {
 				if (this.ruid) {
-					this.connectRuntime(this.ruid).exec.call(self, 'Image', 'destroy');
+					this.getRuntime().exec.call(self, 'Image', 'destroy');
 					this.disconnectRuntime();
 				}
 				this.unbindAll();
@@ -5388,14 +5390,10 @@ define("moxie/image/Image", [
 			}
 		});
 
-		this.bind('load', function(e, info) {
-			_updateInfo.call(this, info);
-		}, 999);
 
 		function _updateInfo(info) {
 			if (!info) {
-				info = this.connectRuntime(this.ruid).exec.call(this, 'Image', 'getInfo');
-				this.disconnectRuntime();
+				info = this.getRuntime().exec.call(this, 'Image', 'getInfo');
 			}
 
 			if (info) {
@@ -5426,7 +5424,6 @@ define("moxie/image/Image", [
 			var runtime = this.connectRuntime(img.ruid);
 			this.ruid = runtime.uid;
 			runtime.exec.call(self, 'Image', 'loadFromImage', img, (exact === undefined ? true : exact));
-			this.disconnectRuntime();
 		}
 
 
@@ -5437,7 +5434,6 @@ define("moxie/image/Image", [
 			function exec(runtime) {
 				self.ruid = runtime.uid;
 				runtime.exec.call(self, 'Image', 'loadFromBlob', blob, asBinary);
-				self.disconnectRuntime();
 			}
 
 			if (blob.isDetached()) {
@@ -5476,11 +5472,13 @@ define("moxie/image/Image", [
 			};
 
 			xhr.onloadend = function() {
-				self.trigger('onloadend');
-				xhr.unbindAll();
+				xhr.destroy();
 			};
 
-			self.trigger('loadstart');
+			xhr.bind('RuntimeError', function(e, err) {
+				self.trigger('RuntimeError', err);
+			});
+
 			xhr.send(null, options);
 		}
 	}
@@ -5586,7 +5584,7 @@ define("moxie/runtime/html5/Runtime", [
 						
 						Basic.each(objpool, function(obj, uid) {
 							if (Basic.typeOf(obj.instance.destroy) === 'function') {
-								obj.instance.destroy.call(obj.instance.context);
+								obj.instance.destroy.call(obj.context);
 							}
 							self.removeInstance(uid);
 						});
@@ -7774,7 +7772,7 @@ define("moxie/runtime/html5/image/Image", [
 		, _preserveHeaders = true
 		;
 
-		Basic.extend(me, {
+		Basic.extend(this, {
 			loadFromBlob: function(blob, asBinary) {
 				var comp = this, I = comp.getRuntime();
 
@@ -7976,7 +7974,7 @@ define("moxie/runtime/html5/image/Image", [
 			};
 			_img.onload = function() {
 				_binStr = binStr;
-				comp.trigger('load', me.getInfo.call(comp));
+				comp.trigger('load');
 			};
 
 			_img.src = 'data:' + (_srcBlob.type || '') + ';base64,' + Encode.btoa(binStr);
@@ -7991,7 +7989,7 @@ define("moxie/runtime/html5/image/Image", [
 				throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 			};
 			_img.onload = function() {
-				comp.trigger('load', me.getInfo.call(comp));
+				comp.trigger('load');
 			};
 			_img.src = dataUrl;
 		}
@@ -8229,7 +8227,7 @@ define("moxie/runtime/flash/Runtime", [
 	Runtime.addConstructor(type, (function() {
 		
 		function FlashRuntime(options) {
-			var I = this;
+			var I = this, initTimer;
 
 			/**
 			Get the version of the Flash Player
@@ -8304,7 +8302,7 @@ define("moxie/runtime/flash/Runtime", [
 					}
 
 					// Init is dispatched by the shim
-					setTimeout(function() {
+					initTimer = setTimeout(function() {
 						var self = I; // keep the reference, since I won't be available after destroy
 						if (!self.initialized) {
 							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
@@ -8315,7 +8313,8 @@ define("moxie/runtime/flash/Runtime", [
 				destroy: (function(destroy) { // extend default destroy method
 					return function() {
 						destroy.call(I);
-						destroy = I = null;
+						clearTimeout(initTimer); // initialization check might be still onwait
+						initTimer = destroy = I = null;
 					};
 				}(this.destroy))
 
@@ -8885,7 +8884,7 @@ define("moxie/runtime/silverlight/Runtime", [
 	Runtime.addConstructor(type, (function() {
 
 		function SilverlightRuntime(options) {
-			var I = this;
+			var I = this, initTimer;
 
 			function isInstalled(version) {
 				var isVersionSupported = false, control = null, actualVer,
@@ -8971,7 +8970,7 @@ define("moxie/runtime/silverlight/Runtime", [
 					'</object>';
 
 					// Init is dispatched by the shim
-					setTimeout(function() {
+					initTimer = setTimeout(function() {
 						var self = I; // keep the reference, since I won't be available after destroy
 						if (!self.initialized) {
 							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
@@ -8982,7 +8981,8 @@ define("moxie/runtime/silverlight/Runtime", [
 				destroy: (function(destroy) { // extend default destroy method
 					return function() {
 						destroy.call(I);
-						destroy = I = null;
+						clearTimeout(initTimer); // initialization check might be still onwait
+						initTimer = destroy = I = null;
 					};
 				}(this.destroy))
 
@@ -9390,6 +9390,21 @@ define("moxie/runtime/html4/Runtime", [
 								return objpool[uid].instance[fn].apply(this, args);
 							}
 						}
+					},
+
+					removeInstance: function(uid) {
+						delete objpool[uid];
+					},
+
+					removeAllInstances: function() {
+						var self = this;
+						
+						Basic.each(objpool, function(obj, uid) {
+							if (Basic.typeOf(obj.instance.destroy) === 'function') {
+								obj.instance.destroy.call(obj.context);
+							}
+							self.removeInstance(uid);
+						});
 					}
 				};
 			}()), extensions);
