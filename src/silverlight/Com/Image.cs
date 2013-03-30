@@ -88,7 +88,7 @@ namespace Moxiecode.Com
 			_bm = new WriteableBitmap(width, height);
 			_bm.FromByteArray(image.getAsByteArray());
 
-			Load(this, new DataEventArgs(getInfo()));
+			Load(this, null);
 		}
 
 
@@ -124,7 +124,7 @@ namespace Moxiecode.Com
 			bitmapImage.SetSource(stream);
 			_bm = new WriteableBitmap(bitmapImage);
 
-			Load(this, new DataEventArgs(getInfo()));
+			Load(this, null);
 		}
 
 
@@ -173,7 +173,7 @@ namespace Moxiecode.Com
 
 			try {
 				if (scale > 1 && (!(bool)crop || _preserveHeaders)) {
-					Resize(this, new DataEventArgs(getInfo()));
+					Resize(this, null);
 					return;
 				} else {
 					int imgWidth = (int)Math.Round(_bm.PixelWidth * scale);
@@ -257,7 +257,7 @@ namespace Moxiecode.Com
 					this.width = _bm.PixelWidth;
 					this.height = _bm.PixelHeight;
 
-					Resize(this, new DataEventArgs(getInfo()));
+					Resize(this, null);
 					return;
 				}
 			}
