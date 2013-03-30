@@ -85,7 +85,7 @@ namespace Moxiecode.Com
 
 			Position = 0;
 			while ((bytesRead = Read((Blob)blob, buffer, 0, buffer.Length)) != 0) {
-				stream.Write(buffer, 0, buffer.Length);
+				stream.Write(buffer, 0, bytesRead);
 			}
 		}
 
