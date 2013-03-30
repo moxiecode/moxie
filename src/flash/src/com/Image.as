@@ -134,7 +134,7 @@ package com
 		public function loadFromBitmapData(bd:BitmapData) : void
 		{						
 			_bd = bd;
-			dispatchEvent(new ODataEvent(ODataEvent.DATA, getInfo()));
+			dispatchEvent(new ODataEvent(ODataEvent.DATA));
 		}
 				
 		
@@ -210,7 +210,7 @@ package com
 						
 						scale = selector(tmpWidth / output.width, tmpHeight / output.height);
 						if (scale > 1 && (!crop || preserveHeaders)) { // if we do not crop or strip off headers
-							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, getInfo()));
+							dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
 							return;
 						}
 						
@@ -253,7 +253,7 @@ package com
 							self.width = _bd.width;
 							self.height = _bd.height;	
 							
-							dispatchEvent(new ImageEvent(ImageEvent.RESIZE, getInfo()));
+							dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
 						}
 					});
 				};

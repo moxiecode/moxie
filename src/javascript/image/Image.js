@@ -189,8 +189,8 @@ define("moxie/image/Image", [
 			load: function(src) {
 				var el, args = [].slice.call(arguments);
 
-				this.bind('Load', function(e, info) {
-					_updateInfo.call(this, info);
+				this.bind('Load', function(e) {
+					_updateInfo.call(this);
 				}, 999);
 
 				this.convertEventPropsToHandlers(dispatches);
@@ -256,8 +256,8 @@ define("moxie/image/Image", [
 				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
 				runtime = this.getRuntime();
-				this.bind('Resize', function(e, info) {
-					_updateInfo.call(this, info);
+				this.bind('Resize', function(e) {
+					_updateInfo.call(this);
 				}, 999);
 				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
@@ -484,9 +484,6 @@ define("moxie/image/Image", [
 			}
 		});
 
-		this.bind('load', function(e, info) {
-			_updateInfo.call(this, info);
-		}, 999);
 
 		function _updateInfo(info) {
 			if (!info) {

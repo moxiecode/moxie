@@ -236,7 +236,7 @@ define("moxie/runtime/html5/image/Image", [
 			};
 			_img.onload = function() {
 				_binStr = binStr;
-				comp.trigger('load', me.getInfo.call(comp));
+				comp.trigger('load');
 			};
 
 			_img.src = 'data:' + (_srcBlob.type || '') + ';base64,' + Encode.btoa(binStr);
@@ -251,7 +251,7 @@ define("moxie/runtime/html5/image/Image", [
 				throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 			};
 			_img.onload = function() {
-				comp.trigger('load', me.getInfo.call(comp));
+				comp.trigger('load');
 			};
 			_img.src = dataUrl;
 		}
