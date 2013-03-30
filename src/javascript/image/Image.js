@@ -193,6 +193,8 @@ define("moxie/image/Image", [
 				var el, args = [].slice.call(arguments);
 
 				this.bind('Load', function(e, info) {
+					this.disconnectRuntime();
+
 					_updateInfo.call(this, info);
 				}, 999);
 
@@ -530,7 +532,6 @@ define("moxie/image/Image", [
 			var runtime = this.connectRuntime(img.ruid);
 			this.ruid = runtime.uid;
 			runtime.exec.call(self, 'Image', 'loadFromImage', img, (exact === undefined ? true : exact));
-			this.disconnectRuntime();
 		}
 
 
@@ -541,7 +542,6 @@ define("moxie/image/Image", [
 			function exec(runtime) {
 				self.ruid = runtime.uid;
 				runtime.exec.call(self, 'Image', 'loadFromBlob', blob, asBinary);
-				self.disconnectRuntime();
 			}
 
 			if (blob.isDetached()) {

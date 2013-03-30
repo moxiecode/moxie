@@ -34,7 +34,7 @@ define("moxie/runtime/html5/image/Image", [
 		, _preserveHeaders = true
 		;
 
-		Basic.extend(me, {
+		Basic.extend(this, {
 			loadFromBlob: function(blob, asBinary) {
 				var comp = this, I = comp.getRuntime();
 
