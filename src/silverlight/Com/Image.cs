@@ -273,7 +273,7 @@ namespace Moxiecode.Com
 		{
 			MemoryStream imageStream = new MemoryStream();
 
-			if (type != null) {
+			if (type == null) {
 				type = this.type != "" ? this.type : JPEG.MIME;
 			}
 
