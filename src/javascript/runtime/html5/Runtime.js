@@ -92,7 +92,7 @@ define("moxie/runtime/html5/Runtime", [
 						
 						Basic.each(objpool, function(obj, uid) {
 							if (Basic.typeOf(obj.instance.destroy) === 'function') {
-								obj.instance.destroy.call(obj.instance.context);
+								obj.instance.destroy.call(obj.context);
 							}
 							self.removeInstance(uid);
 						});
