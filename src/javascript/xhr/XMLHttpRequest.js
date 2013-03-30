@@ -988,6 +988,9 @@ define("moxie/xhr/XMLHttpRequest", [
 				_xhr.bind('RuntimeInit', function(e, runtime) {
 					exec(runtime);
 				});
+				_xhr.bind('RuntimeError', function(e, err) {
+					self.dispatchEvent('RuntimeError', err);
+				});
 				_xhr.connectRuntime(_options);
 			}
 		}
