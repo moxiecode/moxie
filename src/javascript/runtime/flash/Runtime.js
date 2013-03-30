@@ -35,7 +35,7 @@ define("moxie/runtime/flash/Runtime", [
 	Runtime.addConstructor(type, (function() {
 		
 		function FlashRuntime(options) {
-			var I = this;
+			var I = this, initTimer;
 
 			/**
 			Get the version of the Flash Player
@@ -110,7 +110,7 @@ define("moxie/runtime/flash/Runtime", [
 					}
 
 					// Init is dispatched by the shim
-					setTimeout(function() {
+					initTimer = setTimeout(function() {
 						var self = I; // keep the reference, since I won't be available after destroy
 						if (!self.initialized) {
 							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
@@ -121,7 +121,8 @@ define("moxie/runtime/flash/Runtime", [
 				destroy: (function(destroy) { // extend default destroy method
 					return function() {
 						destroy.call(I);
-						destroy = I = null;
+						clearTimeout(initTimer); // initialization check might be still onwait
+						initTimer = destroy = I = null;
 					};
 				}(this.destroy))
 
