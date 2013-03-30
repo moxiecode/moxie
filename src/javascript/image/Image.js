@@ -34,7 +34,6 @@ define("moxie/image/Image", [
 	@extends EventTarget
 	*/
 	var dispatches = [
-		'loadstart',
 		'progress',
 
 		/**
@@ -46,8 +45,6 @@ define("moxie/image/Image", [
 		'load',
 
 		'error',
-
-		'loadend',
 
 		/**
 		Dispatched when resize operation is complete.
@@ -572,11 +569,13 @@ define("moxie/image/Image", [
 			};
 
 			xhr.onloadend = function() {
-				self.trigger('onloadend');
-				xhr.unbindAll();
+				xhr.destroy();
 			};
 
-			self.trigger('loadstart');
+			xhr.bind('RuntimeError', function(e, err) {
+				self.trigger('RuntimeError', err);
+			});
+
 			xhr.send(null, options);
 		}
 	}
