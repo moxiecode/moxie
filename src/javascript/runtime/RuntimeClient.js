@@ -26,7 +26,8 @@ define('moxie/runtime/RuntimeClient', [
 
 		Basic.extend(this, {
 			/**
-			Connects to the runtime specified by the options. Will either connect to existing runtime or create a new one
+			Connects to the runtime specified by the options. Will either connect to existing runtime or create a new one.
+			Increments number of clients connected to the specified runtime.
 
 			@method connectRuntime
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
@@ -101,12 +102,18 @@ define('moxie/runtime/RuntimeClient', [
 				initialize((options.runtime_order || Runtime.order).split(/\s*,\s*/));
 			},
 
+			/**
+			Returns the runtime to which the client is currently connected.
+
+			@method getRuntime
+			@return {Runtime} Runtime or null if client is not connected
+			*/
 			getRuntime: function() {
 				return runtime || null;
 			},
 
 			/**
-			Disconnect from the runtime
+			Disconnects from the runtime. Decrements number of clients connected to the specified runtime.
 
 			@method disconnectRuntime
 			*/
