@@ -111,9 +111,8 @@ define("moxie/runtime/flash/Runtime", [
 
 					// Init is dispatched by the shim
 					initTimer = setTimeout(function() {
-						var self = I; // keep the reference, since I won't be available after destroy
-						if (!self.initialized) {
-							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						if (I && !I.initialized) { // runtime might be already destroyed by this moment
+							I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 						}
 					}, 5000);
 				},

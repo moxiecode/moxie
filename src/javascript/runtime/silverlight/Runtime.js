@@ -109,6 +109,7 @@ define("moxie/runtime/silverlight/Runtime", [
 					// minimal requirement Flash Player 10
 					if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
 						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						return;
 					}
 
 					container = this.getShimContainer();
@@ -123,11 +124,10 @@ define("moxie/runtime/silverlight/Runtime", [
 
 					// Init is dispatched by the shim
 					initTimer = setTimeout(function() {
-						var self = I; // keep the reference, since I won't be available after destroy
-						if (!self.initialized) {
-							self.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						if (I && !I.initialized) { // runtime might be already destroyed by this moment
+							I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 						}
-					}, 10000); // silverlight may take quite some time to initialize
+					}, 5000); // silverlight may take quite some time to initialize
 				},
 
 				destroy: (function(destroy) { // extend default destroy method
