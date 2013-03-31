@@ -322,8 +322,6 @@ define("moxie/image/Image", [
 				;
 
 				function onResize() {
-					var dataUrl;
-
 					// if possible, embed a canvas element directly
 					if (Env.can('create_canvas')) {
 						var canvas = imgCopy.getAsCanvas();
@@ -336,12 +334,12 @@ define("moxie/image/Image", [
 						}
 					}
 
-					dataUrl = imgCopy.getAsDataURL(type, quality);
+					var dataUrl = imgCopy.getAsDataURL(type, quality);
 					if (!dataUrl) {
 						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 					}
 
-					if (Env.can('use_data_uri_of', imgCopy.size)) {
+					if (Env.can('use_data_uri_of', dataUrl.length)) {
 						el.innerHTML = '<img src="' + dataUrl + '" width="' + imgCopy.width + '" height="' + imgCopy.height + '" />';
 						imgCopy.destroy();
 						self.trigger('embedded');
@@ -370,11 +368,10 @@ define("moxie/image/Image", [
 									onResize.call(self); // re-feed our image data
 								});*/
 
-								self.disconnectRuntime();
 								runtime = null;
 							}, 999);
 
-							runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);
+							runtime.exec.call(self, "ImageView", "display", this.result.uid, width, height);
 							imgCopy.destroy();
 						});
 
@@ -382,6 +379,7 @@ define("moxie/image/Image", [
 							required_caps: {
 								display_media: true
 							},
+							runtime_order: 'flash,silverlight',
 							container: el
 						}));
 					}
