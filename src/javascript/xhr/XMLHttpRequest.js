@@ -238,7 +238,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			@property uid
 			@type String
 			*/
-			uid: 'uid_' + Basic.guid(),
+			uid: Basic.guid('uid_'),
 			
 			/**
 			Target for Upload events

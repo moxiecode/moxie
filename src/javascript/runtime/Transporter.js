@@ -23,7 +23,7 @@ define("moxie/runtime/Transporter", [
 		RuntimeClient.call(this);
 
 		Basic.extend(this, {
-			uid: 'uid_' + Basic.guid(),
+			uid: Basic.guid('uid_'),
 
 			state: Transporter.IDLE,
 
