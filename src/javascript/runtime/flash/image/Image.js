@@ -37,7 +37,7 @@ define("moxie/runtime/flash/image/Image", [
 				tr.bind("TransportingComplete", function() {
 					exec(tr.result.getSource());
 				});
-				tr.transport(blob.getSource(), blob.type, self.uid);
+				tr.transport(blob.getSource(), blob.type, { ruid: self.uid });
 			} else {
 				exec(blob.getSource());
 			}
