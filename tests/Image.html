@@ -73,6 +73,35 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
+	test("Load from dataURL: " + runtime, function() {
+		var self = this
+		, img = new o.Image()
+		;
+
+		img.onload = function() {
+			var info = o.Runtime.getInfo(img.ruid);
+
+			start();
+			ok(true, "load event fired: " + (info ? "runtime is: " + info.type : "no runtime, image is detached"));
+			deepEqual(img, this, "inside the onload handler context points to the image");
+			deepEqual([img.width, img.height], [460, 670], "dimensions match: " + img.width + "x" + img.height);
+			equal(img.size, 60964, "size matches: " + img.size);
+			equal(img.type, "image/jpeg", "type is: " + img.type);
+		};
+
+		img.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		img.load("data:image/jpeg;base64," + imgB64, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
 	test("Convert from image/jpeg to image/png: " + runtime, function() {
 		var self = this, url = o.resolveUrl("XMLHttpRequest/poster.jpg");
 

@@ -22,10 +22,10 @@ define("moxie/image/Image", [
 		"moxie/core/utils/Env",
 		"moxie/core/EventTarget",
 		"moxie/file/Blob",
-		"moxie/core/utils/Url",
+		"moxie/file/File",
 		"moxie/core/utils/Encode",
 		"moxie/core/JSON"
-], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, Blob, Url, Encode, parseJSON) {
+], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode, parseJSON) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -152,17 +152,9 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Loads image from various sources. Currently the source for new image can be: mOxie.Image, mOxie.Blob/mOxie.File or URL.
-			Depending on the type of the source, arguments - differ.
-
-			When source is:
-			  - mOxie.Image: Loads image from another existing mOxie.Image object (clones it). Might be fast by default (surface clone),
-				or a bit slower, if launched in exact mode (in-depth clone). Only exact mode (enabled by passing second argument
-				as - true) will copy over meta info, like Exif, GPS, IPTC data, etc.
-			  - mOxie.Blob/mOxie.File: Loads image from mOxie.File or mOxie.Blob object.
-			  - URL: Image will be downloaded from remote destination and loaded in memory.
-
-			When source is URL, Image will be downloaded from remote destination and loaded in memory.
+			Loads image from various sources. Currently the source for new image can be: mOxie.Image, mOxie.Blob/mOxie.File, 
+			native Blob/File, dataUrl or URL. Depending on the type of the source, arguments - differ. When source is URL, 
+			Image will be downloaded from remote destination and loaded in memory.
 
 			@example
 				var img = new mOxie.Image();
@@ -187,11 +179,7 @@ define("moxie/image/Image", [
 			@param {Boolean|Object} [mixed]
 			*/
 			load: function(src) {
-				var el, args = [].slice.call(arguments);
-
-				this.bind('Load', function(e) {
-					_updateInfo.call(this);
-				}, 999);
+				var args = [].slice.call(arguments), srcType = Basic.typeOf(src);
 
 				this.convertEventPropsToHandlers(dispatches);
 
@@ -203,21 +191,31 @@ define("moxie/image/Image", [
 						}
 						_loadFromImage.apply(this, args);
 					}
-					// if source is Blob/File
+					// if source is o.Blob/o.File
 					else if (src instanceof Blob) {
 						if (!~Basic.inArray(src.type, ['image/jpeg', 'image/png'])) {
 							throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 						}
 						_loadFromBlob.apply(this, args);
 					}
-					// if source looks like Url
-					else if (Basic.typeOf(src) === 'string' && /^http:\/\//.test(src)) {
-						_loadFromUrl.apply(this, args);
+					// if native blob/file
+					else if (Basic.inArray(srcType, ['blob', 'file']) !== -1) {
+						this.load(new o.File(null, src));
+					}
+					// if String
+					else if (srcType === 'string') {
+						// if dataUrl String
+						if (/^data:[^;]*;base64,/.test(src)) {
+							this.load(new o.Blob(null, { data: src }));
+						}
+						// else assume Url, either relative or absolute
+						else {
+							_loadFromUrl.apply(this, args);
+						}
 					}
 					// if source seems to be an img node
-					else if ((el = Dom.get(src)) && el.nodeName === 'img') {
-						args.unshift(Url.resolveUrl(el.src));
-						_loadFromUrl.apply(this, args);
+					else if (srcType === 'node' && src.nodeName === 'img') {
+						this.load(src.src);
 					}
 					else {
 						throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
@@ -256,9 +254,6 @@ define("moxie/image/Image", [
 				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
 				runtime = this.getRuntime();
-				this.bind('Resize', function(e) {
-					_updateInfo.call(this);
-				}, 999);
 				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
 
@@ -484,6 +479,11 @@ define("moxie/image/Image", [
 			}
 		});
 
+		// this is here because to bind properly we need an uid first, which is created above
+		this.bind('Load Resize', function(e) {
+			_updateInfo.call(this);
+		}, 999);
+
 
 		function _updateInfo(info) {
 			if (!info) {
@@ -522,7 +522,6 @@ define("moxie/image/Image", [
 
 
 		function _loadFromBlob(blob, asBinary) {
-
 			self.name = blob.name || '';
 
 			function exec(runtime) {
@@ -544,6 +543,7 @@ define("moxie/image/Image", [
 				exec(this.connectRuntime(blob.ruid));
 			}
 		}
+
 
 		function _loadFromUrl(url, options) {
 			var xhr;

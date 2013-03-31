@@ -65,7 +65,6 @@ define('moxie/core/EventTarget', [
 					Basic.each(type.split(/\s+/), function(type) {
 						self.addEventListener(type, fn, priority, scope);
 					});
-
 					return;
 				}
 				
