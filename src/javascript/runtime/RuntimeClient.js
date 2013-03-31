@@ -71,7 +71,6 @@ define('moxie/runtime/RuntimeClient', [
 
 					runtime.bind('Error', function(e, err) {
 						runtime.destroy(); // runtime cannot destroy itself from inside at a right moment, thus we do it here
-						comp.trigger('RuntimeError', type, err);
 						initialize(items);
 					});
 
