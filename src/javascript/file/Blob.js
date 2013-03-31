@@ -13,8 +13,9 @@
 
 define('moxie/file/Blob', [
 	'moxie/core/utils/Basic',
+	'moxie/core/utils/Encode',
 	'moxie/runtime/RuntimeClient'
-], function(Basic, RuntimeClient) {
+], function(Basic, Encode, RuntimeClient) {
 	
 	var blobpool = {};
 
@@ -130,6 +131,14 @@ define('moxie/file/Blob', [
 				}
 
 				data = data || '';
+
+				// if dataUrl, convert to binary string
+				var matches = data.match(/^data:([^;]*);base64,/);
+				if (matches) {
+					this.type = matches[1];
+					data = Encode.atob(data.substring(data.indexOf('base64,') + 7));
+				}
+
 				this.size = data.length;
 
 				blobpool[this.uid] = data;
