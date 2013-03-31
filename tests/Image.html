@@ -60,7 +60,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			equal(img.type, "image/jpeg", "type is: " + img.type);
 		};
 
-		img.bind('RuntimeError', function() {
+		img.bind('Error RuntimeError', function() {
 			start();
 			ok(true, "Runtime not supported.");
 		});
@@ -122,7 +122,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			ok(false, "Error encountered while loading the image.");
 		};
 
-		img.bind('RuntimeError', function() {
+		img.bind('Error RuntimeError', function() {
 			start();
 			ok(true, "Runtime not supported.");
 		});
@@ -192,12 +192,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			ok(blob.size < info.size, "Image decreased in size by: " + ((info.size - blob.size) / info.size * 100).toFixed(2) + "% (was " + info.size + ", became " + blob.size + ")");
 		};
 
-		img.onerror = function() {
-			start();
-			ok(false, "Error encountered while loading the image.");
-		};
-
-		img.bind('RuntimeError', function() {
+		img.bind('Error RuntimeError', function() {
 			start();
 			ok(true, "Runtime not supported.");
 		});
@@ -211,7 +206,6 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		}));
 	});
 });
-
 
 /* 
 Test Exif extraction

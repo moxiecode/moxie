@@ -65,7 +65,6 @@ define("moxie/image/Image", [
 	];
 	
 	function Image() {
-		var self = this;
 			
 		RuntimeClient.call(this);
 		
@@ -179,51 +178,14 @@ define("moxie/image/Image", [
 			@param {Boolean|Object} [mixed]
 			*/
 			load: function(src) {
-				var args = [].slice.call(arguments), srcType = Basic.typeOf(src);
+				// this is here because to bind properly we need an uid first, which is created above
+				this.bind('Load Resize', function(e) {
+					_updateInfo.call(this);
+				}, 999);
 
 				this.convertEventPropsToHandlers(dispatches);
 
-				try {
-					// if source is Image
-					if (src instanceof Image) {
-						if (!src.size) { // only preloaded image objects can be used as source
-							throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-						}
-						_loadFromImage.apply(this, args);
-					}
-					// if source is o.Blob/o.File
-					else if (src instanceof Blob) {
-						if (!~Basic.inArray(src.type, ['image/jpeg', 'image/png'])) {
-							throw new x.ImageError(x.ImageError.WRONG_FORMAT);
-						}
-						_loadFromBlob.apply(this, args);
-					}
-					// if native blob/file
-					else if (Basic.inArray(srcType, ['blob', 'file']) !== -1) {
-						this.load(new o.File(null, src));
-					}
-					// if String
-					else if (srcType === 'string') {
-						// if dataUrl String
-						if (/^data:[^;]*;base64,/.test(src)) {
-							this.load(new o.Blob(null, { data: src }));
-						}
-						// else assume Url, either relative or absolute
-						else {
-							_loadFromUrl.apply(this, args);
-						}
-					}
-					// if source seems to be an img node
-					else if (srcType === 'node' && src.nodeName === 'img') {
-						this.load(src.src);
-					}
-					else {
-						throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
-					}
-				} catch(ex) {
-					// for now simply trigger error event
-					this.trigger('error');
-				}
+				_load.apply(this, arguments);
 			},
 
 			/**
@@ -275,7 +237,7 @@ define("moxie/image/Image", [
 				}
 
 				var runtime = this.connectRuntime(this.ruid);
-				return runtime.exec.call(self, 'Image', 'getAsCanvas');
+				return runtime.exec.call(this, 'Image', 'getAsCanvas');
 			},
 
 			/**
@@ -302,7 +264,7 @@ define("moxie/image/Image", [
 					quality = 90;
 				}
 
-				return this.getRuntime().exec.call(self, 'Image', 'getAsBlob', type, quality);
+				return this.getRuntime().exec.call(this, 'Image', 'getAsBlob', type, quality);
 			},
 
 			/**
@@ -320,7 +282,7 @@ define("moxie/image/Image", [
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
-				return this.getRuntime().exec.call(self, 'Image', 'getAsDataURL', type, quality);
+				return this.getRuntime().exec.call(this, 'Image', 'getAsDataURL', type, quality);
 			},
 
 			/**
@@ -350,7 +312,9 @@ define("moxie/image/Image", [
 			representation
 			*/
 			embed: function(el) {
-				var image, type, quality, dimensions
+				var self = this
+				, imgCopy
+				, type, quality, crop
 				, options = arguments[1] || {}
 				, width = this.width
 				, height = this.height
@@ -358,28 +322,28 @@ define("moxie/image/Image", [
 				;
 
 				function onResize() {
-					var dataUrl, type = type || this.type || 'image/jpeg';
+					var dataUrl;
 
 					// if possible, embed a canvas element directly
 					if (Env.can('create_canvas')) {
-						var canvas = image.getAsCanvas();
+						var canvas = imgCopy.getAsCanvas();
 						if (canvas) {
 							el.appendChild(canvas);
 							canvas = null;
-							image.destroy();
+							imgCopy.destroy();
 							self.trigger('embedded');
 							return;
 						}
 					}
 
-					dataUrl = image.getAsDataURL(type, quality);
+					dataUrl = imgCopy.getAsDataURL(type, quality);
 					if (!dataUrl) {
 						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 					}
 
-					if (Env.can('use_data_uri_of', image.size)) {
-						el.innerHTML = '<img src="' + dataUrl + '" width="' + image.width + '" height="' + image.height + '" />';
-						image.destroy();
+					if (Env.can('use_data_uri_of', imgCopy.size)) {
+						el.innerHTML = '<img src="' + dataUrl + '" width="' + imgCopy.width + '" height="' + imgCopy.height + '" />';
+						imgCopy.destroy();
 						self.trigger('embedded');
 					} else {
 						var tr = new Transporter();
@@ -393,8 +357,8 @@ define("moxie/image/Image", [
 									//position: 'relative',
 									top: '0px',
 									left: '0px',
-									width: image.width + 'px',
-									height: image.height + 'px'
+									width: imgCopy.width + 'px',
+									height: imgCopy.height + 'px'
 								});
 
 								// some shims (Flash/SilverLight) reinitialize, if parent element is hidden, reordered or it's
@@ -411,7 +375,7 @@ define("moxie/image/Image", [
 							}, 999);
 
 							runtime.exec.call(self, "ImageView", "display", this.result.getSource().id, width, height);
-							image.destroy();
+							imgCopy.destroy();
 						});
 
 						tr.transport(Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, Basic.extend({}, options, {
@@ -432,9 +396,9 @@ define("moxie/image/Image", [
 				}
 
 
-				type = options.type;
+				type = options.type || this.type || 'image/jpeg';
 				quality = options.quality || 90;
-				var crop = options.crop !== undefined ? options.crop : false;
+				crop = options.crop !== undefined ? options.crop : false;
 
 				// figure out dimensions for the thumb
 				if (options.width) {
@@ -442,26 +406,26 @@ define("moxie/image/Image", [
 					height = options.height || width;
 				} else {
 					// if container element has > 0 dimensions, take them
-					dimensions = Dom.getSize(el);
+					var dimensions = Dom.getSize(el);
 					if (dimensions.w && dimensions.h) { // both should be > 0
 						width = dimensions.w;
 						height = dimensions.h;
 					}
 				}
 				
-				image = new Image();
+				imgCopy = new Image();
 
-				image.bind("Resize", function() {
+				imgCopy.bind("Resize", function() {
 					onResize.call(self);
 				});
 
-				image.bind("Load", function() {
-					image.resize(width, height, crop, false);
+				imgCopy.bind("Load", function() {
+					imgCopy.resize(width, height, crop, false);
 				});
 
-				image.clone(this, false);
+				imgCopy.clone(this);
 
-				return image;
+				return imgCopy;
 			},
 
 			/**
@@ -471,18 +435,12 @@ define("moxie/image/Image", [
 			*/
 			destroy: function() {
 				if (this.ruid) {
-					this.getRuntime().exec.call(self, 'Image', 'destroy');
+					this.getRuntime().exec.call(this, 'Image', 'destroy');
 					this.disconnectRuntime();
 				}
 				this.unbindAll();
-				self = null;
 			}
 		});
-
-		// this is here because to bind properly we need an uid first, which is created above
-		this.bind('Load Resize', function(e) {
-			_updateInfo.call(this);
-		}, 999);
 
 
 		function _updateInfo(info) {
@@ -513,32 +471,80 @@ define("moxie/image/Image", [
 			}
 		}
 
+		function _load(src) {
+			var srcType = Basic.typeOf(src);
+
+			try {
+				// if source is Image
+				if (src instanceof Image) {
+					if (!src.size) { // only preloaded image objects can be used as source
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					}
+					_loadFromImage.apply(this, arguments);
+				}
+				// if source is o.Blob/o.File
+				else if (src instanceof Blob) {
+					if (!~Basic.inArray(src.type, ['image/jpeg', 'image/png'])) {
+						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
+					}
+					_loadFromBlob.apply(this, arguments);
+				}
+				// if native blob/file
+				else if (Basic.inArray(srcType, ['blob', 'file']) !== -1) {
+					_load.call(this, new o.File(null, src), arguments[1]);
+				}
+				// if String
+				else if (srcType === 'string') {
+					// if dataUrl String
+					if (/^data:[^;]*;base64,/.test(src)) {
+						_load.call(this, new o.Blob(null, { data: src }), arguments[1]);
+					}
+					// else assume Url, either relative or absolute
+					else {
+						_loadFromUrl.apply(this, arguments);
+					}
+				}
+				// if source seems to be an img node
+				else if (srcType === 'node' && src.nodeName === 'img') {
+					_load.call(this, src.src, arguments[1]);
+				}
+				else {
+					throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
+				}
+			} catch(ex) {
+				// for now simply trigger error event
+				this.trigger('error');
+			}
+		}
+
 
 		function _loadFromImage(img, exact) {
 			var runtime = this.connectRuntime(img.ruid);
 			this.ruid = runtime.uid;
-			runtime.exec.call(self, 'Image', 'loadFromImage', img, (exact === undefined ? true : exact));
+			runtime.exec.call(this, 'Image', 'loadFromImage', img, (exact === undefined ? true : exact));
 		}
 
 
-		function _loadFromBlob(blob, asBinary) {
+		function _loadFromBlob(blob, options) {
+			var self = this;
+
 			self.name = blob.name || '';
 
 			function exec(runtime) {
 				self.ruid = runtime.uid;
-				runtime.exec.call(self, 'Image', 'loadFromBlob', blob, asBinary);
+				runtime.exec.call(self, 'Image', 'loadFromBlob', blob);
 			}
 
 			if (blob.isDetached()) {
 				this.bind('RuntimeInit', function(e, runtime) {
 					exec(runtime);
 				});
-				this.connectRuntime({
+				this.connectRuntime(Basic.extend({
 					required_caps: {
 						access_image_binary: true,
 						resize_image: true
 					}
-				});
+				}, options));
 			} else {
 				exec(this.connectRuntime(blob.ruid));
 			}
@@ -546,7 +552,7 @@ define("moxie/image/Image", [
 
 
 		function _loadFromUrl(url, options) {
-			var xhr;
+			var self = this, xhr;
 
 			xhr = new XMLHttpRequest();
 
