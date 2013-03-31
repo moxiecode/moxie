@@ -35,8 +35,10 @@ define("moxie/runtime/html5/image/Image", [
 		;
 
 		Basic.extend(this, {
-			loadFromBlob: function(blob, asBinary) {
-				var comp = this, I = comp.getRuntime();
+			loadFromBlob: function(blob) {
+				var comp = this, I = comp.getRuntime()
+				, asBinary = arguments.length > 1 ? arguments[1] : true
+				;
 
 				if (Basic.typeOf(asBinary) === 'undefined') {
 					asBinary = true;
