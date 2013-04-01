@@ -29,11 +29,10 @@ define('moxie/file/FileReader', [
 	var dispatches = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
 	
 	function FileReader() {
-		var self = this, _runtime;
 				
-		RuntimeClient.call(self);
+		RuntimeClient.call(this);
 
-		Basic.extend(self, {
+		Basic.extend(this, {
 			uid: Basic.guid('uid_'),
 
 			/**
@@ -91,10 +90,6 @@ define('moxie/file/FileReader', [
 			@method abort
 			*/
 			abort: function() {
-				if (!_runtime) {
-					return;
-				}
-				
 				this.result = null;
 				
 				if (!!~Basic.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE])) {
@@ -102,46 +97,62 @@ define('moxie/file/FileReader', [
 				} else if (this.readyState === FileReader.LOADING) {
 					this.readyState = FileReader.DONE;
 				}
-				
-				self.bind('Abort', function() {
-					self.trigger('loadend');
-				});
 
-				_runtime.exec('FileReader', 'abort');
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileReader', 'abort');
+				}
+				
+				this.bind('Abort', function() {
+					this.trigger('loadend');
+				});
+			},
+
+			/**
+			Destroy component and release resources.
+
+			@method destroy
+			*/
+			destroy: function() {
+				this.abort();
+
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileReader', 'destroy');
+					this.disconnectRuntime();
+				}
 			}
 		});
 		
 		
 		function _read(op, blob) {
-			self.readyState = FileReader.EMPTY;
-			self.error = null;
+			this.readyState = FileReader.EMPTY;
+			this.error = null;
 
-			if (self.readyState === FileReader.LOADING || !blob.ruid || !blob.uid) {
+			if (this.readyState === FileReader.LOADING || !blob.ruid || !blob.uid) {
 				throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 			}
 			
 			this.convertEventPropsToHandlers(dispatches);
 						
-			_runtime = self.connectRuntime(blob.ruid);
-			
-			self.bind('Error', function(e, error) {
-				self.readyState = FileReader.DONE;
-				self.result = null;
-				self.error = error;
-				self.trigger('loadend');
+			this.bind('Error', function(e, error) {
+				this.readyState = FileReader.DONE;
+				this.result = null;
+				this.error = error;
+				this.trigger('loadend');
 			}, 999);
 			
 			
-			self.bind('LoadStart', function() {
-				self.readyState = FileReader.LOADING;
+			this.bind('LoadStart', function() {
+				this.readyState = FileReader.LOADING;
 			}, 999);
 			
-			self.bind('Load', function() {
-				self.readyState = FileReader.DONE;
-				self.trigger('loadend');
+			this.bind('Load', function() {
+				this.readyState = FileReader.DONE;
+				this.trigger('loadend');
 			}, 999);
 
-			_runtime.exec.call(self, 'FileReader', 'read', op, blob);
+			this.connectRuntime(blob.ruid).exec.call(this, 'FileReader', 'read', op, blob);
 		}
 	}
 	

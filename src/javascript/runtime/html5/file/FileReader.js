@@ -21,6 +21,7 @@ define("moxie/runtime/html5/file/FileReader", [
 ], function(extensions, Basic) {
 	
 	function FileReader() {
+		
 		this.read = function(op, blob) {
 			var target = this, fr = new window.FileReader();
 
@@ -31,7 +32,6 @@ define("moxie/runtime/html5/file/FileReader", [
 					if (!!~Basic.inArray(e.type, ['progress', 'load'])) {
 						target.result = fr.result;
 					}
-
 					target.trigger(e);
 				}
 
@@ -39,14 +39,12 @@ define("moxie/runtime/html5/file/FileReader", [
 					Basic.each(events, function(name) {
 						fr.removeEventListener(name, reDispatch);
 					});
-
 					fr.removeEventListener('loadend', removeEventListeners);
 				}
 
 				Basic.each(events, function(name) {
 					fr.addEventListener(name, reDispatch);
 				});
-
 				fr.addEventListener('loadend', removeEventListeners);
 			}());
 
