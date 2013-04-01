@@ -25,7 +25,7 @@ define("moxie/runtime/html5/file/FileReader", [
 			var target = this, fr = new window.FileReader();
 
 			(function() {
-				var events = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
+				var events = ['loadstart', 'progress', 'load', 'abort', 'error'];
 
 				function reDispatch(e) {
 					if (!!~Basic.inArray(e.type, ['progress', 'load'])) {
