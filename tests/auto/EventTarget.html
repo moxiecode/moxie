@@ -3,13 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <title>mOxie: Test EventTarget</title>
-<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
 <script src="http://code.jquery.com/qunit/qunit-git.js"></script>
-<script src="js/runner.js"></script>
-<script src="js/connector.js"></script>
-<script type="text/javascript" src="../src/javascript/_source.js"></script>
+<script src="../../js/reporter.js"></script>
+
+<script type="text/javascript" src="../../../bin/js/instrumented/moxie.js"></script>
+
 <script type="text/javascript">
+
+QUnit.config.reorder = false;
 
 module("EventTarget", {
 	setup: function() {

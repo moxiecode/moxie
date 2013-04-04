@@ -4,17 +4,20 @@
 <meta charset="UTF-8" />
 <title>mOxie: Test XMLHttpRequest</title>
 
+<!-- qunit -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="js/jquery-1.7.1.min.js"><\/script>')</script>
 <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
 <script src="http://code.jquery.com/qunit/qunit-git.js"></script>
 
-<script type="text/javascript" src="../bin/js/moxie.dev.js"></script>
-<script type="text/javascript" src="js/inject.js"></script>
+<!-- testrunner -->
+<script src="../js/reporter.js"></script>
+<script type="text/javascript" src="../../tmp/coverage/moxie.cov.js"></script>
 
 <script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
 
 <script type="text/javascript">
+
+QUnit.config.reorder = false;
 
 module("XMLHttpRequest", {
 	setup: function() {
@@ -41,8 +44,8 @@ module("XMLHttpRequest", {
 			runtimeOptions: {
 				runtime_order: "html5,flash,silverlight,html4",
 				container: "qunit-fixture",
-				swf_url: "../bin/flash/Moxie.swf",
-				xap_url: "../bin/silverlight/Moxie.xap"
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
 			},
 
 			getRandItem: function(arr) {
