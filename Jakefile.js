@@ -40,7 +40,6 @@ task("jshint", [], function (params) {
 desc("Compile JS");
 task("mkjs", [], function () {
 	var amdlc = require('amdlc');
-
 	var baseDir = "src/javascript", targetDir = "bin/js";
 
 	var options = {
@@ -83,6 +82,31 @@ task("mkjs", [], function () {
 		});
 	}
 });
+
+desc("Compile for coverage test");
+task("mkcov", ["mkjs"], function() {
+	var baseDir = "src/javascript", targetDir = "tmp/coverage";
+	var exec = require("child_process").exec;
+
+	// start fresh
+	if (fs.existsSync(targetDir)) {
+		jake.rmRf(targetDir);
+	}
+
+	exec("coverjs -r " + baseDir + " --output " + targetDir, function(error, stdout, stderr) {
+		if (error) {
+			console.log(stderr);
+			complete();
+		}
+
+		var devScript = "";
+		if (fs.existsSync("bin/js/moxie.dev.js")) {
+			devScript = fs.readFileSync("bin/js/moxie.dev.js").toString();
+			devScript = devScript.replace(/moxie\.dev\.js/g, "moxie.cov.js").replace(/\.\.\/\.\.\/src\//g, '');
+			fs.writeFileSync(targetDir + "/moxie.cov.js", devScript);
+		}
+	});
+}, true);
 
 
 desc("Compile SWF");
@@ -178,7 +202,8 @@ task("package", [], function() {
 		jake.mkdirP("./bin");
 	}
 
-	jake.Task["mksfw"].execute.apply(mkswf, args);
+	var mkswf = jake.Task["mksfw"]
+	mksfw.execute.apply(mkswf, args);
 
 });
 
