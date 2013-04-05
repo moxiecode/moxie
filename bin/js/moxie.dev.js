@@ -17,7 +17,7 @@
 /*jshint smarttabs:true, undef:true, latedef:true, curly:true, bitwise:true, camelcase:true */
 /*globals $code */
 
-(function(exports) {
+(function(exports, undefined) {
 	"use strict";
 
 	var html = "", baseDir;
@@ -118,6 +118,8 @@
 	exports.define = define;
 	exports.require = require;
 
+	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+
 	load('../../src/javascript/core/utils/Basic.js');
 	load('../../src/javascript/core/I18n.js');
 	load('../../src/javascript/core/utils/Mime.js');
@@ -179,12 +181,8 @@
 	load('../../src/javascript/runtime/html4/xhr/XMLHttpRequest.js');
 	load('../../src/javascript/runtime/html4/image/Image.js');
 
-	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
-
-
 	writeScripts();
 })(this);
-
 (function() {
 	var baseDir = '';
 	var scripts = document.getElementsByTagName('script');
