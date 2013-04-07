@@ -127,7 +127,7 @@ define("moxie/runtime/silverlight/Runtime", [
 						if (I && !I.initialized) { // runtime might be already destroyed by this moment
 							I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 						}
-					}, 5000); // silverlight may take quite some time to initialize
+					}, Env.OS !== 'Windows'? 10000 : 5000); // give it more time to initialize in non Windows OS (like Mac)
 				},
 
 				destroy: (function(destroy) { // extend default destroy method
