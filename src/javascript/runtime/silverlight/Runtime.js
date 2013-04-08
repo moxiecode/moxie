@@ -25,7 +25,7 @@ define("moxie/runtime/silverlight/Runtime", [
 	"moxie/runtime/Runtime"
 ], function(Basic, Env, Dom, x, Runtime) {
 	
-	var type = 'silverlight', extensions = {};
+	var type = "silverlight", extensions = {};
 
 	/**
 	Constructor for the Silverlight Runtime
@@ -33,165 +33,159 @@ define("moxie/runtime/silverlight/Runtime", [
 	@class SilverlightRuntime
 	@extends Runtime
 	*/
-	Runtime.addConstructor(type, (function() {
+	function SilverlightRuntime(options) {
+		var I = this, initTimer;
 
-		function SilverlightRuntime(options) {
-			var I = this, initTimer;
+		options = Basic.extend({ xap_url: Env.xap_url }, options);
 
-			function isInstalled(version) {
-				var isVersionSupported = false, control = null, actualVer,
-					actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
+		Runtime.call(this, type, options, (function() {			
+			function use_clienthttp() {
+				var rc = options.required_caps || {};
+				return  rc.send_custom_headers || 
+					rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
+					rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
+			}
 
-				try {
-					try {
-						control = new ActiveXObject('AgControl.AgControl');
+			return {
+				access_binary: true,
+				access_image_binary: true,
+				display_media: true,
+				drag_and_drop: false,
+				report_upload_progress: true,
+				resize_image: true,
+				return_response_headers: function() {
+					return use_clienthttp();
+				},
+				return_response_type: true,
+				return_status_code: function(code) {
+					return use_clienthttp() || !Basic.arrayDiff(code, [200, 404]);
+				},
+				select_multiple: true,
+				send_binary_string: true,
+				send_browser_cookies: function() {
+					return !use_clienthttp();
+				},
+				send_custom_headers: function() {
+					return use_clienthttp();
+				},
+				send_multipart: true,
+				slice_blob: true,
+				stream_upload: true,
+				summon_file_dialog: false,
+				upload_filesize: true,
+				use_http_method: function(methods) {
+					return use_clienthttp() || !Basic.arrayDiff(methods, ['GET', 'POST']);
+				}
+			};
+		}()));
 
-						if (control.IsVersionSupported(version)) {
-							isVersionSupported = true;
-						}
 
-						control = null;
-					} catch (e) {
-						var plugin = navigator.plugins["Silverlight Plug-In"];
+		Basic.extend(this, {
 
-						if (plugin) {
-							actualVer = plugin.description;
+			getShim: function() {
+				return Dom.get(this.uid).content.Moxie;
+			},
 
-							if (actualVer === "1.0.30226.2") {
-								actualVer = "2.0.30226.2";
-							}
+			init : function() {
+				var container;
 
-							actualVerArray = actualVer.split(".");
-
-							while (actualVerArray.length > 3) {
-								actualVerArray.pop();
-							}
-
-							while ( actualVerArray.length < 4) {
-								actualVerArray.push(0);
-							}
-
-							reqVerArray = version.split(".");
-
-							while (reqVerArray.length > 4) {
-								reqVerArray.pop();
-							}
-
-							do {
-								requiredVersionPart = parseInt(reqVerArray[index], 10);
-								actualVersionPart = parseInt(actualVerArray[index], 10);
-								index++;
-							} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
-
-							if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
-								isVersionSupported = true;
-							}
-						}
-					}
-				} catch (e2) {
-					isVersionSupported = false;
+				// minimal requirement Flash Player 10
+				if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
+					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					return;
 				}
 
-				return isVersionSupported;
-			}
+				container = this.getShimContainer();
 
-			Runtime.call(this, type, Basic.extend({}, { xap_url: Env.xap_url }, options));
+				container.innerHTML = '<object id="' + this.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
+					'<param name="source" value="' + options.xap_url + '"/>' +
+					'<param name="background" value="Transparent"/>' +
+					'<param name="windowless" value="true"/>' +
+					'<param name="enablehtmlaccess" value="true"/>' +
+					'<param name="initParams" value="uid=' + this.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
+				'</object>';
 
-			Basic.extend(this, {
+				// Init is dispatched by the shim
+				initTimer = setTimeout(function() {
+					if (I && !I.initialized) { // runtime might be already destroyed by this moment
+						I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					}
+				}, Env.OS !== 'Windows'? 10000 : 5000); // give it more time to initialize in non Windows OS (like Mac)
+			},
 
-				getShim: function() {
-					return Dom.get(this.uid).content.Moxie;
-				},
+			destroy: (function(destroy) { // extend default destroy method
+				return function() {
+					destroy.call(I);
+					clearTimeout(initTimer); // initialization check might be still onwait
+					options = initTimer = destroy = I = null;
+				};
+			}(this.destroy))
 
-				init : function() {
-					var container;
+		}, extensions);
 
-					// minimal requirement Flash Player 10
-					if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
-						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-						return;
+		
+		function isInstalled(version) {
+			var isVersionSupported = false, control = null, actualVer,
+				actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
+
+			try {
+				try {
+					control = new ActiveXObject('AgControl.AgControl');
+
+					if (control.IsVersionSupported(version)) {
+						isVersionSupported = true;
 					}
 
-					container = this.getShimContainer();
+					control = null;
+				} catch (e) {
+					var plugin = navigator.plugins["Silverlight Plug-In"];
 
-					container.innerHTML = '<object id="' + this.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
-						'<param name="source" value="' + options.xap_url + '"/>' +
-						'<param name="background" value="Transparent"/>' +
-						'<param name="windowless" value="true"/>' +
-						'<param name="enablehtmlaccess" value="true"/>' +
-						'<param name="initParams" value="uid=' + this.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
-					'</object>';
+					if (plugin) {
+						actualVer = plugin.description;
 
-					// Init is dispatched by the shim
-					initTimer = setTimeout(function() {
-						if (I && !I.initialized) { // runtime might be already destroyed by this moment
-							I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						if (actualVer === "1.0.30226.2") {
+							actualVer = "2.0.30226.2";
 						}
-					}, Env.OS !== 'Windows'? 10000 : 5000); // give it more time to initialize in non Windows OS (like Mac)
-				},
 
-				destroy: (function(destroy) { // extend default destroy method
-					return function() {
-						destroy.call(I);
-						clearTimeout(initTimer); // initialization check might be still onwait
-						initTimer = destroy = I = null;
-					};
-				}(this.destroy))
+						actualVerArray = actualVer.split(".");
 
-			}, extensions);
-		}
+						while (actualVerArray.length > 3) {
+							actualVerArray.pop();
+						}
 
+						while ( actualVerArray.length < 4) {
+							actualVerArray.push(0);
+						}
 
-		SilverlightRuntime.can = (function() {
-			var use_clienthttp = function() {
-					var rc = this.options.required_caps || {};
-					return  rc.send_custom_headers || 
-						rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
-						rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
-				},
+						reqVerArray = version.split(".");
 
-				caps = Basic.extend({}, Runtime.caps, {
-					access_binary: true,
-					access_image_binary: true,
-					display_media: true,
-					drag_and_drop: false,
-					report_upload_progress: true,
-					resize_image: true,
-					return_response_headers: function() {
-						return use_clienthttp.call(this);
-					},
-					return_response_type: true,
-					return_status_code: function(code) {
-						return use_clienthttp.call(this) || !Basic.arrayDiff(code, [200, 404]);
-					},
-					select_multiple: true,
-					send_binary_string: true,
-					send_browser_cookies: function() {
-						return !use_clienthttp.call(this);
-					},
-					send_custom_headers: function() {
-						return use_clienthttp.call(this);
-					},
-					send_multipart: true,
-					slice_blob: true,
-					stream_upload: true,
-					summon_file_dialog: false,
-					upload_filesize: true,
-					use_http_method: function(methods) {
-						return use_clienthttp.call(this) || !Basic.arrayDiff(methods, ['GET', 'POST']);
+						while (reqVerArray.length > 4) {
+							reqVerArray.pop();
+						}
+
+						do {
+							requiredVersionPart = parseInt(reqVerArray[index], 10);
+							actualVersionPart = parseInt(actualVerArray[index], 10);
+							index++;
+						} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
+
+						if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
+							isVersionSupported = true;
+						}
 					}
-				});
-
-			function can() {
-				var args = [].slice.call(arguments);
-				args.unshift(caps);
-				return Runtime.can.apply(this, args);
+				}
+			} catch (e2) {
+				isVersionSupported = false;
 			}
-			return can;
-		}());
 
-		return SilverlightRuntime;
-	}()));
+			return isVersionSupported;
+		}
+	}
+
+	Runtime.addConstructor(type, SilverlightRuntime); 
 
 	return extensions;
 });
+
+
+

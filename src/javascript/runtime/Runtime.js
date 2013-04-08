@@ -23,20 +23,55 @@ define('moxie/runtime/Runtime', [
 
 	@class Runtime
 	*/
-	function Runtime(type, options) {
+	function Runtime(type, options, caps) {
 		/**
 		Dispatched when runtime is initialized and ready.
-		Triggers RuntimeInit on a connected component.
+		Results in RuntimeInit on a connected component.
 
 		@event Init
 		*/
-		var self = this
-		, uid = Basic.guid(type + '_')
-		, shimid = uid + '_container'
-		;
+
+		/**
+		Dispatched when runtime fails to initialize.
+		Results in RuntimeError on a connected component.
+
+		@event Error
+		*/
+
+		var self = this, uid = Basic.guid(type + '_');
 
 		// register runtime in private hash
 		runtimes[uid] = this;
+
+		/**
+		Default set of capabilities, which can be redifined later by specific runtime
+
+		@private
+		@property caps
+		@type Object
+		*/
+		caps = Basic.extend({
+			access_binary: true,
+			display_media: false,
+			drag_and_drop: false,
+			resize_image: false,
+			report_upload_progress: false,
+			return_response_headers: true,
+			return_response_type: false,
+			return_status_code: true,
+			send_custom_headers: false,
+			select_folder: false,
+			select_multiple: true,
+			send_binary_string: false,
+			send_browser_cookies: true,
+			send_multipart: true,
+			slice_blob: false,
+			stream_upload: false,
+			summon_file_dialog: false,
+			upload_filesize: true,
+			use_http_method: true
+		}, caps);
+
 
 		// public methods
 		Basic.extend(this, {
@@ -71,7 +106,7 @@ define('moxie/runtime/Runtime', [
 			@property shimid
 			@type {String}
 			*/
-			shimid: shimid,
+			shimid: uid + '_container',
 
 			/**
 			Number of connected clients. If equal to zero, runtime can be destroyed
@@ -97,8 +132,35 @@ define('moxie/runtime/Runtime', [
 			@param {Mixed} [value] If passed, capability should somehow correlate to the value
 			@return {Boolean} true if runtime has such capability and false, if - not
 			*/
-			can: function() {
-				return self.constructor.can.apply(self, arguments);
+			can: function(cap, value) {
+				// if cap var is a comma-separated list of caps, convert it to object (key/value)
+				if (Basic.typeOf(cap) === 'string' && Basic.typeOf(value) === 'undefined') {
+					cap = (function(arr) {
+						var obj = {};
+
+						Basic.each(arr, function(key) {
+							obj[key] = true; // since no value supplied, we assume user meant it to be - true
+						});
+
+						return obj;
+					}(cap.split(',')));
+				}
+
+				if (Basic.typeOf(cap) === 'object') {
+					for (var key in cap) {
+						if (!this.can(key, cap[key])) {
+							return false;
+						}
+					}
+					return true;
+				}
+
+				// check the individual cap
+				if (Basic.typeOf(caps[cap]) === 'function') {
+					return caps[cap].call(this, value);
+				}
+
+				return caps[cap] || false;
 			},
 
 			/**
@@ -190,11 +252,20 @@ define('moxie/runtime/Runtime', [
 
 				this.unbindAll();
 				delete runtimes[this.uid];
-				uid = shimid = self = null;
+				uid = self = null;
 			}
-
 		});
 	}
+
+	/**
+	Default order to try different runtime types
+
+	@property order
+	@type String
+	@static
+	*/
+	Runtime.order = 'html5,flash,silverlight,html4';
+
 
 	/**
 	Retrieves runtime from private hash by it's uid
@@ -246,91 +317,6 @@ define('moxie/runtime/Runtime', [
 		}
 
 		return null;
-	};
-
-	/**
-	Default order to try different runtime types
-
-	@property order
-	@type String
-	@static
-	*/
-	Runtime.order = 'html5,flash,silverlight,html4';
-
-	/**
-	Default set of capabilities, which can be redifined later by specific runtime
-
-	@property caps
-	@type Object
-	@static
-	*/
-	Runtime.caps = {
-		access_binary: true,
-		display_media: false,
-		drag_and_drop: false,
-		resize_image: false,
-		report_upload_progress: false,
-		return_response_headers: true,
-		return_response_type: false,
-		return_status_code: true,
-		send_custom_headers: false,
-		select_folder: false,
-		select_multiple: true,
-		send_binary_string: false,
-		send_browser_cookies: true,
-		send_multipart: true,
-		slice_blob: false,
-		stream_upload: false,
-		summon_file_dialog: false,
-		upload_filesize: true,
-		use_http_method: true
-	};
-
-	/**
-	Transient method, which is invoked internally on a runtime constructor of specific type,
-	is meant to tell whether the querried runtime has specific capability.
-
-	@method can
-	@protected
-	@static
-	@property {Object} runtimeCaps Reference to runtime's all capabilities
-	@property {String} cap Name of a capability to check
-	@property {Mixed} [value] If passed, capability will be checked against the value
-	*/
-	Runtime.can = function(runtimeCaps, cap, value) {
-		if (!cap || Basic.typeOf(cap) === 'object' && Basic.isEmptyObj(cap)) {
-			return true;
-		}
-
-		// if cap var is a comma-separated list of caps, convert it to object (key/value)
-		if (Basic.typeOf(cap) === 'string' && value === undefined) {
-			cap = (function(arr) {
-				var obj = {};
-
-				Basic.each(arr, function(key) {
-					obj[key] = true; // since no value supplied, we assume user meant it to be - true
-				});
-
-				return obj;
-			}(cap.split(',')));
-		}
-
-		if (Basic.typeOf(cap) === 'object') {
-			for (var key in cap) {
-				if (!Runtime.can.call(this, runtimeCaps, key, cap[key])) {
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		// check the individual cap
-		if (Basic.typeOf(runtimeCaps[cap]) === 'function') {
-			return runtimeCaps[cap].call(this, value);
-		}
-
-		return runtimeCaps[cap];
 	};
 
 	return Runtime;

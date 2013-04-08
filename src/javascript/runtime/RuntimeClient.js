@@ -47,13 +47,19 @@ define('moxie/runtime/RuntimeClient', [
 
 					type = items.shift();
 					constructor = Runtime.getConstructor(type);
-					if (!constructor || !constructor.can(options.required_caps)) {
+					if (!constructor) {
 						initialize(items);
 						return;
 					}
 
 					// try initializing the runtime
 					runtime = new constructor(options);
+
+					// if any capabilities required, check if the runtime has them
+					if (options.required_caps && !runtime.can(options.required_caps)) {
+						initialize(items);
+						return;
+					}
 
 					runtime.bind('Init', function() {
 						// mark runtime as initialized
