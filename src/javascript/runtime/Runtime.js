@@ -288,9 +288,9 @@ define('moxie/runtime/Runtime', [
 	@param {String} type Runtime type (e.g. flash, html5, etc)
 	@param {Function} construct Constructor function for the Runtime
 	*/
-	Runtime.addConstructor = function(type, construct) {
-		construct.prototype = EventTarget.instance;
-		runtimeConstructors[type] = construct;
+	Runtime.addConstructor = function(type, constructor) {
+		constructor.prototype = EventTarget.instance;
+		runtimeConstructors[type] = constructor;
 	};
 
 	Runtime.getConstructor = function(type) {
