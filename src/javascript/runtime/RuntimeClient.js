@@ -65,8 +65,6 @@ define('moxie/runtime/RuntimeClient', [
 						// mark runtime as initialized
 						runtime.initialized = true;
 
-						runtime.constructor = constructor;
-
 						// jailbreak ...
 						setTimeout(function() {
 							runtime.clients++;
