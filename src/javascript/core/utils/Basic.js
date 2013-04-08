@@ -12,6 +12,7 @@
 /*global define:true */
 
 define('moxie/core/utils/Basic', [], function() {
+	var undefined;
 
 	/**
 	Gets the true type of the built-in object (better version of typeof).
@@ -24,8 +25,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@return {String} Object [[Class]]
 	*/
 	var typeOf = function(o) {
-		var undef;
-		if (o === undef) {
+		if (o === undefined) {
 			return 'undefined';
 		} else if (o === null) {
 			return 'null';

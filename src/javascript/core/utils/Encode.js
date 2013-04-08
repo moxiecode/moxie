@@ -119,7 +119,7 @@ define('moxie/core/utils/Encode', [], function() {
 		if (typeof(window.btoa) === 'function') {
 			return window.btoa(data);
 		}
-		
+
 		// http://kevin.vanzonneveld.net
 	    // +   original by: Tyler Akins (http://rumkin.com)
 	    // +   improved by: Bayron Guevara
