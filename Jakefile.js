@@ -175,7 +175,6 @@ desc("Generate documentation using YUIDoc");
 task("docs", [], function (params) {
 	var baseDir = "src/javascript"
 	, exclude = [
-		"runtime/tpl",
 		"runtime/flash",
 		"runtime/silverlight",
 		"runtime/html5",
@@ -220,7 +219,7 @@ task("package", [], function (params) {
 
 	// User package
 	zip([
-		"js",
+		"bin",
 		["readme.md", "readme.txt"],
 		"changelog.txt",
 		"license.txt"
@@ -229,7 +228,7 @@ task("package", [], function (params) {
 	// Development package
 	zip([
 		"src",
-		"js",
+		"bin",
 		"tests",
 		"build",
 		"Jakefile.js",

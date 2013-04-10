@@ -11,7 +11,7 @@
 
 <!-- testrunner -->
 <script src="../js/reporter.js"></script>
-<script type="text/javascript" src="../../tmp/coverage/moxie.cov.js"></script>
+<script src="../moxie_loader.js"></script>
 
 <script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
 
@@ -75,7 +75,6 @@ module("XMLHttpRequest", {
 	teardown: function() {
 	}
 });
-
 
 // test object creation and initial state
 test('open()', function() {
@@ -592,7 +591,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 // test receive Document
 
-o.each("html5,flash,html4".split(','), function(runtime) {
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	test("wrong url: " + runtime, function() {
 		var self = this, xhr = new self.XHR, x = self.x;
 		var events = {
@@ -639,7 +638,7 @@ o.each("html5,flash,html4".split(','), function(runtime) {
 });
 
 
-o.each("html5,flash,html4".split(','), function(runtime) {
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	test("test cross-domain errors: " + runtime, function() {
 		var self = this, xhr = new self.XHR, x = self.x;
 		var events = {
@@ -756,9 +755,62 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 	});
 });
 
-
-
 // test receive ArrayBuffer
+
+
+// test different server response codes
+// send browser cookies (retain session)
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	
+	test('test response http status codes: ' + runtime, function() {
+		var self = this;
+		var statuses = {
+			200: 200,
+			404: 404, 
+			302: 200, 
+			301: 200,
+			503: 503
+		};	
+		var queue = [];
+
+		o.each(statuses, function(response, status) {
+
+			queue.push(function(cb) {
+				var xhr = new o.XMLHttpRequest();
+				xhr.open('get', 'XMLHttpRequest/http-status.php?status=' + status);
+				xhr.responseType = 'json';
+
+				xhr.onloadend = function() {
+					equal(xhr.status, response, status + " requested; " + response + " received.");
+
+					xhr.destroy();
+					xhr = null;
+					cb();
+				};
+
+				xhr.bind("RuntimeError", function() {
+					ok(true, "Runtime not supported.");
+					cb();
+				});
+
+				xhr.send(null, o.extend({}, self.runtimeOptions, { 
+					required_caps: {
+						return_status_code: 403
+					},
+					runtime_order: runtime 
+				}));
+			});
+		});
+
+		stop();
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+});
+
+
+
 </script>
 </head>
 <body>
