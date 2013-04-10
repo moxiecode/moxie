@@ -24,7 +24,7 @@ var resolveModules = (function() {
 
 		// get complete array of all involved modules
 		modules = amdlc.parseModules(utils.extend({}, options, {
-			from: modules
+			from: modules.map(function(module) { return module.replace(/\.js$/, '') + '.js'; })
 		}));
 
 		// come up with the list of runtime modules to get included
@@ -36,7 +36,7 @@ var resolveModules = (function() {
 				modules.forEach(function(module) {
 					var id = 'runtime/' + type + '/' + resolveId(module.id);
 					if (fs.existsSync(options.baseDir + "/" + id + '.js')) {
-						runtimeModules.push(id);
+						runtimeModules.push(id + '.js');
 					}
 				});
 			});
