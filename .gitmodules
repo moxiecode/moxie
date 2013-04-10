@@ -1,0 +1,3 @@
+[submodule "tests/js"]
+	path = tests/js
+	url = git@github.com:moxiecode/testrunner.git
