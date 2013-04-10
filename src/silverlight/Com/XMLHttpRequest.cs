@@ -357,13 +357,14 @@ namespace Moxiecode.Com
 
 		private void _responseCallback(IAsyncResult asynchronousResult)
 		{
+
 			HttpWebRequest req = (HttpWebRequest)asynchronousResult.AsyncState;
 
 			try
 			{
 				using (HttpWebResponse response = (HttpWebResponse)req.EndGetResponse(asynchronousResult))
 				{
-					_status = (int)response.StatusCode;
+					_status = (int)response.StatusCode; // 4xx-5xx can throw WebException, we handle it below
 					_statusText = response.StatusDescription;
 
 					using (Stream responseStream = response.GetResponseStream())
@@ -390,14 +391,27 @@ namespace Moxiecode.Com
 					Load(this, null);
 				}, this);
 			}
-			catch (WebException ex)
+			catch (WebException wex)
 			{
-				if (ex.Status != WebExceptionStatus.RequestCanceled) // if request was not aborted
+				switch (wex.Status)
 				{
-					_syncContext.Post(delegate
-					{
-						Error(this, null);
-					}, this);
+					case WebExceptionStatus.RequestCanceled: 
+						break;
+					case WebExceptionStatus.UnknownError: // e.g. 404
+						_status = (int)((HttpWebResponse)wex.Response).StatusCode;
+						_response = new MemoryStream();
+
+						_syncContext.Post(delegate
+						{
+							Load(this, null);
+						}, this);
+						break;
+					default:
+						_syncContext.Post(delegate
+						{
+							Error(this, null);
+						}, this);
+						break;
 				}
 			}
 			catch (Exception ex)
