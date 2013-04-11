@@ -55,6 +55,10 @@
 		});
 	}
 
+	function defined(id) {
+		return !!modules[id];
+	}
+
 	function resolve(id) {
 		var target = exports;
 		var fragments = id.split(/[.\/]/);
@@ -88,7 +92,7 @@
 		}
 	}
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Basic.js
+// Included from: src/javascript/core/utils/Basic.js
 
 /**
  * Basic.js
@@ -104,6 +108,7 @@
 /*global define:true */
 
 define('moxie/core/utils/Basic', [], function() {
+	var undefined;
 
 	/**
 	Gets the true type of the built-in object (better version of typeof).
@@ -116,8 +121,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@return {String} Object [[Class]]
 	*/
 	var typeOf = function(o) {
-		var undef;
-		if (o === undef) {
+		if (o === undefined) {
 			return 'undefined';
 		} else if (o === null) {
 			return 'null';
@@ -414,7 +418,7 @@ define('moxie/core/utils/Basic', [], function() {
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/I18n.js
+// Included from: src/javascript/core/I18n.js
 
 /**
  * I18n.js
@@ -467,7 +471,7 @@ define("moxie/core/I18n", [
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Mime.js
+// Included from: src/javascript/core/utils/Mime.js
 
 /**
  * Mime.js
@@ -628,7 +632,7 @@ define("moxie/core/utils/Mime", [
 	return Mime;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Env.js
+// Included from: src/javascript/core/utils/Env.js
 
 /**
  * Env.js
@@ -847,7 +851,7 @@ define("moxie/core/utils/Env", [
 	return Env;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Dom.js
+// Included from: src/javascript/core/utils/Dom.js
 
 /**
  * Dom.js
@@ -1035,7 +1039,7 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/Exceptions.js
+// Included from: src/javascript/core/Exceptions.js
 
 /**
  * Exceptions.js
@@ -1195,7 +1199,7 @@ define('moxie/core/Exceptions', [
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/EventTarget.js
+// Included from: src/javascript/core/EventTarget.js
 
 /**
  * EventTarget.js
@@ -1488,7 +1492,7 @@ define('moxie/core/EventTarget', [
 	return EventTarget;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Encode.js
+// Included from: src/javascript/core/utils/Encode.js
 
 /**
  * Encode.js
@@ -1544,58 +1548,58 @@ define('moxie/core/utils/Encode', [], function() {
 		}
 
 		// http://kevin.vanzonneveld.net
-	    // +   original by: Tyler Akins (http://rumkin.com)
-	    // +   improved by: Thunder.m
-	    // +      input by: Aman Gupta
-	    // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	    // +   bugfixed by: Onno Marsman
-	    // +   bugfixed by: Pellentesque Malesuada
-	    // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	    // +      input by: Brett Zamir (http://brett-zamir.me)
-	    // +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	    // *     example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
-	    // *     returns 1: 'Kevin van Zonneveld'
-	    // mozilla has this native
-	    // - but breaks in 2.0.0.12!
-	    //if (typeof this.window.atob == 'function') {
-	    //    return atob(data);
-	    //}
-	    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-	    var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-	        ac = 0,
-	        dec = "",
-	        tmp_arr = [];
+		// +   original by: Tyler Akins (http://rumkin.com)
+		// +   improved by: Thunder.m
+		// +      input by: Aman Gupta
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   bugfixed by: Onno Marsman
+		// +   bugfixed by: Pellentesque Malesuada
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +      input by: Brett Zamir (http://brett-zamir.me)
+		// +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// *     example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
+		// *     returns 1: 'Kevin van Zonneveld'
+		// mozilla has this native
+		// - but breaks in 2.0.0.12!
+		//if (typeof this.window.atob == 'function') {
+		//    return atob(data);
+		//}
+		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+			ac = 0,
+			dec = "",
+			tmp_arr = [];
 
-	    if (!data) {
-	        return data;
-	    }
+		if (!data) {
+			return data;
+		}
 
-	    data += '';
+		data += '';
 
-	    do { // unpack four hexets into three octets using index points in b64
-	        h1 = b64.indexOf(data.charAt(i++));
-	        h2 = b64.indexOf(data.charAt(i++));
-	        h3 = b64.indexOf(data.charAt(i++));
-	        h4 = b64.indexOf(data.charAt(i++));
+		do { // unpack four hexets into three octets using index points in b64
+			h1 = b64.indexOf(data.charAt(i++));
+			h2 = b64.indexOf(data.charAt(i++));
+			h3 = b64.indexOf(data.charAt(i++));
+			h4 = b64.indexOf(data.charAt(i++));
 
-	        bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
+			bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
 
-	        o1 = bits >> 16 & 0xff;
-	        o2 = bits >> 8 & 0xff;
-	        o3 = bits & 0xff;
+			o1 = bits >> 16 & 0xff;
+			o2 = bits >> 8 & 0xff;
+			o3 = bits & 0xff;
 
-	        if (h3 == 64) {
-	            tmp_arr[ac++] = String.fromCharCode(o1);
-	        } else if (h4 == 64) {
-	            tmp_arr[ac++] = String.fromCharCode(o1, o2);
-	        } else {
-	            tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
-	        }
-	    } while (i < data.length);
+			if (h3 == 64) {
+				tmp_arr[ac++] = String.fromCharCode(o1);
+			} else if (h4 == 64) {
+				tmp_arr[ac++] = String.fromCharCode(o1, o2);
+			} else {
+				tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
+			}
+		} while (i < data.length);
 
-	    dec = tmp_arr.join('');
+		dec = tmp_arr.join('');
 
-	    return dec;
+		return dec;
 	};
 	
 	/**
@@ -1611,50 +1615,50 @@ define('moxie/core/utils/Encode', [], function() {
 		if (typeof(window.btoa) === 'function') {
 			return window.btoa(data);
 		}
-		
+
 		// http://kevin.vanzonneveld.net
-	    // +   original by: Tyler Akins (http://rumkin.com)
-	    // +   improved by: Bayron Guevara
-	    // +   improved by: Thunder.m
-	    // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	    // +   bugfixed by: Pellentesque Malesuada
-	    // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	    // +   improved by: Rafał Kukawski (http://kukawski.pl)
-	    // *     example 1: base64_encode('Kevin van Zonneveld');
-	    // *     returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
-	    // mozilla has this native
-	    // - but breaks in 2.0.0.12!
-	    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-	    var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-	        ac = 0,
-	        enc = "",
-	        tmp_arr = [];
+		// +   original by: Tyler Akins (http://rumkin.com)
+		// +   improved by: Bayron Guevara
+		// +   improved by: Thunder.m
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   bugfixed by: Pellentesque Malesuada
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   improved by: Rafał Kukawski (http://kukawski.pl)
+		// *     example 1: base64_encode('Kevin van Zonneveld');
+		// *     returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
+		// mozilla has this native
+		// - but breaks in 2.0.0.12!
+		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+			ac = 0,
+			enc = "",
+			tmp_arr = [];
 
-	    if (!data) {
-	        return data;
-	    }
+		if (!data) {
+			return data;
+		}
 
-	    do { // pack three octets into four hexets
-	        o1 = data.charCodeAt(i++);
-	        o2 = data.charCodeAt(i++);
-	        o3 = data.charCodeAt(i++);
+		do { // pack three octets into four hexets
+			o1 = data.charCodeAt(i++);
+			o2 = data.charCodeAt(i++);
+			o3 = data.charCodeAt(i++);
 
-	        bits = o1 << 16 | o2 << 8 | o3;
+			bits = o1 << 16 | o2 << 8 | o3;
 
-	        h1 = bits >> 18 & 0x3f;
-	        h2 = bits >> 12 & 0x3f;
-	        h3 = bits >> 6 & 0x3f;
-	        h4 = bits & 0x3f;
+			h1 = bits >> 18 & 0x3f;
+			h2 = bits >> 12 & 0x3f;
+			h3 = bits >> 6 & 0x3f;
+			h4 = bits & 0x3f;
 
-	        // use hexets to index into b64, and append result to encoded string
-	        tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
-	    } while (i < data.length);
+			// use hexets to index into b64, and append result to encoded string
+			tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+		} while (i < data.length);
 
-	    enc = tmp_arr.join('');
-	    
-	    var r = data.length % 3;
-	    
-	    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+		enc = tmp_arr.join('');
+
+		var r = data.length % 3;
+
+		return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
 	};
 
 
@@ -1666,7 +1670,7 @@ define('moxie/core/utils/Encode', [], function() {
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/Runtime.js
+// Included from: src/javascript/runtime/Runtime.js
 
 /**
  * Runtime.js
@@ -1693,20 +1697,55 @@ define('moxie/runtime/Runtime', [
 
 	@class Runtime
 	*/
-	function Runtime(type, options) {
+	function Runtime(type, options, caps) {
 		/**
 		Dispatched when runtime is initialized and ready.
-		Triggers RuntimeInit on a connected component.
+		Results in RuntimeInit on a connected component.
 
 		@event Init
 		*/
-		var self = this
-		, uid = Basic.guid(type + '_')
-		, shimid = uid + '_container'
-		;
+
+		/**
+		Dispatched when runtime fails to initialize.
+		Results in RuntimeError on a connected component.
+
+		@event Error
+		*/
+
+		var self = this, uid = Basic.guid(type + '_');
 
 		// register runtime in private hash
 		runtimes[uid] = this;
+
+		/**
+		Default set of capabilities, which can be redifined later by specific runtime
+
+		@private
+		@property caps
+		@type Object
+		*/
+		caps = Basic.extend({
+			access_binary: true,
+			display_media: false,
+			drag_and_drop: false,
+			resize_image: false,
+			report_upload_progress: false,
+			return_response_headers: true,
+			return_response_type: false,
+			return_status_code: true,
+			send_custom_headers: false,
+			select_folder: false,
+			select_multiple: true,
+			send_binary_string: false,
+			send_browser_cookies: true,
+			send_multipart: true,
+			slice_blob: false,
+			stream_upload: false,
+			summon_file_dialog: false,
+			upload_filesize: true,
+			use_http_method: true
+		}, caps);
+
 
 		// public methods
 		Basic.extend(this, {
@@ -1741,7 +1780,7 @@ define('moxie/runtime/Runtime', [
 			@property shimid
 			@type {String}
 			*/
-			shimid: shimid,
+			shimid: uid + '_container',
 
 			/**
 			Number of connected clients. If equal to zero, runtime can be destroyed
@@ -1767,8 +1806,35 @@ define('moxie/runtime/Runtime', [
 			@param {Mixed} [value] If passed, capability should somehow correlate to the value
 			@return {Boolean} true if runtime has such capability and false, if - not
 			*/
-			can: function() {
-				return self.constructor.can.apply(self, arguments);
+			can: function(cap, value) {
+				// if cap var is a comma-separated list of caps, convert it to object (key/value)
+				if (Basic.typeOf(cap) === 'string' && Basic.typeOf(value) === 'undefined') {
+					cap = (function(arr) {
+						var obj = {};
+
+						Basic.each(arr, function(key) {
+							obj[key] = true; // since no value supplied, we assume user meant it to be - true
+						});
+
+						return obj;
+					}(cap.split(',')));
+				}
+
+				if (Basic.typeOf(cap) === 'object') {
+					for (var key in cap) {
+						if (!this.can(key, cap[key])) {
+							return false;
+						}
+					}
+					return true;
+				}
+
+				// check the individual cap
+				if (Basic.typeOf(caps[cap]) === 'function') {
+					return caps[cap].call(this, value);
+				}
+
+				return caps[cap] || false;
 			},
 
 			/**
@@ -1860,11 +1926,20 @@ define('moxie/runtime/Runtime', [
 
 				this.unbindAll();
 				delete runtimes[this.uid];
-				uid = shimid = self = null;
+				uid = self = null;
 			}
-
 		});
 	}
+
+	/**
+	Default order to try different runtime types
+
+	@property order
+	@type String
+	@static
+	*/
+	Runtime.order = 'html5,flash,silverlight,html4';
+
 
 	/**
 	Retrieves runtime from private hash by it's uid
@@ -1887,9 +1962,9 @@ define('moxie/runtime/Runtime', [
 	@param {String} type Runtime type (e.g. flash, html5, etc)
 	@param {Function} construct Constructor function for the Runtime
 	*/
-	Runtime.addConstructor = function(type, construct) {
-		construct.prototype = EventTarget.instance;
-		runtimeConstructors[type] = construct;
+	Runtime.addConstructor = function(type, constructor) {
+		constructor.prototype = EventTarget.instance;
+		runtimeConstructors[type] = constructor;
 	};
 
 	Runtime.getConstructor = function(type) {
@@ -1918,95 +1993,10 @@ define('moxie/runtime/Runtime', [
 		return null;
 	};
 
-	/**
-	Default order to try different runtime types
-
-	@property order
-	@type String
-	@static
-	*/
-	Runtime.order = 'html5,flash,silverlight,html4';
-
-	/**
-	Default set of capabilities, which can be redifined later by specific runtime
-
-	@property caps
-	@type Object
-	@static
-	*/
-	Runtime.caps = {
-		access_binary: true,
-		display_media: false,
-		drag_and_drop: false,
-		resize_image: false,
-		report_upload_progress: false,
-		return_response_headers: true,
-		return_response_type: false,
-		return_status_code: true,
-		send_custom_headers: false,
-		select_folder: false,
-		select_multiple: true,
-		send_binary_string: false,
-		send_browser_cookies: true,
-		send_multipart: true,
-		slice_blob: false,
-		stream_upload: false,
-		summon_file_dialog: false,
-		upload_filesize: true,
-		use_http_method: true
-	};
-
-	/**
-	Transient method, which is invoked internally on a runtime constructor of specific type,
-	is meant to tell whether the querried runtime has specific capability.
-
-	@method can
-	@protected
-	@static
-	@property {Object} runtimeCaps Reference to runtime's all capabilities
-	@property {String} cap Name of a capability to check
-	@property {Mixed} [value] If passed, capability will be checked against the value
-	*/
-	Runtime.can = function(runtimeCaps, cap, value) {
-		if (!cap || Basic.typeOf(cap) === 'object' && Basic.isEmptyObj(cap)) {
-			return true;
-		}
-
-		// if cap var is a comma-separated list of caps, convert it to object (key/value)
-		if (Basic.typeOf(cap) === 'string' && value === undefined) {
-			cap = (function(arr) {
-				var obj = {};
-
-				Basic.each(arr, function(key) {
-					obj[key] = true; // since no value supplied, we assume user meant it to be - true
-				});
-
-				return obj;
-			}(cap.split(',')));
-		}
-
-		if (Basic.typeOf(cap) === 'object') {
-			for (var key in cap) {
-				if (!Runtime.can.call(this, runtimeCaps, key, cap[key])) {
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		// check the individual cap
-		if (Basic.typeOf(runtimeCaps[cap]) === 'function') {
-			return runtimeCaps[cap].call(this, value);
-		}
-
-		return runtimeCaps[cap];
-	};
-
 	return Runtime;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/RuntimeClient.js
+// Included from: src/javascript/runtime/RuntimeClient.js
 
 /**
  * RuntimeClient.js
@@ -2057,7 +2047,7 @@ define('moxie/runtime/RuntimeClient', [
 
 					type = items.shift();
 					constructor = Runtime.getConstructor(type);
-					if (!constructor || !constructor.can(options.required_caps)) {
+					if (!constructor) {
 						initialize(items);
 						return;
 					}
@@ -2065,11 +2055,15 @@ define('moxie/runtime/RuntimeClient', [
 					// try initializing the runtime
 					runtime = new constructor(options);
 
+					// if any capabilities required, check if the runtime has them
+					if (options.required_caps && !runtime.can(options.required_caps)) {
+						initialize(items);
+						return;
+					}
+
 					runtime.bind('Init', function() {
 						// mark runtime as initialized
 						runtime.initialized = true;
-
-						runtime.constructor = constructor;
 
 						// jailbreak ...
 						setTimeout(function() {
@@ -2139,7 +2133,7 @@ define('moxie/runtime/RuntimeClient', [
 
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/file/Blob.js
+// Included from: src/javascript/file/Blob.js
 
 /**
  * Blob.js
@@ -2320,7 +2314,7 @@ define('moxie/file/Blob', [
 	return Blob;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/file/File.js
+// Included from: src/javascript/file/File.js
 
 /**
  * File.js
@@ -2404,7 +2398,7 @@ define('moxie/file/File', [
 	return File;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/file/FileInput.js
+// Included from: src/javascript/file/FileInput.js
 
 /**
  * FileInput.js
@@ -2676,7 +2670,7 @@ define('moxie/file/FileInput', [
 	return FileInput;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/file/FileDrop.js
+// Included from: src/javascript/file/FileDrop.js
 
 /**
  * FileDrop.js
@@ -2852,7 +2846,7 @@ define('moxie/file/FileDrop', [
 	return FileDrop;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/file/FileReader.js
+// Included from: src/javascript/file/FileReader.js
 
 /**
  * FileReader.js
@@ -3050,7 +3044,7 @@ define('moxie/file/FileReader', [
 	return FileReader;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Url.js
+// Included from: src/javascript/core/utils/Url.js
 
 /**
  * Url.js
@@ -3169,7 +3163,7 @@ define('moxie/core/utils/Url', [], function() {
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/RuntimeTarget.js
+// Included from: src/javascript/runtime/RuntimeTarget.js
 
 /**
  * RuntimeTarget.js
@@ -3214,7 +3208,7 @@ define('moxie/runtime/RuntimeTarget', [
 	return RuntimeTarget;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/xhr/FormData.js
+// Included from: src/javascript/xhr/FormData.js
 
 /**
  * FormData.js
@@ -3337,7 +3331,7 @@ define("moxie/xhr/FormData", [
 	return FormData;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/xhr/XMLHttpRequest.js
+// Included from: src/javascript/xhr/XMLHttpRequest.js
 
 /**
  * XMLHttpRequest.js
@@ -4376,7 +4370,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	return XMLHttpRequest;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/file/FileReaderSync.js
+// Included from: src/javascript/file/FileReaderSync.js
 
 /**
  * FileReaderSync.js
@@ -4452,7 +4446,7 @@ define('moxie/file/FileReaderSync', [
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/Transporter.js
+// Included from: src/javascript/runtime/Transporter.js
 
 /**
  * Transporter.js
@@ -4592,7 +4586,7 @@ define("moxie/runtime/Transporter", [
 	return Transporter;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/JSON.js
+// Included from: src/javascript/core/JSON.js
 
 /**
  * JSON.js
@@ -4916,7 +4910,7 @@ define("moxie/core/JSON", [], function() {
 
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/image/Image.js
+// Included from: src/javascript/image/Image.js
 
 /**
  * Image.js
@@ -5506,7 +5500,7 @@ define("moxie/image/Image", [
 	return Image;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/Runtime.js
+// Included from: src/javascript/runtime/html5/Runtime.js
 
 /**
  * Runtime.js
@@ -5536,143 +5530,129 @@ define("moxie/runtime/html5/Runtime", [
 	
 	var type = "html5", extensions = {};
 	
-	Runtime.addConstructor(type, (function() {
-		
-		function Html5Runtime(options) {
-			var I = this, shim;
+	function Html5Runtime(options) {
+		var I = this, shim;
 
-			Runtime.call(this, type, Basic.extend({}, options));
+		Runtime.call(this, type, options, {
+			access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
+			access_image_binary: function() {
+				return I.can('access_binary') && !!extensions.Image;
+			},
+			display_media: Env.can('create_canvas') || Env.can('use_data_uri_over32kb'),
+			drag_and_drop: (function() {
+				// this comes directly from Modernizr: http://www.modernizr.com/
+				var div = document.createElement('div');
+				// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
+				return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
+			}()),
+			return_response_type: function(responseType) {
+				if (responseType === 'json') {
+					return true; // we can fake this one even if it's not supported
+				} else {
+					return Env.can('return_response_type', responseType);
+				}
+			},
+			report_upload_progress: function() {
+				return !!(window.XMLHttpRequest && new XMLHttpRequest().upload);
+			},
+			resize_image: function() {
+				return I.can('access_binary') && Env.can('create_canvas');
+			},
+			select_folder: Env.browser === 'Chrome' && Env.version >= 21,
+			select_multiple: !(Env.browser === 'Safari' && Env.OS === 'Windows'),
+			send_binary_string:
+				!!(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
+			send_custom_headers: !!window.XMLHttpRequest,
+			send_multipart: function() {
+				return !!(window.XMLHttpRequest && new XMLHttpRequest().upload && window.FormData) || can('send_binary_string');
+			},
+			slice_blob: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
+			stream_upload: function() {
+				return I.can('slice_blob') && I.can('send_multipart');
+			},
+			summon_file_dialog: (function() { // yeah... some dirty sniffing here...
+				return  (Env.browser === 'Firefox' && Env.version >= 4)	||
+						(Env.browser === 'Opera' && Env.version >= 12)	||
+						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
+			}()),
+			upload_filesize: true
+		});
 
-			Basic.extend(this, {
 
-				init : function() {
-					if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-						return;
+		Basic.extend(this, {
+
+			init : function() {
+				if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
+					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					return;
+				}
+				this.trigger("Init");
+			},
+
+			getShim: function() {
+				return shim;
+			},
+
+			shimExec: function(component, action) {
+				var args = [].slice.call(arguments, 2);
+				return I.getShim().exec.call(this, this.uid, component, action, args);
+			},
+
+			destroy: (function(destroy) { // extend default destroy method
+				return function() {
+					if (shim) {
+						shim.removeAllInstances(I);
 					}
-					this.trigger("Init");
-				},
-
-				getShim: function() {
-					return shim;
-				},
-
-				shimExec: function(component, action) {
-					var args = [].slice.call(arguments, 2);
-					return I.getShim().exec.call(this, this.uid, component, action, args);
-				},
-
-				destroy: (function(destroy) { // extend default destroy method
-					return function() {
-						if (shim) {
-							shim.removeAllInstances(I);
-						}
-						destroy.call(I);
-						destroy = shim = I = null;
-					};
-				}(this.destroy))
-
-			});
-
-			shim = Basic.extend((function() {
-				var objpool = {};
-
-				return {
-					exec: function(uid, comp, fn, args) {
-						if (shim[comp]) {
-							if (!objpool[uid]) {
-								objpool[uid] = {
-									context: this,
-									instance: new shim[comp]()
-								}
-							}
-
-							if (objpool[uid].instance[fn]) {
-								return objpool[uid].instance[fn].apply(this, args);
-							}
-						}
-					},
-
-					removeInstance: function(uid) {
-						delete objpool[uid];
-					},
-
-					removeAllInstances: function() {
-						var self = this;
-						
-						Basic.each(objpool, function(obj, uid) {
-							if (Basic.typeOf(obj.instance.destroy) === 'function') {
-								obj.instance.destroy.call(obj.context);
-							}
-							self.removeInstance(uid);
-						});
-					}
+					destroy.call(I);
+					destroy = shim = I = null;
 				};
-			}()), extensions);
-		}
+			}(this.destroy))
 
-		Html5Runtime.can = (function() {
-			var caps = Basic.extend({}, Runtime.caps, {
-					access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
-					access_image_binary: function() {
-						return can('access_binary') && !!extensions.Image;
-					},
-					display_media: Env.can('create_canvas') || Env.can('use_data_uri_over32kb'),
-					drag_and_drop: (function() {
-						// this comes directly from Modernizr: http://www.modernizr.com/
-						var div = document.createElement('div');
-						// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
-						return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
-					}()),
-					return_response_type: function(responseType) {
-						if (responseType === 'json') {
-							return true; // we can fake this one even if it's not supported
-						} else {
-							return Env.can('return_response_type', responseType);
+		});
+
+		shim = Basic.extend((function() {
+			var objpool = {};
+
+			return {
+				exec: function(uid, comp, fn, args) {
+					if (shim[comp]) {
+						if (!objpool[uid]) {
+							objpool[uid] = {
+								context: this,
+								instance: new shim[comp]()
+							}
 						}
-					},
-					report_upload_progress: function() {
-						return !!(window.XMLHttpRequest && new XMLHttpRequest().upload);
-					},
-					resize_image: function() {
-						return can('access_binary') && Env.can('create_canvas');
-					},
-					select_folder: Env.browser === 'Chrome' && Env.version >= 21,
-					select_multiple: !(Env.browser === 'Safari' && Env.OS === 'Windows'),
-					send_binary_string:
-						!!(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
-					send_custom_headers: !!window.XMLHttpRequest,
-					send_multipart: function() {
-						return !!(window.XMLHttpRequest && new XMLHttpRequest().upload && window.FormData) || can('send_binary_string');
-					},
-					slice_blob: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
-					stream_upload: function() {
-						return can('slice_blob') && can('send_multipart');
-					},
-					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
-						return  (Env.browser === 'Firefox' && Env.version >= 4)	||
-								(Env.browser === 'Opera' && Env.version >= 12)	||
-								!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
-					}()),
-					upload_filesize: true
-				});
 
-			function can() {
-				var args = [].slice.call(arguments);
-				args.unshift(caps);
-				return Runtime.can.apply(this, args);
-			}
+						if (objpool[uid].instance[fn]) {
+							return objpool[uid].instance[fn].apply(this, args);
+						}
+					}
+				},
 
-			return can;
-		}());
+				removeInstance: function(uid) {
+					delete objpool[uid];
+				},
 
-		return Html5Runtime;
-	}()));
+				removeAllInstances: function() {
+					var self = this;
+					
+					Basic.each(objpool, function(obj, uid) {
+						if (Basic.typeOf(obj.instance.destroy) === 'function') {
+							obj.instance.destroy.call(obj.context);
+						}
+						self.removeInstance(uid);
+					});
+				}
+			};
+		}()), extensions);
+	}
+
+	Runtime.addConstructor(type, Html5Runtime);
 
 	return extensions;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/file/Blob.js
+// Included from: src/javascript/runtime/html5/file/Blob.js
 
 /**
  * Blob.js
@@ -5724,7 +5704,7 @@ define("moxie/runtime/html5/file/Blob", [
 	return (extensions.Blob = HTML5Blob);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/core/utils/Events.js
+// Included from: src/javascript/core/utils/Events.js
 
 /**
  * Events.js
@@ -5914,7 +5894,7 @@ define('moxie/core/utils/Events', [
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/file/FileInput.js
+// Included from: src/javascript/runtime/html5/file/FileInput.js
 
 /**
  * FileInput.js
@@ -6067,7 +6047,7 @@ define("moxie/runtime/html5/file/FileInput", [
 	return (extensions.FileInput = FileInput);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/file/FileDrop.js
+// Included from: src/javascript/runtime/html5/file/FileDrop.js
 
 /**
  * FileDrop.js
@@ -6219,7 +6199,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 	return (extensions.FileDrop = FileDrop);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/file/FileReader.js
+// Included from: src/javascript/runtime/html5/file/FileReader.js
 
 /**
  * FileReader.js
@@ -6280,7 +6260,7 @@ define("moxie/runtime/html5/file/FileReader", [
 	return (extensions.FileReader = FileReader);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/xhr/XMLHttpRequest.js
+// Included from: src/javascript/runtime/html5/xhr/XMLHttpRequest.js
 
 /**
  * XMLHttpRequest.js
@@ -6536,7 +6516,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/utils/BinaryReader.js
+// Included from: src/javascript/runtime/html5/utils/BinaryReader.js
 
 /**
  * BinaryReader.js
@@ -6648,7 +6628,7 @@ define("moxie/runtime/html5/utils/BinaryReader", [], function() {
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/JPEGHeaders.js
+// Included from: src/javascript/runtime/html5/image/JPEGHeaders.js
 
 /**
  * JPEGHeaders.js
@@ -6808,7 +6788,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/ExifParser.js
+// Included from: src/javascript/runtime/html5/image/ExifParser.js
 
 /**
  * ExifParser.js
@@ -7249,7 +7229,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/JPEG.js
+// Included from: src/javascript/runtime/html5/image/JPEG.js
 
 /**
  * JPEG.js
@@ -7380,7 +7360,7 @@ define("moxie/runtime/html5/image/JPEG", [
 	return JPEG;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/PNG.js
+// Included from: src/javascript/runtime/html5/image/PNG.js
 
 /**
  * PNG.js
@@ -7487,7 +7467,7 @@ define("moxie/runtime/html5/image/PNG", [
 	return PNG;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/ImageInfo.js
+// Included from: src/javascript/runtime/html5/image/ImageInfo.js
 
 /**
  * ImageInfo.js
@@ -7613,7 +7593,7 @@ define("moxie/runtime/html5/image/ImageInfo", [
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/MegaPixel.js
+// Included from: src/javascript/runtime/html5/image/MegaPixel.js
 
 /**
 (The MIT License)
@@ -7750,7 +7730,7 @@ define("moxie/runtime/html5/image/MegaPixel", [], function() {
 	};
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html5/image/Image.js
+// Included from: src/javascript/runtime/html5/image/Image.js
 
 /**
  * Image.js
@@ -8206,7 +8186,7 @@ define("moxie/runtime/html5/image/Image", [
 	return (extensions.Image = HTML5Image);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/Runtime.js
+// Included from: src/javascript/runtime/flash/Runtime.js
 
 /**
  * Runtime.js
@@ -8242,160 +8222,149 @@ define("moxie/runtime/flash/Runtime", [
 	@class FlashRuntime
 	@extends Runtime
 	*/
-	Runtime.addConstructor(type, (function() {
-		
-		function FlashRuntime(options) {
-			var I = this, initTimer;
+	function FlashRuntime(options) {
+		var I = this, initTimer;
 
-			/**
-			Get the version of the Flash Player
+		options = Basic.extend({ swf_url: Env.swf_url }, options);
 
-			@method getShimVersion
-			@private
-			@return {Number} Flash Player version
-			*/
-			function getShimVersion() {
-				var version;
-
-				try {
-					version = navigator.plugins['Shockwave Flash'];
-					version = version.description;
-				} catch (e1) {
-					try {
-						version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
-					} catch (e2) {
-						version = '0.0';
-					}
-				}
-				version = version.match(/\d+/g);
-				return parseFloat(version[0] + '.' + version[1]);
+		Runtime.call(this, type, options, (function() {
+			function use_urlstream() {
+				var rc = options.required_features || {};
+				return rc.access_binary || rc.send_custom_headers || rc.send_browser_cookies;
 			}
 
-			Runtime.call(this, type, Basic.extend({ swf_url: Env.swf_url }, options));
-
-			Basic.extend(this, {
-
-				init: function() {
-					var html, el, container;
-
-					// minimal requirement Flash Player 10
-					if (getShimVersion() < 10) {
-						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-						return;
-					}
-
-					container = this.getShimContainer();
-
-					// if not the minimal height, shims are not initialized in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
-					Basic.extend(container.style, {
-						position: 'absolute',
-						top: '-8px',
-						left: '-8px',
-						width: '9px',
-						height: '9px',
-						overflow: 'hidden'
-					});
-
-					// insert flash object
-					html = '<object id="' + this.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';
-
-					if (Env.browser === 'IE') {
-						html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
-					}
-
-					html += 'width="100%" height="100%" style="outline:0">'  +
-						'<param name="movie" value="' + options.swf_url + '" />' +
-						'<param name="flashvars" value="uid=' + escape(this.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
-						'<param name="wmode" value="transparent" />' +
-						'<param name="allowscriptaccess" value="always" />' +
-					'</object>';
-
-					if (Env.browser === 'IE') {
-						el = document.createElement('div');
-						container.appendChild(el);
-						el.outerHTML = html;
-						el = container = null; // just in case
-					} else {
-						container.innerHTML = html;
-					}
-
-					// Init is dispatched by the shim
-					initTimer = setTimeout(function() {
-						if (I && !I.initialized) { // runtime might be already destroyed by this moment
-							I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-						}
-					}, 5000);
+			return {
+				access_binary: true,
+				access_image_binary: true,
+				display_media: true,
+				drag_and_drop: false,
+				report_upload_progress: true,
+				resize_image: true,
+				return_response_headers: false,
+				return_response_type: true,
+				return_status_code: true,
+				select_multiple: true,
+				send_binary_string: true,
+				send_browser_cookies: function() {
+					return use_urlstream();
 				},
-
-				destroy: (function(destroy) { // extend default destroy method
-					return function() {
-						destroy.call(I);
-						clearTimeout(initTimer); // initialization check might be still onwait
-						initTimer = destroy = I = null;
-					};
-				}(this.destroy))
-
-			}, extensions);
-		}
-
-		FlashRuntime.can = (function() {
-			var use_urlstream = function() {
-					var rc = this.options.required_features || {};
-					return rc.access_binary || rc.send_custom_headers || rc.send_browser_cookies;
+				send_custom_headers: function() {
+					return use_urlstream();
 				},
-
-				caps = Basic.extend({}, Runtime.caps, {
-					access_binary: true,
-					access_image_binary: true,
-					display_media: true,
-					drag_and_drop: false,
-					report_upload_progress: true,
-					resize_image: true,
-					return_response_headers: false,
-					return_response_type: true,
-					return_status_code: true,
-					select_multiple: true,
-					send_binary_string: true,
-					send_browser_cookies: function() {
-						return use_urlstream.call(this);
-					},
-					send_custom_headers: function() {
-						return use_urlstream.call(this);
-					},
-					send_multipart: true,
-					slice_blob: true,
-					stream_upload: function(value) {
-						return !!value && !use_urlstream.call(this);
-					},
-					summon_file_dialog: false,
-					upload_filesize: function(size) {
-						var maxSize = use_urlstream.call(this) ? 2097152 : -1; // 200mb || unlimited
-						if (!~maxSize || Basic.parseSizeStr(size) <= maxSize) {
-							return true;
-						}
-						return false;
-					},
-					use_http_method: function(methods) {
-						return !Basic.arrayDiff(methods, ['GET', 'POST']);
+				send_multipart: true,
+				slice_blob: true,
+				stream_upload: function(value) {
+					return !!value && !use_urlstream();
+				},
+				summon_file_dialog: false,
+				upload_filesize: function(size) {
+					var maxSize = use_urlstream() ? 2097152 : -1; // 200mb || unlimited
+					if (!~maxSize || Basic.parseSizeStr(size) <= maxSize) {
+						return true;
 					}
+					return false;
+				},
+				use_http_method: function(methods) {
+					return !Basic.arrayDiff(methods, ['GET', 'POST']);
+				}
+			};
+		}()));
+
+		Basic.extend(this, {
+
+			init: function() {
+				var html, el, container;
+
+				// minimal requirement Flash Player 10
+				if (getShimVersion() < 10) {
+					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					return;
+				}
+
+				container = this.getShimContainer();
+
+				// if not the minimal height, shims are not initialized in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
+				Basic.extend(container.style, {
+					position: 'absolute',
+					top: '-8px',
+					left: '-8px',
+					width: '9px',
+					height: '9px',
+					overflow: 'hidden'
 				});
 
-			function can() {
-				var args = [].slice.call(arguments);
-				args.unshift(caps);
-				return Runtime.can.apply(this, args);
+				// insert flash object
+				html = '<object id="' + this.uid + '" type="application/x-shockwave-flash" data="' +  options.swf_url + '" ';
+
+				if (Env.browser === 'IE') {
+					html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
+				}
+
+				html += 'width="100%" height="100%" style="outline:0">'  +
+					'<param name="movie" value="' + options.swf_url + '" />' +
+					'<param name="flashvars" value="uid=' + escape(this.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
+					'<param name="wmode" value="transparent" />' +
+					'<param name="allowscriptaccess" value="always" />' +
+				'</object>';
+
+				if (Env.browser === 'IE') {
+					el = document.createElement('div');
+					container.appendChild(el);
+					el.outerHTML = html;
+					el = container = null; // just in case
+				} else {
+					container.innerHTML = html;
+				}
+
+				// Init is dispatched by the shim
+				initTimer = setTimeout(function() {
+					if (I && !I.initialized) { // runtime might be already destroyed by this moment
+						I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					}
+				}, 5000);
+			},
+
+			destroy: (function(destroy) { // extend default destroy method
+				return function() {
+					destroy.call(I);
+					clearTimeout(initTimer); // initialization check might be still onwait
+					options = initTimer = destroy = I = null;
+				};
+			}(this.destroy))
+
+		}, extensions);
+
+		/**
+		Get the version of the Flash Player
+
+		@method getShimVersion
+		@private
+		@return {Number} Flash Player version
+		*/
+		function getShimVersion() {
+			var version;
+
+			try {
+				version = navigator.plugins['Shockwave Flash'];
+				version = version.description;
+			} catch (e1) {
+				try {
+					version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
+				} catch (e2) {
+					version = '0.0';
+				}
 			}
+			version = version.match(/\d+/g);
+			return parseFloat(version[0] + '.' + version[1]);
+		}
+	}
 
-			return can;
-		}());
-
-		return FlashRuntime;
-	}()));
+	Runtime.addConstructor(type, FlashRuntime);
 
 	return extensions;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/file/Blob.js
+// Included from: src/javascript/runtime/flash/file/Blob.js
 
 /**
  * Blob.js
@@ -8447,7 +8416,7 @@ define("moxie/runtime/flash/file/Blob", [
 	return (extensions.Blob = FlashBlob);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/file/FileInput.js
+// Included from: src/javascript/runtime/flash/file/FileInput.js
 
 /**
  * FileInput.js
@@ -8483,7 +8452,7 @@ define("moxie/runtime/flash/file/FileInput", [
 	return (extensions.FileInput = FileInput);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/file/FileReader.js
+// Included from: src/javascript/runtime/flash/file/FileReader.js
 
 /**
  * FileReader.js
@@ -8542,7 +8511,7 @@ define("moxie/runtime/flash/file/FileReader", [
 	return (extensions.FileReader = FileReader);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/xhr/XMLHttpRequest.js
+// Included from: src/javascript/runtime/flash/xhr/XMLHttpRequest.js
 
 /**
  * XMLHttpRequest.js
@@ -8686,7 +8655,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/file/FileReaderSync.js
+// Included from: src/javascript/runtime/flash/file/FileReaderSync.js
 
 /**
  * FileReaderSync.js
@@ -8744,7 +8713,7 @@ define("moxie/runtime/flash/file/FileReaderSync", [
 	return (extensions.FileReaderSync = FileReaderSync);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/runtime/Transporter.js
+// Included from: src/javascript/runtime/flash/runtime/Transporter.js
 
 /**
  * Transporter.js
@@ -8783,7 +8752,7 @@ define("moxie/runtime/flash/runtime/Transporter", [
 	return (extensions.Transporter = Transporter);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/flash/image/Image.js
+// Included from: src/javascript/runtime/flash/image/Image.js
 
 /**
  * Image.js
@@ -8861,7 +8830,7 @@ define("moxie/runtime/flash/image/Image", [
 	return (extensions.Image = Image);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/Runtime.js
+// Included from: src/javascript/runtime/silverlight/Runtime.js
 
 /**
  * RunTime.js
@@ -8890,7 +8859,7 @@ define("moxie/runtime/silverlight/Runtime", [
 	"moxie/runtime/Runtime"
 ], function(Basic, Env, Dom, x, Runtime) {
 	
-	var type = 'silverlight', extensions = {};
+	var type = "silverlight", extensions = {};
 
 	/**
 	Constructor for the Silverlight Runtime
@@ -8898,170 +8867,161 @@ define("moxie/runtime/silverlight/Runtime", [
 	@class SilverlightRuntime
 	@extends Runtime
 	*/
-	Runtime.addConstructor(type, (function() {
+	function SilverlightRuntime(options) {
+		var I = this, initTimer;
 
-		function SilverlightRuntime(options) {
-			var I = this, initTimer;
+		options = Basic.extend({ xap_url: Env.xap_url }, options);
 
-			function isInstalled(version) {
-				var isVersionSupported = false, control = null, actualVer,
-					actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
+		Runtime.call(this, type, options, (function() {			
+			function use_clienthttp() {
+				var rc = options.required_caps || {};
+				return  rc.send_custom_headers || 
+					rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
+					rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
+			}
 
-				try {
-					try {
-						control = new ActiveXObject('AgControl.AgControl');
+			return {
+				access_binary: true,
+				access_image_binary: true,
+				display_media: true,
+				drag_and_drop: false,
+				report_upload_progress: true,
+				resize_image: true,
+				return_response_headers: function() {
+					return use_clienthttp();
+				},
+				return_response_type: true,
+				return_status_code: function(code) {
+					return use_clienthttp() || !Basic.arrayDiff(code, [200, 404]);
+				},
+				select_multiple: true,
+				send_binary_string: true,
+				send_browser_cookies: function() {
+					return !use_clienthttp();
+				},
+				send_custom_headers: function() {
+					return use_clienthttp();
+				},
+				send_multipart: true,
+				slice_blob: true,
+				stream_upload: true,
+				summon_file_dialog: false,
+				upload_filesize: true,
+				use_http_method: function(methods) {
+					return use_clienthttp() || !Basic.arrayDiff(methods, ['GET', 'POST']);
+				}
+			};
+		}()));
 
-						if (control.IsVersionSupported(version)) {
-							isVersionSupported = true;
-						}
 
-						control = null;
-					} catch (e) {
-						var plugin = navigator.plugins["Silverlight Plug-In"];
+		Basic.extend(this, {
 
-						if (plugin) {
-							actualVer = plugin.description;
+			getShim: function() {
+				return Dom.get(this.uid).content.Moxie;
+			},
 
-							if (actualVer === "1.0.30226.2") {
-								actualVer = "2.0.30226.2";
-							}
+			init : function() {
+				var container;
 
-							actualVerArray = actualVer.split(".");
-
-							while (actualVerArray.length > 3) {
-								actualVerArray.pop();
-							}
-
-							while ( actualVerArray.length < 4) {
-								actualVerArray.push(0);
-							}
-
-							reqVerArray = version.split(".");
-
-							while (reqVerArray.length > 4) {
-								reqVerArray.pop();
-							}
-
-							do {
-								requiredVersionPart = parseInt(reqVerArray[index], 10);
-								actualVersionPart = parseInt(actualVerArray[index], 10);
-								index++;
-							} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
-
-							if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
-								isVersionSupported = true;
-							}
-						}
-					}
-				} catch (e2) {
-					isVersionSupported = false;
+				// minimal requirement Flash Player 10
+				if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
+					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					return;
 				}
 
-				return isVersionSupported;
-			}
+				container = this.getShimContainer();
 
-			Runtime.call(this, type, Basic.extend({}, { xap_url: Env.xap_url }, options));
+				container.innerHTML = '<object id="' + this.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
+					'<param name="source" value="' + options.xap_url + '"/>' +
+					'<param name="background" value="Transparent"/>' +
+					'<param name="windowless" value="true"/>' +
+					'<param name="enablehtmlaccess" value="true"/>' +
+					'<param name="initParams" value="uid=' + this.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
+				'</object>';
 
-			Basic.extend(this, {
+				// Init is dispatched by the shim
+				initTimer = setTimeout(function() {
+					if (I && !I.initialized) { // runtime might be already destroyed by this moment
+						I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					}
+				}, Env.OS !== 'Windows'? 10000 : 5000); // give it more time to initialize in non Windows OS (like Mac)
+			},
 
-				getShim: function() {
-					return Dom.get(this.uid).content.Moxie;
-				},
+			destroy: (function(destroy) { // extend default destroy method
+				return function() {
+					destroy.call(I);
+					clearTimeout(initTimer); // initialization check might be still onwait
+					options = initTimer = destroy = I = null;
+				};
+			}(this.destroy))
 
-				init : function() {
-					var container;
+		}, extensions);
 
-					// minimal requirement Flash Player 10
-					if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
-						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-						return;
+		
+		function isInstalled(version) {
+			var isVersionSupported = false, control = null, actualVer,
+				actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
+
+			try {
+				try {
+					control = new ActiveXObject('AgControl.AgControl');
+
+					if (control.IsVersionSupported(version)) {
+						isVersionSupported = true;
 					}
 
-					container = this.getShimContainer();
+					control = null;
+				} catch (e) {
+					var plugin = navigator.plugins["Silverlight Plug-In"];
 
-					container.innerHTML = '<object id="' + this.uid + '" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%" style="outline:none;">' +
-						'<param name="source" value="' + options.xap_url + '"/>' +
-						'<param name="background" value="Transparent"/>' +
-						'<param name="windowless" value="true"/>' +
-						'<param name="enablehtmlaccess" value="true"/>' +
-						'<param name="initParams" value="uid=' + this.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
-					'</object>';
+					if (plugin) {
+						actualVer = plugin.description;
 
-					// Init is dispatched by the shim
-					initTimer = setTimeout(function() {
-						if (I && !I.initialized) { // runtime might be already destroyed by this moment
-							I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+						if (actualVer === "1.0.30226.2") {
+							actualVer = "2.0.30226.2";
 						}
-					}, 5000); // silverlight may take quite some time to initialize
-				},
 
-				destroy: (function(destroy) { // extend default destroy method
-					return function() {
-						destroy.call(I);
-						clearTimeout(initTimer); // initialization check might be still onwait
-						initTimer = destroy = I = null;
-					};
-				}(this.destroy))
+						actualVerArray = actualVer.split(".");
 
-			}, extensions);
-		}
+						while (actualVerArray.length > 3) {
+							actualVerArray.pop();
+						}
 
+						while ( actualVerArray.length < 4) {
+							actualVerArray.push(0);
+						}
 
-		SilverlightRuntime.can = (function() {
-			var use_clienthttp = function() {
-					var rc = this.options.required_caps || {};
-					return  rc.send_custom_headers || 
-						rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
-						rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
-				},
+						reqVerArray = version.split(".");
 
-				caps = Basic.extend({}, Runtime.caps, {
-					access_binary: true,
-					access_image_binary: true,
-					display_media: true,
-					drag_and_drop: false,
-					report_upload_progress: true,
-					resize_image: true,
-					return_response_headers: function() {
-						return use_clienthttp.call(this);
-					},
-					return_response_type: true,
-					return_status_code: function(code) {
-						return use_clienthttp.call(this) || !Basic.arrayDiff(code, [200, 404]);
-					},
-					select_multiple: true,
-					send_binary_string: true,
-					send_browser_cookies: function() {
-						return !use_clienthttp.call(this);
-					},
-					send_custom_headers: function() {
-						return use_clienthttp.call(this);
-					},
-					send_multipart: true,
-					slice_blob: true,
-					stream_upload: true,
-					summon_file_dialog: false,
-					upload_filesize: true,
-					use_http_method: function(methods) {
-						return use_clienthttp.call(this) || !Basic.arrayDiff(methods, ['GET', 'POST']);
+						while (reqVerArray.length > 4) {
+							reqVerArray.pop();
+						}
+
+						do {
+							requiredVersionPart = parseInt(reqVerArray[index], 10);
+							actualVersionPart = parseInt(actualVerArray[index], 10);
+							index++;
+						} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
+
+						if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
+							isVersionSupported = true;
+						}
 					}
-				});
-
-			function can() {
-				var args = [].slice.call(arguments);
-				args.unshift(caps);
-				return Runtime.can.apply(this, args);
+				}
+			} catch (e2) {
+				isVersionSupported = false;
 			}
-			return can;
-		}());
 
-		return SilverlightRuntime;
-	}()));
+			return isVersionSupported;
+		}
+	}
+
+	Runtime.addConstructor(type, SilverlightRuntime); 
 
 	return extensions;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/file/Blob.js
+// Included from: src/javascript/runtime/silverlight/file/Blob.js
 
 /**
  * Blob.js
@@ -9088,7 +9048,7 @@ define("moxie/runtime/silverlight/file/Blob", [
 	return (extensions.Blob = Basic.extend({}, Blob));
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/file/FileInput.js
+// Included from: src/javascript/runtime/silverlight/file/FileInput.js
 
 /**
  * FileInput.js
@@ -9129,7 +9089,7 @@ define("moxie/runtime/silverlight/file/FileInput", [
 	return (extensions.FileInput = FileInput);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/file/FileDrop.js
+// Included from: src/javascript/runtime/silverlight/file/FileDrop.js
 
 /**
  * FileDrop.js
@@ -9188,7 +9148,7 @@ define("moxie/runtime/silverlight/file/FileDrop", [
 	return (extensions.FileDrop = FileDrop);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/file/FileReader.js
+// Included from: src/javascript/runtime/silverlight/file/FileReader.js
 
 /**
  * FileReader.js
@@ -9215,7 +9175,7 @@ define("moxie/runtime/silverlight/file/FileReader", [
 	return (extensions.FileReader = Basic.extend({}, FileReader));
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/xhr/XMLHttpRequest.js
+// Included from: src/javascript/runtime/silverlight/xhr/XMLHttpRequest.js
 
 /**
  * XMLHttpRequest.js
@@ -9242,7 +9202,7 @@ define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
 	return (extensions.XMLHttpRequest = Basic.extend({}, XMLHttpRequest));
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/file/FileReaderSync.js
+// Included from: src/javascript/runtime/silverlight/file/FileReaderSync.js
 
 /**
  * FileReaderSync.js
@@ -9269,7 +9229,7 @@ define("moxie/runtime/silverlight/file/FileReaderSync", [
 	return (extensions.FileReaderSync = Basic.extend({}, FileReaderSync));
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/runtime/Transporter.js
+// Included from: src/javascript/runtime/silverlight/runtime/Transporter.js
 
 /**
  * Transporter.js
@@ -9296,7 +9256,7 @@ define("moxie/runtime/silverlight/runtime/Transporter", [
 	return (extensions.Transporter = Basic.extend({}, Transporter));
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/silverlight/image/Image.js
+// Included from: src/javascript/runtime/silverlight/image/Image.js
 
 /**
  * Image.js
@@ -9323,7 +9283,7 @@ define("moxie/runtime/silverlight/image/Image", [
 	return (extensions.Image = Basic.extend({}, Image));
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html4/Runtime.js
+// Included from: src/javascript/runtime/html4/Runtime.js
 
 /**
  * Runtime.js
@@ -9353,129 +9313,115 @@ define("moxie/runtime/html4/Runtime", [
 	
 	var type = 'html4', extensions = {};
 
-	Runtime.addConstructor(type, (function() {
-		
-		function Html4Runtime(options) {
-			var I = this, shim;
+	function Html4Runtime(options) {
+		var I = this, shim;
 
-			Runtime.call(this, type, Basic.extend({}, options));
-
-			Basic.extend(this, {
-
-				init : function() {
-					if (!Env.can('use_fileinput')) { // minimal requirement
-						this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-						return;
-					}
-					this.trigger("Init");
-				},
-
-				getShim: function() {
-					return shim;
-				},
-
-				shimExec: function(component, action) {
-					var args = [].slice.call(arguments, 2);
-					return I.getShim().exec.call(this, this.uid, component, action, args);
-				},
-
-				destroy: (function(destroy) { // extend default destroy method
-					return function() {
-						if (shim) {
-							shim.removeAllInstances(I);
-						}
-						destroy.call(I);
-						destroy = shim = I = null;
-					};
-				}(this.destroy))
-			});
-
-			shim = Basic.extend((function() {
-				var objpool = {};
-
-				return {
-					exec: function(uid, comp, fn, args) {
-						if (shim[comp]) {
-							if (!objpool[uid]) {
-								objpool[uid] = {
-									context: this,
-									instance: new shim[comp]()
-								}
-							}
-
-							if (objpool[uid].instance[fn]) {
-								return objpool[uid].instance[fn].apply(this, args);
-							}
-						}
-					},
-
-					removeInstance: function(uid) {
-						delete objpool[uid];
-					},
-
-					removeAllInstances: function() {
-						var self = this;
-						
-						Basic.each(objpool, function(obj, uid) {
-							if (Basic.typeOf(obj.instance.destroy) === 'function') {
-								obj.instance.destroy.call(obj.context);
-							}
-							self.removeInstance(uid);
-						});
-					}
-				};
-			}()), extensions);
-		}
-
-		Html4Runtime.can = (function() {
-			var caps = Basic.extend({}, Runtime.caps, {
-					access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
-					access_image_binary: false,
-					display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
-					drag_and_drop: false,
-					resize_image: function() {
-						return extensions.Image && can('access_binary') && Env.can('create_canvas');
-					},
-					report_upload_progress: false,
-					return_response_headers: false,
-					return_response_type: function(responseType) {
-						return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
-					},
-					return_status_code: function(code) {
-						return !Basic.arrayDiff(code, [200, 404]);
-					},
-					select_multiple: false,
-					send_binary_string: false,
-					send_custom_headers: false,
-					send_multipart: true,
-					slice_blob: false,
-					stream_upload: true,
-					summon_file_dialog: (function() { // yeah... some dirty sniffing here...
-						return  (Env.browser === 'Firefox' && Env.version >= 4)	||
-								(Env.browser === 'Opera' && Env.version >= 12)	||
-								!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
-					}()),
-					upload_filesize: true,
-					use_http_method: function(methods) {
-						return !Basic.arrayDiff(methods, ['GET', 'POST']);
-					}
-				});
-
-			function can() {
-				var args = [].slice.call(arguments);
-				args.unshift(caps);
-				return Runtime.can.apply(this, args);
+		Runtime.call(this, type, options, {
+			access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
+			access_image_binary: false,
+			display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+			drag_and_drop: false,
+			resize_image: function() {
+				return extensions.Image && can('access_binary') && Env.can('create_canvas');
+			},
+			report_upload_progress: false,
+			return_response_headers: false,
+			return_response_type: function(responseType) {
+				return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
+			},
+			return_status_code: function(code) {
+				return !Basic.arrayDiff(code, [200, 404]);
+			},
+			select_multiple: false,
+			send_binary_string: false,
+			send_custom_headers: false,
+			send_multipart: true,
+			slice_blob: false,
+			stream_upload: true,
+			summon_file_dialog: (function() { // yeah... some dirty sniffing here...
+				return  (Env.browser === 'Firefox' && Env.version >= 4)	||
+						(Env.browser === 'Opera' && Env.version >= 12)	||
+						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
+			}()),
+			upload_filesize: true,
+			use_http_method: function(methods) {
+				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
-			return can;
-		}());
+		});
 
-		return Html4Runtime;
-	}()));
+		Basic.extend(this, {
+
+			init : function() {
+				if (!Env.can('use_fileinput')) { // minimal requirement
+					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					return;
+				}
+				this.trigger("Init");
+			},
+
+			getShim: function() {
+				return shim;
+			},
+
+			shimExec: function(component, action) {
+				var args = [].slice.call(arguments, 2);
+				return I.getShim().exec.call(this, this.uid, component, action, args);
+			},
+
+			destroy: (function(destroy) { // extend default destroy method
+				return function() {
+					if (shim) {
+						shim.removeAllInstances(I);
+					}
+					destroy.call(I);
+					destroy = shim = I = null;
+				};
+			}(this.destroy))
+		});
+
+		shim = Basic.extend((function() {
+			var objpool = {};
+
+			return {
+				exec: function(uid, comp, fn, args) {
+					if (shim[comp]) {
+						if (!objpool[uid]) {
+							objpool[uid] = {
+								context: this,
+								instance: new shim[comp]()
+							}
+						}
+
+						if (objpool[uid].instance[fn]) {
+							return objpool[uid].instance[fn].apply(this, args);
+						}
+					}
+				},
+
+				removeInstance: function(uid) {
+					delete objpool[uid];
+				},
+
+				removeAllInstances: function() {
+					var self = this;
+					
+					Basic.each(objpool, function(obj, uid) {
+						if (Basic.typeOf(obj.instance.destroy) === 'function') {
+							obj.instance.destroy.call(obj.context);
+						}
+						self.removeInstance(uid);
+					});
+				}
+			};
+		}()), extensions);
+	}
+
+	Runtime.addConstructor(type, Html4Runtime);
 
 	return extensions;
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html4/file/FileInput.js
+// Included from: src/javascript/runtime/html4/file/FileInput.js
 
 /**
  * FileInput.js
@@ -9693,7 +9639,7 @@ define("moxie/runtime/html4/file/FileInput", [
 	return (extensions.FileInput = FileInput);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html4/file/FileReader.js
+// Included from: src/javascript/runtime/html4/file/FileReader.js
 
 /**
  * FileReader.js
@@ -9719,7 +9665,7 @@ define("moxie/runtime/html4/file/FileReader", [
 	return (extensions.FileReader = FileReader);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html4/xhr/XMLHttpRequest.js
+// Included from: src/javascript/runtime/html4/xhr/XMLHttpRequest.js
 
 /**
  * XMLHttpRequest.js
@@ -9956,7 +9902,7 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 	return (extensions.XMLHttpRequest = XMLHttpRequest);
 });
 
-// Included from: /Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/src/javascript/runtime/html4/image/Image.js
+// Included from: src/javascript/runtime/html4/image/Image.js
 
 /**
  * Image.js
