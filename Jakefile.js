@@ -50,7 +50,8 @@ task("mkjs", [], function () {
 		verbose: true,
 		outputSource: targetDir + "/moxie.js",
 		outputMinified: targetDir + "/moxie.min.js",
-		outputDev: targetDir + "/moxie.dev.js"
+		outputDev: targetDir + "/moxie.dev.js",
+		outputCoverage: targetDir + "/moxie.cov.js"
 	};
 
 	var modules = [].slice.call(arguments);
@@ -70,6 +71,7 @@ task("mkjs", [], function () {
 	amdlc.compileMinified(modules, options);
 	amdlc.compileSource(modules, options);
 	amdlc.compileDevelopment(modules, options);
+	amdlc.compileCoverage(modules, options);
 
 	var releaseInfo = tools.getReleaseInfo("./changelog.txt");
 	tools.addReleaseDetailsTo(targetDir, releaseInfo);
@@ -82,31 +84,6 @@ task("mkjs", [], function () {
 		});
 	}
 });
-
-desc("Compile for coverage test");
-task("mkcov", ["mkjs"], function() {
-	var baseDir = "src/javascript", targetDir = "tmp/coverage";
-	var exec = require("child_process").exec;
-
-	// start fresh
-	if (fs.existsSync(targetDir)) {
-		jake.rmRf(targetDir);
-	}
-
-	exec("coverjs -r " + baseDir + " --output " + targetDir, function(error, stdout, stderr) {
-		if (error) {
-			console.log(stderr);
-			complete();
-		}
-
-		var devScript = "";
-		if (fs.existsSync("bin/js/moxie.dev.js")) {
-			devScript = fs.readFileSync("bin/js/moxie.dev.js").toString();
-			devScript = devScript.replace(/moxie\.dev\.js/g, "moxie.cov.js").replace(/\.\.\/\.\.\/src\//g, '');
-			fs.writeFileSync(targetDir + "/moxie.cov.js", devScript);
-		}
-	});
-}, true);
 
 
 desc("Compile SWF");
