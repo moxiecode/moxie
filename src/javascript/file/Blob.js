@@ -53,6 +53,8 @@ define('moxie/file/Blob', [
 
 		if (!blob) {
 			blob = {};
+		} else if (Basic.typeOf(blob) === 'string') { // dataUrl or binary string
+			blob = { data: blob };
 		}
 
 		Basic.extend(this, {
