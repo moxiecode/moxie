@@ -55,7 +55,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 		rt.bind('RuntimeInit', function(e, runtimeObj) {
 			start();
-
+			ok(true, "RuntimeInit fired.");
 			equal(runtimeObj.type, runtime, runtime + " initialized.");
 
 			runtimeObj.getShimContainer(); // force html structure
@@ -72,7 +72,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 		rt.bind('RuntimeError', function() {
 			start();
-			ok(false, "Something wrong.");
+			ok(false, "Runtime cannot be initialized.");
 		});
 
 		stop();
@@ -94,7 +94,7 @@ test('Fallback to the next runtime in the list due to required capability', func
 
 	rt.bind('RuntimeError', function() {
 		start();
-		ok(false, "Something wrong.");
+		ok(false, "Runtime cannot be initialized.");
 	});
 
 	stop();
@@ -106,7 +106,28 @@ test('Fallback to the next runtime in the list due to required capability', func
 	}));
 });
 
+test('Check what happens if capability cannot be fulfilled', function() {
+	var rt = new o.RuntimeTarget();
 
+	rt.bind('RuntimeInit', function(e, runtimeObj) {
+		start();
+		ok(false, "Unexpected result.");
+	});
+
+	rt.bind('RuntimeError', function() {
+		start();
+		ok(true, "RuntimeError fired.");
+		ok(true, "Runtime cannot be initialized.");
+	});
+
+	stop();
+	rt.connectRuntime(o.extend({}, this.runtimeOptions,  {
+		required_caps: {
+			required_capability: true
+		},
+		runtime_order: "html5,flash,silverlight,html4"
+	}));
+});
 
 </script>
 </head>
