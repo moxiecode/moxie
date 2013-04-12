@@ -54,7 +54,7 @@ define('moxie/runtime/Runtime', [
 			// Runtime can provide access to raw binary data of the file
 			access_binary: false,
 			// ... provide access to raw binary data of the image (image extension is optional) 
-			access_image_binary: false 
+			access_image_binary: false,
 			// ... display binary data as thumbs for example
 			display_media: false,
 			// ... accept files dragged and dropped from the desktop
