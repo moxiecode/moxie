@@ -40,10 +40,6 @@ define("moxie/runtime/html5/image/Image", [
 				, asBinary = arguments.length > 1 ? arguments[1] : true
 				;
 
-				if (Basic.typeOf(asBinary) === 'undefined') {
-					asBinary = true;
-				}
-
 				if (!I.can('access_binary')) {
 					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 				}
@@ -121,24 +117,11 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			getAsBlob: function(type, quality) {
-				var blob, I = this.getRuntime();
-
 				if (type !== this.type) {
 					// if different mime type requested prepare image for conversion
 					_resize.call(this, this.width, this.height, false);
 				}
-
-				if (!_modified && !!~Basic.inArray(Basic.typeOf(_srcBlob), ['blob', 'file'])) {
-					blob = new Blob(I.uid, _srcBlob);
-				} else {
-					var data = me.getAsBinaryString.call(this, type, quality);
-					blob = new Blob(null, { // standalone blob
-						type: type,
-						size: data.length
-					});
-					blob.detach(data);
-				}
-				return blob;
+				return new Blob(null, me.getAsDataURL.call(this, type, quality));
 			},
 
 			getAsDataURL: function(type) {
