@@ -1725,24 +1725,48 @@ define('moxie/runtime/Runtime', [
 		@type Object
 		*/
 		caps = Basic.extend({
-			access_binary: true,
+			// Runtime can provide access to raw binary data of the file
+			access_binary: false,
+			// ... provide access to raw binary data of the image (image extension is optional) 
+			access_image_binary: false,
+			// ... display binary data as thumbs for example
 			display_media: false,
+			// ... accept files dragged and dropped from the desktop
 			drag_and_drop: false,
+			// ... resize image (and manipulate it raw data of any file in general)
 			resize_image: false,
+			// ... periodically report how many bytes of total in the file were uploaded (loaded)
 			report_upload_progress: false,
+			// ... provide access to the headers of http response 
 			return_response_headers: true,
+			// ... support response of specific type, which should be passed as an argument
+			// e.g. runtime.can('return_response_type', 'blob')
 			return_response_type: false,
+			// ... return http status code of the response
 			return_status_code: true,
+			// ... send custom http header with the request
 			send_custom_headers: false,
+			// ... select whole folder in file browse dialog
 			select_folder: false,
+			// ... select multiple files at once in file browse dialog
 			select_multiple: true,
+			// ... send raw binary data, that is generated after image resizing or manipulation of other kind
 			send_binary_string: false,
+			// ... send cookies with http request and therefore retain session
 			send_browser_cookies: true,
+			// ... send data formatted as multipart/form-data
 			send_multipart: true,
+			// ... slice the file or blob to smaller parts
 			slice_blob: false,
+			// ... upload file without preloading it to memory, stream it out directly from disk
 			stream_upload: false,
+			// ... programmatically trigger file browse dialog
 			summon_file_dialog: false,
+			// ... upload file of specific size, size should be passed as argument
+			// e.g. runtime.can('upload_filesize', '500mb')
 			upload_filesize: true,
+			// ... initiate http request with specific http method, method should be passed as argument
+			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
 
@@ -2190,6 +2214,8 @@ define('moxie/file/Blob', [
 
 		if (!blob) {
 			blob = {};
+		} else if (Basic.typeOf(blob) === 'string') { // dataUrl or binary string
+			blob = { data: blob };
 		}
 
 		Basic.extend(this, {
@@ -7774,10 +7800,6 @@ define("moxie/runtime/html5/image/Image", [
 				, asBinary = arguments.length > 1 ? arguments[1] : true
 				;
 
-				if (Basic.typeOf(asBinary) === 'undefined') {
-					asBinary = true;
-				}
-
 				if (!I.can('access_binary')) {
 					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 				}
@@ -7855,24 +7877,11 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			getAsBlob: function(type, quality) {
-				var blob, I = this.getRuntime();
-
 				if (type !== this.type) {
 					// if different mime type requested prepare image for conversion
 					_resize.call(this, this.width, this.height, false);
 				}
-
-				if (!_modified && !!~Basic.inArray(Basic.typeOf(_srcBlob), ['blob', 'file'])) {
-					blob = new Blob(I.uid, _srcBlob);
-				} else {
-					var data = me.getAsBinaryString.call(this, type, quality);
-					blob = new Blob(null, { // standalone blob
-						type: type,
-						size: data.length
-					});
-					blob.detach(data);
-				}
-				return blob;
+				return new Blob(null, me.getAsDataURL.call(this, type, quality));
 			},
 
 			getAsDataURL: function(type) {
