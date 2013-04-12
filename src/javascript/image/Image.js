@@ -295,10 +295,8 @@ define("moxie/image/Image", [
 			@return {String} Image as binary string
 			*/
 			getAsBinaryString: function(type, quality) {
-				var blob, frs;
-				blob = this.getAsBlob(type, quality);
-				frs = new FileReaderSync();
-				return frs.readAsBinaryString(blob);
+				var dataUrl = this.getAsDataURL(type, quality);
+				return Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
 			},
 
 			/**
