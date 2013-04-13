@@ -38,7 +38,7 @@ define("moxie/runtime/silverlight/Runtime", [
 
 		options = Basic.extend({ xap_url: Env.xap_url }, options);
 
-		Runtime.call(this, type, options, (function() {			
+		Runtime.call(this, options, type, (function() {			
 			function use_clienthttp() {
 				var rc = options.required_caps || {};
 				return  rc.send_custom_headers || 
@@ -84,6 +84,11 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			getShim: function() {
 				return Dom.get(this.uid).content.Moxie;
+			},
+
+			shimExec: function(component, action) {
+				var args = [].slice.call(arguments, 2);
+				return I.getShim().exec(this.uid, component, action, args);
 			},
 
 			init : function() {

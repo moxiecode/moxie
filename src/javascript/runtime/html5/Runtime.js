@@ -29,7 +29,7 @@ define("moxie/runtime/html5/Runtime", [
 	function Html5Runtime(options) {
 		var I = this, shim;
 
-		Runtime.call(this, type, options, {
+		Runtime.call(this, options, (arguments[1] || type), arguments[2] || {
 			access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
 			access_image_binary: function() {
 				return I.can('access_binary') && !!extensions.Image;
@@ -85,15 +85,6 @@ define("moxie/runtime/html5/Runtime", [
 				this.trigger("Init");
 			},
 
-			getShim: function() {
-				return shim;
-			},
-
-			shimExec: function(component, action) {
-				var args = [].slice.call(arguments, 2);
-				return I.getShim().exec.call(this, this.uid, component, action, args);
-			},
-
 			destroy: (function(destroy) { // extend default destroy method
 				return function() {
 					if (shim) {
@@ -103,44 +94,9 @@ define("moxie/runtime/html5/Runtime", [
 					destroy = shim = I = null;
 				};
 			}(this.destroy))
-
 		});
 
-		shim = Basic.extend((function() {
-			var objpool = {};
-
-			return {
-				exec: function(uid, comp, fn, args) {
-					if (shim[comp]) {
-						if (!objpool[uid]) {
-							objpool[uid] = {
-								context: this,
-								instance: new shim[comp]()
-							}
-						}
-
-						if (objpool[uid].instance[fn]) {
-							return objpool[uid].instance[fn].apply(this, args);
-						}
-					}
-				},
-
-				removeInstance: function(uid) {
-					delete objpool[uid];
-				},
-
-				removeAllInstances: function() {
-					var self = this;
-					
-					Basic.each(objpool, function(obj, uid) {
-						if (Basic.typeOf(obj.instance.destroy) === 'function') {
-							obj.instance.destroy.call(obj.context);
-						}
-						self.removeInstance(uid);
-					});
-				}
-			};
-		}()), extensions);
+		Basic.extend(this.getShim(), extensions);
 	}
 
 	Runtime.addConstructor(type, Html5Runtime);

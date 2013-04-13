@@ -20,9 +20,10 @@ Defines constructor for Flash runtime.
 define("moxie/runtime/flash/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Env",
+	"moxie/core/utils/Dom",
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime"
-], function(Basic, Env, x, Runtime) {
+], function(Basic, Env, Dom, x, Runtime) {
 	
 	var type = 'flash', extensions = {};
 
@@ -37,7 +38,7 @@ define("moxie/runtime/flash/Runtime", [
 
 		options = Basic.extend({ swf_url: Env.swf_url }, options);
 
-		Runtime.call(this, type, options, (function() {
+		Runtime.call(this, options, type, (function() {
 			function use_urlstream() {
 				var rc = options.required_features || {};
 				return rc.access_binary || rc.send_custom_headers || rc.send_browser_cookies;
@@ -81,6 +82,15 @@ define("moxie/runtime/flash/Runtime", [
 		}()));
 
 		Basic.extend(this, {
+
+			getShim: function() {
+				return Dom.get(this.uid);
+			},
+
+			shimExec: function(component, action) {
+				var args = [].slice.call(arguments, 2);
+				return I.getShim().exec(this.uid, component, action, args);
+			},
 
 			init: function() {
 				var html, el, container;

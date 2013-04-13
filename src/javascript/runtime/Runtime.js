@@ -23,7 +23,7 @@ define('moxie/runtime/Runtime', [
 
 	@class Runtime
 	*/
-	function Runtime(type, options, caps) {
+	function Runtime(options, type, caps) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Results in RuntimeInit on a connected component.
@@ -38,7 +38,7 @@ define('moxie/runtime/Runtime', [
 		@event Error
 		*/
 
-		var self = this, uid = Basic.guid(type + '_');
+		var self = this, shim, uid = Basic.guid(type + '_');
 
 		// register runtime in private hash
 		runtimes[uid] = this;
@@ -95,6 +95,44 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
+
+		
+		// small extension factory here (is meant to be extended with actual extensions constructors)
+		shim = (function() {
+			var objpool = {};
+
+			return {
+				exec: function(uid, comp, fn, args) {
+					if (shim[comp]) {
+						if (!objpool[uid]) {
+							objpool[uid] = {
+								context: this,
+								instance: new shim[comp]()
+							}
+						}
+
+						if (objpool[uid].instance[fn]) {
+							return objpool[uid].instance[fn].apply(this, args);
+						}
+					}
+				},
+
+				removeInstance: function(uid) {
+					delete objpool[uid];
+				},
+
+				removeAllInstances: function() {
+					var self = this;
+					
+					Basic.each(objpool, function(obj, uid) {
+						if (Basic.typeOf(obj.instance.destroy) === 'function') {
+							obj.instance.destroy.call(obj.context);
+						}
+						self.removeInstance(uid);
+					});
+				}
+			};
+		}());
 
 
 		// public methods
@@ -187,6 +225,14 @@ define('moxie/runtime/Runtime', [
 				return caps[cap] || false;
 			},
 
+			setCap: function(cap, value) {
+				if (Basic.typeOf(cap) === 'object') {
+					caps = Basic.extend(caps, cap);
+				} else if (Basic.typeOf(value) !== 'undefined') {
+					caps[cap] = value;
+				}
+			},
+
 			/**
 			Returns container for the runtime as DOM element
 
@@ -228,7 +274,20 @@ define('moxie/runtime/Runtime', [
 			@return {DOMElement}
 			*/
 			getShim: function() {
-				return Dom.get(this.uid);
+				return shim;
+			},
+
+			/**
+			Invokes a method within the runtime itself (might differ across the runtimes)
+
+			@method shimExec
+			@param {Mixed} []
+			@protected
+			@return {Mixed} Depends on the action and component
+			*/
+			shimExec: function(component, action) {
+				var args = [].slice.call(arguments, 2);
+				return self.getShim().exec.call(this, this.uid, component, action, args);
 			},
 
 			/**
@@ -247,19 +306,6 @@ define('moxie/runtime/Runtime', [
 					return self[component][action].apply(this, args);
 				}
 				return self.shimExec.apply(this, arguments);
-			},
-
-			/**
-			Invokes a method within the runtime itself (might differ across the runtimes)
-
-			@method shimExec
-			@param {Mixed} []
-			@protected
-			@return {Mixed} Depends on the action and component
-			*/
-			shimExec: function(component, action) {
-				var args = [].slice.call(arguments, 2);
-				return self.getShim().exec(this.uid, component, action, args);
 			},
 
 			/**
