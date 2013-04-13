@@ -91,8 +91,8 @@ define("moxie/runtime/html5/image/Image", [
 				}
 
 				info = {
-					width: _img && _img.width || 0,
-					height: _img && _img.height || 0,
+					width: _getImg().width || 0,
+					height: _getImg().height || 0,
 					type: _srcBlob.type || Mime.getFileMime(_srcBlob.name),
 					size: _binStr && _binStr.length || _srcBlob.size || 0,
 					name: _srcBlob.name || '',
@@ -103,9 +103,6 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			resize: function() {
-				if (!_img) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-				}
 				_resize.apply(this, arguments);
 			},
 
@@ -204,6 +201,14 @@ define("moxie/runtime/html5/image/Image", [
 		});
 
 
+		function _getImg() {
+			if (!_canvas && !_img) {
+				throw new x.ImageError(x.DOMException.INVALID_STATE_ERR);
+			}
+			return _canvas || _img;
+		}
+
+
 		function _convertToBinary(dataUrl) {
 			return Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
 		}
@@ -272,7 +277,7 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 		function _resize(width, height, crop, preserveHeaders) {
-			var self = this, ctx, scale, mathFn, x, y, imgWidth, imgHeight, orientation;
+			var self = this, ctx, scale, mathFn, x, y, img, imgWidth, imgHeight, orientation;
 
 			_preserveHeaders = preserveHeaders; // we will need to check this on export
 
@@ -286,9 +291,11 @@ define("moxie/runtime/html5/image/Image", [
 				height = mem;
 			}
 
+			img = _getImg();
+
 			// unify dimensions
 			mathFn = !crop ? Math.min : Math.max;
-			scale = mathFn(width/_img.width, height/_img.height);
+			scale = mathFn(width/img.width, height/img.height);
 		
 			// we only downsize here
 			if (scale > 1 && (!crop || preserveHeaders)) { // when cropping one of dimensions may still exceed max, so process it anyway
@@ -296,8 +303,8 @@ define("moxie/runtime/html5/image/Image", [
 				return;
 			}
 
-			imgWidth = Math.round(_img.width * scale);
-			imgHeight = Math.round(_img.height * scale);
+			imgWidth = Math.round(img.width * scale);
+			imgHeight = Math.round(img.height * scale);
 
 			// prepare canvas if necessary
 			if (!_canvas) {
@@ -323,19 +330,13 @@ define("moxie/runtime/html5/image/Image", [
 				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
 			}
 
-			_drawToCanvas.call(this, _img, _canvas, -x, -y, imgWidth, imgHeight);
+			_drawToCanvas.call(this, img, _canvas, -x, -y, imgWidth, imgHeight);
 
 			this.width = _canvas.width;
 			this.height = _canvas.height;
 
 			_modified = true;
-
-			// update internal image reference
-			_img = new Image();
-			_img.onload = function() {
-				self.trigger('Resize');
-			};
-			_img.src = me.getAsDataURL.call(this);
+			self.trigger('Resize');
 		}
 
 

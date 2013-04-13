@@ -12,19 +12,19 @@
 /*global define:true */
 
 define("moxie/image/Image", [
-		"moxie/core/utils/Basic",
-		"moxie/core/utils/Dom",
-		"moxie/core/Exceptions",
-		"moxie/file/FileReaderSync",
-		"moxie/xhr/XMLHttpRequest",
-		"moxie/runtime/RuntimeClient",
-		"moxie/runtime/Transporter",
-		"moxie/core/utils/Env",
-		"moxie/core/EventTarget",
-		"moxie/file/Blob",
-		"moxie/file/File",
-		"moxie/core/utils/Encode",
-		"moxie/core/JSON"
+	"moxie/core/utils/Basic",
+	"moxie/core/utils/Dom",
+	"moxie/core/Exceptions",
+	"moxie/file/FileReaderSync",
+	"moxie/xhr/XMLHttpRequest",
+	"moxie/runtime/RuntimeClient",
+	"moxie/runtime/Transporter",
+	"moxie/core/utils/Env",
+	"moxie/core/EventTarget",
+	"moxie/file/Blob",
+	"moxie/file/File",
+	"moxie/core/utils/Encode",
+	"moxie/core/JSON"
 ], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode, parseJSON) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
