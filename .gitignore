@@ -6,6 +6,7 @@ jslint.xml
 docs
 jscoverage
 *~
+*.cov.js
 *.diff
 *.patch
 *.suo
@@ -15,3 +16,4 @@ jscoverage
 *.sublime-*
 .DS_Store
 node_modules
+

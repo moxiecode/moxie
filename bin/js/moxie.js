@@ -5359,7 +5359,7 @@ define("moxie/image/Image", [
 					imgCopy.resize(width, height, crop, false);
 				});
 
-				imgCopy.clone(this);
+				imgCopy.clone(this, false);
 
 				return imgCopy;
 			},
