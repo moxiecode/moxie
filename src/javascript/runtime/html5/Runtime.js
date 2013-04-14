@@ -27,7 +27,7 @@ define("moxie/runtime/html5/Runtime", [
 	var type = "html5", extensions = {};
 	
 	function Html5Runtime(options) {
-		var I = this, shim;
+		var I = this;
 
 		Runtime.call(this, options, (arguments[1] || type), arguments[2] || {
 			access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
@@ -87,11 +87,8 @@ define("moxie/runtime/html5/Runtime", [
 
 			destroy: (function(destroy) { // extend default destroy method
 				return function() {
-					if (shim) {
-						shim.removeAllInstances(I);
-					}
 					destroy.call(I);
-					destroy = shim = I = null;
+					destroy = I = null;
 				};
 			}(this.destroy))
 		});

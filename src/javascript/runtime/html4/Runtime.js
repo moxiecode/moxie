@@ -27,7 +27,7 @@ define("moxie/runtime/html4/Runtime", [
 	var type = 'html4', extensions = {};
 
 	function Html4Runtime(options) {
-		var I = this, shim;
+		var I = this;
 
 		Runtime.call(this, options, type, {
 			access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
@@ -74,11 +74,8 @@ define("moxie/runtime/html4/Runtime", [
 
 			destroy: (function(destroy) { // extend default destroy method
 				return function() {
-					if (shim) {
-						shim.removeAllInstances(I);
-					}
 					destroy.call(I);
-					destroy = shim = I = null;
+					destroy = I = null;
 				};
 			}(this.destroy))
 		});

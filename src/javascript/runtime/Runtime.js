@@ -317,12 +317,15 @@ define('moxie/runtime/Runtime', [
 				var shimContainer = this.getShimContainer();
 				if (shimContainer) {
 					shimContainer.parentNode.removeChild(shimContainer);
-					shimContainer = null;
+				}
+
+				if (shim) {
+					shim.removeAllInstances();
 				}
 
 				this.unbindAll();
 				delete runtimes[this.uid];
-				uid = self = null;
+				uid = self = shim = shimContainer = null;
 			}
 		});
 	}
