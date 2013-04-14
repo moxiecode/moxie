@@ -142,6 +142,8 @@ define("moxie/runtime/html4/file/FileInput", [
 			_uid = uid;
 
 			shimContainer = currForm = browseButton = null;
+
+			comp.trigger('ready');
 		}
 
 		Basic.extend(this, {

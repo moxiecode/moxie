@@ -21,7 +21,6 @@ define("moxie/runtime/silverlight/file/FileInput", [
 	
 	var FileInput = {
 		init: function(options) {
-			var self = this.getRuntime();
 
 			function toFilters(accept) {
 				var filter = '';
@@ -30,7 +29,9 @@ define("moxie/runtime/silverlight/file/FileInput", [
 				}
 				return filter;
 			}
-			return self.shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
+			
+			this.getRuntime().shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
+			this.trigger('ready');
 		}
 	};
 

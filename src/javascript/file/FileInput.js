@@ -207,6 +207,10 @@ define('moxie/file/FileInput', [
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
 
+					self.bind("Ready", function() {
+						self.trigger("Refresh");
+					}, 999);
+
 					self.bind("Change", function() {
 						var files = runtime.exec.call(self, 'FileInput', 'getFiles');
 
@@ -217,31 +221,31 @@ define('moxie/file/FileInput', [
 							self.files.push(new File(self.ruid, file));
 						});
 					}, 999);
-					
-					runtime.exec.call(self, 'FileInput', 'init', options);
 
 					// re-position and resize shim container
 					self.bind('Refresh', function() {
-						var pos, size, browseButton;
+						var pos, size, browseButton, shimContainer;
 						
 						browseButton = Dom.get(options.browse_button);
+						shimContainer = Dom.get(runtime.shimid); // do not use runtime.getShimContainer(), since it will create container if it doesn't exist
 
 						if (browseButton) {
 							pos = Dom.getPos(browseButton, Dom.get(options.container));
 							size = Dom.getSize(browseButton);
 
-							Basic.extend(runtime.getShimContainer().style, {
-								top     : pos.y + 'px',
-								left    : pos.x + 'px',
-								width   : size.w + 'px',
-								height  : size.h + 'px'
-							});
-							browseButton = null;
+							if (shimContainer) {
+								Basic.extend(shimContainer.style, {
+									top     : pos.y + 'px',
+									left    : pos.x + 'px',
+									width   : size.w + 'px',
+									height  : size.h + 'px'
+								});
+							}
 						}
+						shimContainer = browseButton = null;
 					});
-
-					self.trigger('Refresh');
-					self.dispatchEvent('ready');
+					
+					runtime.exec.call(self, 'FileInput', 'init', options);
 				});
 
 				// runtime needs: options.required_features, options.runtime_order and options.container

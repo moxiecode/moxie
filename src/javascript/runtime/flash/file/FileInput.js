@@ -21,11 +21,12 @@ define("moxie/runtime/flash/file/FileInput", [
 	
 	var FileInput = {		
 		init: function(options) {
-			return this.getRuntime().shimExec.call(this, 'FileInput', 'init', {
+			this.getRuntime().shimExec.call(this, 'FileInput', 'init', {
 				name: options.name,
 				accept: options.accept,
 				multiple: options.multiple
 			});
+			this.trigger('ready');
 		}
 	};
 

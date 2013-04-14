@@ -118,6 +118,8 @@ define("moxie/runtime/html5/file/FileInput", [
 					this.value = '';
 					comp.trigger('change');
 				};
+
+				comp.trigger('ready');
 			},
 
 			getFiles: function() {
