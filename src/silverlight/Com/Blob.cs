@@ -99,7 +99,7 @@ namespace Moxiecode.Com
 			_uid = Utils.guid("uid_");
 		}
 
-		Dictionary<string, object> slice(object start, object end, object type)
+		public Dictionary<string, object> slice(object start, object end, object type)
 		{
 			Blob blob = _slice(Convert.ToInt32(start), Convert.ToInt32(end), (string)type);
 			Moxie.compFactory.add(blob.uid, blob);
