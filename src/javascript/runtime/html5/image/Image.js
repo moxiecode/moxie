@@ -251,7 +251,7 @@ define("moxie/runtime/html5/image/Image", [
 
 			// use FileReader if it's available
 			if (window.FileReader) {
-				if (FileReader.readAsBinaryString) {
+				if (FileReader.prototype.readAsBinaryString) { // readAsBinaryString is depricated in general and already dropped in IE10
 					fr = new FileReader();
 					fr.onload = function() {
 						callback(this.result);
