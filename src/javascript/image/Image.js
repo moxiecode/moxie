@@ -203,10 +203,13 @@ define("moxie/image/Image", [
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 
+				if (!width && !height || Basic.typeOf(crop) === 'undefined') {
+					crop = false;
+				} 
+
 				width = width || this.width;
 				height = height || this.height;
 
-				crop = (Basic.typeOf(crop) === 'undefined' ? false : !!crop);
 				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
 				this.getRuntime().exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
