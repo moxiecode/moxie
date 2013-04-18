@@ -1697,7 +1697,7 @@ define('moxie/runtime/Runtime', [
 
 	@class Runtime
 	*/
-	function Runtime(type, options, caps) {
+	function Runtime(options, type, caps) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Results in RuntimeInit on a connected component.
@@ -1712,7 +1712,7 @@ define('moxie/runtime/Runtime', [
 		@event Error
 		*/
 
-		var self = this, uid = Basic.guid(type + '_');
+		var self = this, shim, uid = Basic.guid(type + '_');
 
 		// register runtime in private hash
 		runtimes[uid] = this;
@@ -1769,6 +1769,44 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
+
+		
+		// small extension factory here (is meant to be extended with actual extensions constructors)
+		shim = (function() {
+			var objpool = {};
+
+			return {
+				exec: function(uid, comp, fn, args) {
+					if (shim[comp]) {
+						if (!objpool[uid]) {
+							objpool[uid] = {
+								context: this,
+								instance: new shim[comp]()
+							}
+						}
+
+						if (objpool[uid].instance[fn]) {
+							return objpool[uid].instance[fn].apply(this, args);
+						}
+					}
+				},
+
+				removeInstance: function(uid) {
+					delete objpool[uid];
+				},
+
+				removeAllInstances: function() {
+					var self = this;
+					
+					Basic.each(objpool, function(obj, uid) {
+						if (Basic.typeOf(obj.instance.destroy) === 'function') {
+							obj.instance.destroy.call(obj.context);
+						}
+						self.removeInstance(uid);
+					});
+				}
+			};
+		}());
 
 
 		// public methods
@@ -1861,6 +1899,14 @@ define('moxie/runtime/Runtime', [
 				return caps[cap] || false;
 			},
 
+			setCap: function(cap, value) {
+				if (Basic.typeOf(cap) === 'object') {
+					caps = Basic.extend(caps, cap);
+				} else if (Basic.typeOf(value) !== 'undefined') {
+					caps[cap] = value;
+				}
+			},
+
 			/**
 			Returns container for the runtime as DOM element
 
@@ -1902,7 +1948,20 @@ define('moxie/runtime/Runtime', [
 			@return {DOMElement}
 			*/
 			getShim: function() {
-				return Dom.get(this.uid);
+				return shim;
+			},
+
+			/**
+			Invokes a method within the runtime itself (might differ across the runtimes)
+
+			@method shimExec
+			@param {Mixed} []
+			@protected
+			@return {Mixed} Depends on the action and component
+			*/
+			shimExec: function(component, action) {
+				var args = [].slice.call(arguments, 2);
+				return self.getShim().exec.call(this, this.uid, component, action, args);
 			},
 
 			/**
@@ -1924,19 +1983,6 @@ define('moxie/runtime/Runtime', [
 			},
 
 			/**
-			Invokes a method within the runtime itself (might differ across the runtimes)
-
-			@method shimExec
-			@param {Mixed} []
-			@protected
-			@return {Mixed} Depends on the action and component
-			*/
-			shimExec: function(component, action) {
-				var args = [].slice.call(arguments, 2);
-				return self.getShim().exec(this.uid, component, action, args);
-			},
-
-			/**
 			Destroys the runtime (removes all events and deletes DOM structures)
 
 			@method destroy
@@ -1945,12 +1991,15 @@ define('moxie/runtime/Runtime', [
 				var shimContainer = this.getShimContainer();
 				if (shimContainer) {
 					shimContainer.parentNode.removeChild(shimContainer);
-					shimContainer = null;
+				}
+
+				if (shim) {
+					shim.removeAllInstances();
 				}
 
 				this.unbindAll();
 				delete runtimes[this.uid];
-				uid = self = null;
+				uid = self = shim = shimContainer = null;
 			}
 		});
 	}
@@ -2635,6 +2684,10 @@ define('moxie/file/FileInput', [
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
 
+					self.bind("Ready", function() {
+						self.trigger("Refresh");
+					}, 999);
+
 					self.bind("Change", function() {
 						var files = runtime.exec.call(self, 'FileInput', 'getFiles');
 
@@ -2645,31 +2698,31 @@ define('moxie/file/FileInput', [
 							self.files.push(new File(self.ruid, file));
 						});
 					}, 999);
-					
-					runtime.exec.call(self, 'FileInput', 'init', options);
 
 					// re-position and resize shim container
 					self.bind('Refresh', function() {
-						var pos, size, browseButton;
+						var pos, size, browseButton, shimContainer;
 						
 						browseButton = Dom.get(options.browse_button);
+						shimContainer = Dom.get(runtime.shimid); // do not use runtime.getShimContainer(), since it will create container if it doesn't exist
 
 						if (browseButton) {
 							pos = Dom.getPos(browseButton, Dom.get(options.container));
 							size = Dom.getSize(browseButton);
 
-							Basic.extend(runtime.getShimContainer().style, {
-								top     : pos.y + 'px',
-								left    : pos.x + 'px',
-								width   : size.w + 'px',
-								height  : size.h + 'px'
-							});
-							browseButton = null;
+							if (shimContainer) {
+								Basic.extend(shimContainer.style, {
+									top     : pos.y + 'px',
+									left    : pos.x + 'px',
+									width   : size.w + 'px',
+									height  : size.h + 'px'
+								});
+							}
 						}
+						shimContainer = browseButton = null;
 					});
-
-					self.trigger('Refresh');
-					self.dispatchEvent('ready');
+					
+					runtime.exec.call(self, 'FileInput', 'init', options);
 				});
 
 				// runtime needs: options.required_features, options.runtime_order and options.container
@@ -5555,9 +5608,9 @@ define("moxie/runtime/html5/Runtime", [
 	var type = "html5", extensions = {};
 	
 	function Html5Runtime(options) {
-		var I = this, shim;
+		var I = this;
 
-		Runtime.call(this, type, options, {
+		Runtime.call(this, options, (arguments[1] || type), arguments[2] || {
 			access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
 			access_image_binary: function() {
 				return I.can('access_binary') && !!extensions.Image;
@@ -5613,62 +5666,15 @@ define("moxie/runtime/html5/Runtime", [
 				this.trigger("Init");
 			},
 
-			getShim: function() {
-				return shim;
-			},
-
-			shimExec: function(component, action) {
-				var args = [].slice.call(arguments, 2);
-				return I.getShim().exec.call(this, this.uid, component, action, args);
-			},
-
 			destroy: (function(destroy) { // extend default destroy method
 				return function() {
-					if (shim) {
-						shim.removeAllInstances(I);
-					}
 					destroy.call(I);
-					destroy = shim = I = null;
+					destroy = I = null;
 				};
 			}(this.destroy))
-
 		});
 
-		shim = Basic.extend((function() {
-			var objpool = {};
-
-			return {
-				exec: function(uid, comp, fn, args) {
-					if (shim[comp]) {
-						if (!objpool[uid]) {
-							objpool[uid] = {
-								context: this,
-								instance: new shim[comp]()
-							}
-						}
-
-						if (objpool[uid].instance[fn]) {
-							return objpool[uid].instance[fn].apply(this, args);
-						}
-					}
-				},
-
-				removeInstance: function(uid) {
-					delete objpool[uid];
-				},
-
-				removeAllInstances: function() {
-					var self = this;
-					
-					Basic.each(objpool, function(obj, uid) {
-						if (Basic.typeOf(obj.instance.destroy) === 'function') {
-							obj.instance.destroy.call(obj.context);
-						}
-						self.removeInstance(uid);
-					});
-				}
-			};
-		}()), extensions);
+		Basic.extend(this.getShim(), extensions);
 	}
 
 	Runtime.addConstructor(type, Html5Runtime);
@@ -6040,6 +6046,8 @@ define("moxie/runtime/html5/file/FileInput", [
 					this.value = '';
 					comp.trigger('change');
 				};
+
+				comp.trigger('ready');
 			},
 
 			getFiles: function() {
@@ -8009,11 +8017,17 @@ define("moxie/runtime/html5/image/Image", [
 
 			// use FileReader if it's available
 			if (window.FileReader) {
-				fr = new FileReader();
-				fr.onload = function() {
-					callback(this.result);
-				};
-				fr.readAsBinaryString(file);
+				if (FileReader.readAsBinaryString) {
+					fr = new FileReader();
+					fr.onload = function() {
+						callback(this.result);
+					};
+					fr.readAsBinaryString(file);
+				} else {
+					_readAsDataUrl(file, function(result) {
+						callback(_convertToBinary(result));
+					});
+				}
 			} else {
 				return callback(file.getAsBinary());
 			}
@@ -8218,9 +8232,10 @@ Defines constructor for Flash runtime.
 define("moxie/runtime/flash/Runtime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Env",
+	"moxie/core/utils/Dom",
 	"moxie/core/Exceptions",
 	"moxie/runtime/Runtime"
-], function(Basic, Env, x, Runtime) {
+], function(Basic, Env, Dom, x, Runtime) {
 	
 	var type = 'flash', extensions = {};
 
@@ -8235,7 +8250,7 @@ define("moxie/runtime/flash/Runtime", [
 
 		options = Basic.extend({ swf_url: Env.swf_url }, options);
 
-		Runtime.call(this, type, options, (function() {
+		Runtime.call(this, options, type, (function() {
 			function use_urlstream() {
 				var rc = options.required_features || {};
 				return rc.access_binary || rc.send_custom_headers || rc.send_browser_cookies;
@@ -8279,6 +8294,15 @@ define("moxie/runtime/flash/Runtime", [
 		}()));
 
 		Basic.extend(this, {
+
+			getShim: function() {
+				return Dom.get(this.uid);
+			},
+
+			shimExec: function(component, action) {
+				var args = [].slice.call(arguments, 2);
+				return I.getShim().exec(this.uid, component, action, args);
+			},
 
 			init: function() {
 				var html, el, container;
@@ -8449,11 +8473,12 @@ define("moxie/runtime/flash/file/FileInput", [
 	
 	var FileInput = {		
 		init: function(options) {
-			return this.getRuntime().shimExec.call(this, 'FileInput', 'init', {
+			this.getRuntime().shimExec.call(this, 'FileInput', 'init', {
 				name: options.name,
 				accept: options.accept,
 				multiple: options.multiple
 			});
+			this.trigger('ready');
 		}
 	};
 
@@ -8880,7 +8905,7 @@ define("moxie/runtime/silverlight/Runtime", [
 
 		options = Basic.extend({ xap_url: Env.xap_url }, options);
 
-		Runtime.call(this, type, options, (function() {			
+		Runtime.call(this, options, type, (function() {			
 			function use_clienthttp() {
 				var rc = options.required_caps || {};
 				return  rc.send_custom_headers || 
@@ -8926,6 +8951,11 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			getShim: function() {
 				return Dom.get(this.uid).content.Moxie;
+			},
+
+			shimExec: function(component, action) {
+				var args = [].slice.call(arguments, 2);
+				return I.getShim().exec(this.uid, component, action, args);
 			},
 
 			init : function() {
@@ -9081,7 +9111,6 @@ define("moxie/runtime/silverlight/file/FileInput", [
 	
 	var FileInput = {
 		init: function(options) {
-			var self = this.getRuntime();
 
 			function toFilters(accept) {
 				var filter = '';
@@ -9090,7 +9119,9 @@ define("moxie/runtime/silverlight/file/FileInput", [
 				}
 				return filter;
 			}
-			return self.shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
+			
+			this.getRuntime().shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
+			this.trigger('ready');
 		}
 	};
 
@@ -9322,9 +9353,9 @@ define("moxie/runtime/html4/Runtime", [
 	var type = 'html4', extensions = {};
 
 	function Html4Runtime(options) {
-		var I = this, shim;
+		var I = this;
 
-		Runtime.call(this, type, options, {
+		Runtime.call(this, options, type, {
 			access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
 			access_image_binary: false,
 			display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
@@ -9367,61 +9398,15 @@ define("moxie/runtime/html4/Runtime", [
 				this.trigger("Init");
 			},
 
-			getShim: function() {
-				return shim;
-			},
-
-			shimExec: function(component, action) {
-				var args = [].slice.call(arguments, 2);
-				return I.getShim().exec.call(this, this.uid, component, action, args);
-			},
-
 			destroy: (function(destroy) { // extend default destroy method
 				return function() {
-					if (shim) {
-						shim.removeAllInstances(I);
-					}
 					destroy.call(I);
-					destroy = shim = I = null;
+					destroy = I = null;
 				};
 			}(this.destroy))
 		});
 
-		shim = Basic.extend((function() {
-			var objpool = {};
-
-			return {
-				exec: function(uid, comp, fn, args) {
-					if (shim[comp]) {
-						if (!objpool[uid]) {
-							objpool[uid] = {
-								context: this,
-								instance: new shim[comp]()
-							}
-						}
-
-						if (objpool[uid].instance[fn]) {
-							return objpool[uid].instance[fn].apply(this, args);
-						}
-					}
-				},
-
-				removeInstance: function(uid) {
-					delete objpool[uid];
-				},
-
-				removeAllInstances: function() {
-					var self = this;
-					
-					Basic.each(objpool, function(obj, uid) {
-						if (Basic.typeOf(obj.instance.destroy) === 'function') {
-							obj.instance.destroy.call(obj.context);
-						}
-						self.removeInstance(uid);
-					});
-				}
-			};
-		}()), extensions);
+		Basic.extend(this.getShim(), extensions);
 	}
 
 	Runtime.addConstructor(type, Html4Runtime);
@@ -9575,6 +9560,8 @@ define("moxie/runtime/html4/file/FileInput", [
 			_uid = uid;
 
 			shimContainer = currForm = browseButton = null;
+
+			comp.trigger('ready');
 		}
 
 		Basic.extend(this, {
