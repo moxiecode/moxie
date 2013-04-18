@@ -198,25 +198,18 @@ define("moxie/image/Image", [
 			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
 			resize: function(width, height, crop, preserveHeaders) {
-				var runtime;
 
 				if (!this.size) { // only preloaded image objects can be used as source
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 
-				if (!width) {
-					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
-				}
+				width = width || this.width;
+				height = height || this.height;
 
-				if (!height) {
-					height = width;
-				}
-
-				crop = (crop === undefined ? false : !!crop);
+				crop = (Basic.typeOf(crop) === 'undefined' ? false : !!crop);
 				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
-				runtime = this.getRuntime();
-				runtime.exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
+				this.getRuntime().exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
 			},
 
 			/**
