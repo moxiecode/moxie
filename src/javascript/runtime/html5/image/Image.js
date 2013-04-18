@@ -251,11 +251,17 @@ define("moxie/runtime/html5/image/Image", [
 
 			// use FileReader if it's available
 			if (window.FileReader) {
-				fr = new FileReader();
-				fr.onload = function() {
-					callback(this.result);
-				};
-				fr.readAsBinaryString(file);
+				if (FileReader.readAsBinaryString) {
+					fr = new FileReader();
+					fr.onload = function() {
+						callback(this.result);
+					};
+					fr.readAsBinaryString(file);
+				} else {
+					_readAsDataUrl(file, function(result) {
+						callback(_convertToBinary(result));
+					});
+				}
 			} else {
 				return callback(file.getAsBinary());
 			}
