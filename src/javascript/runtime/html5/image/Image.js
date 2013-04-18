@@ -50,20 +50,17 @@ define("moxie/runtime/html5/image/Image", [
 						size: blob.size,
 						type: blob.type
 					};
-					_loadFromBinaryString.call(this, blob.getSource());
+					_binStr = blob.getSource();
+					_preload.call(this, _binStr);
 					return;
 				} else {
 					_srcBlob = blob.getSource();
-
-					if (asBinary) { // this will let us to hack the file internals
-						_readAsBinaryString(_srcBlob, function(data) {
-							_loadFromBinaryString.call(comp, data);
-						});
-					} else { // ... but this is faster
-						_readAsDataUrl(_srcBlob, function(data) {
-							_loadFromDataUrl.call(comp, data);
-						});
-					}
+					_readAsDataUrl(_srcBlob, function(dataUrl) {
+						if (asBinary) {
+							_binStr = _toBinary(dataUrl);
+						}
+						_preload.call(comp, dataUrl);
+					});
 				}
 			},
 
@@ -76,11 +73,7 @@ define("moxie/runtime/html5/image/Image", [
 					type: img.type
 				};
 
-				if (exact) {
-					_loadFromBinaryString.call(this, img.getAsBinaryString());
-				} else {
-					_loadFromDataUrl.call(this, img.getAsDataURL());
-				}
+				_preload.call(this, exact ? (_binStr = img.getAsBinaryString()) : img.getAsDataURL());
 			},
 
 			getInfo: function() {
@@ -146,13 +139,13 @@ define("moxie/runtime/html5/image/Image", [
 				if (!_modified) {
 					// if image was not loaded from binary string
 					if (!_binStr) {
-						_binStr = _convertToBinary(me.getAsDataURL(type, quality));
+						_binStr = _toBinary(me.getAsDataURL(type, quality));
 					}
 					return _binStr;
 				}
 
 				if ('image/jpeg' !== type) {
-					_binStr = _convertToBinary(me.getAsDataURL(type, quality));
+					_binStr = _toBinary(me.getAsDataURL(type, quality));
 				} else {
 					var dataUrl;
 
@@ -168,7 +161,7 @@ define("moxie/runtime/html5/image/Image", [
 						dataUrl = _canvas.toDataURL('image/jpeg');
 					}
 
-					_binStr = _convertToBinary(dataUrl);
+					_binStr = _toBinary(dataUrl);
 
 					if (_imgInfo && _preserveHeaders) {
 						// update dimensions info in exif
@@ -209,30 +202,17 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 
-		function _convertToBinary(dataUrl) {
-			return Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
+		function _toBinary(str) {
+			return Encode.atob(str.substring(str.indexOf('base64,') + 7));
 		}
 
 
-		function _loadFromBinaryString(binStr) {
-			var comp = this;
-
-			_purge.call(this);
-
-			_img = new Image();
-			_img.onerror = function() {
-				_purge.call(this);
-				throw new x.ImageError(x.ImageError.WRONG_FORMAT);
-			};
-			_img.onload = function() {
-				_binStr = binStr;
-				comp.trigger('load');
-			};
-
-			_img.src = 'data:' + (_srcBlob.type || '') + ';base64,' + Encode.btoa(binStr);
+		function _toDataUrl(str, type) {
+			return 'data:' + (type || '') + ';base64,' + Encode.btoa(str);
 		}
 
-		function _loadFromDataUrl(dataUrl) {
+
+		function _preload(str) {
 			var comp = this;
 
 			_img = new Image();
@@ -243,29 +223,10 @@ define("moxie/runtime/html5/image/Image", [
 			_img.onload = function() {
 				comp.trigger('load');
 			};
-			_img.src = dataUrl;
+
+			_img.src = /^data:[^;]*;base64,/.test(str) ? str : _toDataUrl(str, _srcBlob.type);
 		}
 
-		function _readAsBinaryString(file, callback) {
-			var fr;
-
-			// use FileReader if it's available
-			if (window.FileReader) {
-				if (FileReader.prototype.readAsBinaryString) { // readAsBinaryString is depricated in general and already dropped in IE10
-					fr = new FileReader();
-					fr.onload = function() {
-						callback(this.result);
-					};
-					fr.readAsBinaryString(file);
-				} else {
-					_readAsDataUrl(file, function(result) {
-						callback(_convertToBinary(result));
-					});
-				}
-			} else {
-				return callback(file.getAsBinary());
-			}
-		}
 
 		function _readAsDataUrl(file, callback) {
 			var fr;
