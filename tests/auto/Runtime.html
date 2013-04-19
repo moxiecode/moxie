@@ -143,13 +143,13 @@ test('Check what happens if capability cannot be fulfilled', function() {
 });
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
-	test('Test capabilities: ' + runtime, function() {
+	test('Test can(): ' + runtime, function() {
 		
 		var constructor = o.Runtime.getConstructor(runtime);
 		var r = new constructor();
 
-		ok(r.can('send_multipart'), "Drag and drop supported.");
-
+		ok(r.can('send_multipart'), "Sending of multipart/form-data is possible.");
+		r.destroy();
 	});
 });
 
