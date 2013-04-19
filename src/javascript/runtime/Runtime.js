@@ -314,7 +314,7 @@ define('moxie/runtime/Runtime', [
 			@method destroy
 			*/
 			destroy: function() {
-				var shimContainer = this.getShimContainer();
+				var shimContainer = Dom.get(this.shimid);
 				if (shimContainer) {
 					shimContainer.parentNode.removeChild(shimContainer);
 				}

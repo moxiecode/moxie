@@ -83,6 +83,19 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 });
 
 
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test('Destruction without initialization: ' + runtime, function() {		
+		var constructor = o.Runtime.getConstructor(runtime);
+		var r = new constructor();
+
+		ok(o.Runtime.getRuntime(r.uid), "Runtime instantiated.");
+		r.destroy();
+		ok(!o.Runtime.getRuntime(r.uid), "Runtime destroyed.");
+	});
+});
+
+
+
 test('Fallback to the next runtime in the list due to required capability', function() {
 	var rt = new o.RuntimeTarget();
 
@@ -127,6 +140,17 @@ test('Check what happens if capability cannot be fulfilled', function() {
 		},
 		runtime_order: "html5,flash,silverlight,html4"
 	}));
+});
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test('Test capabilities: ' + runtime, function() {
+		
+		var constructor = o.Runtime.getConstructor(runtime);
+		var r = new constructor();
+
+		ok(r.can('send_multipart'), "Drag and drop supported.");
+
+	});
 });
 
 </script>
