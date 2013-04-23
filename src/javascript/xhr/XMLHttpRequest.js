@@ -941,6 +941,7 @@ define("moxie/xhr/XMLHttpRequest", [
 						if (_upload_events_flag) {
 							self.upload.dispatchEvent(e);
 						}
+						self.dispatchEvent('readystatechange');
 						self.dispatchEvent(e);
 					} else {
 						_error_flag = true;
