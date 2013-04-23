@@ -45,6 +45,24 @@ define("moxie/core/I18n", [
 		 */
 		_: function(str) {
 			return this.translate(str);
+		},
+
+		/**
+		 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
+		 *
+		 * @param {String} str String with tokens
+		 * @return {String} String with replaced tokens
+		 */
+		sprintf: function(str) {
+			var args = [].slice.call(arguments, 1), reStr = '';
+
+			str.split(/%[sdf]/).forEach(function(part) {
+				reStr += part;
+				if (args.length) {
+					 reStr += args.shift();
+				}
+			});
+			return reStr;
 		}
 	};
 });
