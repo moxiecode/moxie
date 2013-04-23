@@ -467,6 +467,24 @@ define("moxie/core/I18n", [
 		 */
 		_: function(str) {
 			return this.translate(str);
+		},
+
+		/**
+		 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
+		 *
+		 * @param {String} str String with tokens
+		 * @return {String} String with replaced tokens
+		 */
+		sprintf: function(str) {
+			var args = [].slice.call(arguments, 1), reStr = '';
+
+			str.split(/%[sdf]/).forEach(function(part) {
+				reStr += part;
+				if (args.length) {
+					 reStr += args.shift();
+				}
+			});
+			return reStr;
 		}
 	};
 });
@@ -1988,7 +2006,7 @@ define('moxie/runtime/Runtime', [
 			@method destroy
 			*/
 			destroy: function() {
-				var shimContainer = this.getShimContainer();
+				var shimContainer = Dom.get(this.shimid);
 				if (shimContainer) {
 					shimContainer.parentNode.removeChild(shimContainer);
 				}
@@ -7873,7 +7891,7 @@ define("moxie/runtime/html5/image/Image", [
 					// if different mime type requested prepare image for conversion
 					_resize.call(this, this.width, this.height, false);
 				}
-				return new Blob(null, me.getAsDataURL.call(this, type, quality));
+				return new Blob(null, me.getAsBinaryString.call(this, type, quality));
 			},
 
 			getAsDataURL: function(type) {
