@@ -517,10 +517,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					// 8.1
 					_send_flag = true;
 					// 8.2
-					this.dispatchEvent('readystatechange'); // for historical reasons
-					// 8.3
 					// this.dispatchEvent('loadstart'); // will be dispatched either by native or runtime xhr
-					// 8.4
+					// 8.3
 					if (!_upload_complete_flag) {
 						// this.upload.dispatchEvent('loadstart');	// will be dispatched either by native or runtime xhr
 					}
