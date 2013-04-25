@@ -1008,10 +1008,10 @@ define("moxie/xhr/XMLHttpRequest", [
 		}
 
 		function _canUseNativeXHR() {
-			if (!_same_origin_flag) return false
-			return _method === 'HEAD' ||
-					(_method === 'GET' && !!~Basic.inArray(_p('responseType'), ["", "text", "document"])) ||
-					(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded');
+			return _same_origin_flag && 
+				(_method === 'HEAD' ||
+				(_method === 'GET' && !!~Basic.inArray(_p('responseType'), ["", "text", "document"])) ||
+				(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded');
 		}
 		
 		function _reset() {
