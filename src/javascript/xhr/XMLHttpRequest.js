@@ -23,7 +23,6 @@ define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Env",
 	"moxie/core/utils/Mime"
 ], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData, Env, Mime) {
-	var undef;
 
 	var httpCode = {
 		100: 'Continue',
@@ -818,7 +817,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					
 					case XMLHttpRequest.OPENED:
 						// readystatechanged is fired twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
-						if (onRSC.loadstartDispatched === undef) {
+						if (!onRSC.loadstartDispatched) {
 							self.dispatchEvent('loadstart');
 							onRSC.loadstartDispatched = true;
 						}
@@ -1011,7 +1010,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			return _same_origin_flag && 
 				(_method === 'HEAD' ||
 				(_method === 'GET' && !!~Basic.inArray(_p('responseType'), ["", "text", "document"])) ||
-				(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded');
+				(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded'));
 		}
 		
 		function _reset() {
@@ -1020,8 +1019,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_p('response', null);
 			_p('status', 0);
 			_p('statusText', "");
-			_start_time = undef;
-			_timeoutset_time = undef;
+			_start_time = _timeoutset_time = null;
 		}
 	}
 
