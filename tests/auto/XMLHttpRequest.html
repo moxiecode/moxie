@@ -246,6 +246,69 @@ test('setRequestHeader()', function() {
 	xhr.send();
 });
 
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	
+	test("test events: " + runtime, function() {
+		var self = this, xhr;
+		var events = {
+			loadstart: 0,
+			loadend: 0,
+			load: 0,
+			progress: 0,
+			timeout: 0,
+			error: 0,
+			abort: 0,
+			readystatechange: 0
+		};
+
+		var states = {
+			"0": 0,
+			"1": 0, // OPENED
+			"2": 0, // HEADERS_RECEIVED
+			"3": 0, // LOADING
+			"4": 0  // DONE
+		};
+
+		xhr = new o.XMLHttpRequest();
+
+		o.each(events, function(times, e) {
+			xhr.bind(e, function() {
+				events[e]++;
+			}, 9);
+		});
+
+		xhr.bind('readystatechange', function() {
+			states[this.readyState + ""]++;
+		});
+
+		xhr.bind('loadend', function() {
+			start();
+
+			equal(states[o.XMLHttpRequest.OPENED + ""], 1, "readyState changed to OPENED.");
+			//equal(states[o.XMLHttpRequest.HEADERS_RECEIVED + ""], 1, "readyState changed to HEADERS_RECEIVED.");
+			equal(states[o.XMLHttpRequest.LOADING + ""], 1, "readyState changed to LOADING.");
+			equal(states[o.XMLHttpRequest.DONE + ""], 1, "readyState changed to DONE.");
+
+			equal(events.loadstart, 1, "LoadStart fired.");
+			ok(events.progress, "Progress fired " + events.progress + " time(s).");
+			equal(events.load, 1, "Load fired.");
+			equal(events.loadend, 1, "LoadEnd fired.");
+			ok(events.readystatechange, "ReadyStateChange fired " + events.readystatechange + " time(s).");
+		});
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});	
+		
+		xhr.open('POST', 'XMLHttpRequest/json.php');
+		xhr.responseType = 'json';
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
 // send() - get Blob (Binary)
 o.each("html5,flash,silverlight".split(','), function(runtime) {
 
@@ -685,6 +748,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		}
 	});
 });
+
 
 // send browser cookies (retain session)
 o.each("html5,flash,silverlight".split(','), function(runtime) {
