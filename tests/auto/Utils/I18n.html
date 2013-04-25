@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: I18n Utils</title>
+
+<!-- qunit -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
+<script src="http://code.jquery.com/qunit/qunit-git.js"></script>
+
+<!-- testrunner -->
+<script src="../../js/reporter.js"></script>
+<script src="../../moxie_loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+module("I18n", {
+	setup: function() {
+		this.DOM = jQuery('#qunit-fixture');
+	},
+
+	teardown: function() {
+	}
+});
+
+test("sprintf()", function() {
+
+	equal(
+		o.sprintf("File: %s, size: %d, max file size: %d", "filename.ext", 1024, 1048576),
+		"File: filename.ext, size: 1024, max file size: 1048576",
+		"Tokens successfully replaced"
+	);
+
+});
+
+
+</script>
+</head>
+<body>
+	<h1 id="qunit-header">Plupload Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests">
+	</ol>
+    <div id="qunit-fixture"></div>
+</body>
+</html>
