@@ -909,6 +909,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				
 				_xhr.bind('Progress', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
+					self.dispatchEvent('readystatechange');
 					self.dispatchEvent(e);
 				});
 				
