@@ -807,8 +807,10 @@ define("moxie/xhr/XMLHttpRequest", [
 				}
 				
 				_p('readyState', _xhr.readyState);
-												
-				self.dispatchEvent('readystatechange');
+
+				if (_xhr.readyState !== XMLHttpRequest.OPENED) { // readystatechange for OPENED already fired in open()							
+					self.dispatchEvent('readystatechange');
+				}
 				
 				// fake Level 2 events
 				switch (_p('readyState')) {
