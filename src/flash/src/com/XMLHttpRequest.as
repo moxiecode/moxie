@@ -377,19 +377,17 @@ package com
 		{
 			var boundary:String = '----moxieboundary' + new Date().getTime(),
 				dashdash:String = '--', crlf:String = '\r\n',
-				tmpBa:ByteArray;
+				tmpBa:ByteArray, param:Array;
 			
 			tmpBa = new ByteArray;
 						
 			request.requestHeaders.push(new URLRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary));
 			
-			for (var i:int=0; i < _postData.length; i++) {
-				var name:String = _postData[i][0];
-				var value:String = _postData[i][1];
+			for each (param in _postData) {
 				tmpBa.writeUTFBytes(
 					dashdash + boundary + crlf +
-					'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf +
-					value + crlf
+					'Content-Disposition: form-data; name="' + param[0] + '"' + crlf + crlf +
+					param[1] + crlf
 				);
 			}
 			
