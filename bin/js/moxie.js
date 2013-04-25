@@ -1749,6 +1749,8 @@ define('moxie/runtime/Runtime', [
 			access_image_binary: false,
 			// ... display binary data as thumbs for example
 			display_media: false,
+			// ... make cross-domain requests
+			do_cors: false,
 			// ... accept files dragged and dropped from the desktop
 			drag_and_drop: false,
 			// ... resize image (and manipulate it raw data of any file in general)
@@ -3455,7 +3457,6 @@ define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Env",
 	"moxie/core/utils/Mime"
 ], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData, Env, Mime) {
-	var undef;
 
 	var httpCode = {
 		100: 'Continue',
@@ -3950,10 +3951,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					// 8.1
 					_send_flag = true;
 					// 8.2
-					this.dispatchEvent('readystatechange'); // for historical reasons
-					// 8.3
 					// this.dispatchEvent('loadstart'); // will be dispatched either by native or runtime xhr
-					// 8.4
+					// 8.3
 					if (!_upload_complete_flag) {
 						// this.upload.dispatchEvent('loadstart');	// will be dispatched either by native or runtime xhr
 					}
@@ -4250,7 +4249,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					
 					case XMLHttpRequest.OPENED:
 						// readystatechanged is fired twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
-						if (onRSC.loadstartDispatched === undef) {
+						if (!onRSC.loadstartDispatched) {
 							self.dispatchEvent('loadstart');
 							onRSC.loadstartDispatched = true;
 						}
@@ -4259,7 +4258,9 @@ define("moxie/xhr/XMLHttpRequest", [
 					// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions), hence we can't really use it
 					case XMLHttpRequest.HEADERS_RECEIVED:
 						try {
-							total = _xhr.getResponseHeader('Content-Length') || 0; // old Safari throws an exception here
+							if (_same_origin_flag) { // Content-Length not accessible for cross-domain on some browsers
+								total = _xhr.getResponseHeader('Content-Length') || 0; // old Safari throws an exception here
+							}
 						} catch(ex) {}
 						break;
 						
@@ -4342,6 +4343,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				
 				_xhr.bind('Progress', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
+					self.dispatchEvent('readystatechange');
 					self.dispatchEvent(e);
 				});
 				
@@ -4368,6 +4370,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					} else if (_p('responseType') === 'document') {
 						_p('responseXML', _p('response'));
 					}
+
+					self.dispatchEvent('readystatechange');
 					
 					if (_p('status') > 0) { // status 0 usually means that server is unreachable
 						if (_upload_events_flag) {
@@ -4440,9 +4444,10 @@ define("moxie/xhr/XMLHttpRequest", [
 		}
 
 		function _canUseNativeXHR() {
-			return _method === 'HEAD' ||
-					(_method === 'GET' && !!~Basic.inArray(_p('responseType'), ["", "text", "document"])) ||
-					(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded');
+			return _same_origin_flag && 
+				(_method === 'HEAD' ||
+				(_method === 'GET' && !!~Basic.inArray(_p('responseType'), ["", "text", "document"])) ||
+				(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded'));
 		}
 		
 		function _reset() {
@@ -4451,8 +4456,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_p('response', null);
 			_p('status', 0);
 			_p('statusText', "");
-			_start_time = undef;
-			_timeoutset_time = undef;
+			_start_time = _timeoutset_time = null;
 		}
 	}
 
@@ -5630,6 +5634,9 @@ define("moxie/runtime/html5/Runtime", [
 				return I.can('access_binary') && !!extensions.Image;
 			},
 			display_media: Env.can('create_canvas') || Env.can('use_data_uri_over32kb'),
+			do_cors: function() {
+				return !!(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest());
+			},
 			drag_and_drop: (function() {
 				// this comes directly from Modernizr: http://www.modernizr.com/
 				var div = document.createElement('div');
@@ -8235,6 +8242,7 @@ define("moxie/runtime/flash/Runtime", [
 				access_binary: true,
 				access_image_binary: true,
 				display_media: true,
+				do_cors: true,
 				drag_and_drop: false,
 				report_upload_progress: true,
 				resize_image: true,
@@ -8264,7 +8272,8 @@ define("moxie/runtime/flash/Runtime", [
 				},
 				use_http_method: function(methods) {
 					return !Basic.arrayDiff(methods, ['GET', 'POST']);
-				}
+				},
+				cross_domain: true
 			};
 		}()));
 
@@ -8883,7 +8892,7 @@ define("moxie/runtime/silverlight/Runtime", [
 		Runtime.call(this, options, type, (function() {			
 			function use_clienthttp() {
 				var rc = options.required_caps || {};
-				return  rc.send_custom_headers || 
+				return rc.send_custom_headers || 
 					rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
 					rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
 			}
@@ -8892,6 +8901,7 @@ define("moxie/runtime/silverlight/Runtime", [
 				access_binary: true,
 				access_image_binary: true,
 				display_media: true,
+				do_cors: true,
 				drag_and_drop: false,
 				report_upload_progress: true,
 				resize_image: true,
@@ -9334,6 +9344,7 @@ define("moxie/runtime/html4/Runtime", [
 			access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
 			access_image_binary: false,
 			display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+			do_cors: true,
 			drag_and_drop: false,
 			resize_image: function() {
 				return extensions.Image && can('access_binary') && Env.can('create_canvas');
@@ -9753,11 +9764,20 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 								// get result
 								_response = Basic.trim(el.body.innerHTML);
 
+								// we need to fire these at least once
 								target.trigger({
-									type: 'uploadprogress',
-									loaded: blob && blob.size || 1025,
-									total: blob && blob.size || 1025
+									type: 'progress',
+									loaded: _response.length,
+									total: _response.length
 								});
+
+								if (blob) { // if we were uploading a file
+									target.trigger({
+										type: 'uploadprogress',
+										loaded: blob.size || 1025,
+										total: blob.size || 1025
+									});
+								}
 							}
 						} catch (ex) {
 							if (Url.hasSameOrigin(meta.url)) {
