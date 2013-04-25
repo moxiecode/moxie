@@ -33,6 +33,7 @@ define("moxie/runtime/html4/Runtime", [
 			access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
 			access_image_binary: false,
 			display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+			do_cors: true,
 			drag_and_drop: false,
 			resize_image: function() {
 				return extensions.Image && can('access_binary') && Env.can('create_canvas');
@@ -59,8 +60,7 @@ define("moxie/runtime/html4/Runtime", [
 			upload_filesize: true,
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
-			},
-			cross_domain: true
+			}
 		});
 
 		Basic.extend(this, {

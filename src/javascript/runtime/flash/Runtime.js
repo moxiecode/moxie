@@ -48,6 +48,7 @@ define("moxie/runtime/flash/Runtime", [
 				access_binary: true,
 				access_image_binary: true,
 				display_media: true,
+				do_cors: true,
 				drag_and_drop: false,
 				report_upload_progress: true,
 				resize_image: true,

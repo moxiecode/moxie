@@ -57,6 +57,8 @@ define('moxie/runtime/Runtime', [
 			access_image_binary: false,
 			// ... display binary data as thumbs for example
 			display_media: false,
+			// ... make cross-domain requests
+			do_cors: false,
 			// ... accept files dragged and dropped from the desktop
 			drag_and_drop: false,
 			// ... resize image (and manipulate it raw data of any file in general)
@@ -93,9 +95,7 @@ define('moxie/runtime/Runtime', [
 			upload_filesize: true,
 			// ... initiate http request with specific http method, method should be passed as argument
 			// e.g. runtime.can('use_http_method', 'put')
-			use_http_method: true,
-			// ... the request will be cross domain
-			cross_domain: true
+			use_http_method: true
 		}, caps);
 
 		

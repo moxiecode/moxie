@@ -41,7 +41,7 @@ define("moxie/runtime/silverlight/Runtime", [
 		Runtime.call(this, options, type, (function() {			
 			function use_clienthttp() {
 				var rc = options.required_caps || {};
-				return  rc.send_custom_headers || 
+				return rc.send_custom_headers || 
 					rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
 					rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
 			}
@@ -50,6 +50,7 @@ define("moxie/runtime/silverlight/Runtime", [
 				access_binary: true,
 				access_image_binary: true,
 				display_media: true,
+				do_cors: true,
 				drag_and_drop: false,
 				report_upload_progress: true,
 				resize_image: true,

@@ -35,6 +35,9 @@ define("moxie/runtime/html5/Runtime", [
 				return I.can('access_binary') && !!extensions.Image;
 			},
 			display_media: Env.can('create_canvas') || Env.can('use_data_uri_over32kb'),
+			do_cors: function() {
+				return !!(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest());
+			},
 			drag_and_drop: (function() {
 				// this comes directly from Modernizr: http://www.modernizr.com/
 				var div = document.createElement('div');
@@ -71,10 +74,7 @@ define("moxie/runtime/html5/Runtime", [
 						(Env.browser === 'Opera' && Env.version >= 12)	||
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 			}()),
-			upload_filesize: true,
-			cross_domain: (function() {
-				return 'withCredentials' in new window.XMLHttpRequest();
-			})()
+			upload_filesize: true
 		});
 
 
