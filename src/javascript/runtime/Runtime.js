@@ -93,7 +93,9 @@ define('moxie/runtime/Runtime', [
 			upload_filesize: true,
 			// ... initiate http request with specific http method, method should be passed as argument
 			// e.g. runtime.can('use_http_method', 'put')
-			use_http_method: true
+			use_http_method: true,
+			// ... the request will be cross domain
+			cross_domain: true
 		}, caps);
 
 		

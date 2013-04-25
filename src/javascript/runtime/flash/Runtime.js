@@ -77,7 +77,8 @@ define("moxie/runtime/flash/Runtime", [
 				},
 				use_http_method: function(methods) {
 					return !Basic.arrayDiff(methods, ['GET', 'POST']);
-				}
+				},
+				cross_domain: true
 			};
 		}()));
 
