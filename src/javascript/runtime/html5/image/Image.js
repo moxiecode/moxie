@@ -111,7 +111,10 @@ define("moxie/runtime/html5/image/Image", [
 					// if different mime type requested prepare image for conversion
 					_resize.call(this, this.width, this.height, false);
 				}
-				return new Blob(null, me.getAsBinaryString.call(this, type, quality));
+				return new Blob(null, {
+					type: type,
+					data: me.getAsBinaryString.call(this, type, quality)
+				});
 			},
 
 			getAsDataURL: function(type) {
