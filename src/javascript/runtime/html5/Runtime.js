@@ -71,7 +71,10 @@ define("moxie/runtime/html5/Runtime", [
 						(Env.browser === 'Opera' && Env.version >= 12)	||
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 			}()),
-			upload_filesize: true
+			upload_filesize: true,
+			cross_domain: (function() {
+				return 'withCredentials' in new window.XMLHttpRequest();
+			})()
 		});
 
 

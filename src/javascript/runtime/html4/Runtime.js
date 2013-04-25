@@ -59,7 +59,8 @@ define("moxie/runtime/html4/Runtime", [
 			upload_filesize: true,
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
-			}
+			},
+			cross_domain: true
 		});
 
 		Basic.extend(this, {
