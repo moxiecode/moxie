@@ -114,11 +114,20 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 								// get result
 								_response = Basic.trim(el.body.innerHTML);
 
+								// we need to fire these at least once
 								target.trigger({
-									type: 'uploadprogress',
-									loaded: blob && blob.size || 1025,
-									total: blob && blob.size || 1025
+									type: 'progress',
+									loaded: _response.length,
+									total: _response.length
 								});
+
+								if (blob) { // if we were uploading a file
+									target.trigger({
+										type: 'uploadprogress',
+										loaded: blob.size || 1025,
+										total: blob.size || 1025
+									});
+								}
 							}
 						} catch (ex) {
 							if (Url.hasSameOrigin(meta.url)) {
