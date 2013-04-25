@@ -16,7 +16,6 @@ package com
 	import flash.net.URLRequestHeader;
 	import flash.net.URLRequestMethod;
 	import flash.net.URLStream;
-	import flash.net.URLVariables;
 	import flash.utils.ByteArray;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
@@ -58,7 +57,7 @@ package com
 		
 		private var _blobFieldName:String = 'Filedata';
 		
-		private var _postData:URLVariables = new URLVariables;
+		private var _postData:Array = [];
 		
 		private var _conn:*;
 		
@@ -81,14 +80,7 @@ package com
 				return;
 			}
 			
-			if (/\[\]$/.test(name)) { // handle arrays
-				if (!_postData.hasOwnProperty(name)) {
-					_postData[name] = [];
-				}
-				_postData[name].push(value);
-			} else {
-				_postData[name] = value;
-			}
+			_postData.push([name, value]);
 		}
 		
 		
@@ -258,7 +250,11 @@ package com
 			request = new URLRequest();
 			request.method = URLRequestMethod.POST;
 			request.url = _options.url;
-			request.data = _postData;
+			var qs:Array = [];
+			for (var i:int=0; i < _postData.length; i++) {
+				qs.push(escape(_postData[i][0]) + '=' +  escape(_postData[i][1]));
+			}
+			request.data = qs.join('&')
 								
 			_conn = blob.getFileRef();
 			_readyState = XMLHttpRequest.OPENED;
@@ -387,20 +383,15 @@ package com
 						
 			request.requestHeaders.push(new URLRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary));
 			
-			// recursively append mutltipart parameters
-			(function eachPostData(key:String, postData:*) : void {
-				for (var name:String in postData) {
-					if (postData[name] is Array) {
-						eachPostData(name, postData[name]); // name will be common for all elements of the array
-					} else {
-						tmpBa.writeUTFBytes(
-							dashdash + boundary + crlf +
-							'Content-Disposition: form-data; name="' + (key || name) + '"' + crlf + crlf +
-							postData[name] + crlf
-						);
-					}
-				}
-			}(null, _postData)); // self-invoke with global _postData object
+			for (var i:int=0; i < _postData.length; i++) {
+				var name:String = _postData[i][0];
+				var value:String = _postData[i][1];
+				tmpBa.writeUTFBytes(
+					dashdash + boundary + crlf +
+					'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf +
+					value + crlf
+				);
+			}
 			
 			// append file if available
 			if (ba) {
