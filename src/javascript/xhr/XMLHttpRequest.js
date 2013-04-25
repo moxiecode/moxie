@@ -935,6 +935,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					} else if (_p('responseType') === 'document') {
 						_p('responseXML', _p('response'));
 					}
+
+					self.dispatchEvent('readystatechange');
 					
 					if (_p('status') > 0) { // status 0 usually means that server is unreachable
 						if (_upload_events_flag) {
