@@ -8,8 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
+/*jshint smarttabs:true */
 
 define("moxie/core/JSON", [], function() {
 	/**
@@ -31,8 +30,8 @@ define("moxie/core/JSON", [], function() {
 	// eval or regular expressions, so it can be used as a model for implementing
 	// a JSON parser in other languages.
 
-	// We are defining the function inside of another function to avoid creating
-	// global variables.
+	// We are defining the function inside of another function to avoid 
+	// creating global variables.
 
 	    var at,     // The index of the current character
 	        ch,     // The current character

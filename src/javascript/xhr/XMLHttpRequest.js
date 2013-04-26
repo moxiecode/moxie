@@ -8,8 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, evil:false */
-/*global define:true, ActiveXObject:true */
+/*global ActiveXObject:true */
 
 define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Basic",

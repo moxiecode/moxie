@@ -8,8 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global window:true */
+/*global moxie:true */
 
 /**
 Globally exposed namespace with the most frequently used public classes and handy methods.

@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
-/*global define:true */
-
 define('moxie/runtime/Runtime', [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
@@ -110,7 +107,7 @@ define('moxie/runtime/Runtime', [
 							objpool[uid] = {
 								context: this,
 								instance: new shim[comp]()
-							}
+							};
 						}
 
 						if (objpool[uid].instance[fn]) {

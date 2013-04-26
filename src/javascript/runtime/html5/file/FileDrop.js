@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
 /**
 @class moxie/runtime/html5/file/FileDrop
 @private
@@ -100,7 +97,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 					_readEntry(entry, cbcb);
 				});
 			});
-			Basic.inSeries(queue, function(err) {
+			Basic.inSeries(queue, function() {
 				cb();
 			});
 		}
@@ -112,7 +109,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 						_files.push(file);
 					}
 					cb();
-				}, function(err) {
+				}, function() {
 					// fire an error event maybe
 					cb();
 				});
@@ -136,7 +133,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 						cbcb();
 					}
 				}, cbcb);
-			};
+			}
 
 			// ...and you thought FileReader was crazy...
 			getEntries(function() {

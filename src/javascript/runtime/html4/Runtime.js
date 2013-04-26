@@ -8,8 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
-/*global define:true, File:true */
+/*global File:true */
 
 /**
 Defines constructor for HTML4 runtime.
@@ -36,7 +35,7 @@ define("moxie/runtime/html4/Runtime", [
 			do_cors: true,
 			drag_and_drop: false,
 			resize_image: function() {
-				return extensions.Image && can('access_binary') && Env.can('create_canvas');
+				return extensions.Image && I.can('access_binary') && Env.can('create_canvas');
 			},
 			report_upload_progress: false,
 			return_response_headers: false,

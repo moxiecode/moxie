@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
 define('moxie/runtime/RuntimeTarget', [
 	'moxie/core/utils/Basic',
 	'moxie/runtime/RuntimeClient',

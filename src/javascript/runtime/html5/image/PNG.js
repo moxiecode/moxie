@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
 /**
 @class moxie/runtime/html5/image/PNG
 @private
@@ -31,8 +28,9 @@ define("moxie/runtime/html5/image/PNG", [
 
 		// check if it's png
 		(function() {
-			var idx = 0, i = 0,
-			    signature = [0x8950, 0x4E47, 0x0D0A, 0x1A0A];
+			var idx = 0, i = 0
+			, signature = [0x8950, 0x4E47, 0x0D0A, 0x1A0A]
+			;
 
 			for (i = 0; i < signature.length; i++, idx += 2) {
 				if (signature[i] != _br.SHORT(idx)) {

@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true, laxcomma:true */
-/*global define:true */
-
 define("moxie/image/Image", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
@@ -63,11 +60,10 @@ define("moxie/image/Image", [
 		*/
 		'embedded'
 	];
-	
+
 	function Image() {
-			
 		RuntimeClient.call(this);
-		
+
 		Basic.extend(this, {
 			/**
 			Unique id of the component
@@ -84,7 +80,7 @@ define("moxie/image/Image", [
 			@type {String}
 			*/
 			ruid: null,
-			
+
 			/**
 			Name of the file, that was used to create an image, if available. If not equals to empty string.
 
@@ -93,7 +89,7 @@ define("moxie/image/Image", [
 			@default ""
 			*/
 			name: "",
-			
+
 			/**
 			Size of the image in bytes. Actual value is set only after image is preloaded.
 
@@ -120,7 +116,7 @@ define("moxie/image/Image", [
 			@default 0
 			*/
 			height: 0,
-			
+
 			/**
 			Mime type of the image. Currently only image/jpeg and image/png are supported. Actual value is set only after image is preloaded.
 
@@ -177,9 +173,9 @@ define("moxie/image/Image", [
 			@param {Image|Blob|File|String} src Source for the image
 			@param {Boolean|Object} [mixed]
 			*/
-			load: function(src) {
+			load: function() {
 				// this is here because to bind properly we need an uid first, which is created above
-				this.bind('Load Resize', function(e) {
+				this.bind('Load Resize', function() {
 					_updateInfo.call(this);
 				}, 999);
 
@@ -205,7 +201,7 @@ define("moxie/image/Image", [
 
 				if (!width && !height || Basic.typeOf(crop) === 'undefined') {
 					crop = false;
-				} 
+				}
 
 				width = width || this.width;
 				height = height || this.height;
@@ -246,8 +242,6 @@ define("moxie/image/Image", [
 			@return {Blob} Image as Blob
 			*/
 			getAsBlob: function(type, quality) {
-				var blob;
-
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
@@ -273,8 +267,6 @@ define("moxie/image/Image", [
 			@return {String} Image as dataURL string
 			*/
 			getAsDataURL: function(type, quality) {
-				var dataUrl;
-
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
@@ -342,7 +334,7 @@ define("moxie/image/Image", [
 
 						tr.bind("TransportingComplete", function() {
 							runtime = self.connectRuntime(this.result.ruid);
-						
+
 							self.bind("Embedded", function() {
 								// position and size properly
 								Basic.extend(runtime.getShimContainer().style, {
@@ -404,7 +396,7 @@ define("moxie/image/Image", [
 						height = dimensions.h;
 					}
 				}
-				
+
 				imgCopy = new Image();
 
 				imgCopy.bind("Resize", function() {
@@ -483,13 +475,13 @@ define("moxie/image/Image", [
 				}
 				// if native blob/file
 				else if (Basic.inArray(srcType, ['blob', 'file']) !== -1) {
-					_load.call(this, new o.File(null, src), arguments[1]);
+					_load.call(this, new File(null, src), arguments[1]);
 				}
 				// if String
 				else if (srcType === 'string') {
 					// if dataUrl String
 					if (/^data:[^;]*;base64,/.test(src)) {
-						_load.call(this, new o.Blob(null, { data: src }), arguments[1]);
+						_load.call(this, new Blob(null, { data: src }), arguments[1]);
 					}
 					// else assume Url, either relative or absolute
 					else {
@@ -574,7 +566,7 @@ define("moxie/image/Image", [
 			xhr.send(null, options);
 		}
 	}
-	
+
 	Image.prototype = EventTarget.instance;
 
 	return Image;

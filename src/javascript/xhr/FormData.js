@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
-/*global define:true */
-
 define("moxie/xhr/FormData", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Basic",
@@ -99,8 +96,6 @@ define("moxie/xhr/FormData", [
 			@param {Function} cb Callback to call for each field
 			*/
 			each: function(cb) {
-				var self = this;
-
 				Basic.each(_fields, function(value, name) {
 					Basic.each(value, function(value) {
 						cb(value, name);

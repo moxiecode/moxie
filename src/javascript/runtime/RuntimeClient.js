@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, loopfunc:true */
-/*global define:true */
-
 define('moxie/runtime/RuntimeClient', [
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic',
@@ -73,7 +70,7 @@ define('moxie/runtime/RuntimeClient', [
 						}, 1);
 					});
 
-					runtime.bind('Error', function(e, err) {
+					runtime.bind('Error', function() {
 						runtime.destroy(); // runtime cannot destroy itself from inside at a right moment, thus we do it here
 						initialize(items);
 					});

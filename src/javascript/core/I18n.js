@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
 define("moxie/core/I18n", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
@@ -59,7 +56,7 @@ define("moxie/core/I18n", [
 			str.split(/%[sdf]/).forEach(function(part) {
 				reStr += part;
 				if (args.length) {
-					 reStr += args.shift();
+					reStr += args.shift();
 				}
 			});
 			return reStr;

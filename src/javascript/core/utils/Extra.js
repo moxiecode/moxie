@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
-/*global define:true */
-
 define("moxie/core/utils/Extra", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Env"
@@ -76,7 +73,7 @@ define("moxie/core/utils/Extra", [
 		var defaults = {
 			enumerable: true,
 			configurable: true
-		  }
+		}
 		, fn
 		, camelType
 		, self = this

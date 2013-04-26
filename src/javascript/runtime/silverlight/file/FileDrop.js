@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
 /**
 @class moxie/runtime/silverlight/file/FileDrop
 @private
@@ -37,15 +34,19 @@ define("moxie/runtime/silverlight/file/FileDrop", [
 			Events.addEvent(dropZone, 'dragenter', function(e) {
 				e.preventDefault();
 				var flag = Dom.get(self.uid).dragEnter(e);
-			    // If handled, then stop propagation of event in DOM
-			    if (flag) {e.stopPropagation();}
+				// If handled, then stop propagation of event in DOM
+				if (flag) {
+					e.stopPropagation();
+				}
 			}, comp.uid);
 
 			Events.addEvent(dropZone, 'drop', function(e) {
 				e.preventDefault();
 				var flag = Dom.get(self.uid).dragDrop(e);
-			    // If handled, then stop propagation of event in DOM
-			    if (flag) {e.stopPropagation();}
+				// If handled, then stop propagation of event in DOM
+				if (flag) {
+					e.stopPropagation();
+				}
 			}, comp.uid);
 
 			return self.shimExec.call(this, 'FileDrop', 'init');

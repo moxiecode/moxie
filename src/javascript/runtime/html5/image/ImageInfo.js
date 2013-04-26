@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
 /**
 @class moxie/runtime/html5/image/ImageInfo
 @private
@@ -23,11 +20,11 @@ define("moxie/runtime/html5/image/ImageInfo", [
 ], function(Basic, x, JPEG, PNG) {
 	/**
 	Optional image investigation tool for HTML5 runtime. Provides the following features:
-	 - ability to distinguish image type (JPEG or PNG) by signature
-	 - ability to extract image width/height directly from it's internals, without preloading in memory (fast)
-	 - ability to extract APP headers from JPEGs (Exif, GPS, etc)
-	 - ability to replace width/height tags in extracted JPEG headers
-	 - ability to restore APP headers, that were for example stripped during image manipulation
+	- ability to distinguish image type (JPEG or PNG) by signature
+	- ability to extract image width/height directly from it's internals, without preloading in memory (fast)
+	- ability to extract APP headers from JPEGs (Exif, GPS, etc)
+	- ability to replace width/height tags in extracted JPEG headers
+	- ability to restore APP headers, that were for example stripped during image manipulation
 
 	@class ImageInfo
 	@constructor

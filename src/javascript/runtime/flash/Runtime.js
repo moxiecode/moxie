@@ -8,8 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
-/*global define:true, escape:true, ActiveXObject:true */
+/*global ActiveXObject:true */
 
 /**
 Defines constructor for Flash runtime.

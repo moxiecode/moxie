@@ -8,8 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true, ActiveXObject:true */
+/*global ActiveXObject:true */
 
 /**
 Defines constructor for Silverlight runtime.
@@ -192,6 +191,3 @@ define("moxie/runtime/silverlight/Runtime", [
 
 	return extensions;
 });
-
-
-

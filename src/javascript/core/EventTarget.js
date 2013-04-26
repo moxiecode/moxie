@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
 define('moxie/core/EventTarget', [
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic'

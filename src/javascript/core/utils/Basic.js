@@ -8,12 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:false, scripturl:true, browser:true */
-/*global define:true */
-
 define('moxie/core/utils/Basic', [], function() {
-	var undefined;
-
 	/**
 	Gets the true type of the built-in object (better version of typeof).
 	@author Angus Croll (http://javascriptweblog.wordpress.com/)
@@ -25,7 +20,9 @@ define('moxie/core/utils/Basic', [], function() {
 	@return {String} Object [[Class]]
 	*/
 	var typeOf = function(o) {
-		if (o === undefined) {
+		var undef;
+
+		if (o === undef) {
 			return 'undefined';
 		} else if (o === null) {
 			return 'null';
@@ -47,10 +44,12 @@ define('moxie/core/utils/Basic', [], function() {
 	@return {Object} Same as target, the extended object.
 	*/
 	var extend = function(target) {
+		var undef;
+
 		each(arguments, function(arg, i) {
 			if (i > 0) {
 				each(arg, function(value, key) {
-					if (value !== undefined) {
+					if (value !== undef) {
 						if (typeOf(target[key]) === typeOf(value) && !!~inArray(typeOf(value), ['array', 'object'])) {
 							extend(target[key], value);
 						} else {
@@ -73,16 +72,16 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {function} callback Callback function to execute for each item.
 	*/
 	var each = function(obj, callback) {
-		var length, key, i;
+		var length, key, i, undef;
 
 		if (obj) {
 			try {
 				length = obj.length;
 			} catch(ex) {
-				length = undefined;
+				length = undef;
 			}
 
-			if (length === undefined) {
+			if (length === undef) {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {

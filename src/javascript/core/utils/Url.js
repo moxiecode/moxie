@@ -8,9 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true, laxcomma:true */
-/*global define:true */
-
 define('moxie/core/utils/Url', [], function() {
 	/**
 	Parse url into separate components and fill in absent parts with parts from current url,
@@ -35,7 +32,7 @@ define('moxie/core/utils/Url', [], function() {
 					
 		while (i--) {
 			if (m[i]) {
-			  uri[key[i]] = m[i];
+				uri[key[i]] = m[i];
 			}
 		}
 
