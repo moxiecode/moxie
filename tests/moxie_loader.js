@@ -12,9 +12,8 @@
 		}
 	}
 
-	if (document.location.search.indexOf('cov=true') > 0) {
-		document.write('<script src="' + baseURL + '/../tmp/coverage/moxie.cov.js"></script>');
-	} else {
-		document.write('<script src="' + baseURL + '/../bin/js/moxie.dev.js"></script>');
-	}
+	var matches = document.location.search.match(/src=(min|dev|cov)/);
+	var source = matches ? matches[1] : 'min';
+
+	document.write('<script src="' + baseURL + '/../bin/js/moxie.' + source + '.js"></script>');
 })();
