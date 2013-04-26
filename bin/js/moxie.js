@@ -3307,6 +3307,82 @@ define('moxie/runtime/RuntimeTarget', [
 	return RuntimeTarget;
 });
 
+// Included from: src/javascript/file/FileReaderSync.js
+
+/**
+ * FileReaderSync.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+define('moxie/file/FileReaderSync', [
+	'moxie/core/utils/Basic',
+	'moxie/runtime/RuntimeClient',
+	'moxie/core/utils/Encode'
+], function(Basic, RuntimeClient, Encode) {
+	/**
+	Synchronous FileReader implementation. Something like this is available in WebWorkers environment, here
+	it can be used to read only preloaded blobs/files and only below certain size (not yet sure what that'd be,
+	but probably < 1mb). Not meant to be used directly by user.
+
+	@class FileReaderSync
+	@private
+	@constructor
+	*/
+	return function() {
+		RuntimeClient.call(this);
+
+		Basic.extend(this, {
+			uid: Basic.guid('uid_'),
+
+			readAsBinaryString: function(blob) {
+				return _read.call(this, 'readAsBinaryString', blob);
+			},
+			
+			readAsDataURL: function(blob) {
+				return _read.call(this, 'readAsDataURL', blob);
+			},
+			
+			/*readAsArrayBuffer: function(blob) {
+				return _read.call(this, 'readAsArrayBuffer', blob);
+			},*/
+			
+			readAsText: function(blob) {
+				return _read.call(this, 'readAsText', blob);
+			}
+		});
+
+		function _read(op, blob) {
+			if (blob.isDetached()) {
+				var src = blob.getSource();
+				switch (op) {
+					case 'readAsBinaryString':
+						return src;
+					case 'readAsDataURL':
+						return 'data:' + blob.type + ';base64,' + Encode.btoa(src);
+					case 'readAsText':
+						var txt = '';
+						for (var i = 0, length = src.length; i < length; i++) {
+							txt += String.fromCharCode(src[i]);
+						}
+						return txt;
+				}
+			} else {
+				var result = this.connectRuntime(blob.ruid).exec.call(this, 'FileReaderSync', 'read', op, blob);
+				this.disconnectRuntime();
+				return result;
+			}
+		}
+	};
+});
+
 // Included from: src/javascript/xhr/FormData.js
 
 /**
@@ -3453,10 +3529,11 @@ define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Url",
 	"moxie/runtime/RuntimeTarget",
 	"moxie/file/Blob",
+	"moxie/file/FileReaderSync",
 	"moxie/xhr/FormData",
 	"moxie/core/utils/Env",
 	"moxie/core/utils/Mime"
-], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData, Env, Mime) {
+], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FileReaderSync, FormData, Env, Mime) {
 
 	var httpCode = {
 		100: 'Continue',
@@ -4241,8 +4318,10 @@ define("moxie/xhr/XMLHttpRequest", [
 				}
 				
 				_p('readyState', _xhr.readyState);
-												
-				self.dispatchEvent('readystatechange');
+
+				if (_xhr.readyState !== XMLHttpRequest.OPENED) { // readystatechange for OPENED already fired in open()							
+					self.dispatchEvent('readystatechange');
+				}
 				
 				// fake Level 2 events
 				switch (_p('readyState')) {
@@ -4469,82 +4548,6 @@ define("moxie/xhr/XMLHttpRequest", [
 	XMLHttpRequest.prototype = EventTarget.instance;
 
 	return XMLHttpRequest;
-});
-
-// Included from: src/javascript/file/FileReaderSync.js
-
-/**
- * FileReaderSync.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
-define('moxie/file/FileReaderSync', [
-	'moxie/core/utils/Basic',
-	'moxie/runtime/RuntimeClient',
-	'moxie/core/utils/Encode'
-], function(Basic, RuntimeClient, Encode) {
-	/**
-	Synchronous FileReader implementation. Something like this is available in WebWorkers environment, here
-	it can be used to read only preloaded blobs/files and only below certain size (not yet sure what that'd be,
-	but probably < 1mb). Not meant to be used directly by user.
-
-	@class FileReaderSync
-	@private
-	@constructor
-	*/
-	return function() {
-		RuntimeClient.call(this);
-
-		Basic.extend(this, {
-			uid: Basic.guid('uid_'),
-
-			readAsBinaryString: function(blob) {
-				return _read.call(this, 'readAsBinaryString', blob);
-			},
-			
-			readAsDataURL: function(blob) {
-				return _read.call(this, 'readAsDataURL', blob);
-			},
-			
-			/*readAsArrayBuffer: function(blob) {
-				return _read.call(this, 'readAsArrayBuffer', blob);
-			},*/
-			
-			readAsText: function(blob) {
-				return _read.call(this, 'readAsText', blob);
-			}
-		});
-
-		function _read(op, blob) {
-			if (blob.isDetached()) {
-				var src = blob.getSource();
-				switch (op) {
-					case 'readAsBinaryString':
-						return src;
-					case 'readAsDataURL':
-						return 'data:' + blob.type + ';base64,' + Encode.btoa(src);
-					case 'readAsText':
-						var txt = '';
-						for (var i = 0, length = src.length; i < length; i++) {
-							txt += String.fromCharCode(src[i]);
-						}
-						return txt;
-				}
-			} else {
-				var result = this.connectRuntime(blob.ruid).exec.call(this, 'FileReaderSync', 'read', op, blob);
-				this.disconnectRuntime();
-				return result;
-			}
-		}
-	};
 });
 
 // Included from: src/javascript/runtime/Transporter.js
@@ -7898,7 +7901,10 @@ define("moxie/runtime/html5/image/Image", [
 					// if different mime type requested prepare image for conversion
 					_resize.call(this, this.width, this.height, false);
 				}
-				return new Blob(null, me.getAsBinaryString.call(this, type, quality));
+				return new Blob(null, {
+					type: type,
+					data: me.getAsBinaryString.call(this, type, quality)
+				});
 			},
 
 			getAsDataURL: function(type) {
@@ -8528,6 +8534,64 @@ define("moxie/runtime/flash/file/FileReader", [
 	return (extensions.FileReader = FileReader);
 });
 
+// Included from: src/javascript/runtime/flash/file/FileReaderSync.js
+
+/**
+ * FileReaderSync.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+/**
+@class moxie/runtime/flash/file/FileReaderSync
+@private
+*/
+define("moxie/runtime/flash/file/FileReaderSync", [
+	"moxie/runtime/flash/Runtime",
+	"moxie/core/utils/Encode"
+], function(extensions, Encode) {
+	
+	function _formatData(data, op) {
+		switch (op) {
+			case 'readAsText':
+			case 'readAsBinaryString':
+				return Encode.atob(data);
+
+			case 'readAsDataURL':
+				return data;
+
+		}
+		return null;
+	}
+
+	var FileReaderSync = {
+		read: function(op, blob) {
+			var result, self = this.getRuntime();
+
+			result = self.shimExec.call(this, 'FileReaderSync', 'readAsBase64', blob.uid);
+			if (!result) {
+				return null; // or throw ex
+			}
+
+			// special prefix for DataURL read mode
+			if (op === 'readAsDataURL') {
+				result = 'data:' + (blob.type || '') + ';base64,' + result;
+			}
+
+			return _formatData(result, op, blob.type);
+		}
+	};
+
+	return (extensions.FileReaderSync = FileReaderSync);
+});
+
 // Included from: src/javascript/runtime/flash/xhr/XMLHttpRequest.js
 
 /**
@@ -8670,64 +8734,6 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	};
 
 	return (extensions.XMLHttpRequest = XMLHttpRequest);
-});
-
-// Included from: src/javascript/runtime/flash/file/FileReaderSync.js
-
-/**
- * FileReaderSync.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
-/**
-@class moxie/runtime/flash/file/FileReaderSync
-@private
-*/
-define("moxie/runtime/flash/file/FileReaderSync", [
-	"moxie/runtime/flash/Runtime",
-	"moxie/core/utils/Encode"
-], function(extensions, Encode) {
-	
-	function _formatData(data, op) {
-		switch (op) {
-			case 'readAsText':
-			case 'readAsBinaryString':
-				return Encode.atob(data);
-
-			case 'readAsDataURL':
-				return data;
-
-		}
-		return null;
-	}
-
-	var FileReaderSync = {
-		read: function(op, blob) {
-			var result, self = this.getRuntime();
-
-			result = self.shimExec.call(this, 'FileReaderSync', 'readAsBase64', blob.uid);
-			if (!result) {
-				return null; // or throw ex
-			}
-
-			// special prefix for DataURL read mode
-			if (op === 'readAsDataURL') {
-				result = 'data:' + (blob.type || '') + ';base64,' + result;
-			}
-
-			return _formatData(result, op, blob.type);
-		}
-	};
-
-	return (extensions.FileReaderSync = FileReaderSync);
 });
 
 // Included from: src/javascript/runtime/flash/runtime/Transporter.js
@@ -9199,33 +9205,6 @@ define("moxie/runtime/silverlight/file/FileReader", [
 	return (extensions.FileReader = Basic.extend({}, FileReader));
 });
 
-// Included from: src/javascript/runtime/silverlight/xhr/XMLHttpRequest.js
-
-/**
- * XMLHttpRequest.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
-/*global define:true */
-
-/**
-@class moxie/runtime/silverlight/xhr/XMLHttpRequest
-@private
-*/
-define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
-	"moxie/runtime/silverlight/Runtime",
-	"moxie/core/utils/Basic",
-	"moxie/runtime/flash/xhr/XMLHttpRequest"
-], function(extensions, Basic, XMLHttpRequest) {
-	return (extensions.XMLHttpRequest = Basic.extend({}, XMLHttpRequest));
-});
-
 // Included from: src/javascript/runtime/silverlight/file/FileReaderSync.js
 
 /**
@@ -9251,6 +9230,33 @@ define("moxie/runtime/silverlight/file/FileReaderSync", [
 	"moxie/runtime/flash/file/FileReaderSync"
 ], function(extensions, Basic, FileReaderSync) {
 	return (extensions.FileReaderSync = Basic.extend({}, FileReaderSync));
+});
+
+// Included from: src/javascript/runtime/silverlight/xhr/XMLHttpRequest.js
+
+/**
+ * XMLHttpRequest.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/*jshint smarttabs:true, undef:true, unused:true, latedef:true, curly:true, bitwise:true, scripturl:true, browser:true */
+/*global define:true */
+
+/**
+@class moxie/runtime/silverlight/xhr/XMLHttpRequest
+@private
+*/
+define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
+	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
+	"moxie/runtime/flash/xhr/XMLHttpRequest"
+], function(extensions, Basic, XMLHttpRequest) {
+	return (extensions.XMLHttpRequest = Basic.extend({}, XMLHttpRequest));
 });
 
 // Included from: src/javascript/runtime/silverlight/runtime/Transporter.js
@@ -9918,7 +9924,7 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/file/FileReaderSync","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
 })(this);/**
  * o.js
  *

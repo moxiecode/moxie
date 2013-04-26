@@ -19,10 +19,11 @@ define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Url",
 	"moxie/runtime/RuntimeTarget",
 	"moxie/file/Blob",
+	"moxie/file/FileReaderSync",
 	"moxie/xhr/FormData",
 	"moxie/core/utils/Env",
 	"moxie/core/utils/Mime"
-], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FormData, Env, Mime) {
+], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FileReaderSync, FormData, Env, Mime) {
 
 	var httpCode = {
 		100: 'Continue',
