@@ -56,22 +56,25 @@ var addCompat = function(options) {
 		}));
 	}
 
-	// .. dev
-	if (fs.existsSync(options.targetDir + "/moxie.dev.js")) {
-		fs.appendFileSync(options.targetDir + "/moxie.dev.js", 
-			"\n(function() {\n" +
-			"	var baseDir = '';\n" +
-			"	var scripts = document.getElementsByTagName('script');\n" +
-			"	for (var i = 0; i < scripts.length; i++) {\n" +
-			"		var src = scripts[i].src;\n" +
-			"		if (src.indexOf('/moxie.dev.js') != -1) {\n" +
-			"			baseDir = src.substring(0, src.lastIndexOf('/'));\n" +
-			"		}\n" +
-			"	}\n" +
-			"	document.write('<script type=\"text/javascript\" src=\"' + baseDir + '/../../" + options.baseDir + "/o.js\"></script>');\n" +
-			"})();\n"
-		);
-	}
+	// .. dev/cov
+	['dev', 'cov'].forEach(function(suffix) {
+		var fileName = "moxie." + suffix + ".js";
+		if (fs.existsSync(options.targetDir + "/" + fileName)) {
+			fs.appendFileSync(options.targetDir + "/" + fileName, 
+				"\n(function() {\n" +
+				"	var baseDir = '';\n" +
+				"	var scripts = document.getElementsByTagName('script');\n" +
+				"	for (var i = 0; i < scripts.length; i++) {\n" +
+				"		var src = scripts[i].src;\n" +
+				"		if (src.indexOf('/" + fileName + "') != -1) {\n" +
+				"			baseDir = src.substring(0, src.lastIndexOf('/'));\n" +
+				"		}\n" +
+				"	}\n" +
+				"	document.write('<script type=\"text/javascript\" src=\"' + baseDir + '/../../" + options.baseDir + "/o.js\"></script>');\n" +
+				"})();\n"
+			);
+		}
+	});
 };
 
 
