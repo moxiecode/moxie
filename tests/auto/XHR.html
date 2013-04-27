@@ -423,8 +423,6 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 				type = runtimeInfo.type;
 			}
 
-			console.info(xhr.getAllResponseHeaders());
-
 			ok(blob instanceof o.File, "XMLHttpRequest/image.jpg successfully received as File (Blob with a name); [using "+type+"]");
 			equal(blob.name, "image.jpg", "File name (image.jpg) extracted properly");
 			equal(blob.type, "image/jpeg", "Mime type (image/jpeg) figured out");
