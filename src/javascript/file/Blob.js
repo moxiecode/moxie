@@ -40,13 +40,10 @@ define('moxie/file/Blob', [
 			return blob;
 		}
 
-		function _getRuntime() {
-			if (Basic.typeOf(this.connectRuntime) !== 'function') {		
-				RuntimeClient.call(this);
-			}
-			return this.connectRuntime(this.ruid);
+		if (ruid) {
+			RuntimeClient.call(this);
+			this.connectRuntime(ruid);
 		}
-
 
 		if (!blob) {
 			blob = {};
@@ -99,7 +96,7 @@ define('moxie/file/Blob', [
 				if (this.isDetached()) {
 					return _sliceDetached.apply(this, arguments);
 				}
-				return _getRuntime.call(this).exec.call(this, 'Blob', 'slice', this.getSource(), start, end, type);
+				return this.getRuntime().exec.call(this, 'Blob', 'slice', this.getSource(), start, end, type);
 			},
 
 			/**
@@ -124,7 +121,7 @@ define('moxie/file/Blob', [
 			*/
 			detach: function(data) {
 				if (this.ruid) {
-					_getRuntime.call(this).exec.call(this, 'Blob', 'destroy', blobpool[this.uid]);
+					this.getRuntime().exec.call(this, 'Blob', 'destroy', blobpool[this.uid]);
 					this.disconnectRuntime();
 					this.ruid = null;
 				}
