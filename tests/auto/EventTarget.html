@@ -28,80 +28,16 @@ module("EventTarget", {
 
 
 test("addEventListener()/bind() & dispatchEvent()/trigger()", function() {
-	expect(12);
 	
-	var obj, obj1, obj2,
-		
-		total = 0,
-		plusFive = function() {
-			total += 5;
-		};
-	 
-	total = 0;
-	obj1 = o.inherit(o.eventTarget);
-	obj2 = o.inherit(o.eventTarget);
-			
-	notEqual(obj1.uid, obj2.uid, 'Different eventTarget descendants have different uids');	
-	
-	obj1.bind('TestEvent', plusFive);
-	obj1.trigger('TestEvent');
-	equal(total, 5, "Event successfully binded and dispatched");
-	
-	obj2.bind('TestEvent', function(e, one, two) {
-		total += one + two;
-	});	
-	obj2.trigger('TestEvent', 7, 3);
-	equal(total, 15, "Same event dispatched on another object with two arguments");
-	
-	total = 0;
-	obj = o.inherit(o.eventTarget);	
-	obj.bind("TestEvent1 TestEvent2", plusFive);
-	obj.trigger('TestEvent1');
-	obj.trigger('TestEvent2');
-	equal(total, 10, "Single listener for several events is ok");
-	
-	total = 0;
-	o.eventTarget.trigger(obj.uid + '::TestEvent2');
-	equal(total, 5, "Event directly dispatched to the object with specific uid");
-	
-	total = 0;
-	obj = o.inherit(o.eventTarget);	
-	obj.bind("TestEvent", plusFive);
-	obj.trigger("testevent");
-	equal(total, 5, "Event type is case insensitive (brought to lowercase)");
-	
-	total = 0;
-	obj1 = o.inherit(o.eventTarget);
-	obj2 = o.inherit(o.eventTarget);
-	obj1.bind('TestEvent', function(e) {
-		ok(true, "Trigger event handler passing the event object instead of type");
-		equal(e.custom, true, "Custom argument passed with the event object");
-		obj2.trigger(e);
-	});
-	obj2.bind('TestEvent', function(e) {
-		deepEqual(e.target, this, "Event successfully re-dispatched (target remapped)");
-	});
-	obj1.trigger({
-		type: 'TestEvent',
-		custom: true
-	});
-	
-	total = 0;
-	obj = o.inherit(o.eventTarget);
-	obj.bind("TestEvent", plusFive);	
-	obj.bind("TestEvent", function() {
-		total = 1;
-	}, 1);
-	obj.trigger("TestEvent");
-	equal(total, 6, "Handlers with higher priority served first");
-	
-	obj1 = o.inherit(o.eventTarget);
-	obj2 = o.inherit(o.eventTarget);
-	obj1.bind("TestEvent", function(e) {
-		equal(this.uid, obj2.uid, "Event dispatched on one object but within the scope of the other");
-		equal(e.target.uid, obj1.uid, "...event target still contains original object though");
-	}, 0, obj2);
-	obj1.trigger("TestEvent");
+	function Constructor() {
+		this.uid = o.guid();
+	}
+
+	Constructor.prototype = o.EventTarget.instance;
+
+	var obj1 = new Constructor();
+	var obj2 = new Constructor();
+
 });
 
 //test("removeEventListener()/unbind() & removeAllEventListeners()/unbindAll()", function() {

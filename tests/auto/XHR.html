@@ -423,6 +423,8 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 				type = runtimeInfo.type;
 			}
 
+			console.info(xhr.getAllResponseHeaders());
+
 			ok(blob instanceof o.File, "XMLHttpRequest/image.jpg successfully received as File (Blob with a name); [using "+type+"]");
 			equal(blob.name, "image.jpg", "File name (image.jpg) extracted properly");
 			equal(blob.type, "image/jpeg", "Mime type (image/jpeg) figured out");
@@ -442,16 +444,15 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 			ok(true, "LoadEnd fired");
 		};
 
-		stop();
-		try {
-			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
-		} catch (ex) {
+		xhr.bind('RuntimeError', function() {
 			start();
-			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
-				throw x; // pass further
-			}
 			ok(true, "Runtime not supported.");
-		}
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { 
+			runtime_order: runtime
+		}));
 	});
 });
 
@@ -487,7 +488,6 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 		fd.append('one', "1");
 		fd.append(fileFieldName, file);
 
-		stop();
 
 		xhr.onload = function(e) {
 			start();
@@ -497,16 +497,14 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 			equal(xhr.response, xhr.responseText, "xhr.response and xhr.responseText have the same content");
 		};
 
-		startTime = (new Date).getTime();
-		try {
-			xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
-		} catch (ex) {
+		xhr.bind('RuntimeError', function() {
 			start();
-			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
-				throw x; // pass further
-			}
 			ok(true, "Runtime not supported.");
-		}
+		});
+
+		stop();
+		startTime = (new Date).getTime();
+		xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
 	});
 });
 
@@ -530,22 +528,23 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		xhr.onload = function(e) {
 			start();
 			endTime = (new Date).getTime();
+
+			equal(xhr.status, 200, "HTTP Status: 200 OK");
 			ok(xhr.response, "Response received");
 			if (xhr.response) {
 				deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
 			}
 		};
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
 			
 		startTime = (new Date).getTime();
-		try {
-			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
-		} catch (ex) {
-			start();
-			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
-				throw x; // pass further
-			}
-			ok(true, "Runtime not supported.");
-		}
+		xhr.send(null, o.extend({}, this.runtimeOptions, { 
+			runtime_order: runtime 
+		}));
 	});
 });
 
@@ -584,16 +583,15 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			}
 		};
 			
-		startTime = (new Date).getTime();
-		try {
-			xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
-		} catch (ex) {
+		xhr.bind('RuntimeError', function() {
 			start();
-			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
-				throw x; // pass further
-			}
 			ok(true, "Runtime not supported.");
-		}
+		});
+			
+		startTime = (new Date).getTime();
+		xhr.send(fd, o.extend({}, this.runtimeOptions, { 
+			runtime_order: runtime 
+		}));
 	});
 });
 
@@ -694,16 +692,15 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 			ok(true, "LoadEnd fired");
 		};
 			
-		startTime = (new Date).getTime();
-		try {
-			xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
-		} catch (ex) {
+		xhr.bind('RuntimeError', function() {
 			start();
-			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
-				throw x; // pass further
-			}
 			ok(true, "Runtime not supported.");
-		}
+		});
+			
+		startTime = (new Date).getTime();
+		xhr.send(fd, o.extend({}, this.runtimeOptions, { 
+			runtime_order: runtime 
+		}));
 	});
 });
 

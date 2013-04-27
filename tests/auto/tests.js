@@ -9,9 +9,11 @@
 		{"title": "Runtime", "url": "Runtime.html"},
 		{"title": "Blob", "url": "Blob.html"},
 		{"title": "File", "url": "File.html"},
-		{"title": "XMLHttpRequest", "url": "XMLHttpRequest.html"},
 		{"title": "FormData", "url": "FormData.html"},
 		{"title": "Image", "url": "Image.html"},
-		{"title": "FileReader", "url": "FileReader.html"}
+		{"title": "FileReader", "url": "FileReader.html"},
+		{"title": "XHR", "url": "XHR.html"},
+		{"title": "XHR CORS", "url": "XHR-CORS.html"}
+	
 	]
 }
