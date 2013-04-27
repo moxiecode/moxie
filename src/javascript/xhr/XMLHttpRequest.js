@@ -913,6 +913,7 @@ define("moxie/xhr/XMLHttpRequest", [
 							_p('responseText', _xhr.responseText);
 							_p('responseXML', _getDocument(_xhr));
 							_p('response', (_p('responseType') === 'document' ? _p('responseXML') : _p('responseText')));
+							_responseHeaders = _xhr.getAllResponseHeaders();
 							self.dispatchEvent('load');
 						}
 						
