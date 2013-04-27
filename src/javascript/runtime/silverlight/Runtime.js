@@ -40,9 +40,11 @@ define("moxie/runtime/silverlight/Runtime", [
 		Runtime.call(this, options, type, (function() {			
 			function use_clienthttp() {
 				var rc = options.required_caps || {};
-				return rc.send_custom_headers || 
+				return !rc.send_browser_cookies &&
+					(rc.send_custom_headers || 
+					rc.return_response_headers ||
 					rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
-					rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST']); 
+					rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST'])); 
 			}
 
 			return {

@@ -38,9 +38,14 @@ define("moxie/runtime/flash/Runtime", [
 		options = Basic.extend({ swf_url: Env.swf_url }, options);
 
 		Runtime.call(this, options, type, (function() {
+
 			function use_urlstream() {
 				var rc = options.required_features || {};
-				return rc.access_binary || rc.send_custom_headers || rc.send_browser_cookies;
+				return !rc.stream_upload &&
+					(!rc.upload_filesize || Basic.parseSizeStr(rc.upload_filesize) <= 2097152) &&
+					(rc.access_binary || 
+					rc.send_custom_headers || 
+					rc.send_browser_cookies);
 			}
 
 			return {
