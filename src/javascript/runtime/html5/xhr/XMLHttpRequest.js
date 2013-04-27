@@ -24,7 +24,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 ], function(extensions, Basic, File, Blob, FormData, x, Env, parseJSON) {
 	
 	function XMLHttpRequest() {
-		var self = this, _xhr2, filename;
+		var self = this, _xhr2, _filename;
 
 		Basic.extend(this, {
 			send: function(meta, data) {
@@ -64,7 +64,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				_xhr2 = new window.XMLHttpRequest();
 
 				// extract file name
-				filename = meta.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase();
+				_filename = meta.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase();
 
 				_xhr2.open(meta.method, meta.url, meta.async, meta.user, meta.password);
 
@@ -184,7 +184,19 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 					if (_xhr2) {
 						if ('blob' === responseType) {
 							var file = new File(I.uid, _xhr2.response);
-							file.name = filename;
+							
+							try { // it might be not allowed to access Content-Disposition (during CORS for example)
+								var disposition = _xhr2.getResponseHeader('Content-Disposition');
+								if (disposition) {
+									// extract filename from response header if available
+									var match = disposition.match(/filename=([\'\"'])([^\1]+)\1/);
+									if (match) {
+										_filename = match[2];
+									}
+								}
+							} catch(ex) {}
+
+							file.name = _filename;
 							return file;
 						} else if ('json' === responseType && !Env.can('return_response_type', 'json')) {
 							if (_xhr2.status === 200) {
@@ -198,6 +210,13 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				} catch(ex) {}
 			},
 
+			getAllResponseHeaders: function() {
+				try {
+					return _xhr2.getAllResponseHeaders();
+				} catch(ex) {}
+				return '';
+			},
+
 			abort: function() {
 				if (_xhr2) {
 					_xhr2.abort();
@@ -205,7 +224,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 			},
 
 			destroy: function() {
-				self = filename = null;
+				self = _filename = null;
 			}
 		});
 

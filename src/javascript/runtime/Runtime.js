@@ -63,7 +63,7 @@ define('moxie/runtime/Runtime', [
 			// ... periodically report how many bytes of total in the file were uploaded (loaded)
 			report_upload_progress: false,
 			// ... provide access to the headers of http response 
-			return_response_headers: true,
+			return_response_headers: false,
 			// ... support response of specific type, which should be passed as an argument
 			// e.g. runtime.can('return_response_type', 'blob')
 			return_response_type: false,
