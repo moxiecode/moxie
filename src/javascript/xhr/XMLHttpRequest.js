@@ -227,7 +227,10 @@ define("moxie/xhr/XMLHttpRequest", [
 
 			_options = {},
 			_xhr,
-			_mode = NATIVE;
+			_responseHeaders = '',
+			_responseHeadersBag,
+			_mode = NATIVE
+			;
 
 		
 		Basic.extend(this, props, {
@@ -411,6 +414,53 @@ define("moxie/xhr/XMLHttpRequest", [
 					_headers[header] += ', ' + value;
 				}
 				return true;
+			},
+
+			/**
+			Returns all headers from the response, with the exception of those whose field name is Set-Cookie or Set-Cookie2.
+
+			@method getAllResponseHeaders
+			@return {String} reponse headers or empty string
+			*/
+			getAllResponseHeaders: function() {
+				return _responseHeaders || '';
+			},
+
+			/**
+			Returns the header field value from the response of which the field name matches header, 
+			unless the field name is Set-Cookie or Set-Cookie2.
+
+			@method getResponseHeader
+			@param {String} header
+			@return {String} value(s) for the specified header or null
+			*/
+			getResponseHeader: function(header) {
+				header = header.toLowerCase();
+
+				if (_error_flag || !!~Basic.inArray(header, ['set-cookie', 'set-cookie2'])) {
+					return null;
+				}
+
+				if (_responseHeaders && _responseHeaders !== '') {
+					// if we didn't parse response headers until now, do it and keep for later
+					if (!_responseHeadersBag) {
+						_responseHeadersBag = {};
+						Basic.each(_responseHeaders.split(/\r\n/), function(line) {
+							var pair = line.split(/:\s+/);
+							if (pair.length === 2) { // last line might be empty, omit
+								pair[0] = Basic.trim(pair[0]); // just in case
+								_responseHeadersBag[pair[0].toLowerCase()] = { // simply to retain header name in original form
+									header: pair[0],
+									value: Basic.trim(pair[1])
+								};
+							}
+						});
+					}
+					if (_responseHeadersBag.hasOwnProperty(header)) {
+						return _responseHeadersBag[header].header + ': ' + _responseHeadersBag[header].value;
+					}
+				}
+				return null;
 			},
 			
 			/**
@@ -938,6 +988,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					} else if (_p('responseType') === 'document') {
 						_p('responseXML', _p('response'));
 					}
+
+					_responseHeaders = runtime.exec.call(_xhr, 'XMLHttpRequest', 'getAllResponseHeaders');
 
 					self.dispatchEvent('readystatechange');
 					
