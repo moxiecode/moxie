@@ -66,6 +66,8 @@ namespace Moxiecode.Com
 
 		private string _statusText;
 
+		private string _responseHeaders = "";
+
 		private HttpWebRequest _req;
 
 		private SynchronizationContext _syncContext;
@@ -130,6 +132,12 @@ namespace Moxiecode.Com
 		public string getStatusText()
 		{
 			return _statusText;
+		}
+
+
+		public string getAllResponseHeaders()
+		{
+			return _responseHeaders;
 		}
 
 
@@ -366,6 +374,15 @@ namespace Moxiecode.Com
 				{
 					_status = (int)response.StatusCode; // 4xx-5xx can throw WebException, we handle it below
 					_statusText = response.StatusDescription;
+
+					try {
+						if (response.Headers is WebHeaderCollection) {
+							foreach (string header in response.Headers.AllKeys) {
+								_responseHeaders += header + ": " + response.Headers[header] + "\r\n";
+							}
+						}
+					}
+					catch (Exception ex) { }
 
 					using (Stream responseStream = response.GetResponseStream())
 					{
