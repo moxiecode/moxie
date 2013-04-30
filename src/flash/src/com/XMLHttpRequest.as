@@ -245,16 +245,16 @@ package com
 		
 		private function _uploadFileRef(blob:Blob) : void
 		{
-			var request:URLRequest;
+			var request:URLRequest, queryString:Array = [], param:Array;
 						
 			request = new URLRequest();
 			request.method = URLRequestMethod.POST;
 			request.url = _options.url;
-			var qs:Array = [];
-			for (var i:int=0; i < _postData.length; i++) {
-				qs.push(escape(_postData[i][0]) + '=' +  escape(_postData[i][1]));
+			
+			for each (param in _postData) {
+				queryString.push(escape(param[0]) + '=' + escape(param[1]));
 			}
-			request.data = qs.join('&')
+			request.data = queryString.join('&');
 								
 			_conn = blob.getFileRef();
 			_readyState = XMLHttpRequest.OPENED;
