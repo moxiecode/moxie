@@ -195,7 +195,7 @@ package com
 			
 			// save response
 			_response = new ByteArray;
-			
+						
 			if (_conn is FileReference && e.hasOwnProperty('data')) {
 				_response.writeUTFBytes(e.data);
 			} else if (_conn is URLStream) {
@@ -252,7 +252,7 @@ package com
 			request.url = _options.url;
 			
 			for each (param in _postData) {
-				queryString.push(escape(param[0]) + '=' + escape(param[1]));
+				queryString.push(encodeURIComponent(param[0]) + '=' + encodeURIComponent(param[1]));
 			}
 			request.data = queryString.join('&');
 								

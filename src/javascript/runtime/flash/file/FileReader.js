@@ -20,12 +20,11 @@ define("moxie/runtime/flash/file/FileReader", [
 	function _formatData(data, op) {
 		switch (op) {
 			case 'readAsText':
+				return Encode.atob(data, 'utf8');
 			case 'readAsBinaryString':
 				return Encode.atob(data);
-
 			case 'readAsDataURL':
 				return data;
-
 		}
 		return null;
 	}

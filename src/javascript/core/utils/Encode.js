@@ -43,9 +43,9 @@ define('moxie/core/utils/Encode', [], function() {
 	@param {String} data String to decode
 	@return {String} Decoded string
 	*/
-	var atob = function(data) {
+	var atob = function(data, utf8) {
 		if (typeof(window.atob) === 'function') {
-			return window.atob(data);
+			return utf8 ? utf8_decode(window.atob(data)) : window.atob(data);
 		}
 
 		// http://kevin.vanzonneveld.net
@@ -100,7 +100,7 @@ define('moxie/core/utils/Encode', [], function() {
 
 		dec = tmp_arr.join('');
 
-		return dec;
+		return utf8 ? utf8_decode(dec) : dec;
 	};
 	
 	/**
@@ -112,7 +112,11 @@ define('moxie/core/utils/Encode', [], function() {
 	@param {String} data String to encode
 	@return {String} Base64 encoded string
 	*/
-	var btoa = function(data) {
+	var btoa = function(data, utf8) {
+		if (utf8) {
+			utf8_encode(data);
+		}
+
 		if (typeof(window.btoa) === 'function') {
 			return window.btoa(data);
 		}
