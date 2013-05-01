@@ -95,9 +95,9 @@ namespace Moxiecode.MXI
 				buffer = new byte[_stream.Length - idx];
 				_stream.Position = idx;
 			} 
-			else if (length != -1 && segment == null) // extract segment from idx and of specified length
+			else if (length > 0 && segment == null) // extract segment from idx and of specified length
 			{
-				buffer = new byte[length - idx];
+				buffer = new byte[length];
 				_stream.Position = idx;
 			}
 			else if (segment != null) // insert segment starting at idx (alters internal stream)
