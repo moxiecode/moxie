@@ -1030,6 +1030,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					mimeType: _mimeType,
 					encoding: _encoding,
 					responseType: self.responseType,
+					withCredentials: self.withCredentials && !_same_origin_flag,
 					options: _options
 				}, data);
 			}

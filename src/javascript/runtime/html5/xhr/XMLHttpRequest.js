@@ -84,6 +84,10 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 					}
 				}
 
+				if (meta.withCredentials) {
+					_xhr2.withCredentials = true;
+				}
+
 				// attach event handlers
 				(function() {
 					var events = ['loadstart', 'progress', 'abort', 'error', 'load', 'timeout'];
