@@ -153,6 +153,89 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	});
 });
 
+
+// test operational modes
+(function() {
+	var rt;
+
+	function initRuntimeTarget(runtime, requiredCaps, cb) {
+		rt = new o.RuntimeTarget();
+
+		rt.bind('RuntimeInit', function(e, runtimeObj) {
+			start();
+			cb(runtimeObj.getMode());
+		});
+
+		rt.bind('RuntimeError', function() {
+			start();
+			cb(false);
+		});
+
+		stop();
+		rt.connectRuntime(o.extend({}, this.runtimeOptions,  {
+			required_caps: requiredCaps,
+			runtime_order: runtime
+		}));
+	}
+
+	test("Operational mode: html5", function() {
+		initRuntimeTarget.call(this, "html5", {
+		}, function(mode) {
+			equal(mode, "browser", "For html5 runtime operational mode is always: browser");
+		});
+	});
+
+	test("Operational mode: html4", function() {
+		initRuntimeTarget.call(this, "html4", {
+		}, function(mode) {
+			equal(mode, "browser", "For html4 runtime operational mode is always: browser");
+		});
+	});
+
+	test("Operational mode: flash", function() {
+		initRuntimeTarget.call(this, "flash", {
+			send_binary_string: true
+		}, function(mode) {
+			if (!mode) {
+				ok(false, "Operational mode cannot be set.");
+			} else {
+				equal(mode, "browser", "{ send_binary_string: true } requires mode: browser");
+			}
+		});
+
+		initRuntimeTarget.call(this, "flash", {
+			upload_filesize: '2gb'
+		}, function(mode) {
+			if (!mode) {
+				ok(false, "Operational mode cannot be set.");
+			} else {
+				equal(mode, "client", "{ upload_filesize: '2gb' } requires mode: client");
+			}
+		});
+		
+		initRuntimeTarget.call(this, "flash", {
+			send_binary_string: true,
+			upload_filesize: '2gb'
+		}, function(mode) {
+			equal(mode, false, "Operational mode cannot be set: conflicting capabilities requested.");
+		});
+
+
+		initRuntimeTarget.call(this, "flash", {
+			do_cors: false,
+		}, function(mode) {
+			equal(mode, false, "Operational mode cannot be set: capability either unsupported or unsupported state requested.");
+		});
+
+		initRuntimeTarget.call(this, "flash", {
+			report_upload_progress: true,
+		}, function(mode) {
+			equal(mode, "browser", "Operational mode set to default: browser.");
+		});
+	});
+
+}());
+
 </script>
 </head>
 <body>
