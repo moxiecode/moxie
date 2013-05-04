@@ -55,7 +55,7 @@ define("moxie/runtime/silverlight/Runtime", [
 			select_multiple: true,
 			send_binary_string: true,
 			send_browser_cookies: function() {
-				return this.getMode() === 'client';
+				return this.getMode() === 'browser';
 			},
 			send_custom_headers: function() {
 				return this.getMode() === 'client';
