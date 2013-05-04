@@ -508,9 +508,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			@param {Blob|Document|String|FormData} [data] Request entity body
 			@param {Object} [options] Set of requirements and pre-requisities for runtime initialization
 			*/
-			send: function(data, options) {
-				var self = this;
-					
+			send: function(data, options) {					
 				if (Basic.typeOf(options) === 'string') {
 					_options = { ruid: options };
 				} else if (!options) {
@@ -555,6 +553,11 @@ define("moxie/xhr/XMLHttpRequest", [
 					}
 				}
 
+				// if withCredentials not set, but requested, set it automatically
+				if (!this.withCredentials) {
+					this.withCredentials = (_options.required_caps && _options.required_caps.send_browser_cookies) && !_same_origin_flag;
+				}
+
 				// 4 - storage mutex
 				// 5
 				_upload_events_flag = (!_sync_flag && this.upload.hasEventListener()); // DSAP
@@ -574,7 +577,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					}
 				}
 				// 8.5 - Return the send() method call, but continue running the steps in this algorithm.
-				_doXHR.call(self, data);
+				_doXHR.call(this, data);
 			},
 			
 			/**
@@ -1030,7 +1033,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					mimeType: _mimeType,
 					encoding: _encoding,
 					responseType: self.responseType,
-					withCredentials: self.withCredentials && !_same_origin_flag,
+					withCredentials: self.withCredentials,
 					options: _options
 				}, data);
 			}
