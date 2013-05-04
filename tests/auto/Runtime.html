@@ -230,7 +230,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		initRuntimeTarget.call(this, "flash", {
 			report_upload_progress: true,
 		}, function(mode) {
-			equal(mode, "browser", "Operational mode set to default: browser.");
+			equal(mode, "client", "Operational mode set to default: client.");
 		});
 	});
 
