@@ -35,10 +35,14 @@ define('moxie/runtime/Runtime', [
 		@event Error
 		*/
 
-		var self = this, shim, uid = Basic.guid(type + '_');
+		var self = this
+		, _shim
+		, _uid = Basic.guid(type + '_')
+		, _mode = null
+		;
 
 		// register runtime in private hash
-		runtimes[uid] = this;
+		runtimes[_uid] = this;
 
 		/**
 		Default set of capabilities, which can be redifined later by specific runtime
@@ -94,19 +98,18 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
-
 		
 		// small extension factory here (is meant to be extended with actual extensions constructors)
-		shim = (function() {
+		_shim = (function() {
 			var objpool = {};
 
 			return {
 				exec: function(uid, comp, fn, args) {
-					if (shim[comp]) {
+					if (_shim[comp]) {
 						if (!objpool[uid]) {
 							objpool[uid] = {
 								context: this,
-								instance: new shim[comp]()
+								instance: new _shim[comp]()
 							};
 						}
 
@@ -151,7 +154,7 @@ define('moxie/runtime/Runtime', [
 			@property uid
 			@type {String}
 			*/
-			uid: uid,
+			uid: _uid,
 
 			/**
 			Runtime type (e.g. flash, html5, etc)
@@ -167,7 +170,7 @@ define('moxie/runtime/Runtime', [
 			@property shimid
 			@type {String}
 			*/
-			shimid: uid + '_container',
+			shimid: _uid + '_container',
 
 			/**
 			Number of connected clients. If equal to zero, runtime can be destroyed
@@ -277,7 +280,7 @@ define('moxie/runtime/Runtime', [
 			@return {DOMElement}
 			*/
 			getShim: function() {
-				return shim;
+				return _shim;
 			},
 
 			/**
@@ -322,13 +325,13 @@ define('moxie/runtime/Runtime', [
 					shimContainer.parentNode.removeChild(shimContainer);
 				}
 
-				if (shim) {
-					shim.removeAllInstances();
+				if (_shim) {
+					_shim.removeAllInstances();
 				}
 
 				this.unbindAll();
 				delete runtimes[this.uid];
-				uid = self = shim = shimContainer = null;
+				_uid = self = _shim = _mode = shimContainer = null;
 			}
 		});
 	}
