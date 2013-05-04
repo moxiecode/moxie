@@ -29,7 +29,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			var target = this, self = target.getRuntime();
 
 			function send() {
-				meta.transport = self.can('send_browser_cookies') ? 'browser' : 'client';
+				meta.transport = self.getMode();
 				self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
 			}
 
