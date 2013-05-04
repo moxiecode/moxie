@@ -1693,8 +1693,14 @@ define('moxie/runtime/Runtime', [
 	Common set of methods and properties for every runtime instance
 
 	@class Runtime
+
+	@param {Object} options
+	@param {String} type Sanitized name of the runtime
+	@param {Object} [caps] Set of capabilities that differentiate specified runtime
+	@param {Object} [clientCaps] Set of capabilities that implicitly switch the runtime to 'client' mode
+	@param {String} [defaultMode='browser'] Default operational mode to choose if no required capabilities were requested
 	*/
-	function Runtime(options, type, caps) {
+	function Runtime(options, type, caps, clientCaps, defaultMode) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Results in RuntimeInit on a connected component.
@@ -1709,10 +1715,58 @@ define('moxie/runtime/Runtime', [
 		@event Error
 		*/
 
-		var self = this, shim, uid = Basic.guid(type + '_');
+		var self = this
+		, _shim
+		, _uid = Basic.guid(type + '_')
+		, _mode = null
+		;
+
+		/**
+		Runtime (not native one) may operate in browser or client mode.
+		
+		@method _setMode
+		@private
+		@param {Object} [clientCaps] Set of capabilities that require client mode
+		@param {Object} [defaultMode] The mode to switch to if clientCaps or requiredCaps are empty
+		*/
+		function _setMode(clientCaps, defaultMode) {
+			var self = this
+			, rc = options && options.required_caps
+			;
+
+			// mode can be effectively set only once
+			if (_mode !== null) {
+				return _mode;
+			}
+
+			if (rc && !Basic.isEmptyObj(clientCaps)) {
+				// loop over required caps and check if they do require the same mode
+				Basic.each(rc, function(value, cap) {
+					if (clientCaps.hasOwnProperty(cap)) {
+						var capMode = self.can(cap, value, clientCaps) ? 'client' : 'browser';
+						// if cap requires conflicting mode - runtime cannot fulfill required caps
+						if (_mode && _mode !== capMode) {
+							return (_mode = false);
+						} else {
+							_mode = capMode;
+						}
+					}
+				});
+			} 
+
+			// if mode still not defined
+			if (_mode === null) {
+				_mode = defaultMode || 'browser';
+			}
+
+			// once we got the mode, test against all caps
+			if (_mode && rc && !this.can(rc)) {
+				_mode = false;
+			}	
+		}
 
 		// register runtime in private hash
-		runtimes[uid] = this;
+		runtimes[_uid] = this;
 
 		/**
 		Default set of capabilities, which can be redifined later by specific runtime
@@ -1768,19 +1822,18 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
-
 		
 		// small extension factory here (is meant to be extended with actual extensions constructors)
-		shim = (function() {
+		_shim = (function() {
 			var objpool = {};
 
 			return {
 				exec: function(uid, comp, fn, args) {
-					if (shim[comp]) {
+					if (_shim[comp]) {
 						if (!objpool[uid]) {
 							objpool[uid] = {
 								context: this,
-								instance: new shim[comp]()
+								instance: new _shim[comp]()
 							};
 						}
 
@@ -1825,7 +1878,7 @@ define('moxie/runtime/Runtime', [
 			@property uid
 			@type {String}
 			*/
-			uid: uid,
+			uid: _uid,
 
 			/**
 			Runtime type (e.g. flash, html5, etc)
@@ -1841,7 +1894,7 @@ define('moxie/runtime/Runtime', [
 			@property shimid
 			@type {String}
 			*/
-			shimid: uid + '_container',
+			shimid: _uid + '_container',
 
 			/**
 			Number of connected clients. If equal to zero, runtime can be destroyed
@@ -1865,9 +1918,12 @@ define('moxie/runtime/Runtime', [
 			@method can
 			@param {String} cap Name of capability to check
 			@param {Mixed} [value] If passed, capability should somehow correlate to the value
+			@param {Object} [refCaps] Set of capabilities to check the specified cap against (defaults to internal set)
 			@return {Boolean} true if runtime has such capability and false, if - not
 			*/
 			can: function(cap, value) {
+				var refCaps = arguments[2] || caps;
+
 				// if cap var is a comma-separated list of caps, convert it to object (key/value)
 				if (Basic.typeOf(cap) === 'string' && Basic.typeOf(value) === 'undefined') {
 					cap = (function(arr) {
@@ -1883,7 +1939,7 @@ define('moxie/runtime/Runtime', [
 
 				if (Basic.typeOf(cap) === 'object') {
 					for (var key in cap) {
-						if (!this.can(key, cap[key])) {
+						if (!this.can(key, cap[key], refCaps)) {
 							return false;
 						}
 					}
@@ -1891,20 +1947,28 @@ define('moxie/runtime/Runtime', [
 				}
 
 				// check the individual cap
-				if (Basic.typeOf(caps[cap]) === 'function') {
-					return caps[cap].call(this, value);
+				var result;
+				if (Basic.typeOf(refCaps[cap]) === 'function') {
+					result = refCaps[cap].call(this, value);
+				} else {
+					result = refCaps[cap];
 				}
 
-				return caps[cap] || false;
+				// for boolean values check absolute equality
+				return Basic.typeOf(value) === 'boolean' ? result === value : result;
 			},
 
-			setCap: function(cap, value) {
-				if (Basic.typeOf(cap) === 'object') {
-					caps = Basic.extend(caps, cap);
-				} else if (Basic.typeOf(value) !== 'undefined') {
-					caps[cap] = value;
-				}
+
+			/**
+			Runtime (not native one) may operate in browser or client mode.
+
+			@method getMode
+			@return {String|Boolean} current mode or false, if none possible
+			*/
+			getMode: function() {
+				return _mode || false;
 			},
+
 
 			/**
 			Returns container for the runtime as DOM element
@@ -1947,7 +2011,7 @@ define('moxie/runtime/Runtime', [
 			@return {DOMElement}
 			*/
 			getShim: function() {
-				return shim;
+				return _shim;
 			},
 
 			/**
@@ -1992,15 +2056,17 @@ define('moxie/runtime/Runtime', [
 					shimContainer.parentNode.removeChild(shimContainer);
 				}
 
-				if (shim) {
-					shim.removeAllInstances();
+				if (_shim) {
+					_shim.removeAllInstances();
 				}
 
 				this.unbindAll();
 				delete runtimes[this.uid];
-				uid = self = shim = shimContainer = null;
+				_uid = self = _shim = _mode = shimContainer = null;
 			}
 		});
+
+		_setMode.call(this, clientCaps, defaultMode);
 	}
 
 	/**
@@ -2124,12 +2190,6 @@ define('moxie/runtime/RuntimeClient', [
 					// try initializing the runtime
 					runtime = new constructor(options);
 
-					// if any capabilities required, check if the runtime has them
-					if (options.required_caps && !runtime.can(options.required_caps)) {
-						initialize(items);
-						return;
-					}
-
 					runtime.bind('Init', function() {
 						// mark runtime as initialized
 						runtime.initialized = true;
@@ -2148,6 +2208,12 @@ define('moxie/runtime/RuntimeClient', [
 					});
 
 					/*runtime.bind('Exception', function() { });*/
+
+					// check if runtime managed to pick-up operational mode
+					if (!runtime.getMode()) {
+						runtime.trigger('Error');
+						return;
+					}
 
 					runtime.init();
 				}
@@ -3961,9 +4027,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			@param {Blob|Document|String|FormData} [data] Request entity body
 			@param {Object} [options] Set of requirements and pre-requisities for runtime initialization
 			*/
-			send: function(data, options) {
-				var self = this;
-					
+			send: function(data, options) {					
 				if (Basic.typeOf(options) === 'string') {
 					_options = { ruid: options };
 				} else if (!options) {
@@ -4008,6 +4072,11 @@ define("moxie/xhr/XMLHttpRequest", [
 					}
 				}
 
+				// if withCredentials not set, but requested, set it automatically
+				if (!this.withCredentials) {
+					this.withCredentials = (_options.required_caps && _options.required_caps.send_browser_cookies) && !_same_origin_flag;
+				}
+
 				// 4 - storage mutex
 				// 5
 				_upload_events_flag = (!_sync_flag && this.upload.hasEventListener()); // DSAP
@@ -4027,7 +4096,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					}
 				}
 				// 8.5 - Return the send() method call, but continue running the steps in this algorithm.
-				_doXHR.call(self, data);
+				_doXHR.call(this, data);
 			},
 			
 			/**
@@ -4483,7 +4552,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					mimeType: _mimeType,
 					encoding: _encoding,
 					responseType: self.responseType,
-					withCredentials: self.withCredentials && !_same_origin_flag,
+					withCredentials: self.withCredentials,
 					options: _options
 				}, data);
 			}
@@ -5614,55 +5683,58 @@ define("moxie/runtime/html5/Runtime", [
 	function Html5Runtime(options) {
 		var I = this;
 
-		Runtime.call(this, options, (arguments[1] || type), arguments[2] || {
-			access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
-			access_image_binary: function() {
-				return I.can('access_binary') && !!extensions.Image;
-			},
-			display_media: Env.can('create_canvas') || Env.can('use_data_uri_over32kb'),
-			do_cors: function() {
-				return !!(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest());
-			},
-			drag_and_drop: (function() {
-				// this comes directly from Modernizr: http://www.modernizr.com/
-				var div = document.createElement('div');
-				// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
-				return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
-			}()),
-			return_response_headers: true,
-			return_response_type: function(responseType) {
-				if (responseType === 'json') {
-					return true; // we can fake this one even if it's not supported
-				} else {
-					return Env.can('return_response_type', responseType);
-				}
-			},
-			report_upload_progress: function() {
-				return !!(window.XMLHttpRequest && new XMLHttpRequest().upload);
-			},
-			resize_image: function() {
-				return I.can('access_binary') && Env.can('create_canvas');
-			},
-			select_folder: Env.browser === 'Chrome' && Env.version >= 21,
-			select_multiple: !(Env.browser === 'Safari' && Env.OS === 'Windows'),
-			send_binary_string:
-				!!(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
-			send_custom_headers: !!window.XMLHttpRequest,
-			send_multipart: function() {
-				return !!(window.XMLHttpRequest && new XMLHttpRequest().upload && window.FormData) || I.can('send_binary_string');
-			},
-			slice_blob: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
-			stream_upload: function() {
-				return I.can('slice_blob') && I.can('send_multipart');
-			},
-			summon_file_dialog: (function() { // yeah... some dirty sniffing here...
-				return  (Env.browser === 'Firefox' && Env.version >= 4)	||
-						(Env.browser === 'Opera' && Env.version >= 12)	||
-						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
-			}()),
-			upload_filesize: true
-		});
+		var caps = Basic.extend({
+				access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
+				access_image_binary: function() {
+					return I.can('access_binary') && !!extensions.Image;
+				},
+				display_media: Env.can('create_canvas') || Env.can('use_data_uri_over32kb'),
+				do_cors: function() {
+					return !!(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest());
+				},
+				drag_and_drop: (function() {
+					// this comes directly from Modernizr: http://www.modernizr.com/
+					var div = document.createElement('div');
+					// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
+					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
+				}()),
+				return_response_headers: true,
+				return_response_type: function(responseType) {
+					if (responseType === 'json') {
+						return true; // we can fake this one even if it's not supported
+					} else {
+						return Env.can('return_response_type', responseType);
+					}
+				},
+				report_upload_progress: function() {
+					return !!(window.XMLHttpRequest && new XMLHttpRequest().upload);
+				},
+				resize_image: function() {
+					return I.can('access_binary') && Env.can('create_canvas');
+				},
+				select_folder: Env.browser === 'Chrome' && Env.version >= 21,
+				select_multiple: !(Env.browser === 'Safari' && Env.OS === 'Windows'),
+				send_binary_string:
+					!!(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
+				send_custom_headers: !!window.XMLHttpRequest,
+				send_multipart: function() {
+					return !!(window.XMLHttpRequest && new XMLHttpRequest().upload && window.FormData) || I.can('send_binary_string');
+				},
+				slice_blob: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
+				stream_upload: function() {
+					return I.can('slice_blob') && I.can('send_multipart');
+				},
+				summon_file_dialog: (function() { // yeah... some dirty sniffing here...
+					return  (Env.browser === 'Firefox' && Env.version >= 4)	||
+							(Env.browser === 'Opera' && Env.version >= 12)	||
+							!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
+				}()),
+				upload_filesize: true
+			}, 
+			arguments[2]
+		);
 
+		Runtime.call(this, options, (arguments[1] || type), caps);
 
 		Basic.extend(this, {
 
@@ -8206,55 +8278,55 @@ define("moxie/runtime/flash/Runtime", [
 
 		options = Basic.extend({ swf_url: Env.swf_url }, options);
 
-		Runtime.call(this, options, type, (function() {
-
-			function use_urlstream() {
-				var rc = options.required_features || {};
-				return !rc.stream_upload &&
-					(!rc.upload_filesize || Basic.parseSizeStr(rc.upload_filesize) <= 2097152) &&
-					(rc.access_binary || 
-					rc.send_custom_headers || 
-					rc.send_browser_cookies);
+		Runtime.call(this, options, type, {
+			access_binary: true,
+			access_image_binary: true,
+			display_media: true,
+			do_cors: true,
+			drag_and_drop: false,
+			report_upload_progress: true,
+			resize_image: true,
+			return_response_headers: false,
+			return_response_type: function(responseType) {
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || this.getMode() === 'browser';
+			},
+			return_status_code: true,
+			select_multiple: true,
+			send_binary_string: function() {
+				return this.getMode() === 'browser';
+			},
+			send_browser_cookies: function() {
+				return this.getMode() === 'browser';
+			},
+			send_custom_headers: function() {
+				return this.getMode() === 'browser';
+			},
+			send_multipart: true,
+			slice_blob: true,
+			stream_upload: function() {
+				return this.getMode() === 'browser';
+			},
+			summon_file_dialog: false,
+			upload_filesize: function(size) {
+				return Basic.parseSizeStr(size) <= 2097152 || this.getMode() === 'client';
+			},
+			use_http_method: function(methods) {
+				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
+		}, { 
+			// capabilities that implicitly switch the runtime into client mode
+			return_response_type: function(responseType) {
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']);
+			},
+			send_binary_string: false,
+			send_browser_cookies: false,
+			send_custom_headers: false,
+			stream_upload: true,
+			upload_filesize: function(size) {
+				return Basic.parseSizeStr(size) >= 2097152;
+			}
+		}, 'client');
 
-			return {
-				access_binary: true,
-				access_image_binary: true,
-				display_media: true,
-				do_cors: true,
-				drag_and_drop: false,
-				report_upload_progress: true,
-				resize_image: true,
-				return_response_headers: false,
-				return_response_type: true,
-				return_status_code: true,
-				select_multiple: true,
-				send_binary_string: true,
-				send_browser_cookies: function() {
-					return use_urlstream();
-				},
-				send_custom_headers: function() {
-					return use_urlstream();
-				},
-				send_multipart: true,
-				slice_blob: true,
-				stream_upload: function(value) {
-					return !!value && !use_urlstream();
-				},
-				summon_file_dialog: false,
-				upload_filesize: function(size) {
-					var maxSize = use_urlstream() ? 2097152 : -1; // 200mb || unlimited
-					if (!~maxSize || Basic.parseSizeStr(size) <= maxSize) {
-						return true;
-					}
-					return false;
-				},
-				use_http_method: function(methods) {
-					return !Basic.arrayDiff(methods, ['GET', 'POST']);
-				},
-				cross_domain: true
-			};
-		}()));
 
 		Basic.extend(this, {
 
@@ -8584,7 +8656,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			var target = this, self = target.getRuntime();
 
 			function send() {
-				meta.transport = self.can('send_browser_cookies') ? 'browser' : 'client';
+				meta.transport = self.getMode();
 				self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
 			}
 
@@ -8844,53 +8916,52 @@ define("moxie/runtime/silverlight/Runtime", [
 
 		options = Basic.extend({ xap_url: Env.xap_url }, options);
 
-		Runtime.call(this, options, type, (function() {			
-			function use_clienthttp() {
-				var rc = options.required_caps || {};
-				return !rc.send_browser_cookies &&
-					(rc.send_custom_headers || 
-					rc.return_response_headers ||
-					rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
-					rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST'])); 
+		Runtime.call(this, options, type, {
+			access_binary: true,
+			access_image_binary: true,
+			display_media: true,
+			do_cors: true,
+			drag_and_drop: false,
+			report_upload_progress: true,
+			resize_image: true,
+			return_response_headers: function() {
+				return this.getMode() === 'client';
+			},
+			return_response_type: true,
+			return_status_code: function(code) {
+				return this.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
+			},
+			select_multiple: true,
+			send_binary_string: true,
+			send_browser_cookies: function() {
+				return this.getMode() === 'browser';
+			},
+			send_custom_headers: function() {
+				return this.getMode() === 'client';
+			},
+			send_multipart: true,
+			slice_blob: true,
+			stream_upload: true,
+			summon_file_dialog: false,
+			upload_filesize: true,
+			use_http_method: function(methods) {
+				return this.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
-
-			return {
-				access_binary: true,
-				access_image_binary: true,
-				display_media: true,
-				do_cors: true,
-				drag_and_drop: false,
-				report_upload_progress: true,
-				resize_image: true,
-				return_response_headers: function() {
-					return use_clienthttp();
-				},
-				return_response_type: true,
-				return_status_code: function(code) {
-					return use_clienthttp() || !Basic.arrayDiff(code, [200, 404]);
-				},
-				select_multiple: true,
-				send_binary_string: true,
-				send_browser_cookies: function() {
-					return !use_clienthttp();
-				},
-				send_custom_headers: function() {
-					return use_clienthttp();
-				},
-				send_multipart: true,
-				slice_blob: true,
-				stream_upload: true,
-				summon_file_dialog: false,
-				upload_filesize: true,
-				use_http_method: function(methods) {
-					return use_clienthttp() || !Basic.arrayDiff(methods, ['GET', 'POST']);
-				}
-			};
-		}()));
+		}, { 
+			// capabilities that implicitly switch the runtime into client mode
+			return_response_headers: true,
+			return_status_code: function(code) {
+				return Basic.arrayDiff(code, [200, 404]);
+			},
+			send_browser_cookies: false,
+			send_custom_headers: true,
+			use_http_method: function(methods) {
+				return Basic.arrayDiff(methods, ['GET', 'POST']);
+			}
+		});
 
 
 		Basic.extend(this, {
-
 			getShim: function() {
 				return Dom.get(this.uid).content.Moxie;
 			},
