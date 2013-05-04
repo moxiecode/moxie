@@ -19,8 +19,14 @@ define('moxie/runtime/Runtime', [
 	Common set of methods and properties for every runtime instance
 
 	@class Runtime
+
+	@param {Object} options
+	@param {String} type Sanitized name of the runtime
+	@param {Object} [caps] Set of capabilities that differentiate specified runtime
+	@param {Object} [clientCaps] Set of capabilities that implicitly switch the runtime to 'client' mode
+	@param {String} [defaultMode='browser'] Default operational mode to choose if no required capabilities were requested
 	*/
-	function Runtime(options, type, caps) {
+	function Runtime(options, type, caps, clientCaps, defaultMode) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Results in RuntimeInit on a connected component.
@@ -40,6 +46,50 @@ define('moxie/runtime/Runtime', [
 		, _uid = Basic.guid(type + '_')
 		, _mode = null
 		;
+
+		/**
+		Runtime (not native one) may operate in browser or client mode.
+		
+		@method _setMode
+		@private
+		@param {Object} [clientCaps] Set of capabilities that require client mode
+		@param {Object} [defaultMode] The mode to switch to if clientCaps or requiredCaps are empty
+		*/
+		function _setMode(clientCaps, defaultMode) {
+			var self = this
+			, rc = options && options.required_caps
+			;
+
+			// mode can be effectively set only once
+			if (_mode !== null) {
+				return _mode;
+			}
+
+			if (rc && !Basic.isEmptyObj(clientCaps)) {
+				// loop over required caps and check if they do require the same mode
+				Basic.each(rc, function(value, cap) {
+					if (clientCaps.hasOwnProperty(cap)) {
+						var capMode = self.can(cap, value, clientCaps) ? 'client' : 'browser';
+						// if cap requires conflicting mode - runtime cannot fulfill required caps
+						if (_mode && _mode !== capMode) {
+							return (_mode = false);
+						} else {
+							_mode = capMode;
+						}
+					}
+				});
+			} 
+
+			// if mode still not defined
+			if (_mode === null) {
+				_mode = defaultMode || 'browser';
+			}
+
+			// once we got the mode, test against all caps
+			if (_mode && rc && !this.can(rc)) {
+				_mode = false;
+			}	
+		}
 
 		// register runtime in private hash
 		runtimes[_uid] = this;
@@ -239,6 +289,18 @@ define('moxie/runtime/Runtime', [
 				}
 			},
 
+
+			/**
+			Runtime (not native one) may operate in browser or client mode.
+
+			@method getMode
+			@return {String|Boolean} current mode or false, if none possible
+			*/
+			getMode: function() {
+				return _mode || false;
+			},
+
+
 			/**
 			Returns container for the runtime as DOM element
 
@@ -334,6 +396,8 @@ define('moxie/runtime/Runtime', [
 				_uid = self = _shim = _mode = shimContainer = null;
 			}
 		});
+
+		_setMode.call(this, clientCaps, defaultMode);
 	}
 
 	/**
