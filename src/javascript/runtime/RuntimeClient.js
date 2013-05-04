@@ -52,12 +52,6 @@ define('moxie/runtime/RuntimeClient', [
 					// try initializing the runtime
 					runtime = new constructor(options);
 
-					// if any capabilities required, check if the runtime has them
-					if (options.required_caps && !runtime.can(options.required_caps)) {
-						initialize(items);
-						return;
-					}
-
 					runtime.bind('Init', function() {
 						// mark runtime as initialized
 						runtime.initialized = true;
@@ -76,6 +70,12 @@ define('moxie/runtime/RuntimeClient', [
 					});
 
 					/*runtime.bind('Exception', function() { });*/
+
+					// check if runtime managed to pick-up operational mode
+					if (!runtime.getMode()) {
+						runtime.trigger('Error');
+						return;
+					}
 
 					runtime.init();
 				}
