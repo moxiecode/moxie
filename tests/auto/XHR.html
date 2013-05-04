@@ -812,7 +812,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 		, blob
 		, binStr
 		, file
-		, fileName = 'image.jpg'
+		, fileName = o.guid('file_')
 		, fileFieldName = 'image'
 		, offset = 0
 		, chunkSize = 20 * 1024
@@ -831,10 +831,12 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 		function uploadNextChunk() {
 			var blob = file.slice(offset, offset + chunkSize);
 			var xhr = new o.XMLHttpRequest();
+			
 			var fd = new o.FormData();
 			fd.append("name", fileName);
 			fd.append("offset", offset);
 			fd.append("total", binStr.length);
+			fd.append("size", blob.size)
 
 			xhr.open('post', 'XMLHttpRequest/session.php');
 			xhr.responseType = 'json';
@@ -848,27 +850,38 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 						stop();
 						setTimeout(uploadNextChunk, 1);
 					} else {
+						// each runtime should receive two replies
 						ok(true, "Runtime supports sessions.");
 					}
 				} else {
-					ok(false, "Runtime supports sessions.");
+					ok(false, "Runtime supports sessions."); // runtime doesn't support sessions
 				}
 			};
 
-			try {
-				xhr.send(fd, o.extend({}, self.runtimeOptions, { runtime_order: runtime }));
-			} catch (ex) {
+			xhr.bind('RuntimeError', function() {
 				start();
-				if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
-					throw x; // pass further
-				}
 				ok(true, "Runtime not supported.");
-				return;
-			}
+			});
+
+			xhr.send(fd, o.extend({}, self.runtimeOptions, { 
+				runtime_order: runtime,
+				required_caps: {
+					send_browser_cookies: true
+				} 
+			}));
 		}
 
 		stop();
-		uploadNextChunk();
+		// start session
+		var xhrNative = new window.XMLHttpRequest();
+		
+		xhrNative.open('get', 'XMLHttpRequest/session.php?start=1&name=' + fileName);
+		
+		xhrNative.onload = function() {
+			uploadNextChunk();
+		};
+
+		xhrNative.send();
 
 	});
 });
@@ -877,7 +890,6 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 
 // test different server response codes
-// send browser cookies (retain session)
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	
 	test('test response http status codes: ' + runtime, function() {
