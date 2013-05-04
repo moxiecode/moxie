@@ -37,53 +37,52 @@ define("moxie/runtime/silverlight/Runtime", [
 
 		options = Basic.extend({ xap_url: Env.xap_url }, options);
 
-		Runtime.call(this, options, type, (function() {			
-			function use_clienthttp() {
-				var rc = options.required_caps || {};
-				return !rc.send_browser_cookies &&
-					(rc.send_custom_headers || 
-					rc.return_response_headers ||
-					rc.return_status_code && Basic.arrayDiff(rc.return_status_code, [200, 404]) ||
-					rc.use_http_method && Basic.arrayDiff(rc.use_http_method, ['GET', 'POST'])); 
+		Runtime.call(this, options, type, {
+			access_binary: true,
+			access_image_binary: true,
+			display_media: true,
+			do_cors: true,
+			drag_and_drop: false,
+			report_upload_progress: true,
+			resize_image: true,
+			return_response_headers: function() {
+				return this.getMode() === 'client';
+			},
+			return_response_type: true,
+			return_status_code: function(code) {
+				return this.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
+			},
+			select_multiple: true,
+			send_binary_string: true,
+			send_browser_cookies: function() {
+				return this.getMode() === 'client';
+			},
+			send_custom_headers: function() {
+				return this.getMode() === 'client';
+			},
+			send_multipart: true,
+			slice_blob: true,
+			stream_upload: true,
+			summon_file_dialog: false,
+			upload_filesize: true,
+			use_http_method: function(methods) {
+				return this.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
-
-			return {
-				access_binary: true,
-				access_image_binary: true,
-				display_media: true,
-				do_cors: true,
-				drag_and_drop: false,
-				report_upload_progress: true,
-				resize_image: true,
-				return_response_headers: function() {
-					return use_clienthttp();
-				},
-				return_response_type: true,
-				return_status_code: function(code) {
-					return use_clienthttp() || !Basic.arrayDiff(code, [200, 404]);
-				},
-				select_multiple: true,
-				send_binary_string: true,
-				send_browser_cookies: function() {
-					return !use_clienthttp();
-				},
-				send_custom_headers: function() {
-					return use_clienthttp();
-				},
-				send_multipart: true,
-				slice_blob: true,
-				stream_upload: true,
-				summon_file_dialog: false,
-				upload_filesize: true,
-				use_http_method: function(methods) {
-					return use_clienthttp() || !Basic.arrayDiff(methods, ['GET', 'POST']);
-				}
-			};
-		}()));
+		}, { 
+			// capabilities that implicitly switch the runtime into client mode
+			return_response_headers: true,
+			return_status_code: function(code) {
+				return Basic.arrayDiff(code, [200, 404]);
+			},
+			send_browser_cookies: false,
+			send_custom_headers: true,
+			use_http_method: function(methods) {
+				return Basic.arrayDiff(methods, ['GET', 'POST']);
+			}
+		});
 
 
 		Basic.extend(this, {
-
 			getShim: function() {
 				return Dom.get(this.uid).content.Moxie;
 			},

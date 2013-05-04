@@ -37,55 +37,55 @@ define("moxie/runtime/flash/Runtime", [
 
 		options = Basic.extend({ swf_url: Env.swf_url }, options);
 
-		Runtime.call(this, options, type, (function() {
-
-			function use_urlstream() {
-				var rc = options.required_features || {};
-				return !rc.stream_upload &&
-					(!rc.upload_filesize || Basic.parseSizeStr(rc.upload_filesize) <= 2097152) &&
-					(rc.access_binary || 
-					rc.send_custom_headers || 
-					rc.send_browser_cookies);
+		Runtime.call(this, options, type, {
+			access_binary: true,
+			access_image_binary: true,
+			display_media: true,
+			do_cors: true,
+			drag_and_drop: false,
+			report_upload_progress: true,
+			resize_image: true,
+			return_response_headers: false,
+			return_response_type: function(responseType) {
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || this.getMode() === 'browser';
+			},
+			return_status_code: true,
+			select_multiple: true,
+			send_binary_string: function() {
+				return this.getMode() === 'browser';
+			},
+			send_browser_cookies: function() {
+				return this.getMode() === 'browser';
+			},
+			send_custom_headers: function() {
+				return this.getMode() === 'browser';
+			},
+			send_multipart: true,
+			slice_blob: true,
+			stream_upload: function() {
+				return this.getMode() === 'browser';
+			},
+			summon_file_dialog: false,
+			upload_filesize: function(size) {
+				return Basic.parseSizeStr(size) <= 2097152 || this.getMode() === 'client';
+			},
+			use_http_method: function(methods) {
+				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
+		}, { 
+			// capabilities that implicitly switch the runtime into client mode
+			return_response_type: function(responseType) {
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']);
+			},
+			send_binary_string: false,
+			send_browser_cookies: false,
+			send_custom_headers: false,
+			stream_upload: true,
+			upload_filesize: function(size) {
+				return Basic.parseSizeStr(size) >= 2097152;
+			}
+		});
 
-			return {
-				access_binary: true,
-				access_image_binary: true,
-				display_media: true,
-				do_cors: true,
-				drag_and_drop: false,
-				report_upload_progress: true,
-				resize_image: true,
-				return_response_headers: false,
-				return_response_type: true,
-				return_status_code: true,
-				select_multiple: true,
-				send_binary_string: true,
-				send_browser_cookies: function() {
-					return use_urlstream();
-				},
-				send_custom_headers: function() {
-					return use_urlstream();
-				},
-				send_multipart: true,
-				slice_blob: true,
-				stream_upload: function(value) {
-					return !!value && !use_urlstream();
-				},
-				summon_file_dialog: false,
-				upload_filesize: function(size) {
-					var maxSize = use_urlstream() ? 2097152 : -1; // 200mb || unlimited
-					if (!~maxSize || Basic.parseSizeStr(size) <= maxSize) {
-						return true;
-					}
-					return false;
-				},
-				use_http_method: function(methods) {
-					return !Basic.arrayDiff(methods, ['GET', 'POST']);
-				},
-				cross_domain: true
-			};
-		}()));
 
 		Basic.extend(this, {
 
