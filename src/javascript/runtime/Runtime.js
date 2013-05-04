@@ -280,15 +280,7 @@ define('moxie/runtime/Runtime', [
 				// for boolean values we check absolute equality
 				return Basic.typeOf(value) === 'boolean' ? refCaps[cap] === value : refCaps[cap];
 			},
-
-			setCap: function(cap, value) {
-				if (Basic.typeOf(cap) === 'object') {
-					caps = Basic.extend(caps, cap);
-				} else if (Basic.typeOf(value) !== 'undefined') {
-					caps[cap] = value;
-				}
-			},
-
+			
 
 			/**
 			Runtime (not native one) may operate in browser or client mode.
