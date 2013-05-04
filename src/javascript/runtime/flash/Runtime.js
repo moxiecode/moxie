@@ -84,7 +84,7 @@ define("moxie/runtime/flash/Runtime", [
 			upload_filesize: function(size) {
 				return Basic.parseSizeStr(size) >= 2097152;
 			}
-		});
+		}, 'client');
 
 
 		Basic.extend(this, {
