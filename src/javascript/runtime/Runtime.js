@@ -273,14 +273,17 @@ define('moxie/runtime/Runtime', [
 				}
 
 				// check the individual cap
+				var result;
 				if (Basic.typeOf(refCaps[cap]) === 'function') {
-					return refCaps[cap].call(this, value);
+					result = refCaps[cap].call(this, value);
+				} else {
+					result = refCaps[cap];
 				}
 
-				// for boolean values we check absolute equality
-				return Basic.typeOf(value) === 'boolean' ? refCaps[cap] === value : refCaps[cap];
+				// for boolean values check absolute equality
+				return Basic.typeOf(value) === 'boolean' ? result === value : result;
 			},
-			
+
 
 			/**
 			Runtime (not native one) may operate in browser or client mode.
