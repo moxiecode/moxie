@@ -191,9 +191,12 @@ define('moxie/runtime/Runtime', [
 			@method can
 			@param {String} cap Name of capability to check
 			@param {Mixed} [value] If passed, capability should somehow correlate to the value
+			@param {Object} [refCaps] Set of capabilities to check the specified cap against (defaults to internal set)
 			@return {Boolean} true if runtime has such capability and false, if - not
 			*/
 			can: function(cap, value) {
+				var refCaps = arguments[2] || caps;
+
 				// if cap var is a comma-separated list of caps, convert it to object (key/value)
 				if (Basic.typeOf(cap) === 'string' && Basic.typeOf(value) === 'undefined') {
 					cap = (function(arr) {
@@ -209,7 +212,7 @@ define('moxie/runtime/Runtime', [
 
 				if (Basic.typeOf(cap) === 'object') {
 					for (var key in cap) {
-						if (!this.can(key, cap[key])) {
+						if (!this.can(key, cap[key], refCaps)) {
 							return false;
 						}
 					}
@@ -217,11 +220,12 @@ define('moxie/runtime/Runtime', [
 				}
 
 				// check the individual cap
-				if (Basic.typeOf(caps[cap]) === 'function') {
-					return caps[cap].call(this, value);
+				if (Basic.typeOf(refCaps[cap]) === 'function') {
+					return refCaps[cap].call(this, value);
 				}
 
-				return caps[cap] || false;
+				// for boolean values we check absolute equality
+				return Basic.typeOf(value) === 'boolean' ? refCaps[cap] === value : refCaps[cap];
 			},
 
 			setCap: function(cap, value) {
