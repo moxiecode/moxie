@@ -111,23 +111,32 @@ define("moxie/core/utils/Mime", [
 
 
 		mimes2extList: function(mimes) {
-			var self = this, exts = '', accept = [];
+			var self = this, exts = [], accept = [];
 			
 			mimes = Basic.trim(mimes);
 			
 			if (mimes !== '*') {
 				Basic.each(mimes.split(/\s*,\s*/), function(mime) {
-					if (self.extensions[mime]) {
-						exts += self.extensions[mime].join(',');
+					// check if this thing looks like mime type
+					var m = mime.match(/^(\w+)\/(\*|\w+)$/);
+					if (m) {
+						if (m[2] === '*') { 
+							// wildcard mime type detected
+							Basic.each(self.extensions, function(arr, mime) {
+								if ((new RegExp('^' + m[1] + '/')).test(mime)) {
+									[].push.apply(exts, self.extensions[mime]);
+								}
+							});
+						} else if (self.extensions[mime]) {
+							[].push.apply(exts, self.extensions[mime]);
+						}
 					}
 				});
-			} else {
-				exts = mimes;
 			}
 			
 			accept.push({
 				title: I18n.translate('Files'),
-				extensions: exts
+				extensions: exts.length ? exts.join(',') : '*'
 			});
 			
 			// save original mimes string

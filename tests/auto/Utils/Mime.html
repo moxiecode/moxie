@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: MIME</title>
+
+<!-- qunit -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
+<script src="http://code.jquery.com/qunit/qunit-git.js"></script>
+
+<!-- testrunner -->
+<script src="../../js/reporter.js"></script>
+<script src="../../moxie_loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+module("MIME", {
+	setup: function() {
+		this.DOM = jQuery('#qunit-fixture');
+	},
+
+	teardown: function() {
+	}
+});
+
+
+test("Extension to MIME mapping", function() {
+	equal(o.Mime.mimes['jpg'], 'image/jpeg', ".jpg is image/jpeg");
+	equal(o.Mime.mimes['jpeg'], 'image/jpeg', ".jpeg is image/jpeg");
+	ok(o.inArray('jpeg', o.Mime.extensions['image/jpeg']), "image/jpeg is .jpeg");
+});
+
+test("addMimeType()", function() {
+	o.Mime.addMimeType("audio/x-aiff,aif aiff");
+	equal(o.Mime.mimes['aif'], 'audio/x-aiff', ".aif successfully added to the map");
+});
+
+test("mimes2extList()", function() {
+	var norm;
+
+	norm = o.Mime.mimes2extList("image/jpeg");
+	equal(norm[0].extensions, "jpg,jpeg,jpe", "Get normalized object from single mime type.");
+
+	norm = o.Mime.mimes2extList("image/*");
+	ok(!o.arrayDiff(['jpg','png', 'gif'], norm[0].extensions.split(/,/)), "Get normalized object from wildcard mime type.");
+});
+
+
+</script>
+</head>
+<body>
+	<h1 id="qunit-header">mOxie Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests">
+	</ol>
+    <div id="qunit-fixture"></div>
+</body>
+</html>
