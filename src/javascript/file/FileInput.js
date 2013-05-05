@@ -27,13 +27,13 @@ define('moxie/file/FileInput', [
 	@constructor
 	@extends EventTarget
 	@uses RuntimeClient
-	@param {Object|String} options If options has typeof string, argument is considered as options.browse_button
+	@param {Object|String|DOMElement} options If options is string or node, argument is considered as options.browse_button
 	@param {String|DOMElement} options.browse_button DOM Element to turn into file picker
 	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
 	@param {String} [options.file='file'] Name of the file field (not the filename)
 	@param {Boolean} [options.multiple=false] Enable selection of multiple files
 	@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time)
-	@param {String|DOMElement} [options.container] DOM Element to use as acontainer for file-picker. Defaults to parentNode for options.browse_button
+	@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode for options.browse_button
 	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 
 	@example
@@ -44,7 +44,7 @@ define('moxie/file/FileInput', [
 		<script>
 			var fileInput = new mOxie.FileInput({
 				browse_button: 'file-picker', // or document.getElementById('file-picker')
-				container: 'container'
+				container: 'container',
 				accept: [
 					{title: "Image files", extensions: "jpg,gif,png"} // accept only images
 				],
@@ -118,7 +118,7 @@ define('moxie/file/FileInput', [
 			container, browseButton, defaults;
 
 		// if flat argument passed it should be browse_button id
-		if (typeof(options) === 'string') {
+		if (Basic.inArray(Basic.typeOf(options), ['string', 'node']) !== -1) {
 			options = { browse_button : options };
 		}
 
