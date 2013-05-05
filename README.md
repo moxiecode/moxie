@@ -19,8 +19,8 @@ XHR2 and File API pollyfills are multi-runtime, which means that they will fallb
   * XHR L2 pollyfill
   * Image Wrapper
 * [API Reference](/moxiecode/moxie/wiki/API)
-* Support
-* Contribute
+* [Support](#support)
+* [Contribute](#contribute)
 
 
 
@@ -130,3 +130,30 @@ All of the following commands will generate packages under `tmp/` folder.
 * `jake release` - Generates full user and development packages.
 * `jake package` - Generates full user package.
 * `jake package[comma-separated-list-of-components-to-include] runtimes=comma-separated-list-of-runtimes-to-use` (see [all available options](#compile-js-options))
+
+<a name="support" />
+### Support
+
+We are actively standing behind the Plupload and now that we are done with major rewrites and refactoring,
+the only real goal that we have ahead is making it as reliable and bulletproof as possible. We are open to 
+all the suggestions and feature requests. We ask you to file bug reports if you encounter any. We may not 
+react to them instantly, but we constantly bear them in my mind as we extend the code base.
+
+In addition to dedicated support for those who dare to buy our OEM licenses, we got 
+[discussion boards](http://www.plupload.com/punbb/index.php), which is like an enormous FAQ, 
+covering every possible application case. Of course, you are welcome to file a bug report or feature request, 
+here on [GitHub](https://github.com/moxiecode/plupload/issues).
+
+<a name="contribute" />
+### Contributing
+
+We are open to suggestions and code revisions, however there are some rules and limitations that you might 
+want to consider first.
+
+* Code that you contribute will automatically be licensed under the LGPL, but will not be limited to LGPL.
+* Although all contributors will get the credit for their work, copyright notices will be changed to [Moxiecode Systems AB](http://www.moxiecode.com/).
+* Third party code will be reviewed, tested and possibly modified before being released.
+
+These basic rules help us earn a living and ensure that code remains Open Source and compatible with LGPL license. All contributions will be added to the changelog and appear in every release and on the site. 
+
+You can read more about how to contribute at: [http://www.plupload.com/contributing](http://www.plupload.com/contributing)
