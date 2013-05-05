@@ -134,15 +134,8 @@ All of the following commands will generate packages under `tmp/` folder.
 <a name="support" />
 ### Support
 
-We are actively standing behind the Plupload and now that we are done with major rewrites and refactoring,
-the only real goal that we have ahead is making it as reliable and bulletproof as possible. We are open to 
-all the suggestions and feature requests. We ask you to file bug reports if you encounter any. We may not 
+We are actively standing behind our products. We ask you to [file bug reports](https://github.com/moxiecode/moxie/issues?state=open) if you encounter any. We may not 
 react to them instantly, but we constantly bear them in my mind as we extend the code base.
-
-In addition to dedicated support for those who dare to buy our OEM licenses, we got 
-[discussion boards](http://www.plupload.com/punbb/index.php), which is like an enormous FAQ, 
-covering every possible application case. Of course, you are welcome to file a bug report or feature request, 
-here on [GitHub](https://github.com/moxiecode/plupload/issues).
 
 <a name="contribute" />
 ### Contributing
