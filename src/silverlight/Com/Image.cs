@@ -142,7 +142,7 @@ namespace Moxiecode.Com
 		}
 
 
-		public void resize(object width, object height, object crop, object preserveHeaders)
+		public void downsize(object width, object height, object crop, object preserveHeaders)
 		{
 			_preserveHeaders = (bool)preserveHeaders;
 
