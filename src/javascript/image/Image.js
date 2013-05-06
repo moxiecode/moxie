@@ -382,7 +382,7 @@ define("moxie/image/Image", [
 
 				type = options.type || this.type || 'image/jpeg';
 				quality = options.quality || 90;
-				crop = options.crop !== undefined ? options.crop : false;
+				crop = Basic.typeOf(options.crop) !== 'undefined' ? options.crop : false;
 
 				// figure out dimensions for the thumb
 				if (options.width) {
@@ -505,7 +505,7 @@ define("moxie/image/Image", [
 		function _loadFromImage(img, exact) {
 			var runtime = this.connectRuntime(img.ruid);
 			this.ruid = runtime.uid;
-			runtime.exec.call(this, 'Image', 'loadFromImage', img, (exact === undefined ? true : exact));
+			runtime.exec.call(this, 'Image', 'loadFromImage', img, (Basic.typeOf(exact) === 'undefined' ? true : exact));
 		}
 
 
