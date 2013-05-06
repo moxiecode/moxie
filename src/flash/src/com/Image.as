@@ -199,7 +199,7 @@ package com
 		}
 			
 		
-		public function resize(width:uint, height:uint, crop:Boolean = false, preserveHeaders:Boolean = true) : void
+		public function downsize(width:uint, height:uint, crop:Boolean = false, preserveHeaders:Boolean = true) : void
 		{			
 			var self:Image = this, scale:Number, orientation:uint = 1, selector:Function, output:BitmapData,
 				

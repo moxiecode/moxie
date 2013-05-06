@@ -185,15 +185,15 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Resizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
+			Downsizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
 
-			@method resize
+			@method downsize
 			@param {Number} width Resulting width
 			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
 			@param {Boolean} [crop=false] Whether to crop the image to exact dimensions
 			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
-			resize: function(width, height, crop, preserveHeaders) {
+			downsize: function(width, height, crop, preserveHeaders) {
 
 				if (!this.size) { // only preloaded image objects can be used as source
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
@@ -208,11 +208,11 @@ define("moxie/image/Image", [
 
 				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
-				this.getRuntime().exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
+				this.getRuntime().exec.call(this, 'Image', 'downsize', width, height, crop, preserveHeaders);
 			},
 
 			/**
-			Alias for resize(width, height, true). (see resize)
+			Alias for downsize(width, height, true). (see downsize)
 			
 			@method crop
 			@param {Number} width Resulting width
@@ -220,7 +220,7 @@ define("moxie/image/Image", [
 			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
 			crop: function(width, height, preserveHeaders) {
-				this.resize(width, height, true, preserveHeaders);
+				this.downsize(width, height, true, preserveHeaders);
 			},
 
 			getAsCanvas: function() {
@@ -404,7 +404,7 @@ define("moxie/image/Image", [
 				});
 
 				imgCopy.bind("Load", function() {
-					imgCopy.resize(width, height, crop, false);
+					imgCopy.downsize(width, height, crop, false);
 				});
 
 				imgCopy.clone(this, false);

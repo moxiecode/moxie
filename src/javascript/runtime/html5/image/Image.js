@@ -92,8 +92,8 @@ define("moxie/runtime/html5/image/Image", [
 				return info;
 			},
 
-			resize: function() {
-				_resize.apply(this, arguments);
+			downsize: function() {
+				_downsize.apply(this, arguments);
 			},
 
 			getAsCanvas: function() {
@@ -106,7 +106,7 @@ define("moxie/runtime/html5/image/Image", [
 			getAsBlob: function(type, quality) {
 				if (type !== this.type) {
 					// if different mime type requested prepare image for conversion
-					_resize.call(this, this.width, this.height, false);
+					_downsize.call(this, this.width, this.height, false);
 				}
 				return new Blob(null, {
 					type: type,
@@ -243,7 +243,7 @@ define("moxie/runtime/html5/image/Image", [
 			}
 		}
 
-		function _resize(width, height, crop, preserveHeaders) {
+		function _downsize(width, height, crop, preserveHeaders) {
 			var self = this, ctx, scale, mathFn, x, y, img, imgWidth, imgHeight, orientation;
 
 			_preserveHeaders = preserveHeaders; // we will need to check this on export

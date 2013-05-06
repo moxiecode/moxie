@@ -170,7 +170,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			ok(!arguments[1], "second argument undefined."); 
 
 			stop();
-			img.resize(width, height);
+			img.downsize(width, height);
 		};
 
 		img.onresize = function(e) {

@@ -600,23 +600,32 @@ define("moxie/core/utils/Mime", [
 
 
 		mimes2extList: function(mimes) {
-			var self = this, exts = '', accept = [];
+			var self = this, exts = [], accept = [];
 			
 			mimes = Basic.trim(mimes);
 			
 			if (mimes !== '*') {
 				Basic.each(mimes.split(/\s*,\s*/), function(mime) {
-					if (self.extensions[mime]) {
-						exts += self.extensions[mime].join(',');
+					// check if this thing looks like mime type
+					var m = mime.match(/^(\w+)\/(\*|\w+)$/);
+					if (m) {
+						if (m[2] === '*') { 
+							// wildcard mime type detected
+							Basic.each(self.extensions, function(arr, mime) {
+								if ((new RegExp('^' + m[1] + '/')).test(mime)) {
+									[].push.apply(exts, self.extensions[mime]);
+								}
+							});
+						} else if (self.extensions[mime]) {
+							[].push.apply(exts, self.extensions[mime]);
+						}
 					}
 				});
-			} else {
-				exts = mimes;
 			}
 			
 			accept.push({
 				title: I18n.translate('Files'),
-				extensions: exts
+				extensions: exts.length ? exts.join(',') : '*'
 			});
 			
 			// save original mimes string
@@ -2557,13 +2566,13 @@ define('moxie/file/FileInput', [
 	@constructor
 	@extends EventTarget
 	@uses RuntimeClient
-	@param {Object|String} options If options has typeof string, argument is considered as options.browse_button
+	@param {Object|String|DOMElement} options If options is string or node, argument is considered as options.browse_button
 	@param {String|DOMElement} options.browse_button DOM Element to turn into file picker
 	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
 	@param {String} [options.file='file'] Name of the file field (not the filename)
 	@param {Boolean} [options.multiple=false] Enable selection of multiple files
 	@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time)
-	@param {String|DOMElement} [options.container] DOM Element to use as acontainer for file-picker. Defaults to parentNode for options.browse_button
+	@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode for options.browse_button
 	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 
 	@example
@@ -2574,7 +2583,7 @@ define('moxie/file/FileInput', [
 		<script>
 			var fileInput = new mOxie.FileInput({
 				browse_button: 'file-picker', // or document.getElementById('file-picker')
-				container: 'container'
+				container: 'container',
 				accept: [
 					{title: "Image files", extensions: "jpg,gif,png"} // accept only images
 				],
@@ -2648,7 +2657,7 @@ define('moxie/file/FileInput', [
 			container, browseButton, defaults;
 
 		// if flat argument passed it should be browse_button id
-		if (typeof(options) === 'string') {
+		if (Basic.inArray(Basic.typeOf(options), ['string', 'node']) !== -1) {
 			options = { browse_button : options };
 		}
 
@@ -5264,15 +5273,15 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Resizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
+			Downsizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
 
-			@method resize
+			@method downsize
 			@param {Number} width Resulting width
 			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
 			@param {Boolean} [crop=false] Whether to crop the image to exact dimensions
 			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
-			resize: function(width, height, crop, preserveHeaders) {
+			downsize: function(width, height, crop, preserveHeaders) {
 
 				if (!this.size) { // only preloaded image objects can be used as source
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
@@ -5287,11 +5296,11 @@ define("moxie/image/Image", [
 
 				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
 
-				this.getRuntime().exec.call(this, 'Image', 'resize', width, height, crop, preserveHeaders);
+				this.getRuntime().exec.call(this, 'Image', 'downsize', width, height, crop, preserveHeaders);
 			},
 
 			/**
-			Alias for resize(width, height, true). (see resize)
+			Alias for downsize(width, height, true). (see downsize)
 			
 			@method crop
 			@param {Number} width Resulting width
@@ -5299,7 +5308,7 @@ define("moxie/image/Image", [
 			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
 			crop: function(width, height, preserveHeaders) {
-				this.resize(width, height, true, preserveHeaders);
+				this.downsize(width, height, true, preserveHeaders);
 			},
 
 			getAsCanvas: function() {
@@ -5461,7 +5470,7 @@ define("moxie/image/Image", [
 
 				type = options.type || this.type || 'image/jpeg';
 				quality = options.quality || 90;
-				crop = options.crop !== undefined ? options.crop : false;
+				crop = Basic.typeOf(options.crop) !== 'undefined' ? options.crop : false;
 
 				// figure out dimensions for the thumb
 				if (options.width) {
@@ -5483,7 +5492,7 @@ define("moxie/image/Image", [
 				});
 
 				imgCopy.bind("Load", function() {
-					imgCopy.resize(width, height, crop, false);
+					imgCopy.downsize(width, height, crop, false);
 				});
 
 				imgCopy.clone(this, false);
@@ -5584,7 +5593,7 @@ define("moxie/image/Image", [
 		function _loadFromImage(img, exact) {
 			var runtime = this.connectRuntime(img.ruid);
 			this.ruid = runtime.uid;
-			runtime.exec.call(this, 'Image', 'loadFromImage', img, (exact === undefined ? true : exact));
+			runtime.exec.call(this, 'Image', 'loadFromImage', img, (Basic.typeOf(exact) === 'undefined' ? true : exact));
 		}
 
 
@@ -7926,8 +7935,8 @@ define("moxie/runtime/html5/image/Image", [
 				return info;
 			},
 
-			resize: function() {
-				_resize.apply(this, arguments);
+			downsize: function() {
+				_downsize.apply(this, arguments);
 			},
 
 			getAsCanvas: function() {
@@ -7940,7 +7949,7 @@ define("moxie/runtime/html5/image/Image", [
 			getAsBlob: function(type, quality) {
 				if (type !== this.type) {
 					// if different mime type requested prepare image for conversion
-					_resize.call(this, this.width, this.height, false);
+					_downsize.call(this, this.width, this.height, false);
 				}
 				return new Blob(null, {
 					type: type,
@@ -8077,7 +8086,7 @@ define("moxie/runtime/html5/image/Image", [
 			}
 		}
 
-		function _resize(width, height, crop, preserveHeaders) {
+		function _downsize(width, height, crop, preserveHeaders) {
 			var self = this, ctx, scale, mathFn, x, y, img, imgWidth, imgHeight, orientation;
 
 			_preserveHeaders = preserveHeaders; // we will need to check this on export
