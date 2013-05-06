@@ -34,6 +34,12 @@ define("moxie/core/utils/Mime", [
 		"audio/mpeg,mp3 mpga mpega mp2," +
 		"audio/x-wav,wav," +
 		"audio/mp4,m4a," +
+		"audio/ogg,oga ogg," +
+		"audio/aiff,aiff aif," +
+		"audio/flac,flac," +
+		"audio/aac,aac," +
+		"audio/ac3,ac3," +
+		"audio/x-ms-wma,wma," +
 		"image/bmp,bmp," +
 		"image/gif,gif," +
 		"image/jpeg,jpg jpeg jpe," +
@@ -54,9 +60,11 @@ define("moxie/core/utils/Mime", [
 		"video/x-ms-wmv,wmv," +
 		"video/avi,avi," +
 		"video/webm,webm," +
-		"video/3gpp,3gp," +
+		"video/3gpp,3gpp 3gp," +
 		"video/3gpp2,3g2," +
 		"video/vnd.rn-realvideo,rv," +
+		"video/ogg,ogv," + 
+		"video/x-matroska,mkv," +
 		"application/vnd.oasis.opendocument.formula-template,otf," +
 		"application/octet-stream,exe";
 	
