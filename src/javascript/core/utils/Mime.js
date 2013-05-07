@@ -113,10 +113,10 @@ define("moxie/core/utils/Mime", [
 		mimes2extList: function(mimes) {
 			var self = this, exts = [], accept = [];
 			
-			mimes = Basic.trim(mimes);
+			mimes = Basic.trim(mimes).split(/\s*,\s*/);
 			
 			if (mimes !== '*') {
-				Basic.each(mimes.split(/\s*,\s*/), function(mime) {
+				Basic.each(mimes, function(mime) {
 					// check if this thing looks like mime type
 					var m = mime.match(/^(\w+)\/(\*|\w+)$/);
 					if (m) {
