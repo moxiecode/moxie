@@ -58,7 +58,7 @@ define("moxie/runtime/html5/image/JPEG", [
 
 		// extract exif info
 		_ep = new ExifParser();
-		hasExif = !!_ep.init(_hm.get('exif')[0]);
+		hasExif = !!_ep.init(_hm.get('app1')[0]);
 
 		// get dimensions
 		_info = _getDimensions.call(this);
@@ -86,7 +86,7 @@ define("moxie/runtime/html5/image/JPEG", [
 				}
 
 				// update internal headers
-				_hm.set('exif', _ep.getBinary());
+				_hm.set('app1', _ep.getBinary());
 			},
 
 			writeHeaders: function() {

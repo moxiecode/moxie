@@ -17,24 +17,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 ], function(BinaryReader) {
 	
 	return function JPEGHeaders(data) {
-		var markers = {
-				0xFFE1: {
-					app: 'EXIF',
-					name: 'APP1',
-					signature: "Exif\0"
-				},
-				0xFFE2: {
-					app: 'ICC',
-					name: 'APP2',
-					signature: "ICC_PROFILE\0"
-				},
-				0xFFED: {
-					app: 'IPTC',
-					name: 'APP13',
-					signature: "Photoshop 3.0\0"
-				}
-			},
-			headers = [], read, idx, marker, length = 0, limit;
+		var headers = [], read, idx, marker, length = 0;
 
 		read = new BinaryReader();
 		read.init(data);
@@ -45,9 +28,8 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 		}
 
 		idx = 2;
-		limit = Math.min(1048576, data.length);
 
-		while (idx <= limit) {
+		while (idx <= data.length) {
 			marker = read.SHORT(idx);
 
 			// omit RST (restart) markers
@@ -63,16 +45,17 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 
 			length = read.SHORT(idx + 2) + 2;
 
-			if (markers[marker] && read.STRING(idx + 4, markers[marker].signature.length) === markers[marker].signature) {
+			// APPn marker detected
+			if (marker >= 0xFFE1 && marker <= 0xFFEF) {
 				headers.push({
 					hex: marker,
-					app: markers[marker].app.toUpperCase(),
-					name: markers[marker].name.toUpperCase(),
+					name: 'APP' + (marker & 0x000F),
 					start: idx,
 					length: length,
 					segment: read.SEGMENT(idx, length)
 				});
 			}
+
 			idx += length;
 		}
 
@@ -112,18 +95,18 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 				return data;
 			},
 
-			get: function(app) {
+			get: function(name) {
 				var array = [];
 
 				for (var i = 0, max = headers.length; i < max; i++) {
-					if (headers[i].app === app.toUpperCase()) {
+					if (headers[i].name === name.toUpperCase()) {
 						array.push(headers[i].segment);
 					}
 				}
 				return array;
 			},
 
-			set: function(app, segment) {
+			set: function(name, segment) {
 				var array = [], i, ii, max;
 
 				if (typeof(segment) === 'string') {
@@ -133,7 +116,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 				}
 
 				for (i = ii = 0, max = headers.length; i < max; i++) {
-					if (headers[i].app === app.toUpperCase()) {
+					if (headers[i].name === name.toUpperCase()) {
 						headers[i].segment = array[ii];
 						headers[i].length = array[ii].length;
 						ii++;
