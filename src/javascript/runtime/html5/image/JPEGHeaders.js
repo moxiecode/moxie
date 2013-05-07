@@ -65,23 +65,9 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 			headers: headers,
 
 			restore: function(data) {
-				read.init(data);
-
 				var max, i;
 
-				// Check if data is jpeg
-				var jpegHeaders = new JPEGHeaders(data);
-
-				if (!jpegHeaders.headers) {
-					return false;
-				}
-
-				// Delete any existing headers that need to be replaced
-				for (i = jpegHeaders.headers.length; i > 0; i--) {
-					var hdr = jpegHeaders.headers[i - 1];
-					read.SEGMENT(hdr.start, hdr.length, '');
-				}
-				jpegHeaders.purge();
+				read.init(data);
 
 				idx = read.SHORT(2) == 0xFFE0 ? 4 + read.SHORT(4) : 2;
 
@@ -90,6 +76,25 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 					idx += headers[i].length;
 				}
 
+				data = read.SEGMENT();
+				read.init(null);
+				return data;
+			},
+
+			strip: function(data) {
+				var headers, jpegHeaders, i;
+
+				jpegHeaders = new JPEGHeaders(data);
+				headers = jpegHeaders.headers;
+				jpegHeaders.purge();
+
+				read.init(data);
+
+				i = headers.length;
+				while (i--) {
+					read.SEGMENT(headers[i].start, headers[i].length, '');
+				}
+				
 				data = read.SEGMENT();
 				read.init(null);
 				return data;

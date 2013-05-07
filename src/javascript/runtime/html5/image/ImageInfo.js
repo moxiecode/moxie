@@ -103,6 +103,17 @@ define("moxie/runtime/html5/image/ImageInfo", [
 			},
 
 			/**
+			Strip all headers from the source.
+
+			@method stripHeaders
+			@param {String} data Image source as binary string
+			@return {String} Updated binary string
+			*/
+			stripHeaders: function(data) {
+				return data;
+			},
+
+			/**
 			Dispose resources.
 
 			@method purge

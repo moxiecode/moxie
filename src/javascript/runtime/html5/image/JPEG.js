@@ -97,6 +97,10 @@ define("moxie/runtime/html5/image/JPEG", [
 				return _hm.restore(arguments[0]);
 			},
 
+			stripHeaders: function(binstr) {
+				return _hm.strip(binstr);
+			},
+
 			purge: function() {
 				_purge.call(this);
 			}

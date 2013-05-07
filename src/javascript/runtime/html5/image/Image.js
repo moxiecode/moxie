@@ -163,17 +163,21 @@ define("moxie/runtime/html5/image/Image", [
 
 					_binStr = _toBinary(dataUrl);
 
-					if (_imgInfo && _preserveHeaders) {
-						// update dimensions info in exif
-						if (_imgInfo.meta && _imgInfo.meta.exif) {
-							_imgInfo.setExif({
-								PixelXDimension: this.width,
-								PixelYDimension: this.height
-							});
-						}
+					if (_imgInfo) {
+						_binStr = _imgInfo.stripHeaders(_binStr);
 
-						// re-inject the headers
-						_binStr = _imgInfo.writeHeaders(_binStr);
+						if (_preserveHeaders) {
+							// update dimensions info in exif
+							if (_imgInfo.meta && _imgInfo.meta.exif) {
+								_imgInfo.setExif({
+									PixelXDimension: this.width,
+									PixelYDimension: this.height
+								});
+							}
+
+							// re-inject the headers
+							_binStr = _imgInfo.writeHeaders(_binStr);
+						}
 
 						// will be re-created from fresh on next getInfo call
 						_imgInfo.purge();
