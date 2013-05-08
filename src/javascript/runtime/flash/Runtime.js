@@ -47,27 +47,27 @@ define("moxie/runtime/flash/Runtime", [
 			resize_image: true,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || this.getMode() === 'browser';
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.getMode() === 'browser';
 			},
 			return_status_code: true,
 			select_multiple: true,
 			send_binary_string: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			send_browser_cookies: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			send_custom_headers: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			send_multipart: true,
 			slice_blob: true,
 			stream_upload: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			summon_file_dialog: false,
 			upload_filesize: function(size) {
-				return Basic.parseSizeStr(size) <= 2097152 || this.getMode() === 'client';
+				return Basic.parseSizeStr(size) <= 2097152 || I.getMode() === 'client';
 			},
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);

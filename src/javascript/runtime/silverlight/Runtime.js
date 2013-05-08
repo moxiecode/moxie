@@ -46,19 +46,19 @@ define("moxie/runtime/silverlight/Runtime", [
 			report_upload_progress: true,
 			resize_image: true,
 			return_response_headers: function() {
-				return this.getMode() === 'client';
+				return I.getMode() === 'client';
 			},
 			return_response_type: true,
 			return_status_code: function(code) {
-				return this.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
+				return I.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},
 			select_multiple: true,
 			send_binary_string: true,
 			send_browser_cookies: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			send_custom_headers: function() {
-				return this.getMode() === 'client';
+				return I.getMode() === 'client';
 			},
 			send_multipart: true,
 			slice_blob: true,
@@ -66,7 +66,7 @@ define("moxie/runtime/silverlight/Runtime", [
 			summon_file_dialog: false,
 			upload_filesize: true,
 			use_http_method: function(methods) {
-				return this.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
+				return I.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
 			// capabilities that implicitly switch the runtime into client mode
