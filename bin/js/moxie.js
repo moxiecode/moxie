@@ -602,10 +602,10 @@ define("moxie/core/utils/Mime", [
 		mimes2extList: function(mimes) {
 			var self = this, exts = [], accept = [];
 			
-			mimes = Basic.trim(mimes);
+			mimes = Basic.trim(mimes).split(/\s*,\s*/);
 			
 			if (mimes !== '*') {
-				Basic.each(mimes.split(/\s*,\s*/), function(mime) {
+				Basic.each(mimes, function(mime) {
 					// check if this thing looks like mime type
 					var m = mime.match(/^(\w+)\/(\*|\w+)$/);
 					if (m) {
@@ -6772,24 +6772,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 ], function(BinaryReader) {
 	
 	return function JPEGHeaders(data) {
-		var markers = {
-				0xFFE1: {
-					app: 'EXIF',
-					name: 'APP1',
-					signature: "Exif\0"
-				},
-				0xFFE2: {
-					app: 'ICC',
-					name: 'APP2',
-					signature: "ICC_PROFILE\0"
-				},
-				0xFFED: {
-					app: 'IPTC',
-					name: 'APP13',
-					signature: "Photoshop 3.0\0"
-				}
-			},
-			headers = [], read, idx, marker, length = 0, limit;
+		var headers = [], read, idx, marker, length = 0;
 
 		read = new BinaryReader();
 		read.init(data);
@@ -6800,9 +6783,8 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 		}
 
 		idx = 2;
-		limit = Math.min(1048576, data.length);
 
-		while (idx <= limit) {
+		while (idx <= data.length) {
 			marker = read.SHORT(idx);
 
 			// omit RST (restart) markers
@@ -6818,16 +6800,17 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 
 			length = read.SHORT(idx + 2) + 2;
 
-			if (markers[marker] && read.STRING(idx + 4, markers[marker].signature.length) === markers[marker].signature) {
+			// APPn marker detected
+			if (marker >= 0xFFE1 && marker <= 0xFFEF) {
 				headers.push({
 					hex: marker,
-					app: markers[marker].app.toUpperCase(),
-					name: markers[marker].name.toUpperCase(),
+					name: 'APP' + (marker & 0x000F),
 					start: idx,
 					length: length,
 					segment: read.SEGMENT(idx, length)
 				});
 			}
+
 			idx += length;
 		}
 
@@ -6837,23 +6820,9 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 			headers: headers,
 
 			restore: function(data) {
-				read.init(data);
-
 				var max, i;
 
-				// Check if data is jpeg
-				var jpegHeaders = new JPEGHeaders(data);
-
-				if (!jpegHeaders.headers) {
-					return false;
-				}
-
-				// Delete any existing headers that need to be replaced
-				for (i = jpegHeaders.headers.length; i > 0; i--) {
-					var hdr = jpegHeaders.headers[i - 1];
-					read.SEGMENT(hdr.start, hdr.length, '');
-				}
-				jpegHeaders.purge();
+				read.init(data);
 
 				idx = read.SHORT(2) == 0xFFE0 ? 4 + read.SHORT(4) : 2;
 
@@ -6867,18 +6836,37 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 				return data;
 			},
 
-			get: function(app) {
+			strip: function(data) {
+				var headers, jpegHeaders, i;
+
+				jpegHeaders = new JPEGHeaders(data);
+				headers = jpegHeaders.headers;
+				jpegHeaders.purge();
+
+				read.init(data);
+
+				i = headers.length;
+				while (i--) {
+					read.SEGMENT(headers[i].start, headers[i].length, '');
+				}
+				
+				data = read.SEGMENT();
+				read.init(null);
+				return data;
+			},
+
+			get: function(name) {
 				var array = [];
 
 				for (var i = 0, max = headers.length; i < max; i++) {
-					if (headers[i].app === app.toUpperCase()) {
+					if (headers[i].name === name.toUpperCase()) {
 						array.push(headers[i].segment);
 					}
 				}
 				return array;
 			},
 
-			set: function(app, segment) {
+			set: function(name, segment) {
 				var array = [], i, ii, max;
 
 				if (typeof(segment) === 'string') {
@@ -6888,7 +6876,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 				}
 
 				for (i = ii = 0, max = headers.length; i < max; i++) {
-					if (headers[i].app === app.toUpperCase()) {
+					if (headers[i].name === name.toUpperCase()) {
 						headers[i].segment = array[ii];
 						headers[i].length = array[ii].length;
 						ii++;
@@ -7408,7 +7396,7 @@ define("moxie/runtime/html5/image/JPEG", [
 
 		// extract exif info
 		_ep = new ExifParser();
-		hasExif = !!_ep.init(_hm.get('exif')[0]);
+		hasExif = !!_ep.init(_hm.get('app1')[0]);
 
 		// get dimensions
 		_info = _getDimensions.call(this);
@@ -7436,7 +7424,7 @@ define("moxie/runtime/html5/image/JPEG", [
 				}
 
 				// update internal headers
-				_hm.set('exif', _ep.getBinary());
+				_hm.set('app1', _ep.getBinary());
 			},
 
 			writeHeaders: function() {
@@ -7445,6 +7433,10 @@ define("moxie/runtime/html5/image/JPEG", [
 					return (_binstr = _hm.restore(_binstr));
 				}
 				return _hm.restore(arguments[0]);
+			},
+
+			stripHeaders: function(binstr) {
+				return _hm.strip(binstr);
 			},
 
 			purge: function() {
@@ -7682,6 +7674,17 @@ define("moxie/runtime/html5/image/ImageInfo", [
 			@return {String} Updated binary string
 			*/
 			writeHeaders: function(data) {
+				return data;
+			},
+
+			/**
+			Strip all headers from the source.
+
+			@method stripHeaders
+			@param {String} data Image source as binary string
+			@return {String} Updated binary string
+			*/
+			stripHeaders: function(data) {
 				return data;
 			},
 
@@ -8006,17 +8009,21 @@ define("moxie/runtime/html5/image/Image", [
 
 					_binStr = _toBinary(dataUrl);
 
-					if (_imgInfo && _preserveHeaders) {
-						// update dimensions info in exif
-						if (_imgInfo.meta && _imgInfo.meta.exif) {
-							_imgInfo.setExif({
-								PixelXDimension: this.width,
-								PixelYDimension: this.height
-							});
-						}
+					if (_imgInfo) {
+						_binStr = _imgInfo.stripHeaders(_binStr);
 
-						// re-inject the headers
-						_binStr = _imgInfo.writeHeaders(_binStr);
+						if (_preserveHeaders) {
+							// update dimensions info in exif
+							if (_imgInfo.meta && _imgInfo.meta.exif) {
+								_imgInfo.setExif({
+									PixelXDimension: this.width,
+									PixelYDimension: this.height
+								});
+							}
+
+							// re-inject the headers
+							_binStr = _imgInfo.writeHeaders(_binStr);
+						}
 
 						// will be re-created from fresh on next getInfo call
 						_imgInfo.purge();
@@ -8297,27 +8304,27 @@ define("moxie/runtime/flash/Runtime", [
 			resize_image: true,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || this.getMode() === 'browser';
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.getMode() === 'browser';
 			},
 			return_status_code: true,
 			select_multiple: true,
 			send_binary_string: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			send_browser_cookies: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			send_custom_headers: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			send_multipart: true,
 			slice_blob: true,
 			stream_upload: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			summon_file_dialog: false,
 			upload_filesize: function(size) {
-				return Basic.parseSizeStr(size) <= 2097152 || this.getMode() === 'client';
+				return Basic.parseSizeStr(size) <= 2097152 || I.getMode() === 'client';
 			},
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
@@ -8934,19 +8941,19 @@ define("moxie/runtime/silverlight/Runtime", [
 			report_upload_progress: true,
 			resize_image: true,
 			return_response_headers: function() {
-				return this.getMode() === 'client';
+				return I.getMode() === 'client';
 			},
 			return_response_type: true,
 			return_status_code: function(code) {
-				return this.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
+				return I.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},
 			select_multiple: true,
 			send_binary_string: true,
 			send_browser_cookies: function() {
-				return this.getMode() === 'browser';
+				return I.getMode() === 'browser';
 			},
 			send_custom_headers: function() {
-				return this.getMode() === 'client';
+				return I.getMode() === 'client';
 			},
 			send_multipart: true,
 			slice_blob: true,
@@ -8954,7 +8961,7 @@ define("moxie/runtime/silverlight/Runtime", [
 			summon_file_dialog: false,
 			upload_filesize: true,
 			use_http_method: function(methods) {
-				return this.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
+				return I.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
 			// capabilities that implicitly switch the runtime into client mode
