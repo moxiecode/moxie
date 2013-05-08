@@ -18,24 +18,6 @@ package mxi.image
 	{		
 		public static const MIME:String = 'image/jpeg';
 		
-		protected var _markers:Object = {
-			0xFFE1: {
-				app: 'EXIF',
-				name: 'APP1',
-				signature: "Exif" 
-			},
-			0xFFE2: {
-				app: 'ICC',
-				name: 'APP2',
-				signature: "ICC_PROFILE" 
-			},
-			0xFFED: {
-				app: 'IPTC',
-				name: 'APP13',
-				signature: "Photoshop 3.0" 
-			}
-		};
-		
 		protected var _headers:Array = [];
 		protected var _br:BinaryReader;
 		
@@ -86,7 +68,7 @@ package mxi.image
 			var exifParser:ExifParser, headers:Array, 
 				meta:Object = {}, exif:Object, gps:Object, tiff:Object;
 			
-			headers = getHeaders('exif');
+			headers = getHeaders('app1');
 			
 			if (headers.length) {
 				exifParser = new ExifParser;
@@ -136,18 +118,18 @@ package mxi.image
 				}	
 				
 				length = _br.SHORT(idx + 2) + 2;	
-				
-				if (_markers[marker] && 
-					_br.STRING(idx + 4, _markers[marker].signature.length) === _markers[marker].signature) {
-					_headers.push({ 
+								
+				// APPn marker detected
+				if (marker >= 0xFFE1 && marker <= 0xFFEF) {
+					_headers.push({
 						hex: marker,
-						app: _markers[marker].app.toUpperCase(),
-						name: _markers[marker].name.toUpperCase(),
+						name: 'APP' + (marker & 0x000F),
 						start: idx,
 						length: length,
 						segment: _br.SEGMENT(idx, length)
 					});
 				}
+				
 				idx += length;			
 			}
 			
@@ -176,25 +158,25 @@ package mxi.image
 		
 		
 		
-		public function getHeaders(app:String = null) : Array
+		public function getHeaders(name:String = null) : Array
 		{
 			var headers:Array, array:Array = [];
 			
 			headers = _headers.length ? _headers : extractHeaders();
 			
-			if (!app) {
+			if (!name) {
 				return headers;
 			}
 			
 			for (var i:uint = 0, max:uint = headers.length; i < max; i++) {
-				if (headers[i].app === app.toUpperCase()) {
+				if (headers[i].name === name.toUpperCase()) {
 					array.push(headers[i].segment);
 				}
 			}
 			return array;
 		}
 		
-		public function setHeaders(app:String, segment:*) : void
+		public function setHeaders(name:String, segment:*) : void
 		{
 			var array:Array = [];
 					
@@ -205,7 +187,7 @@ package mxi.image
 			}
 						
 			for (var i:uint = 0, ii:uint = 0, max:uint = _headers.length; i < max; i++) {
-				if (_headers[i].app === app.toUpperCase()) {
+				if (_headers[i].name === name.toUpperCase()) {
 					_headers[i].segment = array[ii];
 					_headers[i].length = array[ii].length;
 					ii++;
@@ -219,7 +201,7 @@ package mxi.image
 		{
 			var exifParser:ExifParser, headers:Array;
 			
-			headers = getHeaders('exif');
+			headers = getHeaders('app1');
 			
 			if (headers.length) {
 				exifParser = new ExifParser;
@@ -228,7 +210,7 @@ package mxi.image
 					exifParser.setExif('PixelXDimension', width);
 					exifParser.setExif('PixelYDimension', height);
 					
-					setHeaders('exif', exifParser.getBinary());						
+					setHeaders('app1', exifParser.getBinary());						
 				}
 				exifParser.purge();
 			}
