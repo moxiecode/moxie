@@ -21,24 +21,6 @@ namespace Moxiecode.MXI.Image
 
 		private BinaryReader _br;
 
-		protected Dictionary<int, object> _markers = new Dictionary<int, object>(){
-			{ 0xFFE1, new Dictionary<string, string>() {
-				{ "app", "EXIF" },
-				{ "name", "APP1" },
-				{ "signature", "Exif" }
-			} },
-			{ 0xFFE2, new Dictionary<string, string>() {
-				{ "app", "ICC" },
-				{ "name", "APP1" },
-				{ "signature", "ICC PROFILE" }
-			} },
-			{ 0xFFED, new Dictionary<string, string>() {
-				{ "app", "IPTC" },
-				{ "name", "APP13" },
-				{ "signature", "Photoshop 3.0" }
-			} }
-		};
-
 		private List<Dictionary<string, object>> _headers = null;
 
 
@@ -93,7 +75,7 @@ namespace Moxiecode.MXI.Image
 			ExifParser exifParser; 
 			Dictionary <string, object> tiff, exif, gps, meta;
 			
-			List<byte[]> headers = getHeaders("exif");
+			List<byte[]> headers = getHeaders("app1");
 			meta = new Dictionary<string, object>();
 			
 			if (headers.Count != 0) {
@@ -126,9 +108,6 @@ namespace Moxiecode.MXI.Image
 			long idx = 2;
 			int length, marker;
 
-			object markerObj;
-			Dictionary<string, string> markerInfo;
-
 			_headers = new List<Dictionary<string,object>>();
 				
 			while (idx <= _br.Length) {
@@ -145,20 +124,17 @@ namespace Moxiecode.MXI.Image
 					break;	
 				}	
 				
-				length = _br.SHORT(idx + 2) + 2;	
+				length = _br.SHORT(idx + 2) + 2;
 
-				if (_markers.TryGetValue(marker, out markerObj)) {
-					markerInfo = (Dictionary<string, string>)markerObj;
-					if (_br.STRING(idx + 4, markerInfo["signature"].Length) == markerInfo["signature"]) {
-						_headers.Add(new Dictionary<string,object>() {
-							{ "hex", marker },
-							{ "app", markerInfo["app"].ToUpper() },
-							{ "name", markerInfo["name"].ToUpper() },
-							{ "start", idx },
-							{ "length", length },
-							{ "segment", _br.SEGMENT((int)idx, length) }
-						});
-					}
+				if (marker >= 0xFFE1 && marker <= 0xFFEF)
+				{
+					_headers.Add(new Dictionary<string,object>() {
+						{ "hex", marker },
+						{ "name", "APP" + (marker & 0x000F) },
+						{ "start", idx },
+						{ "length", length },
+						{ "segment", _br.SEGMENT((int)idx, length) }
+					});
 				}
 				
 				idx += length;			
@@ -166,14 +142,14 @@ namespace Moxiecode.MXI.Image
 			return _headers;
 		}
 		
-		public List<byte[]> getHeaders(string app)
+		public List<byte[]> getHeaders(string name)
 		{
 			List<Dictionary<string,object>> headers = getHeaders();
 			
 			List<byte[]> array = new List<byte[]>();
 			
 			for (int i = 0, max = headers.Count; i < max; i++) {
-				if ((string)headers[i]["app"] == app.ToUpper()) {
+				if ((string)headers[i]["name"] == name.ToUpper()) {
 					array.Add((byte[])headers[i]["segment"]);
 				}
 			}
@@ -187,7 +163,7 @@ namespace Moxiecode.MXI.Image
 		}
 
 
-		public void setHeaders(string app, object segment)
+		public void setHeaders(string name, object segment)
 		{
 			List<byte[]> array;
 					
@@ -199,7 +175,7 @@ namespace Moxiecode.MXI.Image
 			}
 						
 			for (int i = 0, ii = 0, max = _headers.Count; i < max; i++) {
-				if ((string)_headers[i]["app"] == app.ToUpper()) {
+				if ((string)_headers[i]["name"] == name.ToUpper()) {
 					_headers[i]["segment"] = array[ii];
 					_headers[i]["length"] = array[ii].Length;
 					ii++;
@@ -215,7 +191,7 @@ namespace Moxiecode.MXI.Image
 			ExifParser exifParser; 
 			List<byte[]> headers;
 			
-			headers = getHeaders("exif");
+			headers = getHeaders("app1");
 			
 			if (headers.Count != 0) {
 				exifParser = new ExifParser();
@@ -224,7 +200,7 @@ namespace Moxiecode.MXI.Image
 					exifParser.setExif("PixelXDimension", width);
 					exifParser.setExif("PixelYDimension", height);
 					
-					setHeaders("exif", exifParser.getBinary());						
+					setHeaders("app1", exifParser.getBinary());						
 				}
 				exifParser.purge();
 			}
