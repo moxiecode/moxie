@@ -81,6 +81,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 					}
 				}
 			} else if (data instanceof Blob) {
+				self.shimExec.call(target, 'XMLHttpRequest', 'setRequestHeader', 'Content-Type', data.type || 'application/octet-stream');
 				data = data.uid;
 				send();
 			} else {
