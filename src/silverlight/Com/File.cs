@@ -14,11 +14,9 @@ using System.Windows.Shapes;
 
 namespace Moxiecode.Com
 {
-	[ScriptableType]
 	public class File : Blob
 	{
 		private string _name;
-		[ScriptableMember]
 		public string name {
 			get {
 				return _name;
@@ -26,7 +24,6 @@ namespace Moxiecode.Com
 		}
 
 		private DateTime _lastModifiedDate;
-		[ScriptableMember]
 		public string lastModifiedDate {
 			get {
 				return _lastModifiedDate.ToString("ddd MMM yyyy hh:mm:ss 'GMT'K"); // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)

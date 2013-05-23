@@ -32,7 +32,7 @@ namespace Moxiecode.Com
 			}
 		}
 
-		private string _type;
+		private string _type = "";
 		public string type {
 			get {
 				return _type;
