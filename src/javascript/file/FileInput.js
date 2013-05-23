@@ -259,6 +259,16 @@ define('moxie/file/FileInput', [
 				if (runtime) {
 					runtime.exec.call(this, 'FileInput', 'disable', state === undefined ? true : state);
 				}
+			},
+
+
+			/**
+			Reposition and resize dialog trigger to match the position and size of browse_button element.
+
+			@method refresh
+			*/
+			refresh: function() {
+				self.trigger("Refresh");
 			}
 		});
 	}
