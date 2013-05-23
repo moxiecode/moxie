@@ -51,6 +51,8 @@ package com
 		
 		private var _multipart:Boolean = false;
 		
+		private var _headers:Object = {};
+		
 		private var _blob:*;
 		
 		private var _blobName:String;
@@ -101,6 +103,12 @@ package com
 			_blobFieldName = name;						
 		}
 		
+		
+		public function setRequestHeader(name:String, value:String) : void
+		{
+			_headers[name] = value;
+		}
+		
 				
 		public function send(meta:Object, blob:* = null) : void
 		{	
@@ -119,7 +127,7 @@ package com
 			}
 						
 			if (blob && _options.method == 'POST') {
-				if (_options.transport == 'client' && _multipart && blob.isFileRef() && Utils.isEmptyObj(_options.headers)) {
+				if (_options.transport == 'client' && _multipart && blob.isFileRef() && Utils.isEmptyObj(_headers)) {
 					_uploadFileRef(blob);
 				} else {
 					_preloadBlob(blob, _doURLStreamRequest);
@@ -308,9 +316,9 @@ package com
 			request = new URLRequest(_options.url);
 			
 			// set custom headers if required
-			if (!Utils.isEmptyObj(_options.headers)) {
-				for (var name:String in _options.headers) {
-					request.requestHeaders.push(new URLRequestHeader(name, _options.headers[name]));
+			if (!Utils.isEmptyObj(_headers)) {
+				for (var name:String in _headers) {
+					request.requestHeaders.push(new URLRequestHeader(name, _headers[name]));
 				}
 			}			
 			
