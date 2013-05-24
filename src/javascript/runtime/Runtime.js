@@ -275,13 +275,10 @@ define('moxie/runtime/Runtime', [
 				// check the individual cap
 				var result;
 				if (Basic.typeOf(refCaps[cap]) === 'function') {
-					result = refCaps[cap].call(this, value);
+					return refCaps[cap].call(this, value);
 				} else {
-					result = refCaps[cap];
+					return (value === refCaps[cap]);
 				}
-
-				// for boolean values check absolute equality
-				return Basic.typeOf(value) === 'boolean' ? result === value : result;
 			},
 
 
