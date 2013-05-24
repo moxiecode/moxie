@@ -392,6 +392,7 @@ define('moxie/runtime/Runtime', [
 		_setMode.call(this, clientCaps, defaultMode);
 	}
 
+
 	/**
 	Default order to try different runtime types
 
@@ -415,22 +416,33 @@ define('moxie/runtime/Runtime', [
 		return runtimes[uid] ? runtimes[uid] : false;
 	};
 
+
 	/**
 	Register constructor for the Runtime of new (or perhaps modified) type
 
 	@method addConstructor
 	@static
 	@param {String} type Runtime type (e.g. flash, html5, etc)
-	@param {Function} construct Constructor function for the Runtime
+	@param {Function} construct Constructor for the Runtime type
 	*/
 	Runtime.addConstructor = function(type, constructor) {
 		constructor.prototype = EventTarget.instance;
 		runtimeConstructors[type] = constructor;
 	};
 
+
+	/**
+	Get the constructor for the specified type.
+
+	method getConstructor
+	@static
+	@param {String} type Runtime type (e.g. flash, html5, etc)
+	@return {Function} Constructor for the Runtime type
+	*/
 	Runtime.getConstructor = function(type) {
 		return runtimeConstructors[type] || null;
 	};
+
 
 	/**
 	Get info about the runtime (uid, type, capabilities)
@@ -452,6 +464,29 @@ define('moxie/runtime/Runtime', [
 		}
 
 		return null;
+	};
+
+
+	/**
+	Capability check that always returns true
+
+	@private
+	@static
+	@return {True}
+	*/
+	Runtime.capTrue = function() {
+		return true;
+	};
+
+	/**
+	Capability check that always returns false
+
+	@private
+	@static
+	@return {False}
+	*/
+	Runtime.capFalse = function() {
+		return false;
 	};
 
 	return Runtime;
