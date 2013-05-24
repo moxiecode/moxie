@@ -56,7 +56,7 @@ define("moxie/runtime/html4/Runtime", [
 						(Env.browser === 'Opera' && Env.version >= 12)	||
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 			}()),
-			upload_filesize: true,
+			upload_filesize: Runtime.capTrue,
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}

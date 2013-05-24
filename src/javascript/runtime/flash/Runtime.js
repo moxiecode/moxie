@@ -38,32 +38,40 @@ define("moxie/runtime/flash/Runtime", [
 		options = Basic.extend({ swf_url: Env.swf_url }, options);
 
 		Runtime.call(this, options, type, {
-			access_binary: true,
-			access_image_binary: true,
-			display_media: true,
-			do_cors: true,
+			access_binary: function(value) {
+				return value && I.getMode() === 'browser';
+			},
+			access_image_binary: function(value) {
+				return value && I.getMode() === 'browser';
+			},
+			display_media: Runtime.capTrue,
+			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
-			report_upload_progress: true,
-			resize_image: true,
+			report_upload_progress: function(value) {
+				return value && I.getMode() === 'client';
+			},
+			resize_image: Runtime.capTrue,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
 				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.getMode() === 'browser';
 			},
-			return_status_code: true,
-			select_multiple: true,
-			send_binary_string: function() {
-				return I.getMode() === 'browser';
+			return_status_code: function(code) {
+				return I.getMode() === 'browser' || !Basic.arrayDiff(code, [200, 404]);
 			},
-			send_browser_cookies: function() {
-				return I.getMode() === 'browser';
+			select_multiple: Runtime.capTrue,
+			send_binary_string: function(value) {
+				return value && I.getMode() === 'browser';
 			},
-			send_custom_headers: function() {
-				return I.getMode() === 'browser';
+			send_browser_cookies: function(value) {
+				return value && I.getMode() === 'browser';
 			},
-			send_multipart: true,
-			slice_blob: true,
-			stream_upload: function() {
-				return I.getMode() === 'browser';
+			send_custom_headers: function(value) {
+				return value && I.getMode() === 'browser';
+			},
+			send_multipart: Runtime.capTrue,
+			slice_blob: Runtime.capTrue,
+			stream_upload: function(value) {
+				return value && I.getMode() === 'browser';
 			},
 			summon_file_dialog: false,
 			upload_filesize: function(size) {
@@ -74,8 +82,14 @@ define("moxie/runtime/flash/Runtime", [
 			}
 		}, { 
 			// capabilities that implicitly switch the runtime into client mode
+			access_binary: true,
+			access_image_binary: true,
+			report_upload_progress: false,
 			return_response_type: function(responseType) {
 				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']);
+			},
+			return_status_code: function(code) {
+				return !Basic.arrayDiff(code, [200, 404]);
 			},
 			send_binary_string: false,
 			send_browser_cookies: false,

@@ -38,33 +38,33 @@ define("moxie/runtime/silverlight/Runtime", [
 		options = Basic.extend({ xap_url: Env.xap_url }, options);
 
 		Runtime.call(this, options, type, {
-			access_binary: true,
-			access_image_binary: true,
-			display_media: true,
-			do_cors: true,
+			access_binary: Runtime.capTrue,
+			access_image_binary: Runtime.capTrue,
+			display_media: Runtime.capTrue,
+			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
-			report_upload_progress: true,
-			resize_image: true,
-			return_response_headers: function() {
-				return I.getMode() === 'client';
+			report_upload_progress: Runtime.capTrue,
+			resize_image: Runtime.capTrue,
+			return_response_headers: function(value) {
+				return value && I.getMode() === 'client';
 			},
-			return_response_type: true,
+			return_response_type: Runtime.capTrue,
 			return_status_code: function(code) {
 				return I.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},
-			select_multiple: true,
-			send_binary_string: true,
-			send_browser_cookies: function() {
-				return I.getMode() === 'browser';
+			select_multiple: Runtime.capTrue,
+			send_binary_string: Runtime.capTrue,
+			send_browser_cookies: function(value) {
+				return value && I.getMode() === 'browser';
 			},
-			send_custom_headers: function() {
-				return I.getMode() === 'client';
+			send_custom_headers: function(value) {
+				return value && I.getMode() === 'client';
 			},
-			send_multipart: true,
-			slice_blob: true,
+			send_multipart: Runtime.capTrue,
+			slice_blob: Runtime.capTrue,
 			stream_upload: true,
 			summon_file_dialog: false,
-			upload_filesize: true,
+			upload_filesize: Runtime.capTrue,
 			use_http_method: function(methods) {
 				return I.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
