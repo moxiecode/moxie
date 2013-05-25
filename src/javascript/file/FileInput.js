@@ -257,7 +257,7 @@ define('moxie/file/FileInput', [
 			disable: function(state) {
 				var runtime = this.getRuntime();
 				if (runtime) {
-					runtime.exec.call(this, 'FileInput', 'disable', state === undefined ? true : state);
+					runtime.exec.call(this, 'FileInput', 'disable', Basic.typeOf(state) === 'undefined' ? true : state);
 				}
 			},
 
