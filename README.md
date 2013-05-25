@@ -34,11 +34,11 @@ So, although these instructions are quite generic, they still have Windows works
 <a name="prepare" />
 #### Prerequisites
 
-First of all you will need to download mOxie package from [here on github]() and extract it to your workspace directory.
+First of all you will need to download mOxie package from [here on github](https://github.com/moxiecode/moxie/archive/master.zip) and extract it to your workspace directory.
 
 Building environment is based on [Node.js](http://nodejs.org/), mainly because it is cool and easy, but even more importantly, because it is powered by JavaScript (we love JavaScript :). Node.js binaries (as well as Source) [are available](http://nodejs.org/download/) for all major operating systems.
 
-In addtion to Node.js some additional modules are required, simply change your working directory to where you have extracted mOxie package and run: `node bootstrap`. All dependencies will be downloaded and installed automatically.
+In addtion to Node.js some additional modules are required, simply change your working directory to where you have extracted mOxie package and run: `npm install`. All dependencies will be downloaded and installed automatically.
 
 *Note:* currently for unknown reason, locally installed Node.js modules on Windows, may not be automatically added to the system PATH. So if `jake` commands below are not recognized you will need to add them manually:
 
@@ -98,7 +98,7 @@ export PATH=$PATH:/opt/flex_sdk_4.x/bin
 
 Although be **warned**, as this will set the system PATH **for current session only**, in order to set it forever, check your platform specific documentation.
 
-Once you have it, you can run `jake mkswf` in your command-prompt, from mOxie directory and corresponding component files will get compiled and written to `bin/flash/` directory. There will be two versions: `Moxie.plus.swf`, which includes client-side image manipulation logic, and `Moxie.swf`, twice as small, but without it.
+Once you have it, you can run `jake mkswf` in your command-prompt, from mOxie directory and corresponding component files will get compiled and written to `bin/flash/` directory. There will be two versions: `Moxie.swf`, which includes client-side image manipulation logic, and `Moxie.min.swf`, twice as small, but without it.
 
 <a name="compile-silverlight" />
 #### Compile Silverlight
@@ -111,7 +111,7 @@ set PATH=%PATH%;%WINDIR%\Microsoft.NET\Framework\v4.x
 
 Make sure that version suffix (v4.x) corresponds to actual .NET Framework version and physical folder where `msbuild` executable resides. Again be **warned**, that this will set the system PATH **for current session only**, in order to set it forever, check documentation specific to your platform.
 
-Once you have `msbuild.exe` in the system PATH you can run `jake mkxap` and two Silverlight components will be compiled to `bin/silverlight` directory: `Moxie.plus.xap`, a version with image manipulation logic compiled in and much smaller `Moxie.xap` - without it.
+Once you have `msbuild.exe` in the system PATH you can run `jake mkxap` and two Silverlight components will be compiled to `bin/silverlight` directory: `Moxie.xap`, a version with image manipulation logic compiled in and much smaller `Moxie.min.xap` - without it.
 
 <a name="generate-docs" />
 #### Generate API Documentation
