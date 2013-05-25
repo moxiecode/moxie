@@ -21,6 +21,7 @@ XHR2 and File API pollyfills are multi-runtime, which means that they will fallb
 * [API Reference](/moxiecode/moxie/wiki/API)
 * [Support](#support)
 * [Contribute](#contribute)
+* [License](https://github.com/moxiecode/moxie/blob/master/license.txt)
 
 
 
