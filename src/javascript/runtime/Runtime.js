@@ -273,7 +273,6 @@ define('moxie/runtime/Runtime', [
 				}
 
 				// check the individual cap
-				var result;
 				if (Basic.typeOf(refCaps[cap]) === 'function') {
 					return refCaps[cap].call(this, value);
 				} else {
