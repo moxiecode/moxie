@@ -11,7 +11,7 @@
         "archiver": "0.4.x",
         "uglify-js": "1.x",
         "yuidocjs": "0.3.x",
-        "amdlc": "0.0.x",
+        "amdlc": "0.1.x",
         "coverjs": "0.0.x",
         "bunyip": "https://github.com/jayarjo/bunyip/tarball/master"
     }
