@@ -16,6 +16,7 @@ define("moxie/core/utils/Extra", [
 	Defines property with specified descriptor on an object
 	
 	@method defineProperty
+	@for Utils
 	@static
 	@param {Object} obj Object to add property to
 	@param {String} prop Property name

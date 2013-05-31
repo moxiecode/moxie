@@ -14,6 +14,7 @@ define('moxie/core/utils/Url', [], function() {
 	based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
 
 	@method parseUrl
+	@for Utils
 	@static
 	@param {String} str Url to parse (defaults to empty string if undefined)
 	@return {Object} Hash containing extracted uri components

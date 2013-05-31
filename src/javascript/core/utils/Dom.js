@@ -14,6 +14,7 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	Get DOM Element by it's id.
 
 	@method get
+	@for Utils
 	@param {String} id Identifier of the DOM Element
 	@return {DOMElement}
 	*/
