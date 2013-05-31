@@ -18,7 +18,7 @@ XHR2 and File API pollyfills are multi-runtime, which means that they will fallb
   * [File Picker](https://github.com/moxiecode/moxie/wiki/File-Picker)
   * XHR L2 pollyfill
   * Image Wrapper
-* [API Reference](/moxiecode/moxie/wiki/API)
+* [API Reference](https://github.com/moxiecode/moxie/wiki/API)
 * [Support](#support)
 * [Contribute](#contribute)
 * [License](https://github.com/moxiecode/moxie/blob/master/license.txt)
