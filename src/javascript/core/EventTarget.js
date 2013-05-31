@@ -147,7 +147,7 @@ define('moxie/core/EventTarget', [
 				var uid, list, args, tmpEvt, evt = {};
 				
 				if (Basic.typeOf(type) !== 'string') {
-					// we can't use original object directly
+					// we can't use original object directly (because of Silverlight)
 					tmpEvt = type;
 
 					if (Basic.typeOf(tmpEvt.type) === 'string') {
@@ -157,6 +157,7 @@ define('moxie/core/EventTarget', [
 							evt.total = tmpEvt.total;
 							evt.loaded = tmpEvt.loaded;
 						}
+						evt.async = tmpEvt.async || false;
 					} else {
 						throw new x.EventException(x.EventException.UNSPECIFIED_EVENT_TYPE_ERR);
 					}
@@ -190,7 +191,7 @@ define('moxie/core/EventTarget', [
 					// Dispatch event to all listeners
 					var queue = [];
 					Basic.each(list, function(handler) {
-						// explicitly set the target, otherwise events fired from shims to not get it
+						// explicitly set the target, otherwise events fired from shims do not get it
 						args[0].target = handler.scope;
 						// if event is marked as async, detach the handler
 						if (evt.async) {
