@@ -19,7 +19,15 @@ QUnit.config.reorder = false;
 
 module("EventTarget", {
 	setup: function() {
-		
+
+		function Constructor() {
+			this.uid = o.guid();
+		}
+
+		Constructor.prototype = o.EventTarget.instance;
+
+		this.o1 = new Constructor();
+		this.o2 = new Constructor();
 	},
 
 	teardown: function() {
@@ -27,18 +35,36 @@ module("EventTarget", {
 });
 
 
-test("addEventListener()/bind() & dispatchEvent()/trigger()", function() {
-	
-	function Constructor() {
-		this.uid = o.guid();
-	}
+test("Trigger asynchronous event", function() {
+	var order = [];
 
-	Constructor.prototype = o.EventTarget.instance;
+	this.o1.bind('AsyncEvent', function() {
+		start();
+		order.push(2);
+		deepEqual(order, [1,2], 'Event fired asynchronously.');
+	});
 
-	var obj1 = new Constructor();
-	var obj2 = new Constructor();
-
+	stop();
+	this.o1.trigger({
+		type: 'AsyncEvent',
+		async: true
+	});
+	order.push(1);
 });
+
+
+test("Trigger synchronous event", function() {
+	var order = []; 
+	this.o1.bind('SyncEvent', function() {
+		order.push(2);
+	});
+
+	this.o1.trigger('SyncEvent');
+	order.push(1);
+	
+	deepEqual(order, [2,1], 'Event fired synchronously.');
+});
+
 
 //test("removeEventListener()/unbind() & removeAllEventListeners()/unbindAll()", function() {
 	
