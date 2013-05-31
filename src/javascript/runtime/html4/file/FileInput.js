@@ -140,7 +140,11 @@ define("moxie/runtime/html4/file/FileInput", [
 
 			shimContainer = currForm = browseButton = null;
 
-			comp.trigger('ready');
+			// trigger ready event asynchronously
+			comp.trigger({
+				type: 'ready',
+				async: true
+			});
 		}
 
 		Basic.extend(this, {

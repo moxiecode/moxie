@@ -111,12 +111,16 @@ define("moxie/runtime/html5/file/FileInput", [
 						_files = [].slice.call(this.files);
 					}
 
-					// Clearing the value enables the user to select the same file again if they want to
+					// clearing the value enables the user to select the same file again if they want to
 					this.value = '';
 					comp.trigger('change');
 				};
 
-				comp.trigger('ready');
+				// ready event is perfectly asynchronous
+				comp.trigger({
+					type: 'ready',
+					async: true
+				});
 			},
 
 			getFiles: function() {
