@@ -72,7 +72,7 @@ define("moxie/xhr/FormData", [
 			/**
 			Retrieves blob.
 
-			@method geBlob
+			@method getBlob
 			@return {Object} Either Blob if found or null
 			*/
 			getBlob: function() {
@@ -82,7 +82,7 @@ define("moxie/xhr/FormData", [
 			/**
 			Retrieves blob field name.
 
-			@method geBlobName
+			@method getBlobName
 			@return {String} Either Blob field name or null
 			*/
 			getBlobName: function() {
