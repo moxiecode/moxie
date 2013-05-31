@@ -69,6 +69,14 @@ define('moxie/file/FileInput', [
 		'ready',
 
 		/**
+		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked. 
+		Check [corresponding documentation entry](#method_refresh) for more info.
+
+		@event refresh
+		@param {Object} event
+		*/
+
+		/**
 		Dispatched when selection of files in the dialog is complete.
 
 		@event change
