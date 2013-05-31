@@ -1,178 +1,299 @@
+/*jshint evil:true, unused:false */
+/*global jake:true, require:true, module:true, process:true */
+
 var fs = require("fs");
-var utils = require("./utils");
+var Handlebars = require("handlebars");
+var exec = require("child_process").exec;
+var util = require("./utils");
 
-var wiki = function(githubRepo, dir, YUIDocDir) {
+var source = {
+	toc: Handlebars.compile([
+		'## Table of Contents\n',
+		'{{#each classes}}',
+			'* [[{{.}}|{{.}}]]\n',
+		'{{/each}}',
+	''].join('')),
 
-	function parseYUIDoc() {
-		var types = {
-			method: "## Methods\n\n",
-			property: "## Properties\n\n",
-			event: "## Events\n\n"
-		};
+	page: Handlebars.compile([
+		'## Table of Contents\n',
+		'* [Constructor](#{{class}}-method)\n',
+		'{{#if property}}',
+			'* [Properties](#properties)\n',
+			'{{#each property}}',
+			'	* [{{name}}](#{{name}}-property)\n',
+			'{{/each}}',
+		'{{/if}}',
+		'{{#if method}}',
+			'* [Methods](#methods)\n',
+			'{{#each method}}',
+			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-method)\n',
+			'{{/each}}',
+		'{{/if}}',
+		'{{#if event}}',
+			'* [Events](#events)\n',
+			'{{#each event}}',
+			'	* [{{name}}](#{{name}}-event)\n',
+			'{{/each}}',
+		'{{/if}}\n',
 
-		var formatArguments = function(args, level) {
-			var result = !level ? "\n__Arguments__\n\n" : "";
-			
-			level = level || 0;
+		'{{{formatConstructor .}}}',
 
-			utils.each(args, function(param) {
-				var name;
-				if (param.type) {
-					if (param.optional) {
-						name = param.optdefault ? "[" + param.name + "=" + param.optdefault + "]" : "[" + param.name + "]";
-					} else {
-						name = param.name;
-					}
-					// indent level times
-					for (var i = 0; i < level; i++) {
-						result += "\t";
-					}
-					// put it together finally
-					result += "* **" + name + "** _(" + param.type.replace(/\|/g, '/') + ")_ " + param.description + "\n";
+		'{{#if property}}',
+			'<a name="properties" />\n',
+			'## Properties\n\n',
 
-					// if param has sub-properties
-					if (param.props) {
-						result += formatArguments(param.props, level + 1);
-					}
-				}
-			});
-			return result;
-		};
+			'{{#each property}}',
+				'<a name="{{name}}-property" />\n',
+				'### [{{name}}]({{srcUrl}} "Defined at: {{file}}:{{line}}")\n\n',
 
+				'{{{description}}}\n\n',
 
-		var formatItem = function(item) {
-			var delimiter = '\n---------------------------------------\n\n'
-			, codeUrl = "/" + githubRepo.replace(/^[\s\S]+?github\.com[:\/]([\s\S]+?)\.wiki[\s\S]+$/, '$1') + "/blob/master/"
-			, title = item.is_constructor ? '# '+item.name : '<a name="'+item.name+'" />\n### '+item.name
-			, line = '_Defined at: ['+item.file+':'+item.line+']('+codeUrl+item.file+'#L'+item.line+')_\n\n\n'
-			, description = item.description + "\n"
-			;
+				'{{#if example}}',
+					'__Example__\n',
+					'{{#each example}}',
+					'	{{formatExample .}}\n',
+					'{{/each}}',
+				'{{/if}}',
+			'{{/each}}\n',
+		'{{/if}}',
 
-			// add arguments listing if item is method
-			if (('method' === item.itemtype || item.is_constructor) && item.params) {
-				var titleArgs = [];
-				var args = "\n__Arguments__\n\n";
-				utils.each(item.params, function(param) {
-					var name;
-					if (param.type) {
-						if (param.optional) {
-							name = param.optdefault ? "[" + param.name + "=" + param.optdefault + "]" : "[" + param.name + "]";
-						} else {
-							name = param.name;
-						}
-						titleArgs.push(name);
-						args += "* **" + name + "** _(" + param.type.replace(/\|/g, '/') + ")_ " + param.description + "\n";
+		'{{#if method}}',
+			'<a name="methods" />\n',
+			'## Methods\n\n',
 
-						// append sub-properties if any
-						if (param.props) {
-							args += formatArguments(param.props, 1);
-						}
-					}
-				});
-				// add arguments
-				title += "(" + (titleArgs.length ? titleArgs.join(", ") : "") + ")";
-				description += args;
-			}
+			'{{#each method}}',
+				'{{> method}}',
+			'{{/each}}\n',
+		'{{/if}}',
 
-			// add example
-			if (item.example) {
-				description += "\n__Examples__\n\n"
-				utils.each(item.example, function(example) {
-					var type = /<\w+>/.test(example) ? 'html' : 'javascript';
-					description += "```" + type + example.replace(/^\xA0+/, '') + "\n```\n";
-				});
-			}
+		'{{#if event}}',
+			'<a name="events" />\n',
+			'## Events\n',
+			'{{#each event}}',
+				'<a name="{{name}}-event" />\n',
+				'### {{name}}\n\n',
 
-			return title + "\n" + line + description + (!item.is_constructor ? delimiter : '\n');
-		};
+				'{{{description}}}\n\n',
 
-		if (!fs.existsSync(dir) || !fs.existsSync(YUIDocDir + "/data.json")) {
-			process.exit(1);
-		}	
+				'{{#if example}}',
+					'__Example__\n',
+					'{{#each example}}',
+					'	{{{formatExample .}}}\n',
+					'{{/each}}',
+				'{{/if}}',
+			'{{/each}}\n',
+		'{{/if}}',
+	''].join('')),
 
-		// Clear previous versions
-		var apiDir = dir + "/API";
-		if (fs.existsSync(apiDir)) {
-			jake.rmRf(apiDir);
-		}
-		fs.mkdirSync(apiDir, 0755);
+	constructor: Handlebars.compile([
+		'## Constructor\n',
+		'{{> method}}',
+	''].join('')),
 
-		// read YUIDoc exported data in json
-		var data = eval("("+fs.readFileSync(YUIDocDir + "/data.json").toString()+")");
+	method: Handlebars.compile([
+		'<a name="{{name}}-method" />\n',
+		'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}")\n\n',
 
-		// generate TOC page
-		var toc = '## Table of Contents\n\n';
-		utils.each(data.classes, function(item) {
-			if (!item.access || item.access == 'public') {
-				toc += "* [[" + item.name + "|" + item.name + "]]\n";
-			}
-		});
-		fs.writeFileSync(apiDir + "/" + "API.md", toc);
+		'{{{description}}}\n\n',
 
-		// generate pages
-		var pages = {};		
-		utils.each(data.classitems, function(item) {
-			var className, page;
+		'{{#if params}}',
+			'__Arguments__\n',
+			'{{#each params}}',
+				'{{> argument}}',
+			'{{/each}}\n',
+		'{{/if}}',
 
-			// bypass private and protected
-			if (item.access && item.access != 'public') {
-				return true;
-			}
+		'{{#if example}}',
+			'__Example__\n',
+			'{{#each example}}',
+			'	{{{formatExample .}}}\n',
+			'{{/each}}\n',
+		'{{/if}}',
+	''].join('')),
 
-			if (!~['method', 'property', 'event'].indexOf(item.itemtype)) {
-				return true;
-			}
-
-			className = item.class;
-
-			if (!pages[className]) {
-				pages[className] = utils.extend({}, data.classes[className], {
-					toc: {
-						property: "",
-						method: "",
-						event: ""
-					},
-					content: {
-						property: "",
-						method: "",
-						event: ""
-					}
-				});
-			}
-			page = pages[className];
-
-			// put a link in the TOC
-			page.toc[item.itemtype] += "* [%name%](#%name%)".replace(/%name%/g, item.name) + "\n";
-
-			page.content[item.itemtype] += formatItem(item);
-		});
-
-		utils.each(pages, function(page, name) {
-			var toc = "", body = "", header = "";
-
-			header += formatItem(page);
-
-			utils.each(["property", "method", "event"], function(type) {
-				if (page.toc[type] != "") {
-					toc += types[type] + page.toc[type] + "\n";
-				}
-
-				if (page.content[type] != "") {
-					body += types[type] + page.content[type] + "\n";
-				}
-			});
-
-			fs.writeFileSync(apiDir + "/" + name + ".md", header + toc + body);
-		});
-	}
-
-	if (!fs.existsSync(dir)) {
-		exec("git clone " + githubRepo + " ./" + dir, function(error, stdout, stderr) {
-			parseYUIDoc();
-		});
-	} else {
-		parseYUIDoc();
-	}
+	argument: Handlebars.compile([
+		'{{#if type}}',
+			'* **{{#if optional}}',
+				'{{#if optdefault}}',
+					'[{{name}}={{{optdefault}}}]',
+				'{{else}}',
+					'[{{name}}]',
+				'{{/if}}',
+			'{{else}}',
+				'{{name}}',
+			'{{/if}}** `{{type}}`  \n',
+			'{{{formatArgDescription .}}}\n',
+			'{{#if props}}',
+				'{{#each props}}',
+					'{{indent level}}{{> argument}}',
+				'{{/each}}',
+			'{{/if}}',
+		'{{/if}}',
+	''].join(''))
 };
 
-module.exports = wiki;
+
+function generatePages(githubRepo, dir, YUIDocDir) {
+	if (!fs.existsSync(dir) || !fs.existsSync(YUIDocDir + "/data.json")) {
+		process.exit(1);
+	}	
+
+	// clear previous versions
+	var apiDir = dir + "/API";
+	if (fs.existsSync(apiDir)) {
+		jake.rmRf(apiDir);
+	}
+	fs.mkdirSync(apiDir, 0755);
+
+	// load YUIDoc exported data
+	var data = eval("("+fs.readFileSync(YUIDocDir + "/data.json").toString()+")");
+
+	// parse the data and generate the pages
+	var srcUrl = "/" + githubRepo.replace(/^[\s\S]+?github\.com[:\/]([\s\S]+?)\.wiki[\s\S]+$/, '$1') + "/blob/master/";
+	
+	var defineArgIndentation = function(args, level) {			
+		level = level || 0;
+		util.each(args, function(arg) {
+			arg.level = level;
+			if (arg.props) {
+				defineArgIndentation(arg.props, level + 1);
+			}
+		});
+	};
+
+	// prepare class items...
+	util.each(data.classitems, function(item) {
+		if (!data.classes[item.class]) { // class striped off as not required
+			return true; 
+		}
+
+		// bypass private and protected
+		if (data.classes[item.class].access && data.classes[item.class].access != 'public') {
+			delete data.classes[item.class];
+			return true;
+		}
+
+		if (item.access && item.access != 'public') {
+			return true;
+		}
+
+		if (!~['method', 'property', 'event'].indexOf(item.itemtype)) {
+			return true;
+		}
+
+		if (util.isArray(data.classes[item.class].classitems)) {
+			data.classes[item.class].classitems = {
+				property: [],
+				method: [],
+				event: []
+			};
+		}
+
+		// define a link to an item's place in a source
+		item.srcUrl = srcUrl + item.file + '#L' + item.line;
+
+		// come up with argument indentation level
+		if (typeof data.classes[item.class].level == 'undefined' && data.classes[item.class].params) {
+			defineArgIndentation(data.classes[item.class].params);
+		}
+		
+		if (item.itemtype === 'method' && item.params) {
+			defineArgIndentation(item.params);
+		}
+
+		data.classes[item.class].classitems[item.itemtype].push(item);
+	});
+
+
+	// define Handlebars helpers
+	Handlebars.registerHelper('formatConstructor', function(item) {
+		var fn = data.classes[item.class];
+
+		if (fn.is_constructor != 1) {
+			return '';
+		}
+
+		fn.srcUrl = srcUrl + fn.file + '#L' + fn.line;
+		return source.constructor(fn);
+	});
+
+
+	Handlebars.registerHelper('formatSignature', function(params) {
+		var titleArgs = [];
+		util.each(params, function(param) {
+			var name;
+			if (param.type) {
+				if (param.optional) {
+					name = param.optdefault ? "[" + param.name + "=" + param.optdefault + "]" : "[" + param.name + "]";
+				} else {
+					name = param.name;
+				}
+				titleArgs.push(name);
+			}
+		});
+		return titleArgs.join(", ");
+	});
+
+
+	Handlebars.registerHelper('formatExample', function(example) {
+		var type = /<\w+>/.test(example) ? 'html' : 'javascript';
+		return "```" + type + "\n" + example.replace(/^\xA0+/, '') + "\n\t```\n";
+	});
+
+
+	Handlebars.registerHelper('formatArgDescription', function(arg) {
+		var indent = Handlebars.helpers.indent(arg.level);
+		var description = arg.description.replace(/(```[^`]+```)/g, function($0, $1) {
+			return $1.replace(/\n/g, '\n' + indent);
+		});
+		return indent + description.replace(/\n\n/g, '\n\n' + indent);
+	});
+
+
+	Handlebars.registerHelper('formatType', function(type) {
+		return type.replace(/\|/g, '\\');
+	});
+
+
+	Handlebars.registerHelper('indent', function(level) {
+		var indent = '';
+		while (level--) {
+			indent += '\t';
+		}
+		return indent;
+	}); 
+
+
+	// define partials
+	Handlebars.registerPartial('argument', source.argument);
+	Handlebars.registerPartial('method', source.method);
+
+
+	// generate TOC
+	fs.writeFileSync(apiDir + "/" + "API.md", source.toc({
+		classes: Object.keys(data.classes)
+	}));
+
+
+	// generate pages
+	util.each(data.classes, function(item, className) {
+		fs.writeFileSync(apiDir + "/" + className + ".md", source.page({
+			class: className,
+			property: item.classitems.property,
+			method: item.classitems.method,
+			event: item.classitems.event
+		}));
+	});
+}
+
+
+module.exports = function(githubRepo, dir, YUIDocDir) {
+	// make sure we have the repo
+	if (!fs.existsSync(dir)) {
+		exec("git clone " + githubRepo + " ./" + dir, function() {
+			generatePages.apply(this, arguments);
+		});
+	} else {
+		generatePages.apply(this, arguments);
+	}
+};
