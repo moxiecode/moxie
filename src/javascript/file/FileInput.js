@@ -20,21 +20,22 @@ define('moxie/file/FileInput', [
 ], function(Basic, Mime, Dom, x, EventTarget, I18n, File, RuntimeClient) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
-	converts selected files to mOxie.File objects, to be used in conjunction with _mOxie.Image_, preloaded in memory
-	with _mOxie.FileReader_ or uploaded to a server through _mOxie.XMLHttpRequest_.
+	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
+	with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
 
 	@class FileInput
 	@constructor
 	@extends EventTarget
 	@uses RuntimeClient
-	@param {Object|String|DOMElement} options If options is string or node, argument is considered as options.browse_button
-	@param {String|DOMElement} options.browse_button DOM Element to turn into file picker
-	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
-	@param {String} [options.file='file'] Name of the file field (not the filename)
-	@param {Boolean} [options.multiple=false] Enable selection of multiple files
-	@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time)
-	@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode for options.browse_button
-	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
+	@param {Object|String|DOMElement} options If options is string or node, argument is considered as _browse\_button_.
+		@param {String|DOMElement} options.browse_button DOM Element to turn into file picker.
+		@param {Array} [options.accept] Array of mime types to accept. By default accepts all.
+		@param {String} [options.file='file'] Name of the file field (not the filename).
+		@param {Boolean} [options.multiple=false] Enable selection of multiple files.
+		@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
+		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
+		for _browse\_button_.
+		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
 
 	@example
 		<div id="container">
