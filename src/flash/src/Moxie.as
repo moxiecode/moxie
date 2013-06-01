@@ -137,7 +137,6 @@ package
 			}
 									
 			evt.type = [uid, exType].join('::');
-			evt.async = true;
 									
 			_fireEvent(evt, e.hasOwnProperty('data') ? e.data : null);
 		}
