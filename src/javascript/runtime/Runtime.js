@@ -453,7 +453,6 @@ define('moxie/runtime/Runtime', [
 	*/
 	Runtime.getInfo = function(uid) {
 		var runtime = Runtime.getRuntime(uid);
-
 		if (runtime) {
 			return {
 				uid: runtime.uid,
@@ -461,8 +460,56 @@ define('moxie/runtime/Runtime', [
 				can: runtime.can
 			};
 		}
-
 		return null;
+	};
+
+	/**
+	Test the specified runtime for specific capabilities, invoke a callback with test result
+	as only argument.
+
+	@method can
+	@static
+	@param {String} type Runtime type (e.g. flash, html5, etc)
+	@param {String|Object} caps Set of capabilities to check
+	@param {Function} cb Callback to call with a boolean result
+	*/
+	Runtime.can = function(type, caps, cb) {
+		Runtime.thatCan(caps, function(result) {
+			cb(!!result);
+		}, type);
+	};
+
+
+	/**
+	Figure out a runtime that supports specified capabilities.
+
+	@method thatCan
+	@static
+	@param {String|Object} caps Set of capabilities to check
+	@param {Function} cb Callback to call with a runtime type or null
+	@param {String} [runtimeOrder] Comma-separated list of runtimes to check against
+	*/
+	Runtime.thatCan = function(caps, cb, runtimeOrder) {
+		// to avoid circular references we got to include this module manually (should be safe...)
+		/*global require:true */
+		require(["moxie/runtime/RuntimeTarget"], function(RuntimeTarget) {
+			var rt = new RuntimeTarget();
+
+			rt.bind('RuntimeInit', function(e, runtime) {
+				this.destroy();
+				cb(runtime.type);
+			});
+
+			rt.bind('RuntimeError', function() {
+				this.unbindAll();
+				cb(null);
+			});
+
+			rt.connectRuntime({
+				runtime_order: runtimeOrder || Runtime.order,
+				required_caps: caps
+			});
+		});
 	};
 
 

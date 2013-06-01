@@ -17,6 +17,9 @@
 
 QUnit.config.reorder = false;
 
+o.Env.swf_url = "../../bin/flash/Moxie.swf";
+o.Env.xap_url = "../../bin/silverlight/Moxie.xap";
+
 module("Runtime", {
 	setup: function() {
 
@@ -235,6 +238,26 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	});
 
 }());
+
+test('Runtime.can()', function() {
+	stop();
+	o.Runtime.can('html5', 'upload_filesize', function(result) {
+		start();
+		ok(result, "html5 can upload_filesize");
+	});
+});
+
+test('Runtime.thatCan()', function() {
+	stop();
+	o.Runtime.thatCan({
+		upload_filesize: '3gb',
+		select_multiple: true,
+		send_browser_cookies: true
+	}, function(result) {
+		start();
+		equal(result, 'silverlight', "Usable Runtime figured out by capability (" + result + ").");
+	}, 'flash,html4,silverlight,html5');
+});
 
 </script>
 </head>
