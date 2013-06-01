@@ -636,7 +636,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			}
 		});
 
-		/** this is nice, but maybe too lengthy
+		/* this is nice, but maybe too lengthy
 
 		// if supported by JS version, set getters/setters for specific properties
 		o.defineProperty(this, 'readyState', {

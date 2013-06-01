@@ -50,6 +50,13 @@ define('moxie/file/File', [
 		Blob.apply(this, arguments);
 		
 		Basic.extend(this, {
+			/**
+			File mime type
+
+			@property type
+			@type {String}
+			@default ''
+			*/
 			type: type || '',
 
 			/**
@@ -57,14 +64,14 @@ define('moxie/file/File', [
 
 			@property name
 			@type {String}
-			@default ''
+			@default UID
 			*/
 			name: name || Basic.guid('file_'),
 			
 			/**
 			Date of last modification
 
-			@property name
+			@property lastModifiedDate
 			@type {String}
 			@default now
 			*/
