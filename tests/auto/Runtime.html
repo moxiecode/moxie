@@ -222,13 +222,13 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 
 		initRuntimeTarget.call(this, "flash", {
-			do_cors: false,
+			drag_and_drop: true,
 		}, function(mode) {
 			equal(mode, false, "Operational mode cannot be set: capability either unsupported or unsupported state requested.");
 		});
 
 		initRuntimeTarget.call(this, "flash", {
-			report_upload_progress: true,
+			report_upload_progress: false,
 		}, function(mode) {
 			equal(mode, "client", "Operational mode set to default: client.");
 		});

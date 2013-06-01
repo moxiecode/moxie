@@ -47,8 +47,8 @@ define("moxie/runtime/flash/Runtime", [
 			display_media: Runtime.capTrue,
 			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
-			report_upload_progress: function(value) {
-				return value && I.getMode() === 'client';
+			report_upload_progress: function() {
+				return I.getMode() === 'client';
 			},
 			resize_image: Runtime.capTrue,
 			return_response_headers: false,
@@ -82,9 +82,8 @@ define("moxie/runtime/flash/Runtime", [
 			}
 		}, { 
 			// capabilities that implicitly switch the runtime into client mode
-			access_binary: true,
-			access_image_binary: true,
-			report_upload_progress: false,
+			access_binary: false,
+			access_image_binary: false,
 			return_response_type: function(responseType) {
 				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']);
 			},
