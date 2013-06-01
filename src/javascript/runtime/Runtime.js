@@ -453,6 +453,7 @@ define('moxie/runtime/Runtime', [
 	*/
 	Runtime.getInfo = function(uid) {
 		var runtime = Runtime.getRuntime(uid);
+
 		if (runtime) {
 			return {
 				uid: runtime.uid,
@@ -464,19 +465,28 @@ define('moxie/runtime/Runtime', [
 	};
 
 	/**
-	Test the specified runtime for specific capabilities, invoke a callback with test result
-	as only argument.
+	Test the specified runtime for specific capabilities.
 
 	@method can
 	@static
 	@param {String} type Runtime type (e.g. flash, html5, etc)
 	@param {String|Object} caps Set of capabilities to check
-	@param {Function} cb Callback to call with a boolean result
+	@return {Boolean} Result of the test
 	*/
-	Runtime.can = function(type, caps, cb) {
-		Runtime.thatCan(caps, function(result) {
-			cb(!!result);
-		}, type);
+	Runtime.can = function(type, caps) {
+		var runtime
+		, constructor = Runtime.getConstructor(type)
+		, mode
+		;
+		if (constructor) {
+			runtime = new constructor({
+				required_caps: caps
+			});
+			mode = runtime.getMode();
+			runtime.destroy();
+			return !!mode;
+		}
+		return false;
 	};
 
 
@@ -486,30 +496,17 @@ define('moxie/runtime/Runtime', [
 	@method thatCan
 	@static
 	@param {String|Object} caps Set of capabilities to check
-	@param {Function} cb Callback to call with a runtime type or null
 	@param {String} [runtimeOrder] Comma-separated list of runtimes to check against
+	@return {String} Usable runtime identifier or null
 	*/
-	Runtime.thatCan = function(caps, cb, runtimeOrder) {
-		// to avoid circular references we got to include this module manually (should be safe...)
-		/*global require:true */
-		require(["moxie/runtime/RuntimeTarget"], function(RuntimeTarget) {
-			var rt = new RuntimeTarget();
-
-			rt.bind('RuntimeInit', function(e, runtime) {
-				this.destroy();
-				cb(runtime.type);
-			});
-
-			rt.bind('RuntimeError', function() {
-				this.unbindAll();
-				cb(null);
-			});
-
-			rt.connectRuntime({
-				runtime_order: runtimeOrder || Runtime.order,
-				required_caps: caps
-			});
-		});
+	Runtime.thatCan = function(caps, runtimeOrder) {
+		var types = (runtimeOrder || Runtime.order).split(/\s*,\s*/);
+		for (var i in types) {
+			if (Runtime.can(types[i], caps)) {
+				return types[i];
+			}
+		}
+		return null;
 	};
 
 

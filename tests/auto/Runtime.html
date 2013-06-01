@@ -240,23 +240,17 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 }());
 
 test('Runtime.can()', function() {
-	stop();
-	o.Runtime.can('html5', 'upload_filesize', function(result) {
-		start();
-		ok(result, "html5 can upload_filesize");
-	});
+	ok(o.Runtime.can('html5', 'upload_filesize'), "html5 can upload_filesize");
 });
 
 test('Runtime.thatCan()', function() {
-	stop();
-	o.Runtime.thatCan({
+	var type = o.Runtime.thatCan({
 		upload_filesize: '3gb',
 		select_multiple: true,
 		send_browser_cookies: true
-	}, function(result) {
-		start();
-		equal(result, 'silverlight', "Usable Runtime figured out by capability (" + result + ").");
 	}, 'flash,html4,silverlight,html5');
+
+	equal(type, 'silverlight', "Usable Runtime figured out by capability (" + type + ").");
 });
 
 </script>
