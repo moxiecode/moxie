@@ -10,8 +10,8 @@
 
 define('moxie/core/utils/Events', [
 	'moxie/core/utils/Basic'
-], function(o) {
-	var eventhash = {}, uid = 'moxie_' + o.guid();
+], function(Basic) {
+	var eventhash = {}, uid = 'moxie_' + Basic.guid();
 	
 	// IE W3C like event funcs
 	function preventDefault() {
@@ -32,13 +32,10 @@ define('moxie/core/utils/Events', [
 	@param {Object} obj DOM element like object to add handler to.
 	@param {String} name Name to add event listener to.
 	@param {Function} callback Function to call when event occurs.
-	@param {String} (optional) key that might be used to add specifity to the event record.
+	@param {String} [key] that might be used to add specifity to the event record.
 	*/
-	var addEvent = function(obj, name, callback) {
-		var func, events, key;
-		
-		// if passed in, event will be locked with this key - one would need to provide it to removeEvent
-		key = arguments[3];
+	var addEvent = function(obj, name, callback, key) {
+		var func, events;
 					
 		name = name.toLowerCase();
 
@@ -66,7 +63,7 @@ define('moxie/core/utils/Events', [
 		
 		// Log event handler to objects internal mOxie registry
 		if (!obj[uid]) {
-			obj[uid] = o.guid();
+			obj[uid] = Basic.guid();
 		}
 		
 		if (!eventhash.hasOwnProperty(obj[uid])) {
@@ -95,18 +92,11 @@ define('moxie/core/utils/Events', [
 	@static
 	@param {Object} obj DOM element to remove event listener(s) from.
 	@param {String} name Name of event listener to remove.
-	@param {Function|String} (optional) might be a callback or unique key to match.
+	@param {Function|String} [callback] might be a callback or unique key to match.
 	*/
-	var removeEvent = function(obj, name) {
-		var type, callback, key;
+	var removeEvent = function(obj, name, callback) {
+		var type, undef;
 		
-		// match the handler either by callback or by key
-		if (typeof(arguments[2]) == "function") {
-			callback = arguments[2];
-		} else {
-			key = arguments[2];
-		}
-					
 		name = name.toLowerCase();
 		
 		if (obj[uid] && eventhash[obj[uid]] && eventhash[obj[uid]][name]) {
@@ -114,12 +104,10 @@ define('moxie/core/utils/Events', [
 		} else {
 			return;
 		}
-		
 			
-		for (var i=type.length-1; i>=0; i--) {
+		for (var i = type.length - 1; i >= 0; i--) {
 			// undefined or not, key should match
-			if (type[i].key === key || type[i].orig === callback) {
-					
+			if (type[i].orig === callback || type[i].key === callback) {
 				if (obj.removeEventListener) {
 					obj.removeEventListener(name, type[i].func, false);
 				} else if (obj.detachEvent) {
@@ -128,11 +116,10 @@ define('moxie/core/utils/Events', [
 				
 				type[i].orig = null;
 				type[i].func = null;
-				
 				type.splice(i, 1);
 				
 				// If callback was passed we are done here, otherwise proceed
-				if (callback !== undefined) {
+				if (callback !== undef) {
 					break;
 				}
 			}
@@ -144,14 +131,14 @@ define('moxie/core/utils/Events', [
 		}
 		
 		// If mOxie registry has become empty, remove it
-		if (o.isEmptyObj(eventhash[obj[uid]])) {
+		if (Basic.isEmptyObj(eventhash[obj[uid]])) {
 			delete eventhash[obj[uid]];
 			
 			// IE doesn't let you remove DOM object property with - delete
 			try {
 				delete obj[uid];
 			} catch(e) {
-				obj[uid] = undefined;
+				obj[uid] = undef;
 			}
 		}
 	};
@@ -163,16 +150,14 @@ define('moxie/core/utils/Events', [
 	@method removeAllEvents
 	@static
 	@param {Object} obj DOM element to remove event listeners from.
-	@param {String} (optional) unique key to match, when removing events.
+	@param {String} [key] unique key to match, when removing events.
 	*/
-	var removeAllEvents = function(obj) {
-		var key = arguments[1];
-		
+	var removeAllEvents = function(obj, key) {		
 		if (!obj || !obj[uid]) {
 			return;
 		}
 		
-		o.each(eventhash[obj[uid]], function(events, name) {
+		Basic.each(eventhash[obj[uid]], function(events, name) {
 			removeEvent(obj, name, key);
 		});
 	};
