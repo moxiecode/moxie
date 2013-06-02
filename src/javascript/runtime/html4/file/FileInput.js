@@ -193,6 +193,8 @@ define("moxie/runtime/html4/file/FileInput", [
 					Events.addEvent(Dom.get(options.container), 'mouseup', function() {
 						comp.trigger('mouseup');
 					}, comp.uid);
+
+					browseButton = null;
 				}());
 
 				addInput.call(this);
@@ -210,6 +212,19 @@ define("moxie/runtime/html4/file/FileInput", [
 				if ((input = Dom.get(_uid))) {
 					input.disabled = !!state;
 				}
+			},
+
+			destroy: function() {
+				var I = this.getRuntime(), shimContainer = I.getShimContainer();
+				
+				Events.removeAllEvents(shimContainer, this.uid);
+				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
+				Events.removeAllEvents(_options && Dom.get(_options.browse_button), this.uid);
+				
+				if (shimContainer) {
+					shimContainer.innerHTML = '';
+				}
+				_uid = _files = _mimes = _options = null;
 			}
 		});
 	}
