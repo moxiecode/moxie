@@ -26,7 +26,7 @@ var source = {
 		'{{#if method}}',
 			'* [Methods](#methods)\n',
 			'{{#each method}}',
-			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-method)\n',
+			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-{{formatAnchorSuffix params}}-method)\n',
 			'{{/each}}',
 		'{{/if}}',
 		'{{#if event}}',
@@ -91,7 +91,7 @@ var source = {
 	''].join('')),
 
 	method: Handlebars.compile([
-		'<a name="{{name}}-method" />\n',
+		'<a name="{{name}}-{{formatAnchorSuffix params}}-method" />\n',
 		'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}")\n\n',
 
 		'{{{description}}}\n\n',
@@ -232,6 +232,11 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 			}
 		});
 		return titleArgs.join(", ");
+	});
+
+
+	Handlebars.registerHelper('formatAnchorSuffix', function(params) {
+		return Handlebars.helpers.formatSignature(params).replace(/\W+/g, '');
 	});
 
 
