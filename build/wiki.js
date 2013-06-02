@@ -20,13 +20,13 @@ var source = {
 		'{{#if property}}',
 			'* [Properties](#properties)\n',
 			'{{#each property}}',
-			'	* [{{name}}](#{{name}}-property)\n',
+			'	* [{{name}}](#{{name}}-property) {{#if static}}`static`{{/if}}\n',
 			'{{/each}}',
 		'{{/if}}',
 		'{{#if method}}',
 			'* [Methods](#methods)\n',
 			'{{#each method}}',
-			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-{{formatAnchorSuffix params}}-method)\n',
+			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-{{formatAnchorSuffix params}}-method) {{#if static}}`static`{{/if}}\n',
 			'{{/each}}',
 		'{{/if}}',
 		'{{#if event}}',
@@ -44,7 +44,7 @@ var source = {
 
 			'{{#each property}}',
 				'<a name="{{name}}-property" />\n',
-				'### [{{name}}]({{srcUrl}} "Defined at: {{file}}:{{line}}")\n\n',
+				'### [{{name}}]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
 
 				'{{{description}}}\n\n',
 
@@ -92,7 +92,7 @@ var source = {
 
 	method: Handlebars.compile([
 		'<a name="{{name}}-{{formatAnchorSuffix params}}-method" />\n',
-		'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}")\n\n',
+		'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
 
 		'{{{description}}}\n\n',
 
