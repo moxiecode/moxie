@@ -1846,7 +1846,6 @@ define('moxie/runtime/Runtime', [
 		// small extension factory here (is meant to be extended with actual extensions constructors)
 		_shim = (function() {
 			var objpool = {};
-
 			return {
 				exec: function(uid, comp, fn, args) {
 					if (_shim[comp]) {
@@ -1856,7 +1855,6 @@ define('moxie/runtime/Runtime', [
 								instance: new _shim[comp]()
 							};
 						}
-
 						if (objpool[uid].instance[fn]) {
 							return objpool[uid].instance[fn].apply(this, args);
 						}
@@ -1869,7 +1867,6 @@ define('moxie/runtime/Runtime', [
 
 				removeAllInstances: function() {
 					var self = this;
-					
 					Basic.each(objpool, function(obj, uid) {
 						if (Basic.typeOf(obj.instance.destroy) === 'function') {
 							obj.instance.destroy.call(obj.context);
@@ -2594,6 +2591,13 @@ define('moxie/file/File', [
 		Blob.apply(this, arguments);
 		
 		Basic.extend(this, {
+			/**
+			File mime type
+
+			@property type
+			@type {String}
+			@default ''
+			*/
 			type: type || '',
 
 			/**
@@ -2601,14 +2605,14 @@ define('moxie/file/File', [
 
 			@property name
 			@type {String}
-			@default ''
+			@default UID
 			*/
 			name: name || Basic.guid('file_'),
 			
 			/**
 			Date of last modification
 
-			@property name
+			@property lastModifiedDate
 			@type {String}
 			@default now
 			*/
@@ -2903,6 +2907,28 @@ define('moxie/file/FileInput', [
 			*/
 			refresh: function() {
 				self.trigger("Refresh");
+			},
+
+
+			/**
+			Destroy component.
+
+			@method destroy
+			*/
+			destroy: function() {
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileInput', 'destroy');
+					this.disconnectRuntime();
+				}
+
+				if (Basic.typeOf(this.files) === 'array') {
+					// no sense in leaving associated files behind
+					Basic.each(this.files, function(file) {
+						file.destroy();
+					});
+				} 
+				this.files = null;
 			}
 		});
 	}
@@ -2935,9 +2961,9 @@ define('moxie/file/FileDrop', [
 	'moxie/core/utils/Mime'
 ], function(I18n, Dom, x, Basic, File, RuntimeClient, EventTarget, Mime) {
 	/**
-	Turn arbitrary DOM element to a drop zone accepting files. Converts selected files to mOxie.File objects, to be used 
-	in conjunction with _mOxie.Image_, preloaded in memory with _mOxie.FileReader_ or uploaded to a server through 
-	_mOxie.XMLHttpRequest_.
+	Turn arbitrary DOM element to a drop zone accepting files. Converts selected files to _File_ objects, to be used 
+	in conjunction with _Image_, preloaded in memory with _FileReader_ or uploaded to a server through 
+	_XMLHttpRequest_.
 
 	@example
 		<div id="drop_zone">
@@ -2963,9 +2989,9 @@ define('moxie/file/FileDrop', [
 	@extends EventTarget
 	@uses RuntimeClient
 	@param {Object|String} options If options has typeof string, argument is considered as options.drop_zone
-	@param {String|DOMElement} options.drop_zone DOM Element to turn into a drop zone
-	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
-	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
+		@param {String|DOMElement} options.drop_zone DOM Element to turn into a drop zone
+		@param {Array} [options.accept] Array of mime types to accept. By default accepts all
+		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 	*/
 	var dispatches = [
 		/**
@@ -3076,6 +3102,15 @@ define('moxie/file/FileDrop', [
 							
 				// runtime needs: options.required_features, options.runtime_order and options.container
 				self.connectRuntime(options); // throws RuntimeError
+			},
+
+			destroy: function() {
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileDrop', 'destroy');
+					this.disconnectRuntime();
+				}
+				this.files = null;
 			}
 		});
 	}
@@ -4270,7 +4305,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			}
 		});
 
-		/** this is nice, but maybe too lengthy
+		/* this is nice, but maybe too lengthy
 
 		// if supported by JS version, set getters/setters for specific properties
 		o.defineProperty(this, 'readyState', {
@@ -5941,8 +5976,8 @@ define("moxie/runtime/html5/file/Blob", [
 
 define('moxie/core/utils/Events', [
 	'moxie/core/utils/Basic'
-], function(o) {
-	var eventhash = {}, uid = 'moxie_' + o.guid();
+], function(Basic) {
+	var eventhash = {}, uid = 'moxie_' + Basic.guid();
 	
 	// IE W3C like event funcs
 	function preventDefault() {
@@ -5963,13 +5998,10 @@ define('moxie/core/utils/Events', [
 	@param {Object} obj DOM element like object to add handler to.
 	@param {String} name Name to add event listener to.
 	@param {Function} callback Function to call when event occurs.
-	@param {String} (optional) key that might be used to add specifity to the event record.
+	@param {String} [key] that might be used to add specifity to the event record.
 	*/
-	var addEvent = function(obj, name, callback) {
-		var func, events, key;
-		
-		// if passed in, event will be locked with this key - one would need to provide it to removeEvent
-		key = arguments[3];
+	var addEvent = function(obj, name, callback, key) {
+		var func, events;
 					
 		name = name.toLowerCase();
 
@@ -5997,7 +6029,7 @@ define('moxie/core/utils/Events', [
 		
 		// Log event handler to objects internal mOxie registry
 		if (!obj[uid]) {
-			obj[uid] = o.guid();
+			obj[uid] = Basic.guid();
 		}
 		
 		if (!eventhash.hasOwnProperty(obj[uid])) {
@@ -6026,18 +6058,11 @@ define('moxie/core/utils/Events', [
 	@static
 	@param {Object} obj DOM element to remove event listener(s) from.
 	@param {String} name Name of event listener to remove.
-	@param {Function|String} (optional) might be a callback or unique key to match.
+	@param {Function|String} [callback] might be a callback or unique key to match.
 	*/
-	var removeEvent = function(obj, name) {
-		var type, callback, key;
+	var removeEvent = function(obj, name, callback) {
+		var type, undef;
 		
-		// match the handler either by callback or by key
-		if (typeof(arguments[2]) == "function") {
-			callback = arguments[2];
-		} else {
-			key = arguments[2];
-		}
-					
 		name = name.toLowerCase();
 		
 		if (obj[uid] && eventhash[obj[uid]] && eventhash[obj[uid]][name]) {
@@ -6045,12 +6070,10 @@ define('moxie/core/utils/Events', [
 		} else {
 			return;
 		}
-		
 			
-		for (var i=type.length-1; i>=0; i--) {
+		for (var i = type.length - 1; i >= 0; i--) {
 			// undefined or not, key should match
-			if (type[i].key === key || type[i].orig === callback) {
-					
+			if (type[i].orig === callback || type[i].key === callback) {
 				if (obj.removeEventListener) {
 					obj.removeEventListener(name, type[i].func, false);
 				} else if (obj.detachEvent) {
@@ -6059,11 +6082,10 @@ define('moxie/core/utils/Events', [
 				
 				type[i].orig = null;
 				type[i].func = null;
-				
 				type.splice(i, 1);
 				
 				// If callback was passed we are done here, otherwise proceed
-				if (callback !== undefined) {
+				if (callback !== undef) {
 					break;
 				}
 			}
@@ -6075,14 +6097,14 @@ define('moxie/core/utils/Events', [
 		}
 		
 		// If mOxie registry has become empty, remove it
-		if (o.isEmptyObj(eventhash[obj[uid]])) {
+		if (Basic.isEmptyObj(eventhash[obj[uid]])) {
 			delete eventhash[obj[uid]];
 			
 			// IE doesn't let you remove DOM object property with - delete
 			try {
 				delete obj[uid];
 			} catch(e) {
-				obj[uid] = undefined;
+				obj[uid] = undef;
 			}
 		}
 	};
@@ -6094,16 +6116,14 @@ define('moxie/core/utils/Events', [
 	@method removeAllEvents
 	@static
 	@param {Object} obj DOM element to remove event listeners from.
-	@param {String} (optional) unique key to match, when removing events.
+	@param {String} [key] unique key to match, when removing events.
 	*/
-	var removeAllEvents = function(obj) {
-		var key = arguments[1];
-		
+	var removeAllEvents = function(obj, key) {		
 		if (!obj || !obj[uid]) {
 			return;
 		}
 		
-		o.each(eventhash[obj[uid]], function(events, name) {
+		Basic.each(eventhash[obj[uid]], function(events, name) {
 			removeEvent(obj, name, key);
 		});
 	};
@@ -6256,13 +6276,14 @@ define("moxie/runtime/html5/file/FileInput", [
 
 			destroy: function() {
 				var I = this.getRuntime(), shimContainer = I.getShimContainer();
-
+				
 				Events.removeAllEvents(shimContainer, this.uid);
-				Events.removeAllEvents(Dom.get(_options.container), this.uid);
-				Events.removeAllEvents(Dom.get(_options.browse_button), this.uid);
-
-				shimContainer.innerHTML = '';
-
+				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
+				Events.removeAllEvents(_options && Dom.get(_options.browse_button), this.uid);
+				
+				if (shimContainer) {
+					shimContainer.innerHTML = '';
+				}
 				_files = _options = null;
 			}
 		});
@@ -6351,8 +6372,14 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 			getFiles: function() {
 				return _files;
+			},
+
+			destroy: function() {
+				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
+				_files = _options = null;
 			}
 		});
+
 
 		function _isAcceptable(file) {
 			var mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept)
@@ -9746,6 +9773,8 @@ define("moxie/runtime/html4/file/FileInput", [
 					Events.addEvent(Dom.get(options.container), 'mouseup', function() {
 						comp.trigger('mouseup');
 					}, comp.uid);
+
+					browseButton = null;
 				}());
 
 				addInput.call(this);
@@ -9763,6 +9792,19 @@ define("moxie/runtime/html4/file/FileInput", [
 				if ((input = Dom.get(_uid))) {
 					input.disabled = !!state;
 				}
+			},
+
+			destroy: function() {
+				var I = this.getRuntime(), shimContainer = I.getShimContainer();
+				
+				Events.removeAllEvents(shimContainer, this.uid);
+				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
+				Events.removeAllEvents(_options && Dom.get(_options.browse_button), this.uid);
+				
+				if (shimContainer) {
+					shimContainer.innerHTML = '';
+				}
+				_uid = _files = _mimes = _options = null;
 			}
 		});
 	}
