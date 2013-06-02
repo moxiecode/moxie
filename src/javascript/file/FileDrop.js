@@ -19,9 +19,9 @@ define('moxie/file/FileDrop', [
 	'moxie/core/utils/Mime'
 ], function(I18n, Dom, x, Basic, File, RuntimeClient, EventTarget, Mime) {
 	/**
-	Turn arbitrary DOM element to a drop zone accepting files. Converts selected files to mOxie.File objects, to be used 
-	in conjunction with _mOxie.Image_, preloaded in memory with _mOxie.FileReader_ or uploaded to a server through 
-	_mOxie.XMLHttpRequest_.
+	Turn arbitrary DOM element to a drop zone accepting files. Converts selected files to _File_ objects, to be used 
+	in conjunction with _Image_, preloaded in memory with _FileReader_ or uploaded to a server through 
+	_XMLHttpRequest_.
 
 	@example
 		<div id="drop_zone">
@@ -47,9 +47,9 @@ define('moxie/file/FileDrop', [
 	@extends EventTarget
 	@uses RuntimeClient
 	@param {Object|String} options If options has typeof string, argument is considered as options.drop_zone
-	@param {String|DOMElement} options.drop_zone DOM Element to turn into a drop zone
-	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
-	@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
+		@param {String|DOMElement} options.drop_zone DOM Element to turn into a drop zone
+		@param {Array} [options.accept] Array of mime types to accept. By default accepts all
+		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 	*/
 	var dispatches = [
 		/**
@@ -160,6 +160,15 @@ define('moxie/file/FileDrop', [
 							
 				// runtime needs: options.required_features, options.runtime_order and options.container
 				self.connectRuntime(options); // throws RuntimeError
+			},
+
+			destroy: function() {
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileDrop', 'destroy');
+					this.disconnectRuntime();
+				}
+				this.files = null;
 			}
 		});
 	}

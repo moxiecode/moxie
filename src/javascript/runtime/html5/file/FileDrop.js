@@ -76,8 +76,17 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 			getFiles: function() {
 				return _files;
+			},
+
+			destroy: function() {
+				var container = _options && Dom.get(_options.container);
+				if (container) {
+					Events.removeAllEvents(_options.container, this.uid);
+				}
+				_files = _options = null;
 			}
 		});
+
 
 		function _isAcceptable(file) {
 			var mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept)
