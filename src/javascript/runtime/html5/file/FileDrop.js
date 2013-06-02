@@ -79,10 +79,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 			},
 
 			destroy: function() {
-				var container = _options && Dom.get(_options.container);
-				if (container) {
-					Events.removeAllEvents(_options.container, this.uid);
-				}
+				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
 				_files = _options = null;
 			}
 		});
