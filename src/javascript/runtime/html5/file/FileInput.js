@@ -137,13 +137,14 @@ define("moxie/runtime/html5/file/FileInput", [
 
 			destroy: function() {
 				var I = this.getRuntime(), shimContainer = I.getShimContainer();
-
+				
 				Events.removeAllEvents(shimContainer, this.uid);
-				Events.removeAllEvents(Dom.get(_options.container), this.uid);
-				Events.removeAllEvents(Dom.get(_options.browse_button), this.uid);
-
-				shimContainer.innerHTML = '';
-
+				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
+				Events.removeAllEvents(_options && Dom.get(_options.browse_button), this.uid);
+				
+				if (shimContainer) {
+					shimContainer.innerHTML = '';
+				}
 				_files = _options = null;
 			}
 		});
