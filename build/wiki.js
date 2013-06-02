@@ -8,14 +8,14 @@ var util = require("./utils");
 
 var source = {
 	toc: Handlebars.compile([
-		'## Table of Contents\n',
+		'### Table of Contents\n',
 		'{{#each classes}}',
 			'* [[{{.}}|{{.}}]]\n',
 		'{{/each}}',
 	''].join('')),
 
 	page: Handlebars.compile([
-		'## Table of Contents\n',
+		'### Table of Contents\n',
 		'* [Constructor](#{{class}}-method)\n',
 		'{{#if property}}',
 			'* [Properties](#properties)\n',
