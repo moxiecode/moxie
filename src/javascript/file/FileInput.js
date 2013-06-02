@@ -278,6 +278,21 @@ define('moxie/file/FileInput', [
 			*/
 			refresh: function() {
 				self.trigger("Refresh");
+			},
+
+
+			/**
+			Destroy component.
+
+			@method destroy
+			*/
+			destroy: function() {
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileInput', 'destroy');
+					this.disconnectRuntime();
+				}
+				this.files = null;
 			}
 		});
 	}

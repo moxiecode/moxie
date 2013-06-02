@@ -152,7 +152,6 @@ define('moxie/runtime/Runtime', [
 		// small extension factory here (is meant to be extended with actual extensions constructors)
 		_shim = (function() {
 			var objpool = {};
-
 			return {
 				exec: function(uid, comp, fn, args) {
 					if (_shim[comp]) {
@@ -162,7 +161,6 @@ define('moxie/runtime/Runtime', [
 								instance: new _shim[comp]()
 							};
 						}
-
 						if (objpool[uid].instance[fn]) {
 							return objpool[uid].instance[fn].apply(this, args);
 						}
@@ -175,7 +173,6 @@ define('moxie/runtime/Runtime', [
 
 				removeAllInstances: function() {
 					var self = this;
-					
 					Basic.each(objpool, function(obj, uid) {
 						if (Basic.typeOf(obj.instance.destroy) === 'function') {
 							obj.instance.destroy.call(obj.context);
