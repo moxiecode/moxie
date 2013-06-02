@@ -292,6 +292,13 @@ define('moxie/file/FileInput', [
 					runtime.exec.call(this, 'FileInput', 'destroy');
 					this.disconnectRuntime();
 				}
+
+				if (Basic.typeOf(this.files) === 'array') {
+					// no sense in leaving associated files behind
+					Basic.each(this.files, function(file) {
+						file.destroy();
+					});
+				} 
 				this.files = null;
 			}
 		});
