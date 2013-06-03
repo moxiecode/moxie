@@ -1842,6 +1842,7 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
+
 		
 		// small extension factory here (is meant to be extended with actual extensions constructors)
 		_shim = (function() {
@@ -2064,6 +2065,10 @@ define('moxie/runtime/Runtime', [
 			@method destroy
 			*/
 			destroy: function() {
+				if (!self) {
+					return; // obviously already destroyed
+				}
+
 				var shimContainer = Dom.get(this.shimid);
 				if (shimContainer) {
 					shimContainer.parentNode.removeChild(shimContainer);
@@ -2075,6 +2080,7 @@ define('moxie/runtime/Runtime', [
 
 				this.unbindAll();
 				delete runtimes[this.uid];
+				this.uid = null; // mark this runtime as destroyed
 				_uid = self = _shim = _mode = shimContainer = null;
 			}
 		});
@@ -2339,7 +2345,11 @@ define('moxie/runtime/RuntimeClient', [
 			@return {Runtime} Runtime or null if client is not connected
 			*/
 			getRuntime: function() {
-				return runtime || null;
+				if (runtime && runtime.uid) {
+					return runtime;
+				}
+				runtime = null; // make sure we do not leave zombies rambling around
+				return null;
 			},
 
 			/**
