@@ -109,7 +109,11 @@ define('moxie/runtime/RuntimeClient', [
 			@return {Runtime} Runtime or null if client is not connected
 			*/
 			getRuntime: function() {
-				return runtime || null;
+				if (runtime && runtime.uid) {
+					return runtime;
+				}
+				runtime = null; // make sure we do not leave zombies rambling around
+				return null;
 			},
 
 			/**
