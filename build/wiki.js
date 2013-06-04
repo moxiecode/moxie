@@ -293,12 +293,13 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 
 
 module.exports = function(githubRepo, dir, YUIDocDir) {
+	var self = this, args = [].slice.call(arguments);
 	// make sure we have the repo
 	if (!fs.existsSync(dir)) {
 		exec("git clone " + githubRepo + " ./" + dir, function() {
-			generatePages.apply(this, arguments);
+			generatePages.apply(self, args);
 		});
 	} else {
-		generatePages.apply(this, arguments);
+		generatePages.apply(self, args);
 	}
 };
