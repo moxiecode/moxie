@@ -26,12 +26,15 @@ define("moxie/runtime/html4/Runtime", [
 	var type = 'html4', extensions = {};
 
 	function Html4Runtime(options) {
-		var I = this;
+		var I = this
+		, Test = Runtime.capTest
+		, True = Runtime.capTrue
+		;
 
 		Runtime.call(this, options, type, {
-			access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
+			access_binary: Test(window.FileReader || window.File && File.getAsDataURL),
 			access_image_binary: false,
-			display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+			display_media: Test(extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb'))),
 			do_cors: false,
 			drag_and_drop: false,
 			resize_image: function() {
@@ -51,16 +54,13 @@ define("moxie/runtime/html4/Runtime", [
 			send_multipart: true,
 			slice_blob: false,
 			stream_upload: true,
-			summon_file_dialog: (function() { // yeah... some dirty sniffing here...
-				return  (Env.browser === 'Firefox' && Env.version >= 4)	||
-						(Env.browser === 'Opera' && Env.version >= 12)	||
-						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
+			summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
 				return (Env.browser === 'Firefox' && Env.version >= 4) ||
 					(Env.browser === 'Opera' && Env.version >= 12) ||
 					(Env.browser === 'IE' && Env.version >= 10) ||
 					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 			}()),
-			upload_filesize: Runtime.capTrue,
+			upload_filesize: True,
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
