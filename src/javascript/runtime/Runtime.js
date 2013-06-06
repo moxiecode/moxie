@@ -535,5 +535,19 @@ define('moxie/runtime/Runtime', [
 		return false;
 	};
 
+	/**
+	Evaluate the expression to boolean value and create a function that always returns it.
+
+	@private
+	@static
+	@param {Mixed} expr Expression to evaluate
+	@return {Function} Function returning the result of evaluation
+	*/
+	Runtime.capTest = function(expr) {
+		return function() {
+			return !!expr;
+		};
+	};
+
 	return Runtime;
 });
