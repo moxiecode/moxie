@@ -253,6 +253,87 @@ test('Runtime.thatCan()', function() {
 	equal(type, 'silverlight', "Usable Runtime figured out by capability (" + type + ").");
 });
 
+test('Runtime.capTrue(), Runtime.capFalse(), Runtime.capTest()', function() {
+
+	deepEqual(o.Runtime.capTrue(false), true, "Whatever the argument Runtime.capTrue() always results in true.");
+	deepEqual(o.Runtime.capFalse(true), false, "Whatever the argument Runtime.capFalse() always results in false.");
+
+	var resultFn = o.Runtime.capTest(4 - 4);
+	equal(typeof resultFn, 'function', "Return value of Runtime.capTest() is a function.");
+	deepEqual(resultFn(), false, "Return value of Runtime.capTest() evaluates to a result of the expression that was passed into Runtime.capTest() and then casted to boolean.");
+
+	var caps = {
+		only_true: true,
+		only_false: false,
+		always_true: o.Runtime.capTrue,
+		always_false: o.Runtime.capFalse,
+		eval_always_true: o.Runtime.capTest('false'),
+		eval_always_false: o.Runtime.capTest(4 - 4)	
+	}
+	, runtime = new o.Runtime({}, 'test', caps)
+	;
+
+	deepEqual([
+		runtime.can('only_true', true), 
+		runtime.can('only_true', false),
+		runtime.can('only_true', 'true')
+	], [
+		true,
+		false,
+		false
+	], "cap: true - becomes true only when value to check is - true.");
+
+	deepEqual([
+		runtime.can('only_false', true), 
+		runtime.can('only_false', false),
+		runtime.can('only_false', 'true')
+	], [
+		false,
+		true,
+		false
+	], "cap: false - becomes true only when value to check is - false.");
+
+	deepEqual([
+		runtime.can('always_true', true), 
+		runtime.can('always_true', false),
+		runtime.can('always_true', 'true')
+	], [
+		true,
+		true,
+		true
+	], "cap: o.Runtime.capTrue(...) - is always true, whatever the value to check.");
+
+	deepEqual([
+		runtime.can('always_false', true), 
+		runtime.can('always_false', false),
+		runtime.can('always_false', 'true')
+	], [
+		false,
+		false,
+		false
+	], "cap: o.Runtime.capFalse(...) - is always false, whatever the value to check.");
+
+	deepEqual([
+		runtime.can('eval_always_true', true), 
+		runtime.can('eval_always_true', false),
+		runtime.can('eval_always_true', 'true')
+	], [
+		true,
+		true,
+		true
+	], "cap: o.Runtime.capTest(truthy) - is always true, whatever the value to check.");
+
+	deepEqual([
+		runtime.can('eval_always_false', true), 
+		runtime.can('eval_always_false', false),
+		runtime.can('eval_always_false', 'true')
+	], [
+		false,
+		false,
+		false
+	], "cap: o.Runtime.capTest(falsy) - is always false, whatever the value to check.");
+});
+
 </script>
 </head>
 <body>
