@@ -40,8 +40,9 @@ define('moxie/file/Blob', [
 			return blob;
 		}
 
-		if (ruid) {
-			RuntimeClient.call(this);
+		RuntimeClient.call(this);
+
+		if (ruid) {	
 			this.connectRuntime(ruid);
 		}
 
