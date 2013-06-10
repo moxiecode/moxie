@@ -273,7 +273,7 @@ define('moxie/core/EventTarget', [
 					
 					if (Basic.typeOf(this[h]) === 'function') {
 						this.addEventListener(handlers[i], this[h]);
-					} else if (this[h] === undefined) {
+					} else if (Basic.typeOf(this[h]) === 'undefined') {
 						this[h] = null; // object must have defined event properties, even if it doesn't make use of them
 					}
 				}

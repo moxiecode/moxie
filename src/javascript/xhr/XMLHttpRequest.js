@@ -800,7 +800,8 @@ define("moxie/xhr/XMLHttpRequest", [
 				}
 			}
 		}
-/*
+		
+		/*
 		function _toASCII(str, AllowUnassigned, UseSTD3ASCIIRules) {
 			// TODO: http://tools.ietf.org/html/rfc3490#section-4.1
 			return str.toLowerCase();
