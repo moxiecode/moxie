@@ -8,6 +8,8 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+ /*global ActiveXObject:true */
+
 /**
 @class moxie/runtime/html5/xhr/XMLHttpRequest
 @private
@@ -15,134 +17,59 @@
 define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
+	"moxie/core/utils/Url",
 	"moxie/file/File",
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Env",
 	"moxie/core/JSON"
-], function(extensions, Basic, File, Blob, FormData, x, Env, parseJSON) {
+], function(extensions, Basic, Url, File, Blob, FormData, x, Env, parseJSON) {
 	
 	function XMLHttpRequest() {
-		var self = this, _xhr2, _filename;
+		var self = this
+		, _xhr
+		, _filename
+		;
 
 		Basic.extend(this, {
 			send: function(meta, data) {
 				var target = this
-				, mustSendAsBinary = false
-				, fd
-				;
-
-				// Gecko 2/5/6 can't send blob in FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
-				// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
-				var blob, fr
 				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.version >= 4 && Env.version < 7)
 				, isAndroidBrowser = Env.browser === 'Android Browser'
+				, mustSendAsBinary = false
 				;
-				// here we go... ugly fix for ugly bug
-				if ((isGecko2_5_6 || isAndroidBrowser) && data instanceof FormData && data.hasBlob() && !data.getBlob().isDetached()) {
-					// get original blob
-					blob = data.getBlob().getSource();
-					// only Blobs have problem, Files seem ok
-					if (blob instanceof window.Blob && window.FileReader) {
-						// preload blob in memory to be sent as binary string
-						fr = new window.FileReader();
-						fr.onload = function() {
-							// overwrite original blob
-							data.append(data.getBlobName(), new Blob(null, {
-								type: blob.type,
-								data: fr.result
-							}));
-							// invoke send operation again
-							self.send.call(target, meta, data);
-						};
-						fr.readAsBinaryString(blob);
-						return; // do not proceed further
-					}
-				}
-
-				_xhr2 = new window.XMLHttpRequest();
 
 				// extract file name
 				_filename = meta.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase();
 
-				_xhr2.open(meta.method, meta.url, meta.async, meta.user, meta.password);
-
-				// set request headers
-				if (!Basic.isEmptyObj(meta.headers)) {
-					Basic.each(meta.headers, function(value, header) {
-						_xhr2.setRequestHeader(header, value);
-					});
-				}
-
-				// request response type
-				if ("" !== meta.responseType) {
-					if ('json' === meta.responseType && !Env.can('return_response_type', 'json')) { // we can fake this one
-						_xhr2.responseType = 'text';
-					} else {
-						_xhr2.responseType = meta.responseType;
-					}
-				}
-
-				if (meta.withCredentials) {
-					_xhr2.withCredentials = true;
-				}
-
-				// attach event handlers
-				(function() {
-					var events = ['loadstart', 'progress', 'abort', 'error', 'load', 'timeout'];
-
-					function reDispatch(e) {
-						target.trigger(e);
-					}
-
-					function dispatchUploadProgress(e) {
-						target.trigger({
-							type: 'UploadProgress',
-							loaded: e.loaded,
-							total: e.total
-						});
-					}
-
-					function removeEventListeners() {
-						Basic.each(events, function(name) {
-							_xhr2.removeEventListener(name, reDispatch);
-						});
-
-						_xhr2.removeEventListener('loadend', removeEventListeners);
-
-						if (_xhr2.upload) {
-							_xhr2.upload.removeEventListener('progress', dispatchUploadProgress);
-						}
-						_xhr2 = null;
-					}
-
-					Basic.each(events, function(name) {
-						_xhr2.addEventListener(name, reDispatch);
-					});
-
-					if (_xhr2.upload) {
-						_xhr2.upload.addEventListener('progress', dispatchUploadProgress);
-					}
-
-					_xhr2.addEventListener('loadend', removeEventListeners);
-				}());
+				_xhr = _getNativeXHR();
+				_xhr.open(meta.method, meta.url, meta.async, meta.user, meta.password);
 
 
-				// prepare data to be sent and convert if required
+				// prepare data to be sent
 				if (data instanceof Blob) {
 					if (data.isDetached()) {
 						mustSendAsBinary = true;
 					}
 					data = data.getSource();
 				} else if (data instanceof FormData) {
-					if (data.hasBlob() && data.getBlob().isDetached()) {
-						// ... and here too
-						data = _prepareMultipart.call(target, data);
-						mustSendAsBinary = true;
-					} else {
-						fd = new window.FormData();
 
+					if (data.hasBlob()) {
+						if (data.getBlob().isDetached()) {
+							data = _prepareMultipart.call(target, data); // _xhr must be instantiated and be in OPENED state
+							mustSendAsBinary = true;
+						} else if (isGecko2_5_6 || isAndroidBrowser) {
+							// Gecko 2/5/6 can't send blob in FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
+							// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
+							_preloadAndSend.call(target, meta, data);
+							return; // _preloadAndSend will reinvoke send() with transmutated FormData =%D
+						}	
+					}
+
+					// transfer fields to real FormData
+					if (data instanceof FormData) { // if still a FormData, e.g. not mangled by _prepareMultipart()
+						var fd = new window.FormData();
 						data.each(function(value, name) {
 							if (value instanceof Blob) {
 								fd.append(name, value.getSource());
@@ -152,14 +79,104 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						});
 						data = fd;
 					}
+				} 
+
+				_xhr.onreadystatechange = function onReadyStateChange() {
+					
+					// fake Level 2 events
+					switch (_xhr.readyState) {
+						
+						case 1: // XMLHttpRequest.OPENED
+							// readystatechanged is fired twice for OPENED state (in IE and Mozilla) - neu
+							break;
+						
+						// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions) - neu
+						case 2: // XMLHttpRequest.HEADERS_RECEIVED
+							break;
+							
+						case 3: // XMLHttpRequest.LOADING
+							if (!_xhr.upload) { 
+								// try to fire progress event for not XHR L2
+								var total, loaded;
+								
+								try {
+									if (Url.hasSameOrigin(meta.url)) { // Content-Length not accessible for cross-domain on some browsers
+										total = _xhr.getResponseHeader('Content-Length') || 0; // old Safari throws an exception here
+									}
+
+									if (_xhr.responseText) { // responseText was introduced in IE7
+										loaded = _xhr.responseText.length;
+									}
+								} catch(ex) {
+									total = loaded = 0;
+								}
+
+								target.trigger({
+									type: 'progress',
+									lengthComputable: !!total,
+									total: parseInt(total, 10),
+									loaded: loaded
+								});
+							}
+							break;
+							
+						case 4: // XMLHttpRequest.DONE
+							// release readystatechange handler (mostly for IE)
+							_xhr.onreadystatechange = function() {};
+
+							// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
+							if (_xhr.status === 0) {
+								target.trigger('error');
+							} else {
+								target.trigger('load');
+							}							
+							break;
+					}
+				};
+
+				// if XHR L2
+				if (_xhr.upload) {
+					if (meta.withCredentials) {
+						_xhr.withCredentials = true;
+					}
+
+					// additionally listen to progress events
+					_xhr.addEventListener('progress', function(e) {
+						target.trigger(e);
+					});
+
+					_xhr.upload.addEventListener('progress', function(e) {
+						target.trigger({
+							type: 'UploadProgress',
+							loaded: e.loaded,
+							total: e.total
+						});
+					});
+				}
+				
+
+				// set request headers
+				if (!Basic.isEmptyObj(meta.headers)) {
+					Basic.each(meta.headers, function(value, header) {
+						_xhr.setRequestHeader(header, value);
+					});
+				}
+
+				// request response type
+				if ("" !== meta.responseType) {
+					if ('json' === meta.responseType && !Env.can('return_response_type', 'json')) { // we can fake this one
+						_xhr.responseType = 'text';
+					} else {
+						_xhr.responseType = meta.responseType;
+					}
 				}
 
 				// send ...
 				if (!mustSendAsBinary) {
-					_xhr2.send(data);
+					_xhr.send(data);
 				} else {
-					if (_xhr2.sendAsBinary) { // Gecko
-						_xhr2.sendAsBinary(data);
+					if (_xhr.sendAsBinary) { // Gecko
+						_xhr.sendAsBinary(data);
 					} else { // other browsers having support for typed arrays
 						(function() {
 							// mimic Gecko's sendAsBinary
@@ -167,63 +184,71 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 							for (var i = 0; i < data.length; i++) {
 								ui8a[i] = (data.charCodeAt(i) & 0xff);
 							}
-							_xhr2.send(ui8a.buffer);
+							_xhr.send(ui8a.buffer);
 						}());
 					}
 				}
+
+				target.trigger('loadstart');
 			},
 
 			getStatus: function() {
+				// according to W3C spec it should return 0 for readyState < 3, but instead it throws an exception
 				try {
-					if (_xhr2) {
-						return _xhr2.status;
+					if (_xhr) {
+						return _xhr.status;
 					}
 				} catch(ex) {}
+				return 0;
 			},
 
 			getResponse: function(responseType) {
 				var I = this.getRuntime();
 
 				try {
-					if (_xhr2) {
-						if ('blob' === responseType) {
-							var file = new File(I.uid, _xhr2.response);
+					switch (responseType) {
+						case 'blob':
+							var file = new File(I.uid, _xhr.response);
 							
-							try { // it might be not allowed to access Content-Disposition (during CORS for example)
-								var disposition = _xhr2.getResponseHeader('Content-Disposition');
-								if (disposition) {
-									// extract filename from response header if available
-									var match = disposition.match(/filename=([\'\"'])([^\1]+)\1/);
-									if (match) {
-										_filename = match[2];
-									}
+							// try to extract file name from content-disposition if possible (might be - not, if CORS for example)	
+							var disposition = _xhr.getResponseHeader('Content-Disposition');
+							if (disposition) {
+								// extract filename from response header if available
+								var match = disposition.match(/filename=([\'\"'])([^\1]+)\1/);
+								if (match) {
+									_filename = match[2];
 								}
-							} catch(ex) {}
-
+							}
 							file.name = _filename;
 							return file;
-						} else if ('json' === responseType && !Env.can('return_response_type', 'json')) {
-							if (_xhr2.status === 200) {
-								return parseJSON(_xhr2.response);
-							} else {
-								return null;
+
+						case 'json':
+							if (!Env.can('return_response_type', 'json')) {
+								return _xhr.status === 200 ? parseJSON(_xhr.response) : null;
 							}
-						}
-						return _xhr2.response;
+							return _xhr.response;
+
+						case 'document':
+							return _getDocument(_xhr);
+
+						default:
+							return _xhr.responseText !== '' ? _xhr.responseText : null; // against the specs, but for consistency across the runtimes
 					}
-				} catch(ex) {}
+				} catch(ex) {
+					return null;
+				}				
 			},
 
 			getAllResponseHeaders: function() {
 				try {
-					return _xhr2.getAllResponseHeaders();
+					return _xhr.getAllResponseHeaders();
 				} catch(ex) {}
 				return '';
 			},
 
 			abort: function() {
-				if (_xhr2) {
-					_xhr2.abort();
+				if (_xhr) {
+					_xhr.abort();
 				}
 			},
 
@@ -231,6 +256,69 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				self = _filename = null;
 			}
 		});
+
+
+		// here we go... ugly fix for ugly bug
+		function _preloadAndSend(meta, data) {
+			var target = this, blob, fr;
+				
+			// get original blob
+			blob = data.getBlob().getSource();
+			// only Blobs have problem, Files seem ok
+			if (Basic.typeOf(blob) === 'blob' && window.FileReader) {
+				// preload blob in memory to be sent as binary string
+				fr = new window.FileReader();
+				fr.onload = function() {
+					// overwrite original blob
+					data.append(data.getBlobName(), new Blob(null, {
+						type: blob.type,
+						data: fr.result
+					}));
+					// invoke send operation again
+					self.send.call(target, meta, data);
+				};
+				fr.readAsBinaryString(blob);
+			}
+		}
+
+		
+		function _getNativeXHR() {
+			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
+				return new window.XMLHttpRequest();
+			} else {
+				return (function() {
+					var progIDs = ['Msxml2.XMLHTTP.6.0', 'Microsoft.XMLHTTP']; // if 6.0 available, use it, otherwise failback to default 3.0
+					for (var i = 0; i < progIDs.length; i++) {
+						try {
+							return new ActiveXObject(progIDs[i]);
+						} catch (ex) {}
+					}
+				})();
+			}
+		}
+		
+		// @credits Sergey Ilinsky	(http://www.ilinsky.com/)
+		function _getDocument(xhr) {
+			var rXML = xhr.responseXML;
+			var rText = xhr.responseText;
+			
+			// Try parsing responseText (@see: http://www.ilinsky.com/articles/XMLHttpRequest/#bugs-ie-responseXML-content-type)
+			if (Env.browser === 'IE' && rText && rXML && !rXML.documentElement && /[^\/]+\/[^\+]+\+xml/.test(xhr.getResponseHeader("Content-Type"))) {
+				rXML = new window.ActiveXObject("Microsoft.XMLDOM");
+				rXML.async = false;
+				rXML.validateOnParse = false;
+				rXML.loadXML(rText);
+			}
+	
+			// Check if there is no error in document
+			if (rXML) {
+				if ((Env.browser === 'IE' && rXML.parseError !== 0) || !rXML.documentElement || rXML.documentElement.tagName === "parsererror") {
+					return null;
+				}
+			}
+			return rXML;
+		}
+
 
 		function _prepareMultipart(fd) {
 			var boundary = '----moxieboundary' + new Date().getTime()
@@ -244,7 +332,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 			}
 
-			_xhr2.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+			_xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 
 			// append multipart parameters
 			fd.each(function(value, name) {

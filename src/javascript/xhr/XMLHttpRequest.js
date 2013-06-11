@@ -8,8 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*global ActiveXObject:true */
-
 define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
@@ -228,8 +226,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_options = {},
 			_xhr,
 			_responseHeaders = '',
-			_responseHeadersBag,
-			_mode = NATIVE
+			_responseHeadersBag
 			;
 
 		
@@ -525,32 +522,29 @@ define("moxie/xhr/XMLHttpRequest", [
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 				
-				// 3
-				if  (!_canUseNativeXHR()) {
-					
-					// sending Blob
-					if (data instanceof Blob) {
-						_options.ruid = data.ruid;
-						_mimeType = data.type;
+				// 3					
+				// sending Blob
+				if (data instanceof Blob) {
+					_options.ruid = data.ruid;
+					_mimeType = data.type;
+				}
+				
+				// FormData
+				else if (data instanceof FormData) {
+					if (data.hasBlob()) {
+						var blob = data.getBlob();
+						_options.ruid = blob.ruid;
+						_mimeType = blob.type;
 					}
+				}
+				
+				// DOMString
+				else if (typeof data === 'string') {
+					_encoding = 'UTF-8';
+					_mimeType = 'text/plain;charset=UTF-8';
 					
-					// FormData
-					else if (data instanceof FormData) {
-						if (data.hasBlob()) {
-							var blob = data.getBlob();
-							_options.ruid = blob.ruid;
-							_mimeType = blob.type;
-						}
-					}
-					
-					// DOMString
-					else if (typeof data === 'string') {
-						_encoding = 'UTF-8';
-						_mimeType = 'text/plain;charset=UTF-8';
-						
-						// data should be converted to Unicode and encoded as UTF-8
-						data = Encode.utf8_encode(data);
-					}
+					// data should be converted to Unicode and encoded as UTF-8
+					data = Encode.utf8_encode(data);
 				}
 
 				// if withCredentials not set, but requested, set it automatically
@@ -586,8 +580,6 @@ define("moxie/xhr/XMLHttpRequest", [
 			@method abort
 			*/
 			abort: function() {
-				var runtime;
-
 				_error_flag = true;
 				_sync_flag = false;
 
@@ -595,20 +587,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					_p('readyState', XMLHttpRequest.DONE);
 					_send_flag = false;
 
-					if (_mode === NATIVE) {
-						_xhr.abort();
-						this.dispatchEvent('readystatechange');
-						// this.dispatchEvent('progress');
-						this.dispatchEvent('abort');
-						this.dispatchEvent('loadend');
-
-						if (!_upload_complete_flag) {
-							// this.dispatchEvent('progress');
-							this.upload.dispatchEvent('abort');
-							this.upload.dispatchEvent('loadend');
-						}
-					} else if (Basic.typeOf(_xhr.getRuntime) === 'function' && (runtime = _xhr.getRuntime())) {
-						runtime.exec.call(_xhr, 'XMLHttpRequest', 'abort', _upload_complete_flag);
+					if (_xhr) {
+						_xhr.getRuntime().exec.call(_xhr, 'XMLHttpRequest', 'abort', _upload_complete_flag);
 					} else {
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
@@ -808,141 +788,11 @@ define("moxie/xhr/XMLHttpRequest", [
 		}
 		*/
 		
-		function _getNativeXHR() {
-			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
-				return new window.XMLHttpRequest();
-			} else {
-				return (function() {
-					var progIDs = ['Msxml2.XMLHTTP.6.0', 'Microsoft.XMLHTTP']; // if 6.0 available, use it, otherwise failback to default 3.0
-					for (var i = 0; i < progIDs.length; i++) {
-						try {
-							return new ActiveXObject(progIDs[i]);
-						} catch (ex) {}
-					}
-				})();
-			}
-		}
 		
-		// @credits Sergey Ilinsky	(http://www.ilinsky.com/)
-		function _getDocument(xhr) {
-			var rXML = xhr.responseXML;
-			var rText = xhr.responseText;
-			
-			// Try parsing responseText (@see: http://www.ilinsky.com/articles/XMLHttpRequest/#bugs-ie-responseXML-content-type)
-			if (Env.browser === 'IE' && rText && rXML && !rXML.documentElement && /[^\/]+\/[^\+]+\+xml/.test(xhr.getResponseHeader("Content-Type"))) {
-				rXML = new window.ActiveXObject("Microsoft.XMLDOM");
-				rXML.async = false;
-				rXML.validateOnParse = false;
-				rXML.loadXML(rText);
-			}
-	
-			// Check if there is no error in document
-			if (rXML) {
-				if ((Env.browser === 'IE' && rXML.parseError !== 0) || !rXML.documentElement || rXML.documentElement.tagName === "parsererror") {
-					return null;
-				}
-			}
-			return rXML;
-		}
-		
-		function _doNativeXHR() {
-			var self = this,
-				total = 0;
-			
-			_mode = NATIVE;
-			_xhr = _getNativeXHR();
-			
-			_xhr.onreadystatechange = function onRSC() {
-				
-				// although it is against spec, reading status property for readyState < 3 produces an exception
-				if (_p('readyState') > XMLHttpRequest.HEADERS_RECEIVED) {
-					_p('status', _xhr.status);
-					_p('statusText', _xhr.statusText);
-				}
-				
-				_p('readyState', _xhr.readyState);
-
-				if (_xhr.readyState !== XMLHttpRequest.OPENED) { // readystatechange for OPENED already fired in open()							
-					self.dispatchEvent('readystatechange');
-				}
-				
-				// fake Level 2 events
-				switch (_p('readyState')) {
-					
-					case XMLHttpRequest.OPENED:
-						// readystatechanged is fired twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
-						if (!onRSC.loadstartDispatched) {
-							self.dispatchEvent('loadstart');
-							onRSC.loadstartDispatched = true;
-						}
-						break;
-					
-					// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions), hence we can't really use it
-					case XMLHttpRequest.HEADERS_RECEIVED:
-						try {
-							if (_same_origin_flag) { // Content-Length not accessible for cross-domain on some browsers
-								total = _xhr.getResponseHeader('Content-Length') || 0; // old Safari throws an exception here
-							}
-						} catch(ex) {}
-						break;
-						
-					case XMLHttpRequest.LOADING:
-						// IEs lt 8 throw exception on accessing responseText for readyState < 4
-						var loaded = 0;
-						try {
-							if (_xhr.responseText) { // responseText was introduced in IE7
-								loaded = _xhr.responseText.length;
-							}
-						} catch (ex) {
-							loaded = 0;
-						}
-
-						self.dispatchEvent({
-							type: 'progress',
-							lengthComputable: !!total,
-							total: parseInt(total, 10),
-							loaded: loaded
-						});
-						break;
-						
-					case XMLHttpRequest.DONE:
-						// release readystatechange handler (mostly for IE)
-						_xhr.onreadystatechange = function() {};
-
-						// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
-						if (_xhr.status === 0) {
-							_error_flag = true;
-							self.dispatchEvent('error');
-						} else {
-							_p('responseText', _xhr.responseText);
-							_p('responseXML', _getDocument(_xhr));
-							_p('response', (_p('responseType') === 'document' ? _p('responseXML') : _p('responseText')));
-							_responseHeaders = _xhr.getAllResponseHeaders();
-							self.dispatchEvent('load');
-						}
-						
-						_xhr = null;
-						self.dispatchEvent('loadend');
-						break;
-				}
-			};
-
-			_xhr.open(_method, _url, _async, _user, _password);
-			
-			// set request headers
-			if (!Basic.isEmptyObj(_headers)) {
-				Basic.each(_headers, function(value, header) {
-					_xhr.setRequestHeader(header, value);
-				});
-			}
-			
-			_xhr.send();
-		}
-		
-		function _doRuntimeXHR(data) {
+		function _doXHR(data) {
 			var self = this;
-				
-			_mode = RUNTIME;
+			
+			_start_time = new Date().getTime();
 
 			_xhr = new RuntimeTarget();
 
@@ -1056,25 +906,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				_xhr.connectRuntime(_options);
 			}
 		}
-		
-		function _doXHR(data) {
-			// mark down start time
-			_start_time = new Date().getTime();
-
-			// if we can use native XHR Level 1, do
-			if (_canUseNativeXHR.call(this)) {
-				_doNativeXHR.call(this, data);
-			} else {
-				_doRuntimeXHR.call(this, data);
-			}
-		}
-
-		function _canUseNativeXHR() {
-			return _same_origin_flag && 
-				(_method === 'HEAD' ||
-				(_method === 'GET' && !!~Basic.inArray(_p('responseType'), ["", "text", "document"])) ||
-				(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded'));
-		}
+	
 		
 		function _reset() {
 			_p('responseText', "");
