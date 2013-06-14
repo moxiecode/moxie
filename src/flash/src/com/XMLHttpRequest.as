@@ -333,6 +333,10 @@ package com
 			if (_multipart) {
 				request.data = _formatAsMultipart(ba, request);
 			} else if (ba) {
+				// set content-type manually
+				if (!_headers['content-type']) { // if it wasn't already set above
+					request.requestHeaders.push(new URLRequestHeader("content-type", _options.mimeType));
+				}
 				request.data = ba;
 			}		
 						
