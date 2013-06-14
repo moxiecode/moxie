@@ -526,7 +526,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				// sending Blob
 				if (data instanceof Blob) {
 					_options.ruid = data.ruid;
-					_mimeType = data.type;
+					_mimeType = data.type || 'application/octet-stream';
 				}
 				
 				// FormData
@@ -534,7 +534,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					if (data.hasBlob()) {
 						var blob = data.getBlob();
 						_options.ruid = blob.ruid;
-						_mimeType = blob.type;
+						_mimeType = blob.type || 'application/octet-stream';
 					}
 				}
 				
