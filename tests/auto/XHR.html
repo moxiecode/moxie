@@ -461,12 +461,10 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 		var 
 		  x = this.x
 		, xhr = new this.XHR
-		, fd = new o.FormData
 		, blob
 		, binStr
 		, file
 		, fileName = 'image.jpg'
-		, fileFieldName = 'image'
 		, startTime = (new Date).getTime()
 		, endTime
 		;
@@ -476,17 +474,12 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 		file = new o.File(null, {
 			name: fileName,
 			type: 'image/jpeg',
-			size: binStr.length,
 			data: binStr	
 		});
 
 
 		xhr.open('post', 'XMLHttpRequest/formdata.php');
 		xhr.responseType = 'text';
-
-		fd.append('one', "1");
-		fd.append(fileFieldName, file);
-
 
 		xhr.onload = function(e) {
 			start();
@@ -503,7 +496,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 		stop();
 		startTime = (new Date).getTime();
-		xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		xhr.send(file, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
 	});
 });
 
