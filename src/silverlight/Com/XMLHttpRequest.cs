@@ -246,7 +246,8 @@ namespace Moxiecode.Com
 				// append mutltipart parameters
 				foreach (KeyValuePair<string, List<string>> pair in _postData)
 				{
-					foreach (string value in pair.Value) {
+					foreach (string value in pair.Value)
+					{
 						header +=
 							dashdash + boundary + crlf +
 							"Content-Disposition: form-data; name=\"" + pair.Key + '"' + crlf + crlf +
@@ -257,7 +258,7 @@ namespace Moxiecode.Com
 				// append multipart file header
 				if (_blob != null)
 				{
-					header += 
+					header +=
 						dashdash + boundary + crlf +
 						"Content-Disposition: form-data; name=\"" + _blobFieldName + "\"; filename=\"" + _blobName + '"' +
 						crlf + "Content-Type: " + _options["mimeType"] + crlf + crlf;
@@ -268,6 +269,10 @@ namespace Moxiecode.Com
 
 				_req.ContentLength += _multipartHeader.Length + _multipartFooter.Length;
 				_req.ContentType = "multipart/form-data; boundary=" + boundary;
+			}
+			else
+			{
+				_req.ContentType = _options["mimeType"];
 			}
 
 			LoadStart(this, null);
