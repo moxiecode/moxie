@@ -33,17 +33,19 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 				self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
 			}
 
+
 			function appendBlob(name, blob) {
 				self.shimExec.call(target, 'XMLHttpRequest', 'appendBlob', name, blob.uid);
 				data = null;
 				send();
 			}
 
-			function attachBlob(name, blob) {
+
+			function attachBlob(blob, cb) {
 				var tr = new Transporter();
 
 				tr.bind("TransportingComplete", function() {
-					appendBlob(name, this.result);
+					cb(this.result);
 				});
 
 				tr.transport(blob.getSource(), blob.type, {
@@ -75,14 +77,25 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 				} else {
 					var blob = data.getBlob();
 					if (blob.isDetached()) {
-						attachBlob(blobField, blob);
+						attachBlob(blob, function(attachedBlob) {
+							blob.destroy();
+							appendBlob(blobField, attachedBlob);		
+						});
 					} else {
 						appendBlob(blobField, blob);
 					}
 				}
 			} else if (data instanceof Blob) {
-				data = data.uid;
-				send();
+				if (data.isDetached()) {
+					attachBlob(data, function(attachedBlob) {
+						data.destroy();
+						data = attachedBlob.uid;
+						send();
+					});
+				} else {
+					data = data.uid;
+					send();
+				}
 			} else {
 				send();
 			}
