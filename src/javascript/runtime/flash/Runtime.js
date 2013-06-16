@@ -27,6 +27,30 @@ define("moxie/runtime/flash/Runtime", [
 	var type = 'flash', extensions = {};
 
 	/**
+	Get the version of the Flash Player
+
+	@method getShimVersion
+	@private
+	@return {Number} Flash Player version
+	*/
+	function getShimVersion() {
+		var version;
+
+		try {
+			version = navigator.plugins['Shockwave Flash'];
+			version = version.description;
+		} catch (e1) {
+			try {
+				version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
+			} catch (e2) {
+				version = '0.0';
+			}
+		}
+		version = version.match(/\d+/g);
+		return parseFloat(version[0] + '.' + version[1]);
+	}
+
+	/**
 	Constructor for the Flash Runtime
 
 	@class FlashRuntime
@@ -100,6 +124,12 @@ define("moxie/runtime/flash/Runtime", [
 		}, 'client');
 
 
+		// minimal requirement Flash Player 10
+		if (getShimVersion() < 10) {
+			this.mode = false; // with falsy mode, runtime won't operable, no matter what the mode was before
+		}
+
+
 		Basic.extend(this, {
 
 			getShim: function() {
@@ -113,12 +143,6 @@ define("moxie/runtime/flash/Runtime", [
 
 			init: function() {
 				var html, el, container;
-
-				// minimal requirement Flash Player 10
-				if (getShimVersion() < 10) {
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 
 				container = this.getShimContainer();
 
@@ -172,30 +196,6 @@ define("moxie/runtime/flash/Runtime", [
 			}(this.destroy))
 
 		}, extensions);
-
-		/**
-		Get the version of the Flash Player
-
-		@method getShimVersion
-		@private
-		@return {Number} Flash Player version
-		*/
-		function getShimVersion() {
-			var version;
-
-			try {
-				version = navigator.plugins['Shockwave Flash'];
-				version = version.description;
-			} catch (e1) {
-				try {
-					version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
-				} catch (e2) {
-					version = '0.0';
-				}
-			}
-			version = version.match(/\d+/g);
-			return parseFloat(version[0] + '.' + version[1]);
-		}
 	}
 
 	Runtime.addConstructor(type, FlashRuntime);

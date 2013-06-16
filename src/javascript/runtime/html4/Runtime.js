@@ -66,13 +66,13 @@ define("moxie/runtime/html4/Runtime", [
 			}
 		});
 
-		Basic.extend(this, {
 
+		if (!Env.can('use_fileinput')) { // minimal requirement
+			this.mode = false;
+		}
+
+		Basic.extend(this, {
 			init : function() {
-				if (!Env.can('use_fileinput')) { // minimal requirement
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 				this.trigger("Init");
 			},
 

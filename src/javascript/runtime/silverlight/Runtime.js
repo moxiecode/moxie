@@ -26,6 +26,63 @@ define("moxie/runtime/silverlight/Runtime", [
 	
 	var type = "silverlight", extensions = {};
 
+	function isInstalled(version) {
+		var isVersionSupported = false, control = null, actualVer,
+			actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
+
+		try {
+			try {
+				control = new ActiveXObject('AgControl.AgControl');
+
+				if (control.IsVersionSupported(version)) {
+					isVersionSupported = true;
+				}
+
+				control = null;
+			} catch (e) {
+				var plugin = navigator.plugins["Silverlight Plug-In"];
+
+				if (plugin) {
+					actualVer = plugin.description;
+
+					if (actualVer === "1.0.30226.2") {
+						actualVer = "2.0.30226.2";
+					}
+
+					actualVerArray = actualVer.split(".");
+
+					while (actualVerArray.length > 3) {
+						actualVerArray.pop();
+					}
+
+					while ( actualVerArray.length < 4) {
+						actualVerArray.push(0);
+					}
+
+					reqVerArray = version.split(".");
+
+					while (reqVerArray.length > 4) {
+						reqVerArray.pop();
+					}
+
+					do {
+						requiredVersionPart = parseInt(reqVerArray[index], 10);
+						actualVersionPart = parseInt(actualVerArray[index], 10);
+						index++;
+					} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
+
+					if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
+						isVersionSupported = true;
+					}
+				}
+			}
+		} catch (e2) {
+			isVersionSupported = false;
+		}
+
+		return isVersionSupported;
+	}
+
 	/**
 	Constructor for the Silverlight Runtime
 
@@ -82,6 +139,12 @@ define("moxie/runtime/silverlight/Runtime", [
 		});
 
 
+		// minimal requirement
+		if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
+			this.mode = false;
+		}
+
+
 		Basic.extend(this, {
 			getShim: function() {
 				return Dom.get(this.uid).content.Moxie;
@@ -94,12 +157,6 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			init : function() {
 				var container;
-
-				// minimal requirement Flash Player 10
-				if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 
 				container = this.getShimContainer();
 
@@ -128,64 +185,6 @@ define("moxie/runtime/silverlight/Runtime", [
 			}(this.destroy))
 
 		}, extensions);
-
-		
-		function isInstalled(version) {
-			var isVersionSupported = false, control = null, actualVer,
-				actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
-
-			try {
-				try {
-					control = new ActiveXObject('AgControl.AgControl');
-
-					if (control.IsVersionSupported(version)) {
-						isVersionSupported = true;
-					}
-
-					control = null;
-				} catch (e) {
-					var plugin = navigator.plugins["Silverlight Plug-In"];
-
-					if (plugin) {
-						actualVer = plugin.description;
-
-						if (actualVer === "1.0.30226.2") {
-							actualVer = "2.0.30226.2";
-						}
-
-						actualVerArray = actualVer.split(".");
-
-						while (actualVerArray.length > 3) {
-							actualVerArray.pop();
-						}
-
-						while ( actualVerArray.length < 4) {
-							actualVerArray.push(0);
-						}
-
-						reqVerArray = version.split(".");
-
-						while (reqVerArray.length > 4) {
-							reqVerArray.pop();
-						}
-
-						do {
-							requiredVersionPart = parseInt(reqVerArray[index], 10);
-							actualVersionPart = parseInt(actualVerArray[index], 10);
-							index++;
-						} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
-
-						if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
-							isVersionSupported = true;
-						}
-					}
-				}
-			} catch (e2) {
-				isVersionSupported = false;
-			}
-
-			return isVersionSupported;
-		}
 	}
 
 	Runtime.addConstructor(type, SilverlightRuntime); 

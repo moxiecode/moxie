@@ -80,13 +80,15 @@ define("moxie/runtime/html5/Runtime", [
 
 		Runtime.call(this, options, (arguments[1] || type), caps);
 
+
+		if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
+			this.mode = false;
+		}
+		
+
 		Basic.extend(this, {
 
 			init : function() {
-				if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 				this.trigger("Init");
 			},
 
