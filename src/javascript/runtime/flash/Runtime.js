@@ -39,43 +39,43 @@ define("moxie/runtime/flash/Runtime", [
 
 		Runtime.call(this, options, type, {
 			access_binary: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			access_image_binary: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			display_media: Runtime.capTrue,
 			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
 			report_upload_progress: function() {
-				return I.getMode() === 'client';
+				return I.mode === 'client';
 			},
 			resize_image: Runtime.capTrue,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.getMode() === 'browser';
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.mode === 'browser';
 			},
 			return_status_code: function(code) {
-				return I.getMode() === 'browser' || !Basic.arrayDiff(code, [200, 404]);
+				return I.mode === 'browser' || !Basic.arrayDiff(code, [200, 404]);
 			},
 			select_multiple: Runtime.capTrue,
 			send_binary_string: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_browser_cookies: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_custom_headers: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_multipart: Runtime.capTrue,
 			slice_blob: Runtime.capTrue,
 			stream_upload: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			summon_file_dialog: false,
 			upload_filesize: function(size) {
-				return Basic.parseSizeStr(size) <= 2097152 || I.getMode() === 'client';
+				return Basic.parseSizeStr(size) <= 2097152 || I.mode === 'client';
 			},
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);

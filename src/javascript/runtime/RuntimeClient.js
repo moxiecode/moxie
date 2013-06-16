@@ -72,7 +72,7 @@ define('moxie/runtime/RuntimeClient', [
 					/*runtime.bind('Exception', function() { });*/
 
 					// check if runtime managed to pick-up operational mode
-					if (!runtime.getMode()) {
+					if (!runtime.mode) {
 						runtime.trigger('Error');
 						return;
 					}

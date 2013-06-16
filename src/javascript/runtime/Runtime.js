@@ -44,8 +44,8 @@ define('moxie/runtime/Runtime', [
 		var self = this
 		, _shim
 		, _uid = Basic.guid(type + '_')
-		, _mode = null
 		;
+
 
 		/**
 		Runtime (not native one) may operate in browser or client mode.
@@ -61,8 +61,8 @@ define('moxie/runtime/Runtime', [
 			;
 
 			// mode can be effectively set only once
-			if (_mode !== null) {
-				return _mode;
+			if (self.mode !== null) {
+				return self.mode;
 			}
 
 			if (rc && !Basic.isEmptyObj(clientCaps)) {
@@ -71,25 +71,26 @@ define('moxie/runtime/Runtime', [
 					if (clientCaps.hasOwnProperty(cap)) {
 						var capMode = self.can(cap, value, clientCaps) ? 'client' : 'browser';
 						// if cap requires conflicting mode - runtime cannot fulfill required caps
-						if (_mode && _mode !== capMode) {
-							return (_mode = false);
+						if (self.mode && self.mode !== capMode) {
+							return (self.mode = false);
 						} else {
-							_mode = capMode;
+							self.mode = capMode;
 						}
 					}
 				});
 			} 
 
 			// if mode still not defined
-			if (_mode === null) {
-				_mode = defaultMode || 'browser';
+			if (self.mode === null) {
+				self.mode = defaultMode || 'browser';
 			}
 
 			// once we got the mode, test against all caps
-			if (_mode && rc && !this.can(rc)) {
-				_mode = false;
+			if (self.mode && rc && !this.can(rc)) {
+				self.mode = false;
 			}	
 		}
+
 
 		// register runtime in private hash
 		runtimes[_uid] = this;
@@ -213,6 +214,15 @@ define('moxie/runtime/Runtime', [
 			type: type,
 
 			/**
+			Runtime (not native one) may operate in browser or client mode.
+
+			@property mode
+			@private
+			@type {String|Boolean} current mode or false, if none possible
+			*/
+			mode: null,
+
+			/**
 			id of the DOM container for the runtime (if available)
 
 			@property shimid
@@ -276,17 +286,6 @@ define('moxie/runtime/Runtime', [
 				} else {
 					return (value === refCaps[cap]);
 				}
-			},
-
-
-			/**
-			Runtime (not native one) may operate in browser or client mode.
-
-			@method getMode
-			@return {String|Boolean} current mode or false, if none possible
-			*/
-			getMode: function() {
-				return _mode || false;
 			},
 
 
@@ -387,7 +386,7 @@ define('moxie/runtime/Runtime', [
 				this.unbindAll();
 				delete runtimes[this.uid];
 				this.uid = null; // mark this runtime as destroyed
-				_uid = self = _shim = _mode = shimContainer = null;
+				_uid = self = _shim = shimContainer = null;
 			}
 		});
 
@@ -485,7 +484,7 @@ define('moxie/runtime/Runtime', [
 			runtime = new constructor({
 				required_caps: caps
 			});
-			mode = runtime.getMode();
+			mode = runtime.mode;
 			runtime.destroy();
 			return !!mode;
 		}

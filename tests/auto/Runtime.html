@@ -167,7 +167,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 		rt.bind('RuntimeInit', function(e, runtimeObj) {
 			start();
-			cb(runtimeObj.getMode());
+			cb(runtimeObj.mode);
 		});
 
 		rt.bind('RuntimeError', function() {

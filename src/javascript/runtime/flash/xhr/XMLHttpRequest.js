@@ -29,7 +29,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			var target = this, self = target.getRuntime();
 
 			function send() {
-				meta.transport = self.getMode();
+				meta.transport = self.mode;
 				self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
 			}
 
