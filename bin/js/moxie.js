@@ -1738,8 +1738,8 @@ define('moxie/runtime/Runtime', [
 		var self = this
 		, _shim
 		, _uid = Basic.guid(type + '_')
-		, _mode = null
 		;
+
 
 		/**
 		Runtime (not native one) may operate in browser or client mode.
@@ -1755,8 +1755,8 @@ define('moxie/runtime/Runtime', [
 			;
 
 			// mode can be effectively set only once
-			if (_mode !== null) {
-				return _mode;
+			if (self.mode !== null) {
+				return self.mode;
 			}
 
 			if (rc && !Basic.isEmptyObj(clientCaps)) {
@@ -1765,25 +1765,26 @@ define('moxie/runtime/Runtime', [
 					if (clientCaps.hasOwnProperty(cap)) {
 						var capMode = self.can(cap, value, clientCaps) ? 'client' : 'browser';
 						// if cap requires conflicting mode - runtime cannot fulfill required caps
-						if (_mode && _mode !== capMode) {
-							return (_mode = false);
+						if (self.mode && self.mode !== capMode) {
+							return (self.mode = false);
 						} else {
-							_mode = capMode;
+							self.mode = capMode;
 						}
 					}
 				});
 			} 
 
 			// if mode still not defined
-			if (_mode === null) {
-				_mode = defaultMode || 'browser';
+			if (self.mode === null) {
+				self.mode = defaultMode || 'browser';
 			}
 
 			// once we got the mode, test against all caps
-			if (_mode && rc && !this.can(rc)) {
-				_mode = false;
+			if (self.mode && rc && !this.can(rc)) {
+				self.mode = false;
 			}	
 		}
+
 
 		// register runtime in private hash
 		runtimes[_uid] = this;
@@ -1907,6 +1908,15 @@ define('moxie/runtime/Runtime', [
 			type: type,
 
 			/**
+			Runtime (not native one) may operate in browser or client mode.
+
+			@property mode
+			@private
+			@type {String|Boolean} current mode or false, if none possible
+			*/
+			mode: null,
+
+			/**
 			id of the DOM container for the runtime (if available)
 
 			@property shimid
@@ -1970,17 +1980,6 @@ define('moxie/runtime/Runtime', [
 				} else {
 					return (value === refCaps[cap]);
 				}
-			},
-
-
-			/**
-			Runtime (not native one) may operate in browser or client mode.
-
-			@method getMode
-			@return {String|Boolean} current mode or false, if none possible
-			*/
-			getMode: function() {
-				return _mode || false;
 			},
 
 
@@ -2081,7 +2080,7 @@ define('moxie/runtime/Runtime', [
 				this.unbindAll();
 				delete runtimes[this.uid];
 				this.uid = null; // mark this runtime as destroyed
-				_uid = self = _shim = _mode = shimContainer = null;
+				_uid = self = _shim = shimContainer = null;
 			}
 		});
 
@@ -2179,7 +2178,7 @@ define('moxie/runtime/Runtime', [
 			runtime = new constructor({
 				required_caps: caps
 			});
-			mode = runtime.getMode();
+			mode = runtime.mode;
 			runtime.destroy();
 			return !!mode;
 		}
@@ -2322,7 +2321,7 @@ define('moxie/runtime/RuntimeClient', [
 					/*runtime.bind('Exception', function() { });*/
 
 					// check if runtime managed to pick-up operational mode
-					if (!runtime.getMode()) {
+					if (!runtime.mode) {
 						runtime.trigger('Error');
 						return;
 					}
@@ -5743,13 +5742,15 @@ define("moxie/runtime/html5/Runtime", [
 
 		Runtime.call(this, options, (arguments[1] || type), caps);
 
+
+		if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
+			this.mode = false;
+		}
+		
+
 		Basic.extend(this, {
 
 			init : function() {
-				if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 				this.trigger("Init");
 			},
 
@@ -8367,6 +8368,30 @@ define("moxie/runtime/flash/Runtime", [
 	var type = 'flash', extensions = {};
 
 	/**
+	Get the version of the Flash Player
+
+	@method getShimVersion
+	@private
+	@return {Number} Flash Player version
+	*/
+	function getShimVersion() {
+		var version;
+
+		try {
+			version = navigator.plugins['Shockwave Flash'];
+			version = version.description;
+		} catch (e1) {
+			try {
+				version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
+			} catch (e2) {
+				version = '0.0';
+			}
+		}
+		version = version.match(/\d+/g);
+		return parseFloat(version[0] + '.' + version[1]);
+	}
+
+	/**
 	Constructor for the Flash Runtime
 
 	@class FlashRuntime
@@ -8379,43 +8404,43 @@ define("moxie/runtime/flash/Runtime", [
 
 		Runtime.call(this, options, type, {
 			access_binary: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			access_image_binary: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			display_media: Runtime.capTrue,
 			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
 			report_upload_progress: function() {
-				return I.getMode() === 'client';
+				return I.mode === 'client';
 			},
 			resize_image: Runtime.capTrue,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.getMode() === 'browser';
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.mode === 'browser';
 			},
 			return_status_code: function(code) {
-				return I.getMode() === 'browser' || !Basic.arrayDiff(code, [200, 404]);
+				return I.mode === 'browser' || !Basic.arrayDiff(code, [200, 404]);
 			},
 			select_multiple: Runtime.capTrue,
 			send_binary_string: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_browser_cookies: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_custom_headers: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_multipart: Runtime.capTrue,
 			slice_blob: Runtime.capTrue,
 			stream_upload: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			summon_file_dialog: false,
 			upload_filesize: function(size) {
-				return Basic.parseSizeStr(size) <= 2097152 || I.getMode() === 'client';
+				return Basic.parseSizeStr(size) <= 2097152 || I.mode === 'client';
 			},
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
@@ -8440,6 +8465,12 @@ define("moxie/runtime/flash/Runtime", [
 		}, 'client');
 
 
+		// minimal requirement Flash Player 10
+		if (getShimVersion() < 10) {
+			this.mode = false; // with falsy mode, runtime won't operable, no matter what the mode was before
+		}
+
+
 		Basic.extend(this, {
 
 			getShim: function() {
@@ -8453,12 +8484,6 @@ define("moxie/runtime/flash/Runtime", [
 
 			init: function() {
 				var html, el, container;
-
-				// minimal requirement Flash Player 10
-				if (getShimVersion() < 10) {
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 
 				container = this.getShimContainer();
 
@@ -8512,30 +8537,6 @@ define("moxie/runtime/flash/Runtime", [
 			}(this.destroy))
 
 		}, extensions);
-
-		/**
-		Get the version of the Flash Player
-
-		@method getShimVersion
-		@private
-		@return {Number} Flash Player version
-		*/
-		function getShimVersion() {
-			var version;
-
-			try {
-				version = navigator.plugins['Shockwave Flash'];
-				version = version.description;
-			} catch (e1) {
-				try {
-					version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
-				} catch (e2) {
-					version = '0.0';
-				}
-			}
-			version = version.match(/\d+/g);
-			return parseFloat(version[0] + '.' + version[1]);
-		}
 	}
 
 	Runtime.addConstructor(type, FlashRuntime);
@@ -8768,7 +8769,7 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			var target = this, self = target.getRuntime();
 
 			function send() {
-				meta.transport = self.getMode();
+				meta.transport = self.mode;
 				self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
 			}
 
@@ -9030,6 +9031,63 @@ define("moxie/runtime/silverlight/Runtime", [
 	
 	var type = "silverlight", extensions = {};
 
+	function isInstalled(version) {
+		var isVersionSupported = false, control = null, actualVer,
+			actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
+
+		try {
+			try {
+				control = new ActiveXObject('AgControl.AgControl');
+
+				if (control.IsVersionSupported(version)) {
+					isVersionSupported = true;
+				}
+
+				control = null;
+			} catch (e) {
+				var plugin = navigator.plugins["Silverlight Plug-In"];
+
+				if (plugin) {
+					actualVer = plugin.description;
+
+					if (actualVer === "1.0.30226.2") {
+						actualVer = "2.0.30226.2";
+					}
+
+					actualVerArray = actualVer.split(".");
+
+					while (actualVerArray.length > 3) {
+						actualVerArray.pop();
+					}
+
+					while ( actualVerArray.length < 4) {
+						actualVerArray.push(0);
+					}
+
+					reqVerArray = version.split(".");
+
+					while (reqVerArray.length > 4) {
+						reqVerArray.pop();
+					}
+
+					do {
+						requiredVersionPart = parseInt(reqVerArray[index], 10);
+						actualVersionPart = parseInt(actualVerArray[index], 10);
+						index++;
+					} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
+
+					if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
+						isVersionSupported = true;
+					}
+				}
+			}
+		} catch (e2) {
+			isVersionSupported = false;
+		}
+
+		return isVersionSupported;
+	}
+
 	/**
 	Constructor for the Silverlight Runtime
 
@@ -9050,19 +9108,19 @@ define("moxie/runtime/silverlight/Runtime", [
 			report_upload_progress: Runtime.capTrue,
 			resize_image: Runtime.capTrue,
 			return_response_headers: function(value) {
-				return value && I.getMode() === 'client';
+				return value && I.mode === 'client';
 			},
 			return_response_type: Runtime.capTrue,
 			return_status_code: function(code) {
-				return I.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
+				return I.mode === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},
 			select_multiple: Runtime.capTrue,
 			send_binary_string: Runtime.capTrue,
 			send_browser_cookies: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_custom_headers: function(value) {
-				return value && I.getMode() === 'client';
+				return value && I.mode === 'client';
 			},
 			send_multipart: Runtime.capTrue,
 			slice_blob: Runtime.capTrue,
@@ -9070,7 +9128,7 @@ define("moxie/runtime/silverlight/Runtime", [
 			summon_file_dialog: false,
 			upload_filesize: Runtime.capTrue,
 			use_http_method: function(methods) {
-				return I.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
+				return I.mode === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
 			// capabilities that implicitly switch the runtime into client mode
@@ -9086,6 +9144,12 @@ define("moxie/runtime/silverlight/Runtime", [
 		});
 
 
+		// minimal requirement
+		if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
+			this.mode = false;
+		}
+
+
 		Basic.extend(this, {
 			getShim: function() {
 				return Dom.get(this.uid).content.Moxie;
@@ -9098,12 +9162,6 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			init : function() {
 				var container;
-
-				// minimal requirement Flash Player 10
-				if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 
 				container = this.getShimContainer();
 
@@ -9132,64 +9190,6 @@ define("moxie/runtime/silverlight/Runtime", [
 			}(this.destroy))
 
 		}, extensions);
-
-		
-		function isInstalled(version) {
-			var isVersionSupported = false, control = null, actualVer,
-				actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
-
-			try {
-				try {
-					control = new ActiveXObject('AgControl.AgControl');
-
-					if (control.IsVersionSupported(version)) {
-						isVersionSupported = true;
-					}
-
-					control = null;
-				} catch (e) {
-					var plugin = navigator.plugins["Silverlight Plug-In"];
-
-					if (plugin) {
-						actualVer = plugin.description;
-
-						if (actualVer === "1.0.30226.2") {
-							actualVer = "2.0.30226.2";
-						}
-
-						actualVerArray = actualVer.split(".");
-
-						while (actualVerArray.length > 3) {
-							actualVerArray.pop();
-						}
-
-						while ( actualVerArray.length < 4) {
-							actualVerArray.push(0);
-						}
-
-						reqVerArray = version.split(".");
-
-						while (reqVerArray.length > 4) {
-							reqVerArray.pop();
-						}
-
-						do {
-							requiredVersionPart = parseInt(reqVerArray[index], 10);
-							actualVersionPart = parseInt(actualVerArray[index], 10);
-							index++;
-						} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
-
-						if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
-							isVersionSupported = true;
-						}
-					}
-				}
-			} catch (e2) {
-				isVersionSupported = false;
-			}
-
-			return isVersionSupported;
-		}
 	}
 
 	Runtime.addConstructor(type, SilverlightRuntime); 
@@ -9510,13 +9510,13 @@ define("moxie/runtime/html4/Runtime", [
 			}
 		});
 
-		Basic.extend(this, {
 
+		if (!Env.can('use_fileinput')) { // minimal requirement
+			this.mode = false;
+		}
+
+		Basic.extend(this, {
 			init : function() {
-				if (!Env.can('use_fileinput')) { // minimal requirement
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 				this.trigger("Init");
 			},
 
