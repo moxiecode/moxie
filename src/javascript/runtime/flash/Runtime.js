@@ -82,6 +82,7 @@ define("moxie/runtime/flash/Runtime", [
 			return_status_code: function(code) {
 				return I.mode === 'browser' || !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: Runtime.capTrue,
 			select_multiple: Runtime.capTrue,
 			send_binary_string: function(value) {
 				return value && I.mode === 'browser';

@@ -109,6 +109,7 @@ define("moxie/runtime/silverlight/Runtime", [
 			return_status_code: function(code) {
 				return I.mode === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: Runtime.capTrue,
 			select_multiple: Runtime.capTrue,
 			send_binary_string: Runtime.capTrue,
 			send_browser_cookies: function(value) {

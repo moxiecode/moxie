@@ -48,12 +48,17 @@ define("moxie/runtime/html4/Runtime", [
 			return_status_code: function(code) {
 				return !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: function() {
+				return Env.can('use_fileinput');
+			},
 			select_multiple: false,
 			send_binary_string: false,
 			send_custom_headers: false,
 			send_multipart: true,
 			slice_blob: false,
-			stream_upload: true,
+			stream_upload: function() {
+				return I.can('select_file');
+			},
 			summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
 				return (Env.browser === 'Firefox' && Env.version >= 4) ||
 					(Env.browser === 'Opera' && Env.version >= 12) ||
@@ -66,10 +71,6 @@ define("moxie/runtime/html4/Runtime", [
 			}
 		});
 
-
-		if (!Env.can('use_fileinput')) { // minimal requirement
-			this.mode = false;
-		}
 
 		Basic.extend(this, {
 			init : function() {

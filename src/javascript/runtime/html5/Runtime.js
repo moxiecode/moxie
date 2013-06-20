@@ -56,8 +56,15 @@ define("moxie/runtime/html5/Runtime", [
 				resize_image: function() {
 					return I.can('access_binary') && Env.can('create_canvas');
 				},
-				select_folder: Test(Env.browser === 'Chrome' && Env.version >= 21),
-				select_multiple: Test(!(Env.browser === 'Safari' && Env.OS === 'Windows')),
+				select_file: function() {
+					return Env.can('use_fileinput') && window.File;
+				},
+				select_folder: function() {
+					return I.can('select_file') && Env.browser === 'Chrome' && Env.version >= 21;
+				},
+				select_multiple: function() {
+					return I.can('select_file') && !(Env.browser === 'Safari' && Env.OS === 'Windows');
+				},
 				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 				send_custom_headers: Test(window.XMLHttpRequest),
 				send_multipart: function() {
@@ -80,11 +87,6 @@ define("moxie/runtime/html5/Runtime", [
 
 		Runtime.call(this, options, (arguments[1] || type), caps);
 
-
-		if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-			this.mode = false;
-		}
-		
 
 		Basic.extend(this, {
 

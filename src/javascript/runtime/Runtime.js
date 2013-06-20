@@ -126,6 +126,8 @@ define('moxie/runtime/Runtime', [
 			return_status_code: true,
 			// ... send custom http header with the request
 			send_custom_headers: false,
+			// ... pick up the files from a dialog
+			select_file: false,
 			// ... select whole folder in file browse dialog
 			select_folder: false,
 			// ... select multiple files at once in file browse dialog

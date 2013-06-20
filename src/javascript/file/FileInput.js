@@ -254,7 +254,11 @@ define('moxie/file/FileInput', [
 				});
 
 				// runtime needs: options.required_features, options.runtime_order and options.container
-				self.connectRuntime(options); // throws RuntimeError
+				self.connectRuntime(Basic.extend({}, options, {
+					required_caps: {
+						select_file: true
+					}
+				}));
 			},
 
 			/**
