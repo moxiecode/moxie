@@ -35,7 +35,11 @@ So, although these instructions are quite generic, they still have Windows works
 <a name="prepare" />
 #### Prerequisites
 
-First of all you will need to download mOxie package from [here on github](https://github.com/moxiecode/moxie/archive/master.zip) and extract it to your workspace directory.
+The best way to start is to clone the mOxie repository, including all the submodules:
+
+```
+git clone --recursive https://github.com/moxiecode/moxie.git
+```
 
 Building environment is based on [Node.js](http://nodejs.org/), mainly because it is cool and easy, but even more importantly, because it is powered by JavaScript (we love JavaScript :). Node.js binaries (as well as Source) [are available](http://nodejs.org/download/) for all major operating systems.
 
