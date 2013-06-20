@@ -307,6 +307,26 @@ define('moxie/core/utils/Basic', [], function() {
 		return diff.length ? diff : false;
 	};
 
+
+	/**
+	Find intersection of two arrays.
+
+	@private
+	@method arrayIntersect
+	@param {Array} array1
+	@param {Array} array2
+	@return {Array} Intersection of two arrays or null if there is none
+	*/
+	var arrayIntersect = function(array1, array2) {
+		var result = [];
+		each(array1, function(item) {
+			if (inArray(item, array2) !== -1) {
+				result.push(item);
+			}
+		});
+		return result.length ? result : null;
+	};
+	
 	
 	/**
 	Forces anything into an array.
@@ -411,6 +431,7 @@ define('moxie/core/utils/Basic', [], function() {
 		inSeries: inSeries,
 		inArray: inArray,
 		arrayDiff: arrayDiff,
+		arrayIntersect: arrayIntersect,
 		toArray: toArray,
 		trim: trim,
 		parseSizeStr: parseSizeStr
@@ -474,7 +495,7 @@ define("moxie/core/I18n", [
 		sprintf: function(str) {
 			var args = [].slice.call(arguments, 1), reStr = '';
 
-			str.split(/%[sdf]/).forEach(function(part) {
+			Basic.each(str.split(/%[sdf]/), function(part) {
 				reStr += part;
 				if (args.length) {
 					reStr += args.shift();
@@ -809,19 +830,20 @@ define("moxie/core/utils/Env", [
 				}()),
 
 				return_response_type: function(responseType) {
-					if (!window.XMLHttpRequest) {
-						return false;
-					}
 					try {
-						var xhr = new XMLHttpRequest();
-						if (Basic.typeOf(xhr.responseType) !== 'undefined') {
-							xhr.open('get', 'infinity-8.me'); // otherwise Gecko throws an exception
-							xhr.responseType = responseType;
-							// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
-							if (xhr.responseType !== responseType) {
-								return false;
-							}
+						if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
 							return true;
+						} else if (window.XMLHttpRequest){
+							var xhr = new XMLHttpRequest();
+							xhr.open('get', '/'); // otherwise Gecko throws an exception
+							if ('responseType' in xhr) {
+								xhr.responseType = responseType;
+								// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
+								if (xhr.responseType !== responseType) {
+									return false;
+								}
+								return true;
+							}
 						}
 					} catch (ex) {}
 					return false;
@@ -1717,10 +1739,10 @@ define('moxie/runtime/Runtime', [
 	@param {Object} options
 	@param {String} type Sanitized name of the runtime
 	@param {Object} [caps] Set of capabilities that differentiate specified runtime
-	@param {Object} [clientCaps] Set of capabilities that implicitly switch the runtime to 'client' mode
+	@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
 	@param {String} [defaultMode='browser'] Default operational mode to choose if no required capabilities were requested
 	*/
-	function Runtime(options, type, caps, clientCaps, defaultMode) {
+	function Runtime(options, type, caps, modeCaps, defaultMode) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Results in RuntimeInit on a connected component.
@@ -1746,42 +1768,56 @@ define('moxie/runtime/Runtime', [
 		
 		@method _setMode
 		@private
-		@param {Object} [clientCaps] Set of capabilities that require client mode
-		@param {Object} [defaultMode] The mode to switch to if clientCaps or requiredCaps are empty
+		@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
+		@param {Object} [defaultMode] The mode to switch to if modeCaps or requiredCaps are empty
 		*/
-		function _setMode(clientCaps, defaultMode) {
-			var self = this
+		function _setMode(modeCaps, defaultMode) {
+			var mode = null
 			, rc = options && options.required_caps
 			;
 
+			defaultMode = defaultMode || 'browser';
+
 			// mode can be effectively set only once
-			if (self.mode !== null) {
-				return self.mode;
+			if (this.mode !== null) {
+				return this.mode;
 			}
 
-			if (rc && !Basic.isEmptyObj(clientCaps)) {
+			if (rc && !Basic.isEmptyObj(modeCaps)) {
 				// loop over required caps and check if they do require the same mode
 				Basic.each(rc, function(value, cap) {
-					if (clientCaps.hasOwnProperty(cap)) {
-						var capMode = self.can(cap, value, clientCaps) ? 'client' : 'browser';
-						// if cap requires conflicting mode - runtime cannot fulfill required caps
-						if (self.mode && self.mode !== capMode) {
-							return (self.mode = false);
-						} else {
-							self.mode = capMode;
+					if (modeCaps.hasOwnProperty(cap)) {
+						var capMode = modeCaps[cap](value);
+
+						// make sure we always have an array
+						if (typeof(capMode) === 'string') {
+							capMode = [capMode];
+						}
+						
+						if (!mode) {
+							mode = capMode;
+						} else if (!(mode = Basic.arrayIntersect(mode, capMode))) {
+							// if cap requires conflicting mode - runtime cannot fulfill required caps
+							return (mode = false);
 						}
 					}
 				});
+
+				if (mode) {
+					this.mode = Basic.inArray(defaultMode, mode) !== -1 ? defaultMode : mode[0];
+				} else if (mode === false) {
+					this.mode = false;
+				}
+			} 
+			
+			// if mode still not defined
+			if (this.mode === null) { 
+				this.mode = defaultMode;
 			} 
 
-			// if mode still not defined
-			if (self.mode === null) {
-				self.mode = defaultMode || 'browser';
-			}
-
 			// once we got the mode, test against all caps
-			if (self.mode && rc && !this.can(rc)) {
-				self.mode = false;
+			if (this.mode && rc && !this.can(rc)) {
+				this.mode = false;
 			}	
 		}
 
@@ -1820,6 +1856,8 @@ define('moxie/runtime/Runtime', [
 			return_status_code: true,
 			// ... send custom http header with the request
 			send_custom_headers: false,
+			// ... pick up the files from a dialog
+			select_file: false,
 			// ... select whole folder in file browse dialog
 			select_folder: false,
 			// ... select multiple files at once in file browse dialog
@@ -2084,7 +2122,7 @@ define('moxie/runtime/Runtime', [
 			}
 		});
 
-		_setMode.call(this, clientCaps, defaultMode);
+		_setMode.call(this, modeCaps, defaultMode);
 	}
 
 
@@ -2907,7 +2945,11 @@ define('moxie/file/FileInput', [
 				});
 
 				// runtime needs: options.required_features, options.runtime_order and options.container
-				self.connectRuntime(options); // throws RuntimeError
+				self.connectRuntime(Basic.extend({}, options, {
+					required_caps: {
+						select_file: true
+					}
+				}));
 			},
 
 			/**
@@ -4587,6 +4629,15 @@ define("moxie/xhr/XMLHttpRequest", [
 				return_response_type: self.responseType
 			});
 
+			if (data instanceof FormData) {
+				_options.required_caps.send_multipart = true;
+			}
+
+			if (!_same_origin_flag) {
+				_options.required_caps.do_cors = true;
+			}
+			
+
 			if (_options.ruid) { // we do not need to wait if we can connect directly
 				exec(_xhr.connectRuntime(_options));
 			} else {
@@ -5718,8 +5769,15 @@ define("moxie/runtime/html5/Runtime", [
 				resize_image: function() {
 					return I.can('access_binary') && Env.can('create_canvas');
 				},
-				select_folder: Test(Env.browser === 'Chrome' && Env.version >= 21),
-				select_multiple: Test(!(Env.browser === 'Safari' && Env.OS === 'Windows')),
+				select_file: function() {
+					return Env.can('use_fileinput') && window.File;
+				},
+				select_folder: function() {
+					return I.can('select_file') && Env.browser === 'Chrome' && Env.version >= 21;
+				},
+				select_multiple: function() {
+					return I.can('select_file') && !(Env.browser === 'Safari' && Env.OS === 'Windows');
+				},
 				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 				send_custom_headers: Test(window.XMLHttpRequest),
 				send_multipart: function() {
@@ -5742,11 +5800,6 @@ define("moxie/runtime/html5/Runtime", [
 
 		Runtime.call(this, options, (arguments[1] || type), caps);
 
-
-		if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-			this.mode = false;
-		}
-		
 
 		Basic.extend(this, {
 
@@ -6529,7 +6582,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				}
 
 				// request response type
-				if ("" !== meta.responseType) {
+				if ("" !== meta.responseType && 'responseType' in _xhr) {
 					if ('json' === meta.responseType && !Env.can('return_response_type', 'json')) { // we can fake this one
 						_xhr.responseType = 'text';
 					} else {
@@ -6590,7 +6643,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 						case 'json':
 							if (!Env.can('return_response_type', 'json')) {
-								return _xhr.status === 200 ? parseJSON(_xhr.response) : null;
+								return _xhr.status === 200 ? parseJSON(_xhr.responseText) : null;
 							}
 							return _xhr.response;
 
@@ -8423,6 +8476,7 @@ define("moxie/runtime/flash/Runtime", [
 			return_status_code: function(code) {
 				return I.mode === 'browser' || !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: Runtime.capTrue,
 			select_multiple: Runtime.capTrue,
 			send_binary_string: function(value) {
 				return value && I.mode === 'browser';
@@ -8446,21 +8500,36 @@ define("moxie/runtime/flash/Runtime", [
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
-			// capabilities that implicitly switch the runtime into client mode
-			access_binary: false,
-			access_image_binary: false,
+			// capabilities that require specific mode
+			access_binary: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			access_image_binary: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			report_upload_progress: function(value) {
+				return value ? 'browser' : 'client';
+			},
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']);
+				return Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) ? 'browser' : ['client', 'browser'];
 			},
 			return_status_code: function(code) {
-				return !Basic.arrayDiff(code, [200, 404]);
+				return Basic.arrayDiff(code, [200, 404]) ? 'browser' : ['client', 'browser'];
 			},
-			send_binary_string: false,
-			send_browser_cookies: false,
-			send_custom_headers: false,
-			stream_upload: true,
+			send_binary_string: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_browser_cookies: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_custom_headers: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			stream_upload: function(value) {
+				return value ? 'client' : 'browser';
+			},
 			upload_filesize: function(size) {
-				return Basic.parseSizeStr(size) >= 2097152;
+				return Basic.parseSizeStr(size) >= 2097152 ? 'client' : 'browser';
 			}
 		}, 'client');
 
@@ -9114,6 +9183,7 @@ define("moxie/runtime/silverlight/Runtime", [
 			return_status_code: function(code) {
 				return I.mode === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: Runtime.capTrue,
 			select_multiple: Runtime.capTrue,
 			send_binary_string: Runtime.capTrue,
 			send_browser_cookies: function(value) {
@@ -9131,15 +9201,21 @@ define("moxie/runtime/silverlight/Runtime", [
 				return I.mode === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
-			// capabilities that implicitly switch the runtime into client mode
-			return_response_headers: true,
-			return_status_code: function(code) {
-				return Basic.arrayDiff(code, [200, 404]);
+			// capabilities that require specific mode
+			return_response_headers: function(value) {
+				return value ? 'client' : 'browser';
 			},
-			send_browser_cookies: false,
-			send_custom_headers: true,
+			return_status_code: function(code) {
+				return Basic.arrayDiff(code, [200, 404]) ? 'client' : ['client', 'browser'];
+			},
+			send_browser_cookies: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_custom_headers: function(value) {
+				return value ? 'client' : 'browser';
+			},
 			use_http_method: function(methods) {
-				return Basic.arrayDiff(methods, ['GET', 'POST']);
+				return Basic.arrayDiff(methods, ['GET', 'POST']) ? 'client' : ['client', 'browser'];
 			}
 		});
 
@@ -9492,12 +9568,17 @@ define("moxie/runtime/html4/Runtime", [
 			return_status_code: function(code) {
 				return !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: function() {
+				return Env.can('use_fileinput');
+			},
 			select_multiple: false,
 			send_binary_string: false,
 			send_custom_headers: false,
 			send_multipart: true,
 			slice_blob: false,
-			stream_upload: true,
+			stream_upload: function() {
+				return I.can('select_file');
+			},
 			summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
 				return (Env.browser === 'Firefox' && Env.version >= 4) ||
 					(Env.browser === 'Opera' && Env.version >= 12) ||
@@ -9510,10 +9591,6 @@ define("moxie/runtime/html4/Runtime", [
 			}
 		});
 
-
-		if (!Env.can('use_fileinput')) { // minimal requirement
-			this.mode = false;
-		}
 
 		Basic.extend(this, {
 			init : function() {
