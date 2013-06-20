@@ -35,7 +35,7 @@ So, although these instructions are quite generic, they still have Windows works
 <a name="prepare" />
 #### Prerequisites
 
-The best way to start is to clone the mOxie repository, including all the submodules:
+The best way to start is to clone the _mOxie_ repository, with all it's submodules:
 
 ```
 git clone --recursive https://github.com/moxiecode/moxie.git
