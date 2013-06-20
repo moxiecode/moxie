@@ -145,19 +145,20 @@ define("moxie/core/utils/Env", [
 				}()),
 
 				return_response_type: function(responseType) {
-					if (!window.XMLHttpRequest) {
-						return false;
-					}
 					try {
-						var xhr = new XMLHttpRequest();
-						if (Basic.typeOf(xhr.responseType) !== 'undefined') {
-							xhr.open('get', 'infinity-8.me'); // otherwise Gecko throws an exception
-							xhr.responseType = responseType;
-							// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
-							if (xhr.responseType !== responseType) {
-								return false;
-							}
+						if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
 							return true;
+						} else if (window.XMLHttpRequest){
+							var xhr = new XMLHttpRequest();
+							xhr.open('get', '/'); // otherwise Gecko throws an exception
+							if ('responseType' in xhr) {
+								xhr.responseType = responseType;
+								// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
+								if (xhr.responseType !== responseType) {
+									return false;
+								}
+								return true;
+							}
 						}
 					} catch (ex) {}
 					return false;
