@@ -16,6 +16,7 @@
 <script type="text/javascript">
 
 QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
 
 module("FormData", {
 	setup: function() {
@@ -40,13 +41,11 @@ module("FormData", {
 	}
 });
 
-
-test('Send hybrid FormData', function() {
-	var self = this;
-
-	$.each(self.runtimeOrder.split(','), function(i, runtime) {
-		var 
-		  xhr = new self.XHR
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	
+	test('Send hybrid FormData', function() {
+		var self = this
+		, xhr = new self.XHR
 		, fd = new o.FormData
 		, startTime
 		, endTime
@@ -79,7 +78,6 @@ test('Send hybrid FormData', function() {
 			array: ['6', '7', '8']
 		});
 
-		stop();
 
 		xhr.onload = function(e) {
 			start();
@@ -114,14 +112,20 @@ test('Send hybrid FormData', function() {
 				}, runtime + ": in " + (endTime - startTime) + " ms");
 			}
 		};
-			
-		startTime = (new Date).getTime();
-		try {
-			xhr.send(fd, $.extend({}, self.runtimeOptions, { runtime_order: runtime }));
-		} catch(ex) {
+
+		xhr.bind('error runtimeerror', function() {
 			start();
-			ok(false, runtime + ": Failed (" + ex.message + ")");
-		}
+			ok(true, "Runtime not supported.");
+		});
+			
+		stop();	
+		startTime = (new Date).getTime();
+		xhr.send(fd, $.extend({}, self.runtimeOptions, { 
+			runtime_order: runtime,
+			required_caps: {
+				send_multipart: true
+			}
+		}));
 	});
 });
 
