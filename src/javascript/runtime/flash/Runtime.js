@@ -106,21 +106,36 @@ define("moxie/runtime/flash/Runtime", [
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
-			// capabilities that implicitly switch the runtime into client mode
-			access_binary: false,
-			access_image_binary: false,
+			// capabilities that require specific mode
+			access_binary: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			access_image_binary: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			report_upload_progress: function(value) {
+				return value ? 'browser' : 'client';
+			},
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']);
+				return Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) ? 'browser' : ['client', 'browser'];
 			},
 			return_status_code: function(code) {
-				return !Basic.arrayDiff(code, [200, 404]);
+				return Basic.arrayDiff(code, [200, 404]) ? 'browser' : ['client', 'browser'];
 			},
-			send_binary_string: false,
-			send_browser_cookies: false,
-			send_custom_headers: false,
-			stream_upload: true,
+			send_binary_string: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_browser_cookies: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_custom_headers: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			stream_upload: function(value) {
+				return value ? 'client' : 'browser';
+			},
 			upload_filesize: function(size) {
-				return Basic.parseSizeStr(size) >= 2097152;
+				return Basic.parseSizeStr(size) >= 2097152 ? 'client' : 'browser';
 			}
 		}, 'client');
 

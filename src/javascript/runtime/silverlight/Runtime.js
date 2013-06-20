@@ -127,15 +127,21 @@ define("moxie/runtime/silverlight/Runtime", [
 				return I.mode === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
-			// capabilities that implicitly switch the runtime into client mode
-			return_response_headers: true,
-			return_status_code: function(code) {
-				return Basic.arrayDiff(code, [200, 404]);
+			// capabilities that require specific mode
+			return_response_headers: function(value) {
+				return value ? 'client' : 'browser';
 			},
-			send_browser_cookies: false,
-			send_custom_headers: true,
+			return_status_code: function(code) {
+				return Basic.arrayDiff(code, [200, 404]) ? 'client' : ['client', 'browser'];
+			},
+			send_browser_cookies: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_custom_headers: function(value) {
+				return value ? 'client' : 'browser';
+			},
 			use_http_method: function(methods) {
-				return Basic.arrayDiff(methods, ['GET', 'POST']);
+				return Basic.arrayDiff(methods, ['GET', 'POST']) ? 'client' : ['client', 'browser'];
 			}
 		});
 
