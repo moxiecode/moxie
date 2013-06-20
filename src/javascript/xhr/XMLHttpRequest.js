@@ -894,6 +894,15 @@ define("moxie/xhr/XMLHttpRequest", [
 				return_response_type: self.responseType
 			});
 
+			if (data instanceof FormData) {
+				_options.required_caps.send_multipart = true;
+			}
+
+			if (!_same_origin_flag) {
+				_options.required_caps.do_cors = true;
+			}
+			
+
 			if (_options.ruid) { // we do not need to wait if we can connect directly
 				exec(_xhr.connectRuntime(_options));
 			} else {
