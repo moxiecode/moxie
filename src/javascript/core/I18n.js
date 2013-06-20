@@ -53,7 +53,7 @@ define("moxie/core/I18n", [
 		sprintf: function(str) {
 			var args = [].slice.call(arguments, 1), reStr = '';
 
-			str.split(/%[sdf]/).forEach(function(part) {
+			Basic.each(str.split(/%[sdf]/), function(part) {
 				reStr += part;
 				if (args.length) {
 					reStr += args.shift();
