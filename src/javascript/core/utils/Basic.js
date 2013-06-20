@@ -211,6 +211,26 @@ define('moxie/core/utils/Basic', [], function() {
 		return diff.length ? diff : false;
 	};
 
+
+	/**
+	Find intersection of two arrays.
+
+	@private
+	@method arrayIntersect
+	@param {Array} array1
+	@param {Array} array2
+	@return {Array} Intersection of two arrays or null if there is none
+	*/
+	var arrayIntersect = function(array1, array2) {
+		var result = [];
+		each(array1, function(item) {
+			if (inArray(item, array2) !== -1) {
+				result.push(item);
+			}
+		});
+		return result.length ? result : null;
+	};
+	
 	
 	/**
 	Forces anything into an array.
@@ -315,6 +335,7 @@ define('moxie/core/utils/Basic', [], function() {
 		inSeries: inSeries,
 		inArray: inArray,
 		arrayDiff: arrayDiff,
+		arrayIntersect: arrayIntersect,
 		toArray: toArray,
 		trim: trim,
 		parseSizeStr: parseSizeStr
