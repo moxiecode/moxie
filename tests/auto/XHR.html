@@ -240,11 +240,16 @@ test('setRequestHeader()', function() {
 	// 6
 	stop();
 	xhr.onload = function() {
+		start();
 		var headers = eval('(' + xhr.responseText + ')');
 		equal(headers['x-test'], "one, two", "Request headers sent successfully");
-		start();
 	};
-	xhr.send();
+
+	xhr.send(null, o.extend({}, this.runtimeOptions, { 
+		required_caps: {
+			send_custom_headers: true
+		}
+	}));
 });
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
@@ -496,7 +501,12 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 		stop();
 		startTime = (new Date).getTime();
-		xhr.send(file, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		xhr.send(file, o.extend({}, this.runtimeOptions, { 
+			runtime_order: runtime,
+			required_caps: {
+				send_binary_string: true
+			}
+		}));
 	});
 });
 
@@ -769,11 +779,9 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			};
 		});
 
-
 		xhr.open('POST', 'http://plupload.com/index.php');
 		xhr.responseType = 'json';
 
-		stop();
 		xhr.onerror = function() {
 			start();
 			ok(true, "Error detected.");
@@ -781,19 +789,13 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 		};
 
-		xhr.onloadend = function() {
-			ok(true, "LoadEnd fired.");
-		};
-
-		try {
-			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
-		} catch (ex) {
+		xhr.bind('runtimeerror', function() {
 			start();
-			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
-				throw x; // pass further
-			}
 			ok(true, "Runtime not supported.");
-		}
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
 	});
 });
 
@@ -820,6 +822,22 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 			size: binStr.length,
 			data: binStr	
 		});
+
+
+		function _getNativeXHR() {
+			if (window.XMLHttpRequest && !(o.Env.browser === 'IE' && o.Env.version < 8)) { // IE7 has native XHR but it's buggy
+				return new window.XMLHttpRequest();
+			} else {
+				return (function() {
+					var progIDs = ['Msxml2.XMLHTTP.6.0', 'Microsoft.XMLHTTP']; // if 6.0 available, use it, otherwise failback to default 3.0
+					for (var i = 0; i < progIDs.length; i++) {
+						try {
+							return new ActiveXObject(progIDs[i]);
+						} catch (ex) {}
+					}
+				})();
+			}
+		}
 
 
 		function uploadNextChunk() {
@@ -867,12 +885,14 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 		stop();
 		// start session
-		var xhrNative = new window.XMLHttpRequest();
+		var xhrNative = _getNativeXHR();
 		
 		xhrNative.open('get', 'XMLHttpRequest/session.php?start=1&name=' + fileName);
 		
-		xhrNative.onload = function() {
-			uploadNextChunk();
+		xhrNative.onreadystatechange = function() {
+			if (this.readyState == 4) {
+				uploadNextChunk();
+			}
 		};
 
 		xhrNative.send();
@@ -914,7 +934,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 				xhr.bind("RuntimeError", function() {
 					ok(true, "Runtime not supported.");
-					cb();
+					cb(true); // throw error and stop the series for the current runtiem
 				});
 
 				xhr.send(null, o.extend({}, self.runtimeOptions, { 
