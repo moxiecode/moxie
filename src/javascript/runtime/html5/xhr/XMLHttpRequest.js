@@ -163,7 +163,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				}
 
 				// request response type
-				if ("" !== meta.responseType) {
+				if ("" !== meta.responseType && 'responseType' in _xhr) {
 					if ('json' === meta.responseType && !Env.can('return_response_type', 'json')) { // we can fake this one
 						_xhr.responseType = 'text';
 					} else {
@@ -224,7 +224,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 						case 'json':
 							if (!Env.can('return_response_type', 'json')) {
-								return _xhr.status === 200 ? parseJSON(_xhr.response) : null;
+								return _xhr.status === 200 ? parseJSON(_xhr.responseText) : null;
 							}
 							return _xhr.response;
 
