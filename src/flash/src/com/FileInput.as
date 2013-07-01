@@ -32,11 +32,11 @@ package com
 		
 		protected var _picker:*;
 		
+		protected var _button:Sprite;
+		
 		protected var _files:Array = [];
 		
-		public function init(options:Object = null) : void {
-			var button:Sprite;
-			
+		public function init(options:Object = null) : void {			
 			if (Moxie.stageOccupied) {
 				return;	
 			}
@@ -61,26 +61,27 @@ package com
 				}
 			}	
 						
-			button = new Sprite;
+			_button = new Sprite;
 						
-			button.graphics.beginFill(0x000000, 0); // Fill with transparent color
-			button.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
-			button.graphics.endFill();
-			button.buttonMode = true;
-			button.useHandCursor = true;
+			_button.graphics.beginFill(0x000000, 0); // Fill with transparent color
+			_button.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
+			_button.graphics.endFill();
+			_button.buttonMode = true;
+			_button.useHandCursor = true;
 			
-			button.addEventListener(MouseEvent.CLICK, onClick);
-			button.addEventListener(MouseEvent.ROLL_OVER, onEvent);
-			button.addEventListener(MouseEvent.ROLL_OUT, onEvent);
-			button.addEventListener(MouseEvent.MOUSE_DOWN, onEvent);
-			button.addEventListener(MouseEvent.MOUSE_UP, onEvent);
+			_button.addEventListener(MouseEvent.CLICK, onClick);
+			_button.addEventListener(MouseEvent.ROLL_OVER, onEvent);
+			_button.addEventListener(MouseEvent.ROLL_OUT, onEvent);
+			_button.addEventListener(MouseEvent.MOUSE_DOWN, onEvent);
+			_button.addEventListener(MouseEvent.MOUSE_UP, onEvent);
 			
-			addChild(button);
+			addChild(_button);
 		}
 		
 		
 		public function disable(disabled:Boolean = true) : void {
 			_disabled = disabled;
+			_button.useHandCursor = false;
 		}
 		
 		
