@@ -79,23 +79,51 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						});
 						data = fd;
 					}
-				} 
+				}
 
-				_xhr.onreadystatechange = function onReadyStateChange() {
-					
-					// fake Level 2 events
-					switch (_xhr.readyState) {
+
+				// if XHR L2
+				if (_xhr.upload) {
+					if (meta.withCredentials) {
+						_xhr.withCredentials = true;
+					}
+
+					_xhr.addEventListener('load', function(e) {
+						target.trigger(e);
+					});
+
+					_xhr.addEventListener('error', function(e) {
+						target.trigger(e);
+					});
+
+					// additionally listen to progress events
+					_xhr.addEventListener('progress', function(e) {
+						target.trigger(e);
+					});
+
+					_xhr.upload.addEventListener('progress', function(e) {
+						target.trigger({
+							type: 'UploadProgress',
+							loaded: e.loaded,
+							total: e.total
+						});
+					});
+				// ... otherwise simulate XHR L2
+				} else {
+					_xhr.onreadystatechange = function onReadyStateChange() {
 						
-						case 1: // XMLHttpRequest.OPENED
-							// readystatechanged is fired twice for OPENED state (in IE and Mozilla) - neu
-							break;
-						
-						// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions) - neu
-						case 2: // XMLHttpRequest.HEADERS_RECEIVED
-							break;
+						// fake Level 2 events
+						switch (_xhr.readyState) {
 							
-						case 3: // XMLHttpRequest.LOADING
-							if (!_xhr.upload) { 
+							case 1: // XMLHttpRequest.OPENED
+								// readystatechanged is fired twice for OPENED state (in IE and Mozilla) - neu
+								break;
+							
+							// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions) - neu
+							case 2: // XMLHttpRequest.HEADERS_RECEIVED
+								break;
+								
+							case 3: // XMLHttpRequest.LOADING 
 								// try to fire progress event for not XHR L2
 								var total, loaded;
 								
@@ -117,41 +145,21 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 									total: parseInt(total, 10),
 									loaded: loaded
 								});
-							}
-							break;
-							
-						case 4: // XMLHttpRequest.DONE
-							// release readystatechange handler (mostly for IE)
-							_xhr.onreadystatechange = function() {};
+								break;
+								
+							case 4: // XMLHttpRequest.DONE
+								// release readystatechange handler (mostly for IE)
+								_xhr.onreadystatechange = function() {};
 
-							// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
-							if (_xhr.status === 0) {
-								target.trigger('error');
-							} else {
-								target.trigger('load');
-							}							
-							break;
-					}
-				};
-
-				// if XHR L2
-				if (_xhr.upload) {
-					if (meta.withCredentials) {
-						_xhr.withCredentials = true;
-					}
-
-					// additionally listen to progress events
-					_xhr.addEventListener('progress', function(e) {
-						target.trigger(e);
-					});
-
-					_xhr.upload.addEventListener('progress', function(e) {
-						target.trigger({
-							type: 'UploadProgress',
-							loaded: e.loaded,
-							total: e.total
-						});
-					});
+								// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
+								if (_xhr.status === 0) {
+									target.trigger('error');
+								} else {
+									target.trigger('load');
+								}							
+								break;
+						}
+					};
 				}
 				
 
