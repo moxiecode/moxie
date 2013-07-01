@@ -806,6 +806,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			function exec(runtime) {
 				_xhr.bind('LoadStart', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING);
+					self.dispatchEvent('readystatechange');
 
 					self.dispatchEvent(e);
 					
@@ -815,8 +816,10 @@ define("moxie/xhr/XMLHttpRequest", [
 				});
 				
 				_xhr.bind('Progress', function(e) {
-					_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
-					self.dispatchEvent('readystatechange');
+					if (_p('readyState') !== XMLHttpRequest.LOADING) {
+						_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
+						self.dispatchEvent('readystatechange');
+					}
 					self.dispatchEvent(e);
 				});
 				
