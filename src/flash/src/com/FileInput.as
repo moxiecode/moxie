@@ -81,7 +81,7 @@ package com
 		
 		public function disable(disabled:Boolean = true) : void {
 			_disabled = disabled;
-			_button.useHandCursor = false;
+			_button.useHandCursor = !disabled;
 		}
 		
 		
