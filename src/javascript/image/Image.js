@@ -199,6 +199,10 @@ define("moxie/image/Image", [
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
 
+					// no way to reliably intercept the crash due to high resolution, so we simply avoid it
+					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
+						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+					}
 
 					if (!width && !height || Basic.typeOf(crop) === 'undefined') {
 						crop = false;
@@ -385,6 +389,9 @@ define("moxie/image/Image", [
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
 
+					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
+						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+					}
 
 					type = options.type || this.type || 'image/jpeg';
 					quality = options.quality || 90;
@@ -576,6 +583,10 @@ define("moxie/image/Image", [
 			xhr.send(null, options);
 		}
 	}
+
+	// virtual world will crash on you if image has a resolution higher than this:
+	Image.MAX_RESIZE_WIDTH = 6500;
+	Image.MAX_RESIZE_HEIGHT = 6500; 
 
 	Image.prototype = EventTarget.instance;
 
