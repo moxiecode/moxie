@@ -58,7 +58,8 @@ define('moxie/core/Exceptions', [
 
 		ImageError: (function() {
 			var namecodes = {
-				WRONG_FORMAT: 1
+				WRONG_FORMAT: 1,
+				MAX_RESOLUTION_ERR: 2
 			};
 
 			function ImageError(code) {
