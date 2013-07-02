@@ -194,21 +194,26 @@ define("moxie/image/Image", [
 			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
 			downsize: function(width, height, crop, preserveHeaders) {
+				try {
+					if (!this.size) { // only preloaded image objects can be used as source
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					}
 
-				if (!this.size) { // only preloaded image objects can be used as source
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+
+					if (!width && !height || Basic.typeOf(crop) === 'undefined') {
+						crop = false;
+					}
+
+					width = width || this.width;
+					height = height || this.height;
+
+					preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
+
+					this.getRuntime().exec.call(this, 'Image', 'downsize', width, height, crop, preserveHeaders);
+				} catch(ex) {
+					// for now simply trigger error event
+					this.trigger('error', ex);
 				}
-
-				if (!width && !height || Basic.typeOf(crop) === 'undefined') {
-					crop = false;
-				}
-
-				width = width || this.width;
-				height = height || this.height;
-
-				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
-
-				this.getRuntime().exec.call(this, 'Image', 'downsize', width, height, crop, preserveHeaders);
 			},
 
 			/**
@@ -371,45 +376,50 @@ define("moxie/image/Image", [
 					}
 				}
 
-				if (!(el = Dom.get(el))) {
-					throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);
-				}
-
-				if (!this.size) { // only preloaded image objects can be used as source
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-				}
-
-
-				type = options.type || this.type || 'image/jpeg';
-				quality = options.quality || 90;
-				crop = Basic.typeOf(options.crop) !== 'undefined' ? options.crop : false;
-
-				// figure out dimensions for the thumb
-				if (options.width) {
-					width = options.width;
-					height = options.height || width;
-				} else {
-					// if container element has > 0 dimensions, take them
-					var dimensions = Dom.getSize(el);
-					if (dimensions.w && dimensions.h) { // both should be > 0
-						width = dimensions.w;
-						height = dimensions.h;
+				try {
+					if (!(el = Dom.get(el))) {
+						throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);
 					}
+
+					if (!this.size) { // only preloaded image objects can be used as source
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					}
+
+
+					type = options.type || this.type || 'image/jpeg';
+					quality = options.quality || 90;
+					crop = Basic.typeOf(options.crop) !== 'undefined' ? options.crop : false;
+
+					// figure out dimensions for the thumb
+					if (options.width) {
+						width = options.width;
+						height = options.height || width;
+					} else {
+						// if container element has > 0 dimensions, take them
+						var dimensions = Dom.getSize(el);
+						if (dimensions.w && dimensions.h) { // both should be > 0
+							width = dimensions.w;
+							height = dimensions.h;
+						}
+					}
+
+					imgCopy = new Image();
+
+					imgCopy.bind("Resize", function() {
+						onResize.call(self);
+					});
+
+					imgCopy.bind("Load", function() {
+						imgCopy.downsize(width, height, crop, false);
+					});
+
+					imgCopy.clone(this, false);
+
+					return imgCopy;
+				} catch(ex) {
+					// for now simply trigger error event
+					this.trigger('error', ex);
 				}
-
-				imgCopy = new Image();
-
-				imgCopy.bind("Resize", function() {
-					onResize.call(self);
-				});
-
-				imgCopy.bind("Load", function() {
-					imgCopy.downsize(width, height, crop, false);
-				});
-
-				imgCopy.clone(this, false);
-
-				return imgCopy;
 			},
 
 			/**
@@ -497,7 +507,7 @@ define("moxie/image/Image", [
 				}
 			} catch(ex) {
 				// for now simply trigger error event
-				this.trigger('error');
+				this.trigger('error', ex);
 			}
 		}
 
