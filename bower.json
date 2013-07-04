@@ -1,0 +1,7 @@
+{
+  "name": "moxie",
+  "version": "1.0",
+  "main": "./bin/js/moxie.js",
+  "dependencies": {
+  }
+}
