@@ -37,6 +37,7 @@ namespace Moxiecode.Com
 		public FileInput()
 		{
 			this.Opacity = 0;
+			this.Cursor = Cursors.Hand;
 			this.Margin = new Thickness(4, 4, 4, 4);
 			this.HorizontalAlignment = HorizontalAlignment.Stretch;
 			this.VerticalAlignment = VerticalAlignment.Stretch;
@@ -70,6 +71,7 @@ namespace Moxiecode.Com
 		public void disable(object state)
 		{
 			_disabled = Convert.ToBoolean(state);
+			this.Cursor = _disabled ? Cursors.Arrow : Cursors.Hand;
 		}
 
 
