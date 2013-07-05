@@ -506,7 +506,7 @@ define("moxie/image/Image", [
 					}
 				}
 				// if source seems to be an img node
-				else if (srcType === 'node' && src.nodeName === 'img') {
+				else if (srcType === 'node' && src.nodeName.toLowerCase() === 'img') {
 					_load.call(this, src.src, arguments[1]);
 				}
 				else {
