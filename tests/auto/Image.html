@@ -106,6 +106,38 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
+	test("Load from DOM IMG element: " + runtime, function() {
+		var self = this
+		, node = $('<img src="XMLHttpRequest/poster.jpg" />').appendTo(this.DOM)[0]
+		, img = new o.Image()
+		;
+
+
+		img.onload = function() {
+			var info = o.Runtime.getInfo(img.ruid);
+
+			start();
+			ok(true, "load event fired: " + (info ? "runtime is: " + info.type : "no runtime, image is detached"));
+			deepEqual(img, this, "inside the onload handler context points to the image");
+			deepEqual([img.width, img.height], [1600, 1200], "dimensions match: " + img.width + "x" + img.height);
+			equal(img.size, 980187, "size matches: " + img.size);
+			equal(img.name, "poster.jpg", "name matches: " + img.name);
+			equal(img.type, "image/jpeg", "type is: " + img.type);
+		};
+
+		img.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		img.load(node, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
 	test("Convert from image/jpeg to image/png: " + runtime, function() {
 		var self = this, url = o.resolveUrl("XMLHttpRequest/poster.jpg");
 
