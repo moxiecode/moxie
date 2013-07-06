@@ -276,7 +276,7 @@ define('moxie/runtime/Runtime', [
 
 				// if cap var is a comma-separated list of caps, convert it to object (key/value)
 				if (Basic.typeOf(cap) === 'string' && Basic.typeOf(value) === 'undefined') {
-					cap = this.parseCaps(cap);
+					cap = Runtime.parseCaps(cap);
 				}
 
 				if (Basic.typeOf(cap) === 'object') {
@@ -294,27 +294,6 @@ define('moxie/runtime/Runtime', [
 				} else {
 					return (value === refCaps[cap]);
 				}
-			},
-
-			/**
-			Convert caps represented by a comma-separated string to the object representation.
-
-			@method parseCaps
-			@param {String} capStr Comma-separated list of capabilities
-			@return {Object}
-			*/
-			parseCaps: function(capStr) {
-				var capObj = {};
-
-				if (Basic.typeOf(capStr) !== 'string') {
-					return capStr;
-				}
-
-				Basic.each(capStr.split(','), function(key) {
-					capObj[key] = true; // we assume it to be - true
-				});
-
-				return capObj;
 			},
 
 			/**
@@ -494,6 +473,29 @@ define('moxie/runtime/Runtime', [
 			};
 		}
 		return null;
+	};
+
+
+	/**
+	Convert caps represented by a comma-separated string to the object representation.
+
+	@method parseCaps
+	@static
+	@param {String} capStr Comma-separated list of capabilities
+	@return {Object}
+	*/
+	Runtime.parseCaps = function(capStr) {
+		var capObj = {};
+
+		if (Basic.typeOf(capStr) !== 'string') {
+			return capStr || {};
+		}
+
+		Basic.each(capStr.split(','), function(key) {
+			capObj[key] = true; // we assume it to be - true
+		});
+
+		return capObj;
 	};
 
 	/**
