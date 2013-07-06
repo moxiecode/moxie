@@ -16,8 +16,9 @@ define('moxie/file/FileInput', [
 	'moxie/core/EventTarget',
 	'moxie/core/I18n',
 	'moxie/file/File',
+	'moxie/runtime/Runtime',
 	'moxie/runtime/RuntimeClient'
-], function(Basic, Mime, Dom, x, EventTarget, I18n, File, RuntimeClient) {
+], function(Basic, Mime, Dom, x, EventTarget, I18n, File, Runtime, RuntimeClient) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
@@ -150,7 +151,12 @@ define('moxie/file/FileInput', [
 			container: browseButton.parentNode || document.body
 		};
 		
-		options = typeof(options) === 'object' ? Basic.extend({}, defaults, options) : defaults;
+		options = Basic.extend({}, defaults, options);
+
+		// convert to object representation
+		if (typeof(options.required_caps) === 'string') {
+			options.required_caps = Runtime.parseCaps(options.required_caps);
+		}
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {

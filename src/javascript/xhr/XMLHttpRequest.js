@@ -14,13 +14,14 @@ define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/EventTarget",
 	"moxie/core/utils/Encode",
 	"moxie/core/utils/Url",
+	"moxie/runtime/Runtime",
 	"moxie/runtime/RuntimeTarget",
 	"moxie/file/Blob",
 	"moxie/file/FileReaderSync",
 	"moxie/xhr/FormData",
 	"moxie/core/utils/Env",
 	"moxie/core/utils/Mime"
-], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FileReaderSync, FormData, Env, Mime) {
+], function(Basic, x, EventTarget, Encode, Url, Runtime, RuntimeTarget, Blob, FileReaderSync, FormData, Env, Mime) {
 
 	var httpCode = {
 		100: 'Continue',
@@ -893,6 +894,10 @@ define("moxie/xhr/XMLHttpRequest", [
 			}
 
 			// clarify our requirements
+			if (typeof(_options.required_caps) === 'string') {
+				_options.required_caps = Runtime.parseCaps(_options.required_caps);
+			}
+
 			_options.required_caps = Basic.extend({}, _options.required_caps, {
 				return_response_type: self.responseType
 			});

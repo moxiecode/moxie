@@ -14,6 +14,7 @@ define("moxie/image/Image", [
 	"moxie/core/Exceptions",
 	"moxie/file/FileReaderSync",
 	"moxie/xhr/XMLHttpRequest",
+	"moxie/runtime/Runtime",
 	"moxie/runtime/RuntimeClient",
 	"moxie/runtime/Transporter",
 	"moxie/core/utils/Env",
@@ -22,7 +23,7 @@ define("moxie/image/Image", [
 	"moxie/file/File",
 	"moxie/core/utils/Encode",
 	"moxie/core/JSON"
-], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode, parseJSON) {
+], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, Runtime, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode, parseJSON) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -540,6 +541,12 @@ define("moxie/image/Image", [
 				this.bind('RuntimeInit', function(e, runtime) {
 					exec(runtime);
 				});
+
+				// convert to object representation
+				if (typeof(options.required_caps) === 'string') {
+					options.required_caps = Runtime.parseCaps(options.required_caps);
+				}
+
 				this.connectRuntime(Basic.extend({
 					required_caps: {
 						access_image_binary: true,
