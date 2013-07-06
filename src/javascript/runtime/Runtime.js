@@ -488,7 +488,9 @@ define('moxie/runtime/Runtime', [
 			return {
 				uid: runtime.uid,
 				type: runtime.type,
-				can: runtime.can
+				can: function() {
+					return runtime.can.apply(runtime, arguments);
+				}
 			};
 		}
 		return null;
