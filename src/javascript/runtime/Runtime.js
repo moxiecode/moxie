@@ -276,15 +276,7 @@ define('moxie/runtime/Runtime', [
 
 				// if cap var is a comma-separated list of caps, convert it to object (key/value)
 				if (Basic.typeOf(cap) === 'string' && Basic.typeOf(value) === 'undefined') {
-					cap = (function(arr) {
-						var obj = {};
-
-						Basic.each(arr, function(key) {
-							obj[key] = true; // since no value supplied, we assume user meant it to be - true
-						});
-
-						return obj;
-					}(cap.split(',')));
+					cap = this.parseCaps(cap);
 				}
 
 				if (Basic.typeOf(cap) === 'object') {
@@ -304,6 +296,26 @@ define('moxie/runtime/Runtime', [
 				}
 			},
 
+			/**
+			Convert caps represented by a comma-separated string to the object representation.
+
+			@method parseCaps
+			@param {String} capStr Comma-separated list of capabilities
+			@return {Object}
+			*/
+			parseCaps: function(capStr) {
+				var capObj = {};
+
+				if (Basic.typeOf(capStr) !== 'string') {
+					return capStr;
+				}
+
+				Basic.each(capStr.split(','), function(key) {
+					capObj[key] = true; // we assume it to be - true
+				});
+
+				return capObj;
+			},
 
 			/**
 			Returns container for the runtime as DOM element
