@@ -52,7 +52,7 @@ define("moxie/runtime/html5/image/Image", [
 					return;
 				} else {
 					_srcBlob = blob.getSource();
-					_readAsDataUrl(_srcBlob, function(dataUrl) {
+					_readAsDataUrl.call(this, _srcBlob, function(dataUrl) {
 						if (asBinary) {
 							_binStr = _toBinary(dataUrl);
 						}
@@ -222,7 +222,7 @@ define("moxie/runtime/html5/image/Image", [
 			_img = new Image();
 			_img.onerror = function() {
 				_purge.call(this);
-				throw new x.ImageError(x.ImageError.WRONG_FORMAT);
+				comp.trigger('error', new x.ImageError(x.ImageError.WRONG_FORMAT));
 			};
 			_img.onload = function() {
 				comp.trigger('load');
@@ -233,13 +233,16 @@ define("moxie/runtime/html5/image/Image", [
 
 
 		function _readAsDataUrl(file, callback) {
-			var fr;
+			var comp = this, fr;
 
 			// use FileReader if it's available
 			if (window.FileReader) {
 				fr = new FileReader();
 				fr.onload = function() {
 					callback(this.result);
+				};
+				fr.onerror = function() {
+					comp.trigger('error', new x.FileException(x.FileException.NOT_READABLE_ERR));
 				};
 				fr.readAsDataURL(file);
 			} else {
