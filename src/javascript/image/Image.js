@@ -543,7 +543,7 @@ define("moxie/image/Image", [
 				});
 
 				// convert to object representation
-				if (typeof(options.required_caps) === 'string') {
+				if (options && typeof(options.required_caps) === 'string') {
 					options.required_caps = Runtime.parseCaps(options.required_caps);
 				}
 
