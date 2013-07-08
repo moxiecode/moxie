@@ -10,10 +10,13 @@
 
 define('moxie/file/FileReader', [
 	'moxie/core/utils/Basic',
+	'moxie/core/utils/Encode',
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
-	'moxie/runtime/RuntimeClient'
-], function(Basic, x, EventTarget, RuntimeClient) {
+	'moxie/file/Blob',
+	'moxie/file/File',
+	'moxie/runtime/RuntimeTarget'
+], function(Basic, Encode, x, EventTarget, Blob, File, RuntimeTarget) {
 	/**
 	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
 	interface. Where possible uses native FileReader, where - not falls back to shims.
@@ -23,18 +26,72 @@ define('moxie/file/FileReader', [
 	@extends EventTarget
 	@uses RuntimeClient
 	*/
-	var dispatches = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
+	var dispatches = [
+
+		/** 
+		Dispatched when the read starts.
+
+		@event loadstart
+		@param {Object} event
+		*/
+		'loadstart', 
+
+		/** 
+		Dispatched while reading (and decoding) blob, and reporting partial Blob data (progess.loaded/progress.total).
+
+		@event progress
+		@param {Object} event
+		*/
+		'progress', 
+
+		/** 
+		Dispatched when the read has successfully completed.
+
+		@event load
+		@param {Object} event
+		*/
+		'load', 
+
+		/** 
+		Dispatched when the read has been aborted. For instance, by invoking the abort() method.
+
+		@event abort
+		@param {Object} event
+		*/
+		'abort', 
+
+		/** 
+		Dispatched when the read has failed.
+
+		@event error
+		@param {Object} event
+		*/
+		'error', 
+
+		/** 
+		Dispatched when the request has completed (either in success or failure).
+
+		@event loadend
+		@param {Object} event
+		*/
+		'loadend'
+	];
 	
 	function FileReader() {
+		var self = this, _fr;
 				
-		RuntimeClient.call(this);
-
 		Basic.extend(this, {
+			/**
+			UID of the component instance.
+
+			@property uid
+			@type {String}
+			*/
 			uid: Basic.guid('uid_'),
 
 			/**
-			Contains current state of o.FileReader object. Can take values of o.FileReader.EMPTY, o.FileReader.LOADING
-			and o.FileReader.DONE.
+			Contains current state of FileReader object. Can take values of FileReader.EMPTY, FileReader.LOADING
+			and FileReader.DONE.
 
 			@property readyState
 			@type {Number}
@@ -42,23 +99,34 @@ define('moxie/file/FileReader', [
 			*/
 			readyState: FileReader.EMPTY,
 			
+			/**
+			Result of the successful read operation.
+
+			@property result
+			@type {String}
+			*/
 			result: null,
 			
+			/**
+			Stores the error of failed asynchronous read operation.
+
+			@property error
+			@type {DOMError}
+			*/
 			error: null,
 			
 			/**
-			Initiates reading of o.File/o.Blob object contents to binary string.
+			Initiates reading of File/Blob object contents to binary string.
 
 			@method readAsBinaryString
 			@param {Blob|File} blob Object to preload
 			*/
 			readAsBinaryString: function(blob) {
-				this.result = '';
 				_read.call(this, 'readAsBinaryString', blob);
 			},
 			
 			/**
-			Initiates reading of o.File/o.Blob object contents to dataURL string.
+			Initiates reading of File/Blob object contents to dataURL string.
 
 			@method readAsDataURL
 			@param {Blob|File} blob Object to preload
@@ -67,12 +135,8 @@ define('moxie/file/FileReader', [
 				_read.call(this, 'readAsDataURL', blob);
 			},
 			
-			readAsArrayBuffer: function(blob) {
-				_read.call(this, 'readAsArrayBuffer', blob);
-			},
-			
 			/**
-			Initiates reading of o.File/o.Blob object contents to string.
+			Initiates reading of File/Blob object contents to string.
 
 			@method readAsText
 			@param {Blob|File} blob Object to preload
@@ -89,20 +153,18 @@ define('moxie/file/FileReader', [
 			abort: function() {
 				this.result = null;
 				
-				if (!!~Basic.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE])) {
+				if (Basic.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE]) !== -1) {
 					return;
 				} else if (this.readyState === FileReader.LOADING) {
 					this.readyState = FileReader.DONE;
 				}
 
-				var runtime = this.getRuntime();
-				if (runtime) {
-					runtime.exec.call(this, 'FileReader', 'abort');
+				if (_fr) {
+					_fr.getRuntime().exec.call(this, 'FileReader', 'abort');
 				}
 				
-				this.bind('Abort', function() {
-					this.trigger('loadend');
-				});
+				this.trigger('abort');
+				this.trigger('loadend');
 			},
 
 			/**
@@ -113,43 +175,83 @@ define('moxie/file/FileReader', [
 			destroy: function() {
 				this.abort();
 
-				var runtime = this.getRuntime();
-				if (runtime) {
-					runtime.exec.call(this, 'FileReader', 'destroy');
-					this.disconnectRuntime();
+				if (_fr) {
+					_fr.getRuntime().exec.call(this, 'FileReader', 'destroy');
+					_fr.disconnectRuntime();
 				}
+
+				self = _fr = null;
 			}
 		});
 		
 		
 		function _read(op, blob) {
-			this.readyState = FileReader.EMPTY;
-			this.error = null;
+			_fr = new RuntimeTarget();
 
-			if (this.readyState === FileReader.LOADING || !blob.ruid || !blob.uid) {
-				throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+			function error(err) {
+				self.readyState = FileReader.DONE;
+				self.error = err;
+				self.trigger('error');
+				loadEnd();
 			}
-			
-			this.convertEventPropsToHandlers(dispatches);
-						
-			this.bind('Error', function(e, error) {
-				this.readyState = FileReader.DONE;
-				this.result = null;
-				this.error = error;
-				this.trigger('loadend');
-			}, 999);
-			
-			
-			this.bind('LoadStart', function() {
-				this.readyState = FileReader.LOADING;
-			}, 999);
-			
-			this.bind('Load', function() {
-				this.readyState = FileReader.DONE;
-				this.trigger('loadend');
-			}, 999);
 
-			this.connectRuntime(blob.ruid).exec.call(this, 'FileReader', 'read', op, blob);
+			function loadEnd() {
+				_fr.destroy();
+				_fr = null;
+				self.trigger('loadend');
+			}
+
+			function exec(runtime) {
+				_fr.bind('Error', function(e, err) {
+					error(err);
+				});
+
+				_fr.bind('Progress', function(e) {
+					self.result = runtime.exec.call(_fr, 'FileReader', 'getResult');
+					self.trigger(e);
+				});
+				
+				_fr.bind('Load', function(e) {
+					self.readyState = FileReader.DONE;
+					self.result = runtime.exec.call(_fr, 'FileReader', 'getResult');
+					self.trigger(e);
+					loadEnd();
+				});
+
+				runtime.exec.call(_fr, 'FileReader', 'read', op, blob);
+			}
+
+			this.convertEventPropsToHandlers(dispatches);
+
+			if (this.readyState === FileReader.LOADING) {
+				return error(new x.DOMException(x.DOMException.INVALID_STATE_ERR));
+			}
+
+			this.readyState = FileReader.LOADING;
+			this.trigger('loadstart');
+
+			// if source is o.Blob/o.File
+			if (blob instanceof Blob) {
+				if (blob.isDetached()) {
+					var src = blob.getSource();
+					switch (op) {
+						case 'readAsText':
+						case 'readAsBinaryString':
+							this.result = src;
+							break;
+						case 'readAsDataURL':
+							this.result = 'data:' + blob.type + ';base64,' + Encode.btoa(src);
+							break;
+					}
+					this.readyState = FileReader.DONE;
+					this.trigger('load');
+					loadEnd();
+				} else {
+					exec(_fr.connectRuntime(blob.ruid));
+				}
+			} else {
+				error(new x.DOMException(x.DOMException.NOT_FOUND_ERR));
+			}
 		}
 	}
 	

@@ -40,9 +40,79 @@ module("FileReader", {
 	}
 });
 
+
+test("Test Error event: try to load a resource having a wrong format", function() {
+	var fr = new o.FileReader()
+	, x = this.x
+	, order = []
+	;
+
+	fr.onloadstart = function() {
+		order.push('loadstart');
+	};
+
+	fr.onerror = function() {
+		start();
+		order.push('error');
+
+		ok(true, "Error event fired.");
+		equal(this.readyState, o.FileReader.DONE, "readyState switched to DONE.");
+		deepEqual(this.error, new x.DOMException(x.DOMException.NOT_FOUND_ERR), "Resource cannot be found or has an invalid format.");
+	};
+
+	fr.onloadend = function() {
+		order.push('loadend');
+
+		ok(true, "LoadEnd event fired.");
+		deepEqual(order, ['loadstart', 'error', 'loadend'], "Events fired in proper order: LoadStart, Error, LoadEnd.");
+		this.destroy();
+	};
+
+	stop();
+	fr.readAsDataURL("this is not a blob");
+});
+
+
+test("Load detached blob", function() {
+	var fr = new o.FileReader()
+	, x = this.x
+	, blob
+	, order = []
+	;
+
+	blob = new o.Blob(null, {
+		type: 'image/jpeg',
+		data: o.atob(imgB64)	
+	});
+
+	fr.onloadstart = function() {
+		order.push('loadstart');
+	};
+
+	fr.onload = function() {
+		start();
+		order.push('load');
+
+		ok(true, "Load event fired.");
+		equal(this.readyState, o.FileReader.DONE, "readyState switched to DONE.");
+	};
+
+	fr.onloadend = function() {
+		order.push('loadend');
+
+		ok(true, "LoadEnd event fired.");
+		deepEqual(order, ['loadstart', 'load', 'loadend'], "Events fired in proper order: LoadStart, Load, LoadEnd.");
+		this.destroy();
+	};
+
+	stop();
+	fr.readAsDataURL(blob);
+});
+
+
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
-	test("readAsDataURL", function() {
+	test("readAsDataURL(), runtime: " + runtime, function() {
 		var self = this
 		, url = o.resolveUrl("XMLHttpRequest/poster.jpg")
 		, xhr = new o.XMLHttpRequest()
@@ -116,7 +186,6 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	});
 
 });
-
 
 
 </script>

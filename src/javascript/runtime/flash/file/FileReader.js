@@ -17,6 +17,8 @@ define("moxie/runtime/flash/file/FileReader", [
 	"moxie/core/utils/Encode"
 ], function(extensions, Encode) {
 
+	var _result = '';
+
 	function _formatData(data, op) {
 		switch (op) {
 			case 'readAsText':
@@ -31,20 +33,28 @@ define("moxie/runtime/flash/file/FileReader", [
 
 	var FileReader = {
 		read: function(op, blob) {
-			var comp = this, self = comp.getRuntime();
+			var target = this, self = target.getRuntime();
 
 			// special prefix for DataURL read mode
 			if (op === 'readAsDataURL') {
-				comp.result = 'data:' + (blob.type || '') + ';base64,';
+				_result = 'data:' + (blob.type || '') + ';base64,';
 			}
 
-			comp.bind('Progress', function(e, data) {
+			target.bind('Progress', function(e, data) {
 				if (data) {
-					comp.result += _formatData(data, op);
+					_result += _formatData(data, op);
 				}
-			}, 999);
+			});
 
 			return self.shimExec.call(this, 'FileReader', 'readAsBase64', blob.uid);
+		},
+
+		getResult: function() {
+			return _result;
+		},
+
+		destroy: function() {
+			_result = null;
 		}
 	};
 

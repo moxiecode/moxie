@@ -18,37 +18,50 @@ define("moxie/runtime/html5/file/FileReader", [
 ], function(extensions, Basic) {
 	
 	function FileReader() {
-		
-		this.read = function(op, blob) {
-			var target = this, fr = new window.FileReader();
+		var _fr;
 
-			(function() {
-				var events = ['loadstart', 'progress', 'load', 'abort', 'error'];
+		Basic.extend(this, {
 
-				function reDispatch(e) {
-					if (!!~Basic.inArray(e.type, ['progress', 'load'])) {
-						target.result = fr.result;
-					}
+			read: function(op, blob) {
+				var target = this;
+
+				_fr = new window.FileReader();
+
+				_fr.addEventListener('progress', function(e) {
 					target.trigger(e);
-				}
-
-				function removeEventListeners() {
-					Basic.each(events, function(name) {
-						fr.removeEventListener(name, reDispatch);
-					});
-					fr.removeEventListener('loadend', removeEventListeners);
-				}
-
-				Basic.each(events, function(name) {
-					fr.addEventListener(name, reDispatch);
 				});
-				fr.addEventListener('loadend', removeEventListeners);
-			}());
 
-			if (Basic.typeOf(fr[op]) === 'function') {
-				fr[op](blob.getSource());
+				_fr.addEventListener('load', function(e) {
+					target.trigger(e);
+				});
+
+				_fr.addEventListener('error', function(e) {
+					target.trigger(e, _fr.error);
+				});
+
+				_fr.addEventListener('loadend', function() {
+					_fr = null;
+				});
+
+				if (Basic.typeOf(_fr[op]) === 'function') {
+					_fr[op](blob.getSource());
+				}
+			},
+
+			getResult: function() {
+				return _fr ? _fr.result : null;
+			},
+
+			abort: function() {
+				if (_fr) {
+					_fr.abort();
+				}
+			},
+
+			destroy: function() {
+				_fr = null;
 			}
-		};
+		});
 	}
 
 	return (extensions.FileReader = FileReader);
