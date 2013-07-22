@@ -135,13 +135,19 @@ task("mkxap", [], function() {
 		function(cb) {
 			mkxap({
 				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
+				output: "/p:IncludeImageLibs=TRUE,XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		},
 		function(cb) {
 			mkxap({
 				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:BUILD=NOIMAGE,XapFilename=Moxie.min.xap,OutputDir=..\\..\\" + targetDir
+				output: "/p:IncludeImageLibs=TRUE,EnableCSS=TRUE,XapFilename=Moxie.cdn.xap,OutputDir=..\\..\\" + targetDir
+			}, cb);
+		},
+		function(cb) {
+			mkxap({
+				input: ".\\src\\silverlight\\Moxie.csproj",
+				output: "/p:XapFilename=Moxie.min.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		}
 	], complete);
