@@ -13,7 +13,7 @@ package
 		FileInput, FileReader, FileReaderSync, Blob, File, XMLHttpRequest, Transporter;
 		
 		// depending on command-line params, conditionally compile image manipulation logic
-		BUILD::IMAGE {
+		MXI::IncludeImageLibs {
 			Image, ImageView;
 		}
 		

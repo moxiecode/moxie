@@ -103,7 +103,15 @@ task("mkswf", [], function() {
 				src: "./src/flash/src",
 				input: "./src/flash/src/Moxie.as",
 				output: targetDir + "/Moxie.swf",
-				extra: "-define=BUILD::IMAGE,true -debug=false -optimize=true"
+				extra: "-define=MXI::IncludeImageLibs,true -define=MXI::EnableCSS,false -debug=false -optimize=true"
+			}, cb);
+		},
+		function(cb) {
+			mkswf({
+				src: "./src/flash/src",
+				input: "./src/flash/src/Moxie.as",
+				output: targetDir + "/Moxie.cdn.swf",
+				extra: "-define=MXI::IncludeImageLibs,true -define=MXI::EnableCSS,true -debug=false -optimize=true"
 			}, cb);
 		},
 		function(cb) {
@@ -111,7 +119,7 @@ task("mkswf", [], function() {
 				src: "./src/flash/src",
 				input: "./src/flash/src/Moxie.as",
 				output: targetDir + "/Moxie.min.swf",
-				extra: "-define=BUILD::IMAGE,false -debug=false -optimize=true"
+				extra: "-define=MXI::IncludeImageLibs,false -define=MXI::EnableCSS,false -debug=false -optimize=true"
 			}, cb);
 		}
 	], complete);

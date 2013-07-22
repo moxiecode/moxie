@@ -55,7 +55,9 @@ package
 			removeEventListener(Event.ADDED_TO_STAGE, _init);
 						
 			// Allow scripting on swf loaded from another domain
-			// Security.allowDomain("*");
+			if (MXI::EnableCSS) {
+				Security.allowDomain("*");
+			}
 			
 			// Align and scale stage
 			stage.align = StageAlign.TOP_LEFT;
