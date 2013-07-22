@@ -1,7 +1,7 @@
 package com
-{
-	import by.blooddy.crypto.image.JPEGEncoder;
-	import by.blooddy.crypto.image.PNGEncoder;
+{	
+	import com.adobe.images.JPGEncoder;
+	import com.adobe.images.PNGEncoder;
 	
 	import com.errors.ImageError;
 	import com.errors.RuntimeError;
@@ -316,7 +316,7 @@ package com
 			} 
 			
 			if (type == 'image/jpeg') {		
-				ba = JPEGEncoder.encode(bd, quality);			
+				ba = new JPGEncoder(quality).encode(bd);			
 				if (_img) {
 					// strip off any headers that might be left by encoder, etc
 					_img.stripHeaders(ba);

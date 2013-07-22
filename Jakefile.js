@@ -101,7 +101,6 @@ task("mkswf", [], function() {
 		function(cb) {
 			mkswf({
 				src: "./src/flash/src",
-				libs: ["./src/flash/blooddy_crypto.swc"],
 				input: "./src/flash/src/Moxie.as",
 				output: targetDir + "/Moxie.swf",
 				extra: "-define=BUILD::IMAGE,true -debug=false -optimize=true"
@@ -110,7 +109,6 @@ task("mkswf", [], function() {
 		function(cb) {
 			mkswf({
 				src: "./src/flash/src",
-				libs: ["./src/flash/blooddy_crypto.swc"],
 				input: "./src/flash/src/Moxie.as",
 				output: targetDir + "/Moxie.min.swf",
 				extra: "-define=BUILD::IMAGE,false -debug=false -optimize=true"

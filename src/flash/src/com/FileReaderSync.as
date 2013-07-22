@@ -1,9 +1,7 @@
 package com
-{
-	import by.blooddy.crypto.Base64;
-	
+{	
 	import com.errors.DOMError;
-	
+	import com.utils.Base64;
 	import flash.utils.ByteArray;
 
 	public class FileReaderSync
