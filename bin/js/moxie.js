@@ -6583,7 +6583,7 @@ define("moxie/runtime/html5/file/FileReader", [
 			},
 
 			getResult: function() {
-				return _fr ? (_convertToBinary ? _toBinary(_fr.result) : _fr.result) : null;
+				return _fr && _fr.result ? (_convertToBinary ? _toBinary(_fr.result) : _fr.result) : null;
 			},
 
 			abort: function() {
