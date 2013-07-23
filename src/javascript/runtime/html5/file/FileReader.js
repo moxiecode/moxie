@@ -14,11 +14,12 @@
 */
 define("moxie/runtime/html5/file/FileReader", [
 	"moxie/runtime/html5/Runtime",
+	"moxie/core/utils/Encode",
 	"moxie/core/utils/Basic"
-], function(extensions, Basic) {
+], function(extensions, Encode, Basic) {
 	
 	function FileReader() {
-		var _fr;
+		var _fr, _convertToBinary = false;
 
 		Basic.extend(this, {
 
@@ -45,11 +46,14 @@ define("moxie/runtime/html5/file/FileReader", [
 
 				if (Basic.typeOf(_fr[op]) === 'function') {
 					_fr[op](blob.getSource());
+				} else if (op === 'readAsBinaryString') { // readAsBinaryString is depricated in general and never existed in IE10+
+					_convertToBinary = true;
+					_fr.readAsDataURL(blob.getSource());
 				}
 			},
 
 			getResult: function() {
-				return _fr ? _fr.result : null;
+				return _fr ? (_convertToBinary ? _toBinary(_fr.result) : _fr.result) : null;
 			},
 
 			abort: function() {
@@ -62,6 +66,10 @@ define("moxie/runtime/html5/file/FileReader", [
 				_fr = null;
 			}
 		});
+
+		function _toBinary(str) {
+			return Encode.atob(str.substring(str.indexOf('base64,') + 7));
+		}
 	}
 
 	return (extensions.FileReader = FileReader);
