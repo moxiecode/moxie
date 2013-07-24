@@ -6575,6 +6575,7 @@ define("moxie/runtime/html5/file/FileReader", [
 				});
 
 				if (Basic.typeOf(_fr[op]) === 'function') {
+					_convertToBinary = false;
 					_fr[op](blob.getSource());
 				} else if (op === 'readAsBinaryString') { // readAsBinaryString is depricated in general and never existed in IE10+
 					_convertToBinary = true;
