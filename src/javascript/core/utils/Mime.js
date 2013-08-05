@@ -108,6 +108,9 @@ define("moxie/core/utils/Mime", [
 					}
 					
 					type = self.mimes[ext[ii]];
+					if (!type) {
+						return [];
+					}
 
 					if (type && !~Basic.inArray(type, mimes)) {
 						mimes.push(type);

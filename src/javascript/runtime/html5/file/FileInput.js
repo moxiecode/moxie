@@ -32,14 +32,14 @@ define("moxie/runtime/html5/file/FileInput", [
 				_files = [];
 
 				// figure out accept string
-				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept);
+				mimes = (_options.accept.mimes || Mime.extList2mimes(_options.accept)).join(',');
 
 				shimContainer = I.getShimContainer();
 
 				shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;"' +
 					(_options.multiple && I.can('select_multiple') ? 'multiple' : '') + 
 					(_options.directory && I.can('select_folder') ? 'webkitdirectory directory' : '') + // Chrome 11+
-					' accept="' + mimes.join(',') + '" />';
+					(mimes ? ' accept="' + mimes + '"' : '') + ' />';
 
 				input = Dom.get(I.uid);
 
