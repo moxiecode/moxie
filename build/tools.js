@@ -1,13 +1,20 @@
 var fs = require("fs");
 var path = require("path");
+var exec = require("child_process").exec;
 var utils = require("./utils");
 
 
-var uglify = function (sourceFiles, outputFile, options) {
+var color = function(s,c){return (color[c].toLowerCase()||'')+ s + color.reset;};
+color.reset = '\033[39m';
+color.red = '\033[31m';
+color.yellow = '\033[33m';
+color.green = '\033[32m';
+
+
+exports.uglify = function (sourceFiles, outputFile, options) {
 	var jsp = require("uglify-js").parser;
 	var pro = require("uglify-js").uglify;
 	var code = "";
-	var copyright;
 
 	options = utils.extend({
 		mangle       : true,
@@ -41,47 +48,10 @@ var uglify = function (sourceFiles, outputFile, options) {
 	return code;
 };
 
-var addCompat = function(options) {
-	var buffer = fs.readFileSync(options.baseDir + '/o.js');
-
-	// add normal
-	if (fs.existsSync(options.targetDir + "/moxie.js")) {
-		fs.appendFileSync(options.targetDir + "/moxie.js", buffer);
-	}
-
-	// ... minified
-	if (fs.existsSync(options.targetDir + "/moxie.min.js")) {
-		fs.appendFileSync(options.targetDir + "/moxie.min.js", uglify(options.baseDir + '/o.js', null, {
-			sourceBase: options.baseDir
-		}));
-	}
-
-	// .. dev/cov
-	['dev', 'cov'].forEach(function(suffix) {
-		var fileName = "moxie." + suffix + ".js";
-		if (fs.existsSync(options.targetDir + "/" + fileName)) {
-			fs.appendFileSync(options.targetDir + "/" + fileName, 
-				"\n(function() {\n" +
-				"	var baseDir = '';\n" +
-				"	var scripts = document.getElementsByTagName('script');\n" +
-				"	for (var i = 0; i < scripts.length; i++) {\n" +
-				"		var src = scripts[i].src;\n" +
-				"		if (src.indexOf('/" + fileName + "') != -1) {\n" +
-				"			baseDir = src.substring(0, src.lastIndexOf('/'));\n" +
-				"		}\n" +
-				"	}\n" +
-				"	document.write('<script type=\"text/javascript\" src=\"' + baseDir + '/../../" + options.baseDir + "/o.js\"></script>');\n" +
-				"})();\n"
-			);
-		}
-	});
-};
-
-
-var less = function (sourceFile, outputFile, options) {
+exports.less = function (sourceFile, outputFile, options) {
 	var less = require('less');
 
-	options = utils.extend({
+	options = extend({
 		compress: true,
 		yuicompress: true,
 		optimization: 1,
@@ -93,6 +63,7 @@ var less = function (sourceFile, outputFile, options) {
 
 	var parser = new less.Parser({
 		paths: [path.dirname(sourceFile)],
+		filename: path.basename(sourceFile),
         optimization: options.optimization,
         filename: sourceFile,
         strictImports: options.strictImports
@@ -135,7 +106,7 @@ var less = function (sourceFile, outputFile, options) {
 				callback({ type: 'File', message: "'" + file + "' wasn't found.\n" });
 			}
 		}
-	};
+	}
 
 	parser.parse(fs.readFileSync(sourceFile).toString(), function (err, tree) {
 		if (err) {
@@ -148,9 +119,9 @@ var less = function (sourceFile, outputFile, options) {
 			yuicompress: options.yuicompress
 		}));
 	});
-};
+}
 
-var yuidoc = function (sourceDir, outputDir, options) {
+exports.yuidoc = function (sourceDir, outputDir, options) {
 	var Y = require('yuidocjs');
 
 	if (!(sourceDir instanceof Array)) {
@@ -178,22 +149,13 @@ var yuidoc = function (sourceDir, outputDir, options) {
 	});
 };
 
-var jshint = function (sourceDir, options) {
+exports.jshint = function (sourceDir, options) {
 	var jshint = require('jshint').JSHINT;
-
-	var color = function(s, c){
-		return (color[c].toLowerCase()||'') + s + color.reset;
-	};
-
-	color.reset = '\u001b[39m';
-	color.red = '\u001b[31m';
-	color.yellow = '\u001b[33m';
-	color.green = '\u001b[32m';
 
 	function process(filePath) {
 		var stat = fs.statSync(filePath);
 
-		if (stat.isFile() && path.extname(filePath) == '.js') {
+		if (stat.isFile()) {
 			if (!jshint(fs.readFileSync(filePath).toString(), options)) {
 				// Print the errors
 				console.log(color('Errors in file ' + filePath, 'red'));
@@ -221,58 +183,55 @@ var jshint = function (sourceDir, options) {
 	}, options);
 
 	process(sourceDir);
-};
+}
 
-var zip = function (sourceFiles, zipFile, options) {
-	var zip = require("node-native-zip");
-	var archive = new zip();
+exports.zip = function (include, zipFile, cb) {
+	var fileset = require('fileset');
+	var ZipWriter = require('moxie-zip').ZipWriter;
 
-	var files = [];
+	var zip = new ZipWriter();
 
-	function process(filePath, zipFilePath) {
-		var stat = fs.statSync(filePath);
+	// Exclude files according to .gitignore
+	var exclude = fs.readFileSync('./.gitignore').toString().trim().split(/\n/);
 
-		zipFilePath = zipFilePath || filePath;
-
-		if (stat.isFile()) {
-			files.push({ name: zipFilePath, path: filePath });
-		} else if (stat.isDirectory()) {
-			fs.readdirSync(filePath).forEach(function(fileName) {
-				if (/^[^\.]/.test(fileName)) {
-					process(path.join(filePath, fileName), path.join(zipFilePath, fileName));
+	fileset(include, exclude)
+		.on('end', function(files) {
+			files.forEach(function(file) {
+				if (fs.statSync(file).isFile()) {
+					zip.addFile(file, file);
 				}
-			});
+			});		
+			zip.saveAs(zipFile, cb);	
+		});	
+}
+
+exports.copySync = function(from, to) {
+	var stat;
+
+	function copyFile(srcFile, destFile) {
+		var BUF_LENGTH, buff, bytesRead, fdr, fdw, pos;
+		
+		BUF_LENGTH = 64 * 1024;
+		buff = new Buffer(BUF_LENGTH);
+		fdr = fs.openSync(srcFile, 'r');
+		fdw = fs.openSync(destFile, 'w');
+		bytesRead = 1;
+		pos = 0;
+		
+		while (bytesRead > 0) {
+			bytesRead = fs.readSync(fdr, buff, 0, BUF_LENGTH, pos);
+			fs.writeSync(fdw, buff, 0, bytesRead);
+			pos += bytesRead;
 		}
+		fs.closeSync(fdr);
+		return fs.closeSync(fdw);
 	}
 
-	options = utils.extend({
-	}, options);
-
-	sourceFiles.forEach(function(filePath) {
-		if (filePath instanceof Array) {
-			process(filePath[0], filePath[1]);
-		} else {
-			process(filePath);
-		}
-	});
-
-	archive.addFiles(files, function() {
-		archive.toBuffer(function(buffer) {
-			fs.writeFileSync(zipFile, buffer);
-		});
-	});
-};
-
-var copySync = function(from, to) {
-	var stat = fs.statSync(from);
-
-	function copyFile(from, to) {
-		try {
-			fs.createReadStream(from).pipe(fs.createWriteStream(to));
-		} catch(ex) {
-			console.info("Error: cannot copy " + from + " " + to);
-			//process.exit(1);
-		}
+	try {
+		stat = fs.statSync(from);
+	} catch (ex) {
+		console.info("Error: " + from + " not found.");
+		process.exit(1);
 	}
 
 	if (stat.isFile()) {
@@ -282,40 +241,18 @@ var copySync = function(from, to) {
 			copySync(from, to)
 		});*/
 		console.info("Error: " + from + " is directory");
-	}
-};
-
-
-// extract version details from chengelog.txt
-var getReleaseInfo = function (srcPath) {
-	if (!fs.existsSync(srcPath)) {
-		console.info(srcPath + " cannot be found.");
-		process.exit(1);
 	} 
-	
-	var src = fs.readFileSync(srcPath).toString();
+}
 
-	var info = src.match(/Version ([0-9xabrc\.]+)[^\(]+\(([^\)]+)\)/);
-	if (!info) {
-		console.info("Error: Version cannot be extracted.");
-		process.exit(1);
-	}
-
-	return {
-		version: info[1],
-		releaseDate: info[2],
-		fileVersion: info[1].replace(/\./g, '_')
-	}
-};
 
 // inject version details and copyright header if available to all js files in specified directory
-var addReleaseDetailsTo = function (destPath, info) {
-	var self = this, headNote, headNotePath = "./build/headnote.txt";
+exports.addReleaseDetailsTo = function (destPath, info) {
+	var self = this;
 
 	function processFile(filePath) {
 
-		if (headNote) {
-			contents = headNote + "\n" + fs.readFileSync(filePath);
+		if (info.copyright) {
+			contents = info.copyright + "\n" + fs.readFileSync(filePath);
 		}
 
 		contents = contents.replace(/@@([^@]+)@@/g, function($0, $1) {
@@ -332,10 +269,6 @@ var addReleaseDetailsTo = function (destPath, info) {
 		return /\.(js|txt)$/.filePath;
 	}
 	
-	if (fs.existsSync(headNotePath)) {
-		headNote = fs.readFileSync(headNotePath).toString();
-	}
-
 	var stat = fs.statSync(destPath);
 
 	if (stat.isFile()) {
@@ -345,22 +278,4 @@ var addReleaseDetailsTo = function (destPath, info) {
 			self.addReleaseDetailsTo(path.join(destPath, fileName), info);
 		});
 	}
-};
-
-
-function compileAmd(options) {
-	require("amdlc").compile(options);
 }
-
-utils.extend(exports, {
-	uglify: uglify,
-	less: less,
-	yuidoc: yuidoc,
-	jshint: jshint,
-	zip: zip,
-	copySync: copySync,
-	addCompat: addCompat,
-	getReleaseInfo: getReleaseInfo,
-	addReleaseDetailsTo: addReleaseDetailsTo,
-	compileAmd: compileAmd
-});

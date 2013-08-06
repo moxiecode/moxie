@@ -1,5 +1,6 @@
-var fs = require("fs");
-var utils = require("./utils");
+var fs = require('fs');
+var utils = require('./utils');
+var tools = require('./tools');
 
 var resolveModules = (function() {
 	var resolved = []; // cache
@@ -51,6 +52,43 @@ var resolveModules = (function() {
 	}
 }());
 
+var addCompat = function(options) {
+	var buffer = fs.readFileSync(options.baseDir + '/o.js');
+
+	// add normal
+	if (fs.existsSync(options.targetDir + "/moxie.js")) {
+		fs.appendFileSync(options.targetDir + "/moxie.js", buffer);
+	}
+
+	// ... minified
+	if (fs.existsSync(options.targetDir + "/moxie.min.js")) {
+		fs.appendFileSync(options.targetDir + "/moxie.min.js", tools.uglify(options.baseDir + '/o.js', null, {
+			sourceBase: options.baseDir
+		}));
+	}
+
+	// .. dev/cov
+	['dev', 'cov'].forEach(function(suffix) {
+		var fileName = "moxie." + suffix + ".js";
+		if (fs.existsSync(options.targetDir + "/" + fileName)) {
+			fs.appendFileSync(options.targetDir + "/" + fileName, 
+				"\n(function() {\n" +
+				"	var baseDir = '';\n" +
+				"	var scripts = document.getElementsByTagName('script');\n" +
+				"	for (var i = 0; i < scripts.length; i++) {\n" +
+				"		var src = scripts[i].src;\n" +
+				"		if (src.indexOf('/" + fileName + "') != -1) {\n" +
+				"			baseDir = src.substring(0, src.lastIndexOf('/'));\n" +
+				"		}\n" +
+				"	}\n" +
+				"	document.write('<script type=\"text/javascript\" src=\"' + baseDir + '/../../" + options.baseDir + "/o.js\"></script>');\n" +
+				"})();\n"
+			);
+		}
+	});
+};
+
 module.exports = {
-	resolveModules: resolveModules
+	resolveModules: resolveModules,
+	addCompat: addCompat
 };

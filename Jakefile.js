@@ -1,33 +1,38 @@
-var fs = require("fs");
+var fs = require('fs');
 var sys = require('sys');
-var path = require("path");
-var tools = require("./build/BuildTools");
-var uglify = tools.uglify;
-var less = tools.less;
-var yuidoc = tools.yuidoc;
-var jshint = tools.jshint;
-var zip = tools.zip;
+var path = require('path');
 
-var compileAmd = require('./build/BuildTools').compileAmd;
+var utils = require('./build/utils');
+var mkjs = require('./build/mkjs');
+var mkswf = require('./build/mkswf');
+var mkxap = require('./build/mkxap');
+var wiki = require('./build/wiki');
+var tools = require('./build/tools');
 
-var utils = require("./build/utils");
-var mkjs = require("./build/mkjs");
-var mkswf = require("./build/mkswf");
-var mkxap = require("./build/mkxap");
-var wiki = require("./build/wiki");
+var copyright = [
+	"/**",
+	" * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill",
+	" * v@@version@@",
+	" *",
+	" * Copyright 2013, Moxiecode Systems AB",
+	" * Released under GPL License.",
+	" *",
+	" * License: http://www.plupload.com/license",
+	" * Contributing: http://www.plupload.com/contributing",
+	" *",
+	" * Date: @@releasedate@@",
+	" */"
+].join("\n");
 
-var isImageLogicRequired = function(modules) {
-	var result = false;
-	utils.each(mkjs.resolveModules(modules), function(module) {
-		if (module.id == "moxie/image/Image") {
-			result = true;
-			return false;
-		}
-	});
-	return result;
-};
 
-task("default", ["jshint", "mkjs"], function (params) {});
+task("default", ["mkjs", "mkswf", "mkxap", "docs"], function (params) {});
+
+
+
+desc("Build release package");
+task("release", ["default", "package"], function (params) {});
+
+
 
 desc("Runs JSHint on source files");
 task("jshint", [], function (params) {
@@ -35,6 +40,7 @@ task("jshint", [], function (params) {
 		curly: true
 	});
 });
+
 
 
 desc("Compile JS");
@@ -73,17 +79,19 @@ task("mkjs", [], function () {
 	amdlc.compileDevelopment(modules, options);
 	amdlc.compileCoverage(modules, options);
 
-	var releaseInfo = tools.getReleaseInfo("./changelog.txt");
-	tools.addReleaseDetailsTo(targetDir, releaseInfo);
+	var info = require('./package.json');
+	info.copyright = copyright;
+	tools.addReleaseDetailsTo(targetDir, info);
 
 	// add compatibility
 	if (process.env.compat !== 'no') {
-		tools.addCompat({
+		mkjs.addCompat({
 			baseDir: baseDir,
 			targetDir: targetDir
 		});
 	}
 });
+
 
 
 desc("Compile SWF");
@@ -126,6 +134,7 @@ task("mkswf", [], function() {
 }, true);
 
 
+
 desc("Compile XAP");
 task("mkxap", [], function() {
 	var targetDir = "bin\\silverlight\\";
@@ -157,7 +166,8 @@ task("mkxap", [], function() {
 			}, cb);
 		}
 	], complete);
-});
+}, true);
+
 
 
 desc("Generate documentation using YUIDoc");
@@ -170,10 +180,11 @@ task("docs", [], function (params) {
 		"runtime/html4"
 	];
 
-	yuidoc(baseDir, "docs", {
+	tools.yuidoc(baseDir, "docs", {
 		exclude: exclude.map(function(filePath) { return baseDir + "/" + filePath; }).join(",")
 	});
 }, true);
+
 
 
 desc("Generate wiki pages");
@@ -182,47 +193,29 @@ task("wiki", ["docs"], function() {
 });
 
 
-desc("");
-task("package", [], function() {
-	var args = isImageLogicRequired(arguments) ? ['image'] : [];
-
-	if (!fs.existsSync("./bin")) {
-		jake.mkdirP("./bin");
-	}
-
-	var mkswf = jake.Task["mksfw"]
-	mksfw.execute.apply(mkswf, args);
-
-});
 
 desc("Package library");
 task("package", [], function (params) {
-	var releaseInfo = tools.getReleaseInfo("./changelog.txt");
-	tools.addReleaseDetailsTo("./js", releaseInfo);
+	var zip = tools.zip;
+	var info = require("./package.json");
 
 	var tmpDir = "./tmp";
-	if (path.existsSync(tmpDir)) {
-		tools.rmDir(tmpDir);
+	if (fs.existsSync(tmpDir)) {
+		jake.rmRf(tmpDir);
 	}
 	fs.mkdirSync(tmpDir, 0755);
 
-	// User package
-	zip([
-		"bin",
-		["readme.md", "readme.txt"],
-		"changelog.txt",
-		"license.txt"
-	], path.join(tmpDir, "moxie_" + releaseInfo.fileVersion + ".zip"));
+	var suffix = info.version.replace(/\./g, '_');
+	if (/(?:beta|alpha)/.test(suffix)) {
+		var dateFormat = require('dateformat');
+		// If some public test build, append build number
+		suffix += "." + dateFormat(new Date(), "yymmddHHMM", true);
+	}
 
-	// Development package
 	zip([
-		"src",
-		"bin",
-		"tests",
-		"build",
-		"Jakefile.js",
-		["readme.md", "readme.txt"],
-		"changelog.txt",
-		"license.txt"
-	], path.join(tmpDir, "moxie_" + releaseInfo.fileVersion + "_dev.zip"));
-});
+		"bin/**/*",
+		"README.md",
+		"LICENSE.txt"
+	], path.join(tmpDir, utils.format("moxie_%s.zip", suffix)), complete);
+}, true);
+
