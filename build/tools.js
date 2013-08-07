@@ -40,7 +40,7 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 
 	ast = pro.ast_mangle(ast, options);
 	ast = pro.ast_squeeze(ast);
-	code = pro.gen_code(ast);
+	code = ";" + pro.gen_code(ast) + ';'; // make sure it doesn't cause conflict if combined with another code
 
 	if (outputFile) {
 		fs.writeFileSync(outputFile, code);
