@@ -37,6 +37,9 @@ define("moxie/runtime/html4/Runtime", [
 			display_media: Test(extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb'))),
 			do_cors: false,
 			drag_and_drop: false,
+			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
+				return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10);
+			}()),
 			resize_image: function() {
 				return extensions.Image && I.can('access_binary') && Env.can('create_canvas');
 			},

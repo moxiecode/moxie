@@ -153,7 +153,7 @@ define("moxie/runtime/html4/file/FileInput", [
 
 				// figure out accept string
 				_options = options;
-				_mimes = options.accept.mimes || Mime.extList2mimes(options.accept);
+				_mimes = options.accept.mimes || Mime.extList2mimes(options.accept, I.can('filter_by_extension'));
 
 				shimContainer = I.getShimContainer();
 

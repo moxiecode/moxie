@@ -91,28 +91,28 @@ define("moxie/core/utils/Mime", [
 			}
 		},
 
-		extList2mimes: function (filters) {
+		extList2mimes: function (filters, addMissingExtensions) {
 			var self = this, ext, i, ii, type, mimes = [];
 			
-			// Convert extensions to mime types list
-			no_type_restriction:
+			// convert extensions to mime types list
 			for (i = 0; i < filters.length; i++) {
 				ext = filters[i].extensions.split(/\s*,\s*/);
 
 				for (ii = 0; ii < ext.length; ii++) {
 					
-					// If there's an asterisk in the list, then accept attribute is not required
+					// if there's an asterisk in the list, then accept attribute is not required
 					if (ext[ii] === '*') {
-						mimes = [];
-						break no_type_restriction;
+						return [];
 					}
 					
 					type = self.mimes[ext[ii]];
 					if (!type) {
-						return [];
-					}
-
-					if (type && !~Basic.inArray(type, mimes)) {
+						if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
+							mimes.push('.' + ext[ii]);
+						} else {
+							return []; // accept all
+						}
+					} else if (Basic.inArray(type, mimes) === -1) {
 						mimes.push(type);
 					}
 				}

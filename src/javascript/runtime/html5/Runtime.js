@@ -44,6 +44,9 @@ define("moxie/runtime/html5/Runtime", [
 					// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
 					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 				}()),
+				filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
+					return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10);
+				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {
 					if (responseType === 'json') {
