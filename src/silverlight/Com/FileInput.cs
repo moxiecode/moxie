@@ -38,7 +38,7 @@ namespace Moxiecode.Com
 		{
 			this.Opacity = 0;
 			this.Cursor = Cursors.Hand;
-			this.Margin = new Thickness(4, 4, 4, 4);
+			this.Margin = new Thickness(4, 4, 4, 4); // increase probablity of detecting mouseout properly
 			this.HorizontalAlignment = HorizontalAlignment.Stretch;
 			this.VerticalAlignment = VerticalAlignment.Stretch;
 		}

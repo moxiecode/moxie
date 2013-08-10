@@ -309,9 +309,8 @@ namespace Moxiecode.Com
 				return 0;
 			}
 
-			if (count == 0 || this.start + count > this.end)
-			{
-				count = (int)(this.end - this.start);
+			if (count == 0 || count + this.Position > this.size) {
+				count = (int)(this.size - this.Position);
 			}
 
 			int bytesRead = stream.Read(ba, offset, count);

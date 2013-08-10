@@ -30,7 +30,7 @@ namespace Moxiecode.MXI
 			while (value != 0)
 			{
 				index = value % radix;
-				value = Convert.ToInt32(Math.Floor(value / radix));  
+				value = Convert.ToInt64(Math.Floor(value / radix));  
 				result += alphabet[index].ToString();
 			}
 			return result;
@@ -54,8 +54,7 @@ namespace Moxiecode.MXI
 			DateTime january_1_1970 = new DateTime(1970, 1, 1);
 			DateTime now = DateTime.Now;
 			long elapsedTicks = now.Ticks - january_1_1970.Ticks;
-			TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
-			return elapsedSpan.Milliseconds;
+			return Convert.ToInt64(elapsedTicks / 10000);
 		}
 	}
 }
