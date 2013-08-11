@@ -59,7 +59,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						if (data.getBlob().isDetached()) {
 							data = _prepareMultipart.call(target, data); // _xhr must be instantiated and be in OPENED state
 							mustSendAsBinary = true;
-						} else if (isGecko2_5_6 || isAndroidBrowser) {
+						} else if ((isGecko2_5_6 || isAndroidBrowser) && Basic.typeOf(data.getBlob().getSource()) === 'blob' && window.FileReader) {
 							// Gecko 2/5/6 can't send blob in FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
 							// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
 							_preloadAndSend.call(target, meta, data);
@@ -272,21 +272,19 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				
 			// get original blob
 			blob = data.getBlob().getSource();
-			// only Blobs have problem, Files seem ok
-			if (Basic.typeOf(blob) === 'blob' && window.FileReader) {
-				// preload blob in memory to be sent as binary string
-				fr = new window.FileReader();
-				fr.onload = function() {
-					// overwrite original blob
-					data.append(data.getBlobName(), new Blob(null, {
-						type: blob.type,
-						data: fr.result
-					}));
-					// invoke send operation again
-					self.send.call(target, meta, data);
-				};
-				fr.readAsBinaryString(blob);
-			}
+			
+			// preload blob in memory to be sent as binary string
+			fr = new window.FileReader();
+			fr.onload = function() {
+				// overwrite original blob
+				data.append(data.getBlobName(), new Blob(null, {
+					type: blob.type,
+					data: fr.result
+				}));
+				// invoke send operation again
+				self.send.call(target, meta, data);
+			};
+			fr.readAsBinaryString(blob);
 		}
 
 		
