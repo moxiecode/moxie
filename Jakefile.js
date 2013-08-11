@@ -162,7 +162,7 @@ task("mkxap", [], function() {
 		function(cb) {
 			mkxap({
 				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:XapFilename=Moxie.min.xap,OutputDir=..\\..\\" + targetDir
+				output: "/p:IncludeImageLibs=FALSE,XapFilename=Moxie.min.xap,OutputDir=..\\..\\" + targetDir
 			}, cb);
 		}
 	], complete);

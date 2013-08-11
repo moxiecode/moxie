@@ -20,7 +20,7 @@
     </SupportedCultures>
     <XapOutputs>true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
-    <IncludeImageLibs Condition=" '$(IncludeImageLibs)' == '' "></IncludeImageLibs>
+    <IncludeImageLibs Condition=" '$(IncludeImageLibs)' == '' ">TRUE</IncludeImageLibs>
     <EnableCSS Condition=" '$(EnableCSS)' == '' "></EnableCSS>
     <XapFilename Condition=" '$(XapFilename)' == '' ">Moxie.xap</XapFilename>
     <OutputDir>..\..\bin\silverlight\</OutputDir>
