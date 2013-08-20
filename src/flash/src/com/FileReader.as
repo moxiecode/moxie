@@ -61,23 +61,19 @@ package com
 			_read(blob); 
 		}
 		
-		public function abort() : void {
+		public function abort() : void {	
 			if (this.readyState !== FileReader.LOADING) {
 				return;
 			}
-			
-			this.readyState = FileReader.DONE;
-			
-			if (_src.dataObject.fileRef) {
-				// In case of a large file and before fileRef.load#COMPLETE.
-				// Need to cancel() twice, not sure why.
-				// If single cancel(), #2037 will occurred at fileRef.load().
-				_src.dataObject.fileRef.cancel();
-				_src.dataObject.fileRef.cancel();
+						
+			if (_src && _src.buffer.fileRef) {
+				_src.buffer.fileRef.cancel();
 				_removeAllEventListeners(_src.dataObject.fileRef);
 			}
 			
 			clear();
+			
+			this.readyState = FileReader.DONE;
 		}
 		
 		
@@ -122,8 +118,6 @@ package com
 			
 			// this will run recursively until all DataSources are read and concatenated into _ba
 			_loadSource(); 
-			
-			this.readyState = FileReader.DONE;
 		}
 		
 		private function _loadSource() : void {	
@@ -178,6 +172,8 @@ package com
 		
 		private function onComplete(e:*) : void {
 			var length:Number, data:ByteArray;
+			
+			this.readyState = FileReader.DONE;
 						
 			if (e.target is FileReference) { // this func might be called directly
 				_removeAllEventListeners(e.target);

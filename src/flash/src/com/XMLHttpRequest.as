@@ -158,17 +158,14 @@ package com
 		
 		
 		public function abort() : void 
-		{			
-			if (!_conn) {
-				// mark as aborted in order to be handled as soon as possible
-				_readyState = XMLHttpRequest.ABORTED; 
-				return;	
-			}
+		{	
+			// mark as aborted in order to be handled as soon as possible
+			_readyState = XMLHttpRequest.ABORTED; 
 			
 			if (_conn is FileReference) {
-				_conn.cancel();	
+				_conn.cancel();
 			} else if (_conn is URLStream && _conn.connected) {
-				_conn.close();	
+				_conn.close();			
 			}
 			
 			removeEventListeners(_conn);	
@@ -252,7 +249,7 @@ package com
 		
 		
 		private function _uploadFileRef(blob:Blob) : void
-		{
+		{			
 			var request:URLRequest, queryString:Array = [], param:Array;
 						
 			request = new URLRequest();
@@ -286,6 +283,12 @@ package com
 		{					
 			var fr:FileReader = new FileReader;
 			
+			fr.addEventListener(Event.OPEN, function(e:Event) : void {
+				if (_readyState == XMLHttpRequest.ABORTED) {
+					fr.abort();
+				}
+			});
+			
 			fr.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent) : void {
 				if (_readyState == XMLHttpRequest.ABORTED) {
 					fr.abort();
@@ -296,19 +299,25 @@ package com
 				fr.removeAllEventsListeners();
 				if (_readyState == XMLHttpRequest.ABORTED) {
 					fr.abort();
-					return;
+				} else {
+					callback(fr.result);
 				}
-				callback(fr.result);
 			});
 			
 			//_notCachedSize = blob.realSize - blob.cachedSize;
 			
+			_readyState = XMLHttpRequest.OPENED;
+			onOpen(); // trigger it manually
 			fr.readAsByteArray(blob);
 		}
 		
 		
 		private function _doURLStreamRequest(ba:ByteArray = null) : void
-		{			
+		{									
+			if (_readyState == XMLHttpRequest.ABORTED) {
+				return;
+			}
+			
 			var request:URLRequest,
 			progress:URLStreamProgress, 
 			start:Date, end:Date; // we are going to measure upload time for each piece of data and make correction to the progress watch
@@ -341,9 +350,7 @@ package com
 			}		
 						
 			_conn = new URLStream;
-			_readyState = XMLHttpRequest.OPENED;
 			
-			// _conn.addEventListener(Event.OPEN, onOpen); // doesn't trigger (I remember it did), maybe adobe abandoned it?..
 			_conn.addEventListener(ProgressEvent.PROGRESS, onProgress);
 			_conn.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 			_conn.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
@@ -356,8 +363,6 @@ package com
 				
 				progress.addEventListener(Event.OPEN, function() : void {
 					start = new Date;
-					
-					onOpen(); // trigger it manually
 					_conn.load(request);
 				});
 				
