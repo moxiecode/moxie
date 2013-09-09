@@ -21,13 +21,14 @@ define("moxie/runtime/html5/file/FileDrop", [
 ], function(extensions, Basic, Dom, Events, Mime) {
 	
 	function FileDrop() {
-		var _files = [], _options;
+		var _files = [], _allowedExts = [], _options;
 
 		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, dropZone;
 
 				_options = options;
+				_allowedExts = _extractExts(_options.accept);
 				dropZone = _options.container;
 
 				Events.addEvent(dropZone, 'dragover', function(e) {
@@ -80,21 +81,25 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 			destroy: function() {
 				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
-				_files = _options = null;
+				_files = _allowedExts = _options = null;
 			}
 		});
 
+		
+		function _extractExts(accept) {
+			var exts = [];
+			for (var i = 0; i < accept.length; i++) {
+				[].push.apply(exts, accept[i].extensions.split(/\s*,\s*/));
+			}
+			return Basic.inArray('*', exts) === -1 ? exts : [];
+		}
+
 
 		function _isAcceptable(file) {
-			var mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept)
-			, type = file.type || Mime.getFileMime(file.name) || ''
-			;
-
-			if (!mimes.length || Basic.inArray(type, mimes) !== -1) {
-				return true;
-			}
-			return false;
+			var ext = Mime.getFileExtension(file.name);
+			return !ext || !_allowedExts.length || Basic.inArray(ext, _allowedExts) !== -1;
 		}
+
 
 		function _readEntries(entries, cb) {
 			var queue = [];
