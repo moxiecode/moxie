@@ -91,6 +91,7 @@ define("moxie/core/utils/Mime", [
 			}
 		},
 
+
 		extList2mimes: function (filters, addMissingExtensions) {
 			var self = this, ext, i, ii, type, mimes = [];
 			
@@ -121,29 +122,42 @@ define("moxie/core/utils/Mime", [
 		},
 
 
-		mimes2extList: function(mimes) {
-			var self = this, exts = [], accept = [];
+		mimes2exts: function(mimes) {
+			var self = this, exts = [];
 			
-			mimes = Basic.trim(mimes).split(/\s*,\s*/);
-			
-			if (mimes !== '*') {
-				Basic.each(mimes, function(mime) {
-					// check if this thing looks like mime type
-					var m = mime.match(/^(\w+)\/(\*|\w+)$/);
-					if (m) {
-						if (m[2] === '*') { 
-							// wildcard mime type detected
-							Basic.each(self.extensions, function(arr, mime) {
-								if ((new RegExp('^' + m[1] + '/')).test(mime)) {
-									[].push.apply(exts, self.extensions[mime]);
-								}
-							});
-						} else if (self.extensions[mime]) {
-							[].push.apply(exts, self.extensions[mime]);
-						}
+			Basic.each(mimes, function(mime) {
+				if (mime === '*') {
+					exts = [];
+					return false;
+				}
+
+				// check if this thing looks like mime type
+				var m = mime.match(/^(\w+)\/(\*|\w+)$/);
+				if (m) {
+					if (m[2] === '*') { 
+						// wildcard mime type detected
+						Basic.each(self.extensions, function(arr, mime) {
+							if ((new RegExp('^' + m[1] + '/')).test(mime)) {
+								[].push.apply(exts, self.extensions[mime]);
+							}
+						});
+					} else if (self.extensions[mime]) {
+						[].push.apply(exts, self.extensions[mime]);
 					}
-				});
+				}
+			});
+			return exts;
+		},
+
+
+		mimes2extList: function(mimes) {
+			var accept = [], exts = [];
+
+			if (Basic.typeOf(mimes) === 'string') {
+				mimes = Basic.trim(mimes).split(/\s*,\s*/);
 			}
+
+			exts = this.mimes2exts(mimes);
 			
 			accept.push({
 				title: I18n.translate('Files'),
@@ -152,9 +166,10 @@ define("moxie/core/utils/Mime", [
 			
 			// save original mimes string
 			accept.mimes = mimes;
-							
+
 			return accept;
 		},
+
 
 		getFileExtension: function(fileName) {
 			var matches = fileName && fileName.match(/\.([^.]+)$/);
