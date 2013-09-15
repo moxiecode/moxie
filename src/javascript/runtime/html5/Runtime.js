@@ -55,6 +55,7 @@ define("moxie/runtime/html5/Runtime", [
 						return Env.can('return_response_type', responseType);
 					}
 				},
+				return_status_code: True,
 				report_upload_progress: Test(window.XMLHttpRequest && new XMLHttpRequest().upload),
 				resize_image: function() {
 					return I.can('access_binary') && Env.can('create_canvas');
