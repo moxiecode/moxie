@@ -101,13 +101,13 @@ namespace Moxiecode.Com
 
 		public Dictionary<string, object> slice(object start, object end, object type)
 		{
-			Blob blob = _slice(Convert.ToInt32(start), Convert.ToInt32(end), (string)type);
+			Blob blob = _slice(Convert.ToInt64(start), Convert.ToInt64(end), (string)type);
 			Moxie.compFactory.add(blob.uid, blob);
 			return blob.ToObject(); 
 		}
 
 
-		private Blob _slice(int start, int end, string type)
+		private Blob _slice(long start, long end, string type)
 		{
 			if (start > end) {
 				return new Blob(new List<object>(), type);
@@ -161,7 +161,7 @@ namespace Moxiecode.Com
 			return dict;
 		}
 
-		public void destroy()
+		public void destroy(object obj = null)
 		{
 			foreach (BufferRegion source in _sources) {
 				source.destroy();
