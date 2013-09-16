@@ -381,7 +381,7 @@ namespace Moxiecode.Com
 					_statusText = response.StatusDescription;
 
 					try {
-						if (response.Headers is WebHeaderCollection) {
+						if (response.SupportsHeaders && response.Headers is WebHeaderCollection) {
 							foreach (string header in response.Headers.AllKeys) {
 								_responseHeaders += header + ": " + response.Headers[header] + "\r\n";
 							}
