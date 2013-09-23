@@ -1,2 +1,0 @@
-Version 1.0a (2012-11-13)
-	First public alpha of mOxie.
