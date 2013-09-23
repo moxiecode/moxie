@@ -1,6 +1,6 @@
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.0.0alpha
+ * v1.0.0
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2012-11-13
+ * Date: 2013-09-23
  */
 /**
  * Inline development version. Only to be used while developing since it uses document.write to load scripts.
