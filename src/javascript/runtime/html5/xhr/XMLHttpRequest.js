@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
- /*global ActiveXObject:true */
+/*global ActiveXObject:true */
 
 /**
 @class moxie/runtime/html5/xhr/XMLHttpRequest
@@ -17,6 +17,7 @@
 define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
+	"moxie/core/utils/Mime",
 	"moxie/core/utils/Url",
 	"moxie/file/File",
 	"moxie/file/Blob",
@@ -24,11 +25,10 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Env",
 	"moxie/core/JSON"
-], function(extensions, Basic, Url, File, Blob, FormData, x, Env, parseJSON) {
+], function(extensions, Basic, Mime, Url, File, Blob, FormData, x, Env, parseJSON) {
 	
 	function XMLHttpRequest() {
-		var self = this
-		, _xhr
+		var _xhr
 		, _filename
 		;
 
@@ -228,6 +228,11 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 								}
 							}
 							file.name = _filename;
+
+							// pre-webkit Opera doesn't set type property on the blob response
+							if (!file.type) {
+								file.type = Mime.getFileMime(_filename);
+							}
 							return file;
 
 						case 'json':
