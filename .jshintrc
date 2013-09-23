@@ -7,7 +7,7 @@
 	"boss": true,
 	"evil": false,
 	"scripturl": true,
-	"latedef": true,
+	"latedef": 'nofunc',
 	"noarg": true,
 	"globals": {
 		"define": true,
