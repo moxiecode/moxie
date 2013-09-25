@@ -144,7 +144,7 @@ define('moxie/core/EventTarget', [
 			@return {Boolean} true by default and false if any handler returned false
 			*/
 			dispatchEvent: function(type) {
-				var uid, list, args, tmpEvt, evt = {};
+				var uid, list, args, tmpEvt, evt = {}, result = true;
 				
 				if (Basic.typeOf(type) !== 'string') {
 					// we can't use original object directly (because of Silverlight)
@@ -207,10 +207,12 @@ define('moxie/core/EventTarget', [
 						}
 					});
 					if (queue.length) {
-						Basic.inSeries(queue);
+						Basic.inSeries(queue, function(err) {
+							result = !err;
+						});
 					}
 				}
-				return true;
+				return result;
 			},
 			
 			/**
@@ -250,7 +252,7 @@ define('moxie/core/EventTarget', [
 			@protected
 			*/
 			trigger: function() {
-				this.dispatchEvent.apply(this, arguments);
+				return this.dispatchEvent.apply(this, arguments);
 			},
 			
 			
