@@ -22,7 +22,6 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 		if (typeof id !== 'string') {
 			return id;
 		}
-
 		return document.getElementById(id);
 	};
 
@@ -35,14 +34,11 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	@param {String} name Class name
 	*/
 	var hasClass = function(obj, name) {
-		var regExp;
-
-		if (obj.className === '') {
+		if (!obj.className) {
 			return false;
 		}
 
-		regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
-
+		var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
 		return regExp.test(obj.className);
 	};
 
@@ -56,7 +52,7 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	*/
 	var addClass = function(obj, name) {
 		if (!hasClass(obj, name)) {
-			obj.className = obj.className === '' ? name : obj.className.replace(/\s+$/, '') + ' ' + name;
+			obj.className = !obj.className ? name : obj.className.replace(/\s+$/, '') + ' ' + name;
 		}
 	};
 
@@ -69,11 +65,12 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	@param {String} name Class name
 	*/
 	var removeClass = function(obj, name) {
-		var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
-
-		obj.className = obj.className.replace(regExp, function($0, $1, $2) {
-			return $1 === ' ' && $2 === ' ' ? ' ' : '';
-		});
+		if (obj.className) {
+			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
+			obj.className = obj.className.replace(regExp, function($0, $1, $2) {
+				return $1 === ' ' && $2 === ' ' ? ' ' : '';
+			});
+		}
 	};
 
 	/**
