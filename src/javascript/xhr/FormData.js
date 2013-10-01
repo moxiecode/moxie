@@ -50,7 +50,7 @@ define("moxie/xhr/FormData", [
 						self.append.call(self, name + '[' + key + ']', value);
 					});
 				} else {
-					value = value.toString(); // according to specs value might be either Blob or String
+					value = (value || false).toString(); // according to specs value might be either Blob or String
 
 					if (!_fields[name]) {
 						_fields[name] = [];
