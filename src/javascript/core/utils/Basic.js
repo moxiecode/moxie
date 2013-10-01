@@ -72,23 +72,29 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {function} callback Callback function to execute for each item.
 	*/
 	var each = function(obj, callback) {
-		var length, key, i;
+		var length, key, i, undef;
 
 		if (obj) {
-			if (typeOf(obj) === 'array') {
-				// Loop array items
-				for (i = 0, length = obj.length; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
-					}
-				}
-			} else {
+			try {
+				length = obj.length;
+			} catch(ex) {
+				length = undef;
+			}
+
+			if (length === undef) {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (callback(obj[key], key) === false) {
 							return;
 						}
+					}
+				}
+			} else {
+				// Loop array items
+				for (i = 0; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
 					}
 				}
 			}
