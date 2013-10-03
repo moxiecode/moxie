@@ -198,6 +198,15 @@ define('moxie/file/FileInput', [
 			@type {String}
 			*/
 			ruid: null,
+
+			/**
+			Unique id of the runtime container. Useful to get hold of it for various manipulations.
+
+			@property shimid
+			@protected
+			@type {String}
+			*/
+			shimid: null,
 			
 			/**
 			Array of selected mOxie.File objects
@@ -218,6 +227,7 @@ define('moxie/file/FileInput', [
 
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
+					self.shimid = runtime.shimid;
 
 					self.bind("Ready", function() {
 						self.trigger("Refresh");
