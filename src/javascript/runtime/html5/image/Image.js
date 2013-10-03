@@ -247,18 +247,27 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 		function _downsize(width, height, crop, preserveHeaders) {
-			var self = this, ctx, scale, mathFn, x, y, img, imgWidth, imgHeight, orientation;
+			var self = this
+			, scale
+			, mathFn
+			, x = 0
+			, y = 0
+			, img
+			, destWidth
+			, destHeight
+			, orientation
+			;
 
-			_preserveHeaders = preserveHeaders; // we will need to check this on export
+			_preserveHeaders = preserveHeaders; // we will need to check this on export (see getAsBinaryString())
 
 			// take into account orientation tag
 			orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
 
 			if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
 				// swap dimensions
-				var mem = width;
+				var tmp = width;
 				width = height;
-				height = mem;
+				height = tmp;
 			}
 
 			img = _getImg();
@@ -273,34 +282,40 @@ define("moxie/runtime/html5/image/Image", [
 				return;
 			}
 
-			imgWidth = Math.round(img.width * scale);
-			imgHeight = Math.round(img.height * scale);
-
 			// prepare canvas if necessary
 			if (!_canvas) {
 				_canvas = document.createElement("canvas");
 			}
 
-			ctx = _canvas.getContext('2d');
+			// calculate dimensions of proportionally resized image
+			destWidth = Math.round(img.width * scale);	
+			destHeight = Math.round(img.height * scale);
+
 
 			// scale image and canvas
 			if (crop) {
 				_canvas.width = width;
 				_canvas.height = height;
+
+				// if dimensions of the resulting image still larger than canvas, center it
+				if (destWidth > width) {
+					x = Math.round((destWidth - width) / 2);
+				}
+
+				if (destHeight > height) {
+					y = Math.round((destHeight - height) / 2);
+				}
 			} else {
-				_canvas.width = imgWidth;
-				_canvas.height = imgHeight;
+				_canvas.width = destWidth;
+				_canvas.height = destHeight;
 			}
 
-			// if dimensions of the resulting image still larger than canvas, center it
-			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
-			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
-
+			// rotate if required, according to orientation tag
 			if (!_preserveHeaders) {
 				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
 			}
 
-			_drawToCanvas.call(this, img, _canvas, -x, -y, imgWidth, imgHeight);
+			_drawToCanvas.call(this, img, _canvas, -x, -y, destWidth, destHeight);
 
 			this.width = _canvas.width;
 			this.height = _canvas.height;
