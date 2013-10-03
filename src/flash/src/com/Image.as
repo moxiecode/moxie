@@ -1,25 +1,20 @@
 package com
 {	
-	import com.adobe.images.JPGEncoder;
-	import com.adobe.images.PNGEncoder;
-	
 	import com.errors.ImageError;
 	import com.errors.RuntimeError;
 	import com.events.ImageEvent;
 	import com.utils.OEventDispatcher;
 	
-	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
+	import flash.display.JPEGEncoderOptions;
 	import flash.display.Loader;
+	import flash.display.PNGEncoderOptions;
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
-	import flash.events.SecurityErrorEvent;
 	import flash.geom.Matrix;
 	import flash.system.System;
 	import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;
 	
 	import mxi.Utils;
 	import mxi.events.ODataEvent;
@@ -304,7 +299,7 @@ package com
 		
 		public function getAsEncodedByteArray(type:String = null, quality:uint = 90) : ByteArray 
 		{
-			var ba:ByteArray, bd:BitmapData, type:String;
+			var ba:ByteArray, bd:BitmapData;
 			
 			bd = getAsBitmapData();
 			if (!bd) {
@@ -315,8 +310,9 @@ package com
 				type = this.type !== '' ? this.type : 'image/jpeg';
 			} 
 			
-			if (type == 'image/jpeg') {		
-				ba = new JPGEncoder(quality).encode(bd);			
+			if (type == 'image/jpeg') {	
+				ba = bd.encode(bd.rect, new JPEGEncoderOptions(quality));
+				
 				if (_img) {
 					// strip off any headers that might be left by encoder, etc
 					_img.stripHeaders(ba);
@@ -326,9 +322,8 @@ package com
 					}
 				}
 			} else if (type == 'image/png') {
-				ba = PNGEncoder.encode(bd);
-			}
-			
+				ba = bd.encode(bd.rect, new PNGEncoderOptions());
+			}			
 			return ba;
 		}
 		
