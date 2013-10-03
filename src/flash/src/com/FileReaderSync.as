@@ -8,14 +8,7 @@ package com
 	{		
 		
 		public function readAsBase64(blob:*) : String {
-			var ba:ByteArray;
-						
-			ba = _read(blob);
-			
-			if (ba.length > 1024 * 1024) { // 1mb
-				throw new DOMError(DOMError.ENCODING_ERR);
-			}
-						
+			var ba:ByteArray = _read(blob);		
 			return Base64.encode(ba);
 		}
 		
