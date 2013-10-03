@@ -942,7 +942,6 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 		if (typeof id !== 'string') {
 			return id;
 		}
-
 		return document.getElementById(id);
 	};
 
@@ -955,14 +954,11 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	@param {String} name Class name
 	*/
 	var hasClass = function(obj, name) {
-		var regExp;
-
-		if (obj.className === '') {
+		if (!obj.className) {
 			return false;
 		}
 
-		regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
-
+		var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
 		return regExp.test(obj.className);
 	};
 
@@ -976,7 +972,7 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	*/
 	var addClass = function(obj, name) {
 		if (!hasClass(obj, name)) {
-			obj.className = obj.className === '' ? name : obj.className.replace(/\s+$/, '') + ' ' + name;
+			obj.className = !obj.className ? name : obj.className.replace(/\s+$/, '') + ' ' + name;
 		}
 	};
 
@@ -989,11 +985,12 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	@param {String} name Class name
 	*/
 	var removeClass = function(obj, name) {
-		var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
-
-		obj.className = obj.className.replace(regExp, function($0, $1, $2) {
-			return $1 === ' ' && $2 === ' ' ? ' ' : '';
-		});
+		if (obj.className) {
+			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
+			obj.className = obj.className.replace(regExp, function($0, $1, $2) {
+				return $1 === ' ' && $2 === ' ' ? ' ' : '';
+			});
+		}
 	};
 
 	/**
@@ -1408,7 +1405,7 @@ define('moxie/core/EventTarget', [
 			@return {Boolean} true by default and false if any handler returned false
 			*/
 			dispatchEvent: function(type) {
-				var uid, list, args, tmpEvt, evt = {};
+				var uid, list, args, tmpEvt, evt = {}, result = true;
 				
 				if (Basic.typeOf(type) !== 'string') {
 					// we can't use original object directly (because of Silverlight)
@@ -1471,10 +1468,12 @@ define('moxie/core/EventTarget', [
 						}
 					});
 					if (queue.length) {
-						Basic.inSeries(queue);
+						Basic.inSeries(queue, function(err) {
+							result = !err;
+						});
 					}
 				}
-				return true;
+				return result;
 			},
 			
 			/**
@@ -1514,7 +1513,7 @@ define('moxie/core/EventTarget', [
 			@protected
 			*/
 			trigger: function() {
-				this.dispatchEvent.apply(this, arguments);
+				return this.dispatchEvent.apply(this, arguments);
 			},
 			
 			
@@ -2927,6 +2926,15 @@ define('moxie/file/FileInput', [
 			@type {String}
 			*/
 			ruid: null,
+
+			/**
+			Unique id of the runtime container. Useful to get hold of it for various manipulations.
+
+			@property shimid
+			@protected
+			@type {String}
+			*/
+			shimid: null,
 			
 			/**
 			Array of selected mOxie.File objects
@@ -2947,6 +2955,7 @@ define('moxie/file/FileInput', [
 
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
+					self.shimid = runtime.shimid;
 
 					self.bind("Ready", function() {
 						self.trigger("Refresh");
@@ -3817,7 +3826,7 @@ define("moxie/xhr/FormData", [
 						self.append.call(self, name + '[' + key + ']', value);
 					});
 				} else {
-					value = value.toString(); // according to specs value might be either Blob or String
+					value = (value || false).toString(); // according to specs value might be either Blob or String
 
 					if (!_fields[name]) {
 						_fields[name] = [];
@@ -8466,18 +8475,27 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 		function _downsize(width, height, crop, preserveHeaders) {
-			var self = this, ctx, scale, mathFn, x, y, img, imgWidth, imgHeight, orientation;
+			var self = this
+			, scale
+			, mathFn
+			, x = 0
+			, y = 0
+			, img
+			, destWidth
+			, destHeight
+			, orientation
+			;
 
-			_preserveHeaders = preserveHeaders; // we will need to check this on export
+			_preserveHeaders = preserveHeaders; // we will need to check this on export (see getAsBinaryString())
 
 			// take into account orientation tag
 			orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
 
 			if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
 				// swap dimensions
-				var mem = width;
+				var tmp = width;
 				width = height;
-				height = mem;
+				height = tmp;
 			}
 
 			img = _getImg();
@@ -8492,34 +8510,40 @@ define("moxie/runtime/html5/image/Image", [
 				return;
 			}
 
-			imgWidth = Math.round(img.width * scale);
-			imgHeight = Math.round(img.height * scale);
-
 			// prepare canvas if necessary
 			if (!_canvas) {
 				_canvas = document.createElement("canvas");
 			}
 
-			ctx = _canvas.getContext('2d');
+			// calculate dimensions of proportionally resized image
+			destWidth = Math.round(img.width * scale);	
+			destHeight = Math.round(img.height * scale);
+
 
 			// scale image and canvas
 			if (crop) {
 				_canvas.width = width;
 				_canvas.height = height;
+
+				// if dimensions of the resulting image still larger than canvas, center it
+				if (destWidth > width) {
+					x = Math.round((destWidth - width) / 2);
+				}
+
+				if (destHeight > height) {
+					y = Math.round((destHeight - height) / 2);
+				}
 			} else {
-				_canvas.width = imgWidth;
-				_canvas.height = imgHeight;
+				_canvas.width = destWidth;
+				_canvas.height = destHeight;
 			}
 
-			// if dimensions of the resulting image still larger than canvas, center it
-			x = imgWidth > _canvas.width ? Math.round((imgWidth - _canvas.width) / 2)  : 0;
-			y = imgHeight > _canvas.height ? Math.round((imgHeight - _canvas.height) / 2) : 0;
-
+			// rotate if required, according to orientation tag
 			if (!_preserveHeaders) {
 				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
 			}
 
-			_drawToCanvas.call(this, img, _canvas, -x, -y, imgWidth, imgHeight);
+			_drawToCanvas.call(this, img, _canvas, -x, -y, destWidth, destHeight);
 
 			this.width = _canvas.width;
 			this.height = _canvas.height;
@@ -8770,7 +8794,7 @@ define("moxie/runtime/flash/Runtime", [
 
 
 		// minimal requirement Flash Player 10
-		if (getShimVersion() < 10) {
+		if (getShimVersion() < 11.3) {
 			this.mode = false; // with falsy mode, runtime won't operable, no matter what the mode was before
 		}
 
