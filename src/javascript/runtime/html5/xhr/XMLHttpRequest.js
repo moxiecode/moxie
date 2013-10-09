@@ -28,7 +28,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 ], function(extensions, Basic, Mime, Url, File, Blob, FormData, x, Env, parseJSON) {
 	
 	function XMLHttpRequest() {
-		var _xhr
+		var self = this
+		, _xhr
 		, _filename
 		;
 
