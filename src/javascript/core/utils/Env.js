@@ -54,6 +54,11 @@ define("moxie/core/utils/Env", [
 			sv: "MSIE"
 		},{
 			s1: navigator.userAgent,
+			s2: "Trident",
+			id: "IE",
+			sv: "rv"
+		}, {
+			s1: navigator.userAgent,
 			s2: "Gecko",
 			id: "Mozilla",
 			sv: "rv"
