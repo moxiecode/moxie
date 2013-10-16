@@ -757,6 +757,11 @@ define("moxie/core/utils/Env", [
 			sv: "MSIE"
 		},{
 			s1: navigator.userAgent,
+			s2: "Trident",
+			id: "IE",
+			sv: "rv"
+		}, {
+			s1: navigator.userAgent,
 			s2: "Gecko",
 			id: "Mozilla",
 			sv: "rv"
@@ -1780,66 +1785,6 @@ define('moxie/runtime/Runtime', [
 		, _uid = Basic.guid(type + '_')
 		;
 
-
-		/**
-		Runtime (not native one) may operate in browser or client mode.
-		
-		@method _setMode
-		@private
-		@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
-		@param {Object} [defaultMode] The mode to switch to if modeCaps or requiredCaps are empty
-		*/
-		function _setMode(modeCaps, defaultMode) {
-			var mode = null
-			, rc = options && options.required_caps
-			;
-
-			defaultMode = defaultMode || 'browser';
-
-			// mode can be effectively set only once
-			if (this.mode !== null) {
-				return this.mode;
-			}
-
-			if (rc && !Basic.isEmptyObj(modeCaps)) {
-				// loop over required caps and check if they do require the same mode
-				Basic.each(rc, function(value, cap) {
-					if (modeCaps.hasOwnProperty(cap)) {
-						var capMode = modeCaps[cap](value);
-
-						// make sure we always have an array
-						if (typeof(capMode) === 'string') {
-							capMode = [capMode];
-						}
-						
-						if (!mode) {
-							mode = capMode;
-						} else if (!(mode = Basic.arrayIntersect(mode, capMode))) {
-							// if cap requires conflicting mode - runtime cannot fulfill required caps
-							return (mode = false);
-						}
-					}
-				});
-
-				if (mode) {
-					this.mode = Basic.inArray(defaultMode, mode) !== -1 ? defaultMode : mode[0];
-				} else if (mode === false) {
-					this.mode = false;
-				}
-			} 
-			
-			// if mode still not defined
-			if (this.mode === null) { 
-				this.mode = defaultMode;
-			} 
-
-			// once we got the mode, test against all caps
-			if (this.mode && rc && !this.can(rc)) {
-				this.mode = false;
-			}	
-		}
-
-
 		// register runtime in private hash
 		runtimes[_uid] = this;
 
@@ -1902,6 +1847,15 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
+	
+				
+		if (Basic.typeOf(defaultMode) === 'undefined') {
+			defaultMode = 'browser';
+			// default to the mode that is compatible with preferred caps
+			if (options.preferred_caps) {
+				defaultMode = Runtime.getMode(modeCaps, options.preferred_caps, defaultMode);
+			}
+		}
 
 		
 		// small extension factory here (is meant to be extended with actual extensions constructors)
@@ -1973,7 +1927,7 @@ define('moxie/runtime/Runtime', [
 			@private
 			@type {String|Boolean} current mode or false, if none possible
 			*/
-			mode: null,
+			mode: Runtime.getMode(modeCaps, (options && options.required_caps), defaultMode),
 
 			/**
 			id of the DOM container for the runtime (if available)
@@ -2134,7 +2088,10 @@ define('moxie/runtime/Runtime', [
 			}
 		});
 
-		_setMode.call(this, modeCaps, defaultMode);
+		// once we got the mode, test against all caps
+		if (this.mode && options && options.required_caps && !this.can(options.required_caps)) {
+			this.mode = false;
+		}	
 	}
 
 
@@ -2278,6 +2235,53 @@ define('moxie/runtime/Runtime', [
 			}
 		}
 		return null;
+	};
+
+
+	/**
+	Figure out an operational mode for the specified set of capabilities.
+
+	@method getMode
+	@static
+	@param {Object} modeCaps Set of capabilities that depend on particular runtime mode
+	@param {Object} [requiredCaps] Supplied set of capabilities to find operational mode for
+	@param {String|Boolean} [defaultMode='browser'] Default mode to use 
+	@return {String|Boolean} Compatible operational mode
+	*/
+	Runtime.getMode = function(modeCaps, requiredCaps, defaultMode) {
+		var mode = null;
+
+		if (Basic.typeOf(defaultMode) === 'undefined') { // only if not specified
+			defaultMode = 'browser';
+		}
+
+		if (requiredCaps && !Basic.isEmptyObj(modeCaps)) {
+			// loop over required caps and check if they do require the same mode
+			Basic.each(requiredCaps, function(value, cap) {
+				if (modeCaps.hasOwnProperty(cap)) {
+					var capMode = modeCaps[cap](value);
+
+					// make sure we always have an array
+					if (typeof(capMode) === 'string') {
+						capMode = [capMode];
+					}
+					
+					if (!mode) {
+						mode = capMode;
+					} else if (!(mode = Basic.arrayIntersect(mode, capMode))) {
+						// if cap requires conflicting mode - runtime cannot fulfill required caps
+						return (mode = false);
+					}
+				}
+			});
+
+			if (mode) {
+				return Basic.inArray(defaultMode, mode) !== -1 ? defaultMode : mode[0];
+			} else if (mode === false) {
+				return false;
+			}
+		}
+		return defaultMode; 
 	};
 
 
@@ -5975,7 +5979,8 @@ define("moxie/runtime/html5/Runtime", [
 					return I.can('select_file') && Env.browser === 'Chrome' && Env.version >= 21;
 				},
 				select_multiple: function() {
-					return I.can('select_file') && !(Env.browser === 'Safari' && Env.OS === 'Windows');
+					// it is buggy on Safari Windows and iOS
+					return I.can('select_file') && !(Env.browser === 'Safari' && Env.OS === 'Windows') && Env.OS !== 'iOS';
 				},
 				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 				send_custom_headers: Test(window.XMLHttpRequest),
@@ -6681,7 +6686,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 ], function(extensions, Basic, Mime, Url, File, Blob, FormData, x, Env, parseJSON) {
 	
 	function XMLHttpRequest() {
-		var _xhr
+		var self = this
+		, _xhr
 		, _filename
 		;
 
@@ -8790,10 +8796,10 @@ define("moxie/runtime/flash/Runtime", [
 			upload_filesize: function(size) {
 				return Basic.parseSizeStr(size) >= 2097152 ? 'client' : 'browser';
 			}
-		}, 'client');
+		});
 
 
-		// minimal requirement Flash Player 10
+		// minimal requirement for Flash Player version
 		if (getShimVersion() < 11.3) {
 			this.mode = false; // with falsy mode, runtime won't operable, no matter what the mode was before
 		}
