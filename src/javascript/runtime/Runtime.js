@@ -108,6 +108,15 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
+	
+				
+		if (Basic.typeOf(defaultMode) === 'undefined') {
+			defaultMode = 'browser';
+			// default to the mode that is compatible with preferred caps
+			if (options.preferred_caps) {
+				defaultMode = Runtime.getMode(modeCaps, options.preferred_caps, defaultMode);
+			}
+		}
 
 		
 		// small extension factory here (is meant to be extended with actual extensions constructors)
