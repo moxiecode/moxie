@@ -46,66 +46,6 @@ define('moxie/runtime/Runtime', [
 		, _uid = Basic.guid(type + '_')
 		;
 
-
-		/**
-		Runtime (not native one) may operate in browser or client mode.
-		
-		@method _setMode
-		@private
-		@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
-		@param {Object} [defaultMode] The mode to switch to if modeCaps or requiredCaps are empty
-		*/
-		function _setMode(modeCaps, defaultMode) {
-			var mode = null
-			, rc = options && options.required_caps
-			;
-
-			defaultMode = defaultMode || 'browser';
-
-			// mode can be effectively set only once
-			if (this.mode !== null) {
-				return this.mode;
-			}
-
-			if (rc && !Basic.isEmptyObj(modeCaps)) {
-				// loop over required caps and check if they do require the same mode
-				Basic.each(rc, function(value, cap) {
-					if (modeCaps.hasOwnProperty(cap)) {
-						var capMode = modeCaps[cap](value);
-
-						// make sure we always have an array
-						if (typeof(capMode) === 'string') {
-							capMode = [capMode];
-						}
-						
-						if (!mode) {
-							mode = capMode;
-						} else if (!(mode = Basic.arrayIntersect(mode, capMode))) {
-							// if cap requires conflicting mode - runtime cannot fulfill required caps
-							return (mode = false);
-						}
-					}
-				});
-
-				if (mode) {
-					this.mode = Basic.inArray(defaultMode, mode) !== -1 ? defaultMode : mode[0];
-				} else if (mode === false) {
-					this.mode = false;
-				}
-			} 
-			
-			// if mode still not defined
-			if (this.mode === null) { 
-				this.mode = defaultMode;
-			} 
-
-			// once we got the mode, test against all caps
-			if (this.mode && rc && !this.can(rc)) {
-				this.mode = false;
-			}	
-		}
-
-
 		// register runtime in private hash
 		runtimes[_uid] = this;
 
@@ -239,7 +179,7 @@ define('moxie/runtime/Runtime', [
 			@private
 			@type {String|Boolean} current mode or false, if none possible
 			*/
-			mode: null,
+			mode: Runtime.getMode(modeCaps, (options && options.required_caps), defaultMode),
 
 			/**
 			id of the DOM container for the runtime (if available)
@@ -400,7 +340,10 @@ define('moxie/runtime/Runtime', [
 			}
 		});
 
-		_setMode.call(this, modeCaps, defaultMode);
+		// once we got the mode, test against all caps
+		if (this.mode && options && options.required_caps && !this.can(options.required_caps)) {
+			this.mode = false;
+		}	
 	}
 
 
@@ -544,6 +487,53 @@ define('moxie/runtime/Runtime', [
 			}
 		}
 		return null;
+	};
+
+
+	/**
+	Figure out an operational mode for the specified set of capabilities.
+
+	@method getMode
+	@static
+	@param {Object} modeCaps Set of capabilities that depend on particular runtime mode
+	@param {Object} [requiredCaps] Supplied set of capabilities to find operational mode for
+	@param {String|Boolean} [defaultMode='browser'] Default mode to use 
+	@return {String|Boolean} Compatible operational mode
+	*/
+	Runtime.getMode = function(modeCaps, requiredCaps, defaultMode) {
+		var mode = null;
+
+		if (Basic.typeOf(defaultMode) === 'undefined') { // only if not specified
+			defaultMode = 'browser';
+		}
+
+		if (requiredCaps && !Basic.isEmptyObj(modeCaps)) {
+			// loop over required caps and check if they do require the same mode
+			Basic.each(requiredCaps, function(value, cap) {
+				if (modeCaps.hasOwnProperty(cap)) {
+					var capMode = modeCaps[cap](value);
+
+					// make sure we always have an array
+					if (typeof(capMode) === 'string') {
+						capMode = [capMode];
+					}
+					
+					if (!mode) {
+						mode = capMode;
+					} else if (!(mode = Basic.arrayIntersect(mode, capMode))) {
+						// if cap requires conflicting mode - runtime cannot fulfill required caps
+						return (mode = false);
+					}
+				}
+			});
+
+			if (mode) {
+				return Basic.inArray(defaultMode, mode) !== -1 ? defaultMode : mode[0];
+			} else if (mode === false) {
+				return false;
+			}
+		}
+		return defaultMode; 
 	};
 
 
