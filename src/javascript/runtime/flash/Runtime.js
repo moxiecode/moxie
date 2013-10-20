@@ -137,7 +137,7 @@ define("moxie/runtime/flash/Runtime", [
 			upload_filesize: function(size) {
 				return Basic.parseSizeStr(size) >= 2097152 ? 'client' : 'browser';
 			}
-		});
+		}, 'client');
 
 
 		// minimal requirement for Flash Player version

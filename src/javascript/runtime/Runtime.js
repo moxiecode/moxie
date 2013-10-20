@@ -24,9 +24,9 @@ define('moxie/runtime/Runtime', [
 	@param {String} type Sanitized name of the runtime
 	@param {Object} [caps] Set of capabilities that differentiate specified runtime
 	@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
-	@param {String} [defaultMode='browser'] Default operational mode to choose if no required capabilities were requested
+	@param {String} [preferredMode='browser'] Preferred operational mode to choose if no required capabilities were requested
 	*/
-	function Runtime(options, type, caps, modeCaps, defaultMode) {
+	function Runtime(options, type, caps, modeCaps, preferredMode) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Results in RuntimeInit on a connected component.
@@ -44,6 +44,7 @@ define('moxie/runtime/Runtime', [
 		var self = this
 		, _shim
 		, _uid = Basic.guid(type + '_')
+		, defaultMode = preferredMode || 'browser'
 		;
 
 		// register runtime in private hash
@@ -108,16 +109,12 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
+			
 	
-				
-		if (Basic.typeOf(defaultMode) === 'undefined') {
-			defaultMode = 'browser';
-			// default to the mode that is compatible with preferred caps
-			if (options.preferred_caps) {
-				defaultMode = Runtime.getMode(modeCaps, options.preferred_caps, defaultMode);
-			}
+		// default to the mode that is compatible with preferred caps
+		if (options.preferred_caps) {
+			defaultMode = Runtime.getMode(modeCaps, options.preferred_caps, defaultMode);
 		}
-
 		
 		// small extension factory here (is meant to be extended with actual extensions constructors)
 		_shim = (function() {
