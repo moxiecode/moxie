@@ -28,17 +28,7 @@ module("Url", {
 
 
 test("parseUrl()", function() {
-	var scheme = document.location.protocol.replace(/:$/, '')
-	, ports = { http: 80, https: 443 }
-	, host = document.location.hostname
-	, path = document.location.pathname
-	;
-
-	// if path ends with a filename, strip it
-	if (!/(\/|\/[^\.]+)$/.test(path)) {
-		path = path.replace(/[^\/]+$/, ''); 
-	}
-	
+	var ports = { http: 80, https: 443 };
 	var cases = [
 		[
 			"http://example.com",
@@ -93,36 +83,32 @@ test("parseUrl()", function() {
 			{scheme: "http", host: "192.168.0.120", port: 80, path: "/test"}
 		], [ 
 			"/", 
-			{scheme: scheme, host: host, port: ports[scheme], path: "/"}
+			{scheme: "http", host: "example.com", port: 8080, path: "/"},
+			"http://example.com:8080/test"
 		 ], [
 		 	"/test", 
-			{scheme: scheme, host: host, port: ports[scheme], path: "/test"}
+			{scheme: "http", host: "example.com", port: 8080, path: "/test"},
+			"http://example.com:8080/test"
 		], [ 
 			"/?test=5", 
-			{scheme: scheme, host: host, port: ports[scheme], path: "/", query: "?test=5"}
-		], /*[ 
-			":8080", 
-			{scheme: scheme, host: host, port: 8080, path: "/"}
+			{scheme: "http", host: "example.com", port: 80, path: "/", query: "?test=5"},
+			"http://example.com/test"
 		], [ 
-			":8080/", 
-			{scheme: scheme, host: host, port: 8080, path: "/"}
-		], [ 
-			":8080/test", 
-			{scheme: scheme, host: host, port: 8080, path: "/test"}
-		], [ 
-			":8080/?test=5", 
-			{scheme: scheme, host: host, port: 8080, path: "/", query: "?test=5"}
-		],*/ [ 
 			"http://example.com/test/upload.php", 
-			{scheme: "http", host: "example.com", port: 80, path: "/test/upload.php"}
+			{scheme: "http", host: "example.com", port: 80, path: "/test/upload.php"},
 		], [ 
 			"test/upload.php", 
-			{scheme: "http", host: host, port: 80, path: path + "test/upload.php"}
+			{scheme: "http", host: "example.com", port: 80, path: "/test/test/upload.php"},
+			"http://example.com/test"
+		], [ 
+			"https://another-example.com/test2", 
+			{scheme: "https", host: "another-example.com", port: 443, path: "/test2"},
+			"http://example.com:8080/test"
 		]
 	];
 
 	o.each(cases, function(c) {
-		deepEqual(o.parseUrl(c[0]), c[1], c[0]);
+		deepEqual(o.parseUrl(c[0], c[2]), c[1], c[0]);
 	});
 });
 

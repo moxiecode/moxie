@@ -16,10 +16,10 @@ define('moxie/core/utils/Url', [], function() {
 	@method parseUrl
 	@for Utils
 	@static
-	@param {String} str Url to parse (defaults to empty string if undefined)
+	@param {String} url Url to parse (defaults to empty string if undefined)
 	@return {Object} Hash containing extracted uri components
 	*/
-	var parseUrl = function(str) {
+	var parseUrl = function(url, currentUrl) {
 		var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment']
 		, i = key.length
 		, ports = {
@@ -28,7 +28,7 @@ define('moxie/core/utils/Url', [], function() {
 		}
 		, uri = {}
 		, regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/
-		, m = regex.exec(str || '') // default to empty string if undefined
+		, m = regex.exec(url || '')
 		;
 					
 		while (i--) {
@@ -37,34 +37,43 @@ define('moxie/core/utils/Url', [], function() {
 			}
 		}
 
-		if (/^[^\/]/.test(uri.path) && !uri.scheme) { // when url is relative, we need to figure out the path ourselves
-			var path = document.location.pathname;
-			// if path ends with a filename, strip it
-			if (!/(\/|\/[^\.]+)$/.test(path)) {
-				path = path.replace(/[^\/]+$/, '');
+		// when url is relative, we set the origin and the path ourselves
+		if (!uri.scheme) {
+			// come up with defaults
+			if (!currentUrl || typeof(currentUrl) === 'string') {
+				currentUrl = parseUrl(currentUrl || document.location.href);
 			}
-			uri.host = document.location.hostname;
+
+			uri.scheme = currentUrl.scheme;
+			uri.host = currentUrl.host;
+			uri.port = currentUrl.port;
+
+			var path = '';
+			// for urls without trailing slash we need to figure out the path
+			if (/^[^\/]/.test(uri.path)) {
+				path = currentUrl.path;
+				// if path ends with a filename, strip it
+				if (!/(\/|\/[^\.]+)$/.test(path)) {
+					path = path.replace(/\/[^\/]+$/, '/');
+				} else {
+					path += '/';
+				}
+			}
 			uri.path = path + (uri.path || ''); // site may reside at domain.com or domain.com/subdir
 		}
 
-		if (!uri.scheme) {
-			uri.scheme = document.location.protocol.replace(/:$/, '');
-		}
-
-		if (!uri.host) {
-			uri.host = document.location.hostname;
-		}
-
 		if (!uri.port) {
-			uri.port = document.location.port || ports[uri.scheme] || 80;
+			uri.port = ports[uri.scheme] || 80;
 		} 
+		
 		uri.port = parseInt(uri.port, 10);
 
 		if (!uri.path) {
 			uri.path = "/";
 		}
-											
+
 		delete uri.source;
+
 		return uri;
 	};
 
