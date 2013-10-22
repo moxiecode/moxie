@@ -104,7 +104,7 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 							el = _iframe.contentWindow.document || _iframe.contentDocument || window.frames[_iframe.id].document;
 
 							// try to detect some standard error pages
-							if (/^4\d{2}\s/.test(el.title) && el.getElementsByTagName('address').length) { // standard Apache style
+							if (/^4(0[0-9]|1[0-7]|2[2346])\s/.test(el.title)) { // test if title starts with 4xx HTTP error
 								_status = el.title.replace(/^(\d+).*$/, '$1');
 							} else {
 								_status = 200;
