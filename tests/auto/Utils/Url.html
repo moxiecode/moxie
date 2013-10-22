@@ -104,6 +104,10 @@ test("parseUrl()", function() {
 			"https://another-example.com/test2", 
 			{scheme: "https", host: "another-example.com", port: 443, path: "/test2"},
 			"http://example.com:8080/test"
+		], [ // plupload #919
+			"photoupload.py",
+			{scheme: "http", host: "edinburghmc.org.uk", port: 80, path: "/emc/upload/photoupload.py"},
+			"http://edinburghmc.org.uk/emc/upload?meetid=197"
 		]
 	];
 
