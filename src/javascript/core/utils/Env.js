@@ -153,7 +153,7 @@ define("moxie/core/utils/Env", [
 					try {
 						if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
 							return true;
-						} else if (window.XMLHttpRequest){
+						} else if (window.XMLHttpRequest) {
 							var xhr = new XMLHttpRequest();
 							xhr.open('get', '/'); // otherwise Gecko throws an exception
 							if ('responseType' in xhr) {

@@ -20,9 +20,8 @@ define("moxie/runtime/test/xhr/XMLHttpRequest", [
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/Exceptions",
-	"moxie/core/utils/Env",
-	"moxie/core/JSON"
-], function(extensions, Basic, Url, File, Blob, FormData, x, Env, parseJSON) {
+	"moxie/core/utils/Env"
+], function(extensions, Basic, Url, File, Blob, FormData, x, Env) {
 	
 	function XMLHttpRequest() {
 		var _state = XMLHttpRequest.OPENED;
@@ -111,7 +110,7 @@ define("moxie/runtime/test/xhr/XMLHttpRequest", [
 				if (_state !== XMLHttpRequest.DONE) {
 					return Basic.inArray(responseType, ["", "text"]) !== -1 ? '' : null;
 				}
-				return responseType === 'json'? parseJSON(response) : response;
+				return responseType === 'json' && !!window.JSON ? JSON.parse(response) : response;
 			},
 
 			getAllResponseHeaders: function() {

@@ -105,7 +105,13 @@ define("moxie/runtime/silverlight/Runtime", [
 			return_response_headers: function(value) {
 				return value && I.mode === 'client';
 			},
-			return_response_type: Runtime.capTrue,
+			return_response_type: function(responseType) {
+				if (responseType !== 'json') {
+					return true;
+				} else {
+					return !!window.JSON;
+				}
+			},
 			return_status_code: function(code) {
 				return I.mode === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},

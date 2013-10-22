@@ -20,9 +20,8 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Events",
 	"moxie/file/Blob",
-	"moxie/xhr/FormData",
-	"moxie/core/JSON"
-], function(extensions, Basic, Dom, Url, x, Events, Blob, FormData, parseJSON) {
+	"moxie/xhr/FormData"
+], function(extensions, Basic, Dom, Url, x, Events, Blob, FormData) {
 	
 	function XMLHttpRequest() {
 		var _status, _response, _iframe;
@@ -202,9 +201,9 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 			getResponse: function(responseType) {
 				if ('json' === responseType) {
 					// strip off <pre>..</pre> tags that might be enclosing the response
-					if (Basic.typeOf(_response) === 'string') {
+					if (Basic.typeOf(_response) === 'string' && !!window.JSON) {
 						try {
-							return parseJSON(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
+							return JSON.parse(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
 						} catch (ex) {
 							return null;
 						}

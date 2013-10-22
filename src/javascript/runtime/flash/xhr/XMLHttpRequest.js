@@ -19,9 +19,8 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	"moxie/file/File",
 	"moxie/file/FileReaderSync",
 	"moxie/xhr/FormData",
-	"moxie/runtime/Transporter",
-	"moxie/core/JSON"
-], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter, parseJSON) {
+	"moxie/runtime/Transporter"
+], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter) {
 	
 	var XMLHttpRequest = {
 
@@ -118,14 +117,11 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 					// do something
 
-				} else if ('json' === responseType) {
+				} else if ('json' === responseType && !!window.JSON) {
 					frs = new FileReaderSync();
-					
 					try {
-						return parseJSON(frs.readAsText(blob));
-					} catch (ex) {
-						return null;
-					}
+						return JSON.parse(frs.readAsText(blob));
+					} catch (ex) {}
 				}
 			}
 

@@ -23,9 +23,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/Exceptions",
-	"moxie/core/utils/Env",
-	"moxie/core/JSON"
-], function(extensions, Basic, Mime, Url, File, Blob, FormData, x, Env, parseJSON) {
+	"moxie/core/utils/Env"
+], function(extensions, Basic, Mime, Url, File, Blob, FormData, x, Env) {
 	
 	function XMLHttpRequest() {
 		var self = this
@@ -238,7 +237,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 						case 'json':
 							if (!Env.can('return_response_type', 'json')) {
-								return _xhr.status === 200 ? parseJSON(_xhr.responseText) : null;
+								return _xhr.status === 200 && !!window.JSON ? JSON.parse(_xhr.responseText) : null;
 							}
 							return _xhr.response;
 

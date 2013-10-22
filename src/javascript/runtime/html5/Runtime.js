@@ -49,11 +49,10 @@ define("moxie/runtime/html5/Runtime", [
 				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {
-					if (responseType === 'json') {
-						return true; // we can fake this one even if it's not supported
-					} else {
-						return Env.can('return_response_type', responseType);
-					}
+					if (responseType === 'json' && !!window.JSON) { // we can fake this one even if it's not supported
+						return true;
+					} 
+					return Env.can('return_response_type', responseType);
 				},
 				return_status_code: True,
 				report_upload_progress: Test(window.XMLHttpRequest && new XMLHttpRequest().upload),

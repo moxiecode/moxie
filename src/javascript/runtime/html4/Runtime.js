@@ -46,7 +46,10 @@ define("moxie/runtime/html4/Runtime", [
 			report_upload_progress: false,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
-				return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
+				if (responseType === 'json' && !!window.JSON) {
+					return true;
+				} 
+				return !!~Basic.inArray(responseType, ['text', 'document', '']);
 			},
 			return_status_code: function(code) {
 				return !Basic.arrayDiff(code, [200, 404]);
