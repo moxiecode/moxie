@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Rebuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -21,7 +20,8 @@
     <XapOutputs>true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
     <IncludeImageLibs Condition=" '$(IncludeImageLibs)' == '' ">TRUE</IncludeImageLibs>
-    <EnableCSS Condition=" '$(EnableCSS)' == '' "></EnableCSS>
+    <EnableCSS Condition=" '$(EnableCSS)' == '' ">
+    </EnableCSS>
     <XapFilename Condition=" '$(XapFilename)' == '' ">Moxie.xap</XapFilename>
     <OutputDir>..\..\bin\silverlight\</OutputDir>
     <SilverlightAppEntry>Moxiecode.App</SilverlightAppEntry>
@@ -36,7 +36,6 @@
     </LinkedServerProject>
     <TargetFrameworkProfile />
   </PropertyGroup>
-
   <Choose>
     <When Condition=" '$(EnableCSS)' == 'TRUE' ">
       <PropertyGroup>
@@ -55,14 +54,12 @@
       </ItemGroup>
     </When>
   </Choose>
-
   <!-- This property group is only here to support building this project using the 
        MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
        to set the TargetFrameworkVersion to v3.5 -->
   <PropertyGroup Condition="'$(MSBuildToolsVersion)' == '3.5'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -74,7 +71,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
@@ -85,7 +81,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System.Windows" />
@@ -95,7 +90,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -117,11 +111,9 @@
     <Compile Include="Moxie.xaml.cs">
       <DependentUpon>Moxie.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MXI\JsonWriter.cs" />
     <Compile Include="MXI\Utils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(IncludeImageLibs)' == 'TRUE' ">
     <Compile Include="Com\Image.cs" />
     <Compile Include="Com\ImageView.cs" />
@@ -169,7 +161,6 @@
     <Compile Include="PngEncoder\PendingBuffer.cs" />
     <Compile Include="PngEncoder\PngEncoder.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <SubType>Designer</SubType>
@@ -180,14 +171,12 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-
   <ItemGroup Condition=" '$(IncludeImageLibs)' == 'TRUE' ">
     <Content Include="FJCore\IJG.txt" />
     <Content Include="FJCore\JAI.txt" />
     <Content Include="FJCore\License.txt" />
     <Content Include="FJCore\README.txt" />
   </ItemGroup>
-
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <Target Name="Cleanup">
     <RemoveDir Directories=".\obj\" />
@@ -200,7 +189,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">

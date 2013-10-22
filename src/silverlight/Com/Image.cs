@@ -128,16 +128,16 @@ namespace Moxiecode.Com
 		}
 
 
-		public Dictionary<string,string> getInfo()
+		public Dictionary<string,object> getInfo()
 		{
-			return new Dictionary<string, string>()
+			return new Dictionary<string, object>()
 			{
-				{ "width", width.ToString() },
-				{ "height", height.ToString() },
-				{ "size", size.ToString() },
+				{ "width", width },
+				{ "height", height },
+				{ "size", size },
 				{ "type", type },
 				{ "name", name },
-				{ "meta", JsonWriter.stringify(meta) }
+				{ "meta", meta }
 			};
 		}
 

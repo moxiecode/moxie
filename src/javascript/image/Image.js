@@ -21,9 +21,8 @@ define("moxie/image/Image", [
 	"moxie/core/EventTarget",
 	"moxie/file/Blob",
 	"moxie/file/File",
-	"moxie/core/utils/Encode",
-	"moxie/core/JSON"
-], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, Runtime, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode, parseJSON) {
+	"moxie/core/utils/Encode"
+], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, Runtime, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -450,28 +449,18 @@ define("moxie/image/Image", [
 				info = this.getRuntime().exec.call(this, 'Image', 'getInfo');
 			}
 
-			if (info) {
-				if (Basic.typeOf(info.meta) === 'string') { // might be a JSON string
-					try {
-						this.meta = parseJSON(info.meta);
-					} catch(ex) {}
-				} else {
-					this.meta = info.meta;
-				}
-			}
-
-			Basic.extend(this, { // info object might be non-enumerable (as returned from SilverLight for example)
-				size: parseInt(info.size, 10),
-				width: parseInt(info.width, 10),
-				height: parseInt(info.height, 10),
-				type: info.type
-			});
+			this.size = info.size;
+			this.width = info.width;
+			this.height = info.height;
+			this.type = info.type;
+			this.meta = info.meta;
 
 			// update file name, only if empty
 			if (this.name === '') {
 				this.name = info.name;
 			}
 		}
+		
 
 		function _load(src) {
 			var srcType = Basic.typeOf(src);

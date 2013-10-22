@@ -207,6 +207,14 @@ namespace Moxiecode.MXI.Image
 
 		public Dictionary<string, object> TIFF()
 		{
+			// store the keys separately (required for JS part to iterate over)
+			if (!Tiff.ContainsKey("keys"))
+			{
+				string[] keys = new string[Tiff.Keys.Count];
+				Tiff.Keys.CopyTo(keys, 0);
+				Tiff.Add("keys", keys);
+			}
+
 			return Tiff;
 		}
 		
@@ -233,6 +241,14 @@ namespace Moxiecode.MXI.Image
 					Exif["ExifVersion"] = exifVersion;
 				}
 			}
+
+			// store the keys separately (required for JS part to iterate over)
+			if (!Exif.ContainsKey("keys"))
+			{
+				string[] keys = new string[Exif.Keys.Count];
+				Exif.Keys.CopyTo(keys, 0);
+				Exif.Add("keys", keys);
+			}
 			
 			return Exif;	 
 		}
@@ -254,6 +270,15 @@ namespace Moxiecode.MXI.Image
 					Gps["GPSVersionID"] = string.Join(".", (string[])GPSVersionID);
 				}
 			}
+
+			// store the keys separately (required for JS part to iterate over)
+			if (!Gps.ContainsKey("keys"))
+			{
+				string[] keys = new string[Gps.Keys.Count];
+				Gps.Keys.CopyTo(keys, 0);
+				Gps.Add("keys", keys);
+			}
+
 			return Gps;
 		}
 		
