@@ -41,6 +41,46 @@ module("FormData", {
 	}
 });
 
+
+test("Append falsy field values", function() {
+	var undef;
+	var falsyValues = {
+		'null': {
+			value: null,
+			expected: "false"
+		},
+		'undefined': {
+			value: undef,
+			expected: "false"
+		},
+		'emptyStr': {
+			value: '',
+			expected: ""
+		},
+		'NaN': {
+			value: NaN,
+			expected: "false"
+		},
+		'0': {
+			value: 0,
+			expected: "0"
+		}
+	};
+	var fd = new o.FormData();
+
+	o.each(falsyValues, function(falsy, name) {
+		fd.append(name, falsy.value);
+	});
+
+	// test results
+	fd.each(function(value, name) {
+		if (falsyValues[name]) {
+			deepEqual(value, falsyValues[name].expected, name + " appended as '" + value + "'.");
+		}
+	});
+});
+
+
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	
 	test('Send hybrid FormData', function() {

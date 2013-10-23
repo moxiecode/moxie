@@ -33,6 +33,7 @@ define("moxie/xhr/FormData", [
 			append: function(name, value) {
 				var self = this, valueType = Basic.typeOf(value);
 
+				// according to specs value might be either Blob or String
 				if (value instanceof Blob) {
 					if (_blobField) { 
 						delete _fields[_blobField];
@@ -43,19 +44,19 @@ define("moxie/xhr/FormData", [
 					name += '[]';
 
 					Basic.each(value, function(value) {
-						self.append.call(self, name, value);
+						self.append(name, value);
 					});
 				} else if ('object' === valueType) {
 					Basic.each(value, function(value, key) {
-						self.append.call(self, name + '[' + key + ']', value);
+						self.append(name + '[' + key + ']', value);
 					});
+				} else if ('null' === valueType || 'undefined' === valueType || 'number' === valueType && isNaN(value)) {
+					self.append(name, "false");
 				} else {
-					value = (value || false).toString(); // according to specs value might be either Blob or String
-
 					if (!_fields[name]) {
 						_fields[name] = [];
 					} 
-					_fields[name].push(value);
+					_fields[name].push(value.toString());
 				}
 			},
 
