@@ -181,7 +181,12 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 								value : value
 							});
 
-							form.appendChild(hidden);
+							// make sure that input[type="file"], if it's there, comes last
+							if (input) {
+								form.insertBefore(hidden, input);
+							} else {
+								form.appendChild(hidden);
+							}
 						}
 					});
 				}
