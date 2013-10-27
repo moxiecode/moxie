@@ -63,7 +63,7 @@ test("removeClass()", function() {
 	
 	o.removeClass(el, "class2");
 	
-	ok(o.hasClass("class2"), "Class has been removed from element");
+	ok(!o.hasClass(el, "class2"), "Class has been removed from element");
 	equal(el.className, "class1 class3", "Just rechecking");
 });
 
