@@ -104,8 +104,10 @@ define("moxie/runtime/html4/file/FileInput", [
 				addInput.call(comp);
 
 				// after file is initialized as o.File, we need to update form and input ids
-				comp.bind('change', function() {
+				comp.bind('change', function onChange() {
 					var input = Dom.get(uid), form = Dom.get(uid + '_form'), file;
+
+					comp.unbind('change', onChange);
 
 					if (comp.files.length && input && form) {
 						file = comp.files[0];
