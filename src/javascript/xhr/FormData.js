@@ -20,7 +20,7 @@ define("moxie/xhr/FormData", [
 	@constructor
 	*/
 	function FormData() {
-		var _blobField, _fields = {}, _name = "";
+		var _blob, _fields = [];
 
 		Basic.extend(this, {
 			/**
@@ -35,11 +35,10 @@ define("moxie/xhr/FormData", [
 
 				// according to specs value might be either Blob or String
 				if (value instanceof Blob) {
-					if (_blobField) { 
-						delete _fields[_blobField];
-					}
-					_blobField = name; 
-					_fields[name] = [value]; // unfortunately we can only send single Blob in one FormData
+					_blob = {
+						name: name,
+						value: value // unfortunately we can only send single Blob in one FormData
+					};
 				} else if ('array' === valueType) {
 					name += '[]';
 
@@ -53,10 +52,10 @@ define("moxie/xhr/FormData", [
 				} else if ('null' === valueType || 'undefined' === valueType || 'number' === valueType && isNaN(value)) {
 					self.append(name, "false");
 				} else {
-					if (!_fields[name]) {
-						_fields[name] = [];
-					} 
-					_fields[name].push(value.toString());
+					_fields.push({
+						name: name,
+						value: value.toString()
+					});
 				}
 			},
 
@@ -67,7 +66,7 @@ define("moxie/xhr/FormData", [
 			@return {Boolean}
 			*/
 			hasBlob: function() {
-				return !!_blobField;
+				return !!this.getBlob();
 			},
 
 			/**
@@ -77,7 +76,7 @@ define("moxie/xhr/FormData", [
 			@return {Object} Either Blob if found or null
 			*/
 			getBlob: function() {
-				return _fields[_blobField] && _fields[_blobField][0] || null;
+				return _blob && _blob.value || null;
 			},
 
 			/**
@@ -87,7 +86,7 @@ define("moxie/xhr/FormData", [
 			@return {String} Either Blob field name or null
 			*/
 			getBlobName: function() {
-				return _blobField || null;
+				return _blob && _blob.name || null;
 			},
 
 			/**
@@ -97,17 +96,18 @@ define("moxie/xhr/FormData", [
 			@param {Function} cb Callback to call for each field
 			*/
 			each: function(cb) {
-				Basic.each(_fields, function(value, name) {
-					Basic.each(value, function(value) {
-						cb(value, name);
-					});
+				Basic.each(_fields, function(field) {
+					cb(field.value, field.name);
 				});
+
+				if (_blob) {
+					cb(_blob.value, _blob.name);
+				}
 			},
 
 			destroy: function() {
-				_blobField = null;
-				_name = "";
-				_fields = {};
+				_blob = null;
+				_fields = [];
 			}
 		});
 	}
