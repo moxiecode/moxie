@@ -139,12 +139,6 @@ define("moxie/runtime/html4/file/FileInput", [
 			_uid = uid;
 
 			shimContainer = currForm = browseButton = null;
-
-			// trigger ready event asynchronously
-			comp.trigger({
-				type: 'ready',
-				async: true
-			});
 		}
 
 		Basic.extend(this, {
@@ -200,6 +194,12 @@ define("moxie/runtime/html4/file/FileInput", [
 				addInput.call(this);
 
 				shimContainer = null;
+
+				// trigger ready event asynchronously
+				comp.trigger({
+					type: 'ready',
+					async: true
+				});
 			},
 
 			getFiles: function() {
