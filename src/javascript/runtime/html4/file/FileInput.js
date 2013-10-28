@@ -57,7 +57,7 @@ define("moxie/runtime/html4/file/FileInput", [
 			input = document.createElement('input');
 			input.setAttribute('id', uid);
 			input.setAttribute('type', 'file');
-			input.setAttribute('name', 'Filedata');
+			input.setAttribute('name', _options.name || 'Filedata');
 			input.setAttribute('accept', _mimes.join(','));
 
 			Basic.extend(input.style, {
