@@ -47,6 +47,8 @@ define('moxie/runtime/Runtime', [
 		, defaultMode = preferredMode || 'browser'
 		;
 
+		options = options || {};
+
 		// register runtime in private hash
 		runtimes[_uid] = this;
 
@@ -185,7 +187,7 @@ define('moxie/runtime/Runtime', [
 			@private
 			@type {String|Boolean} current mode or false, if none possible
 			*/
-			mode: Runtime.getMode(modeCaps, (options && options.required_caps), defaultMode),
+			mode: Runtime.getMode(modeCaps, (options.required_caps), defaultMode),
 
 			/**
 			id of the DOM container for the runtime (if available)
@@ -347,7 +349,7 @@ define('moxie/runtime/Runtime', [
 		});
 
 		// once we got the mode, test against all caps
-		if (this.mode && options && options.required_caps && !this.can(options.required_caps)) {
+		if (this.mode && options.required_caps && !this.can(options.required_caps)) {
 			this.mode = false;
 		}	
 	}
