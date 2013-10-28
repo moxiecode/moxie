@@ -217,7 +217,10 @@ define("moxie/runtime/html4/file/FileInput", [
 			},
 
 			destroy: function() {
-				var I = this.getRuntime(), shimContainer = I.getShimContainer();
+				var I = this.getRuntime()
+				, shim = I.getShim()
+				, shimContainer = I.getShimContainer()
+				;
 				
 				Events.removeAllEvents(shimContainer, this.uid);
 				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
@@ -226,7 +229,10 @@ define("moxie/runtime/html4/file/FileInput", [
 				if (shimContainer) {
 					shimContainer.innerHTML = '';
 				}
-				_uid = _files = _mimes = _options = null;
+
+				shim.removeInstance(this.uid);
+
+				_uid = _files = _mimes = _options = shimContainer = shim = null;
 			}
 		});
 	}

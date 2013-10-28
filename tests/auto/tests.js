@@ -12,6 +12,7 @@
 		{"title": "File", "url": "File.html"},
 		{"title": "FormData", "url": "FormData.html"},
 		{"title": "Image", "url": "Image.html"},
+		{"title": "FileInput", "url": "FileInput.html"},
 		{"title": "FileReader", "url": "FileReader.html"},
 		{"title": "XHR", "url": "XHR.html"},
 		{"title": "XHR CORS", "url": "XHR-CORS.html"}

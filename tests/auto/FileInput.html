@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Image: Test FileInput</title>
+
+<!-- qunit -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
+<script src="http://code.jquery.com/qunit/qunit-git.js"></script>
+
+<!-- testrunner -->
+<script src="../js/reporter.js"></script>
+<script src="../moxie_loader.js"></script>
+
+<script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+module("FileInput", {
+	setup: function() {
+		o.extend(this, {
+			x: o.Exceptions,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			runtimeOptions: {
+				runtime_order: "html5,flash,silverlight,html4",
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			}	
+		});
+	},
+
+	teardown: function() {
+	}
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test("Init and Destroy: " + runtime, function() {
+
+		$('<a id="browse_button" href="javascript:;">Browse...</a>')
+			.appendTo(this.DOM);
+
+		var fi = new o.FileInput(o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime,
+			browse_button: 'browse_button'
+		}));
+
+		fi.onready = function() {
+			start();
+
+			ok($('#qunit-fixture').find('.moxie-shim').length, "HTML structure inserted.");
+
+			this.destroy();
+			ok(!$('#qunit-fixture').find('.moxie-shim').length, "HTML structure removed.");
+		};
+
+		fi.onerror = function() {
+			start();
+		};
+
+		stop();
+		fi.init();
+	});
+});
+
+
+
+</script>
+</head>
+<body>
+	<h1 id="qunit-header">mOxie Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests">
+	</ol>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>
+
+
+
+
+
+
+
+
