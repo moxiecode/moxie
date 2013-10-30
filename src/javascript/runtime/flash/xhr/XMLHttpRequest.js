@@ -137,9 +137,9 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			// this.dispatchEvent('progress');
 			this.dispatchEvent('abort');
 
-			if (!upload_complete_flag) {
+			//if (!upload_complete_flag) {
 				// this.dispatchEvent('uploadprogress');
-			}
+			//}
 		}
 	};
 

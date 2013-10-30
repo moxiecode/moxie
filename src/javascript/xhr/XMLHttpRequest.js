@@ -567,9 +567,9 @@ define("moxie/xhr/XMLHttpRequest", [
 					// 8.2
 					// this.dispatchEvent('loadstart'); // will be dispatched either by native or runtime xhr
 					// 8.3
-					if (!_upload_complete_flag) {
+					//if (!_upload_complete_flag) {
 						// this.upload.dispatchEvent('loadstart');	// will be dispatched either by native or runtime xhr
-					}
+					//}
 				}
 				// 8.5 - Return the send() method call, but continue running the steps in this algorithm.
 				_doXHR.call(this, data);
