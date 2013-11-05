@@ -110,31 +110,40 @@ package com
 		}
 		
 				
-		public function send(meta:Object, blob:* = null) : void
-		{	
+		public function send(meta:Object, data:* = null) : void
+		{				
 			if (_blob) {
-				blob = _blob;
+				data = _blob;
 			}
-						
+									
 			meta.method = meta.method.toUpperCase();
 			_options = meta;
 									
-			if (typeof blob === 'string') {
-				blob = Moxie.compFactory.get(blob);
-				if (blob is File && blob.hasOwnProperty('name')) { 
-					_blobName = blob.name;
-				} 
-			}
-						
-			if (blob && _options.method == 'POST') {
-				if (_options.transport == 'client' && _multipart && blob.isFileRef() && Utils.isEmptyObj(_headers)) {
-					_uploadFileRef(blob);
-				} else {
-					_preloadBlob(blob, _doURLStreamRequest);
+			if (typeof data === 'string') {
+				var blob:* = Moxie.compFactory.get(data);
+				if (blob) {
+					data = blob;
+					if (blob is File && blob.hasOwnProperty('name')) { 
+						_blobName = blob.name;
+					} 
+				} else { // apparently a regular string
+					var ba:ByteArray = new ByteArray();
+					ba.writeUTFBytes(data);
+					data = ba;
 				}
-			} else {
-				_doURLStreamRequest();
 			}
+									
+			if (data && data is Blob && _options.method == 'POST') {
+				if (_options.transport == 'client' && _multipart && data.isFileRef() && Utils.isEmptyObj(_headers)) {
+					_uploadFileRef(data);
+				} else {
+					_preloadBlob(data, _doURLStreamRequest);
+				}
+				return;
+			}
+			
+			// for any other non-Blob requests GET or POST
+			_doURLStreamRequest(data); 
 		}
 		
 		public function getResponseAsBlob() : Object
@@ -336,9 +345,9 @@ package com
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, RuntimeError.SYNTAX_ERR));
 				return;
 			}
-			
+						
 			request.method = _methods[_options.method];
-			
+						
 			if (_multipart) {
 				request.data = _formatAsMultipart(ba, request);
 			} else if (ba) {
@@ -348,7 +357,7 @@ package com
 				}
 				request.data = ba;
 			}		
-						
+									
 			_conn = new URLStream;
 			
 			_conn.addEventListener(ProgressEvent.PROGRESS, onProgress);
