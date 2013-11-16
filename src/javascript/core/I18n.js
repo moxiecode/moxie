@@ -51,15 +51,11 @@ define("moxie/core/I18n", [
 		 * @return {String} String with replaced tokens
 		 */
 		sprintf: function(str) {
-			var args = [].slice.call(arguments, 1), reStr = '';
+			var args = [].slice.call(arguments, 1);
 
-			Basic.each(str.split(/%[a-z]/), function(part) {
-				reStr += part;
-				if (args.length) {
-					reStr += args.shift();
-				}
+			return str.replace(/%[a-z]/g, function() {
+				return args.shift() || '';
 			});
-			return reStr;
 		}
 	};
 });
