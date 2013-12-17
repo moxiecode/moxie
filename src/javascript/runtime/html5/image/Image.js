@@ -17,12 +17,12 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Encode",
-	"moxie/file/Blob",
+	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/runtime/html5/image/MegaPixel",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, Blob, ImageInfo, MegaPixel, Mime, Env) {
+], function(extensions, Basic, x, Encode, File, ImageInfo, MegaPixel, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -60,7 +60,7 @@ define("moxie/runtime/html5/image/Image", [
 			loadFromImage: function(img, exact) {
 				this.meta = img.meta;
 
-				_blob = new Blob(null, {
+				_blob = new File(null, {
 					name: img.name,
 					size: img.size,
 					type: img.type
@@ -104,7 +104,8 @@ define("moxie/runtime/html5/image/Image", [
 					// if different mime type requested prepare image for conversion
 					_downsize.call(this, this.width, this.height, false);
 				}
-				return new Blob(null, {
+				return new File(null, {
+					name: _blob.name || '',
 					type: type,
 					data: me.getAsBinaryString.call(this, type, quality)
 				});

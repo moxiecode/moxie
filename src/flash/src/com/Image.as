@@ -269,7 +269,7 @@ package com
 				height = mem;
 			}
 			
-			if (!crop) { 
+			if (!crop) {
 				// retain proportions
 				selector = Math.min;			
 				scale = selector(width / output.width, height / output.height);
@@ -342,14 +342,14 @@ package com
 		
 		public function getAsBlob(type:String = null, quality:uint = 90) : Object
 		{
-			var ba:ByteArray, blob:Blob;
+			var ba:ByteArray, blob:File;
 			
 			ba = getAsEncodedByteArray(type, quality);	
 			if (!ba) {
 				return null;
 			}
 
-			blob = new Blob([ba], { type: type });
+			blob = new File([ba], { type: type, name: name });
 			Moxie.compFactory.add(blob.uid, blob);
 			return blob.toObject();
 		}
