@@ -97,7 +97,7 @@ var source = {
 		'{{{description}}}\n\n',
 
 		'{{#if params}}',
-			'__Arguments__\n',
+			'__Arguments__\n\n',
 			'{{#each params}}',
 				'{{> argument}}',
 			'{{/each}}\n',
