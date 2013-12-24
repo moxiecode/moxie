@@ -67,7 +67,9 @@ define("moxie/runtime/html5/Runtime", [
 				},
 				select_multiple: function() {
 					// it is buggy on Safari Windows and iOS
-					return I.can('select_file') && !(Env.browser === 'Safari' && Env.OS === 'Windows') && Env.OS !== 'iOS';
+					return I.can('select_file') && 
+						!(Env.browser === 'Safari' && Env.os === 'Windows') && 
+						!(Env.os === 'iOS' && Env.verComp(Env.osVersion, "7.0.4", '<'));
 				},
 				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 				send_custom_headers: Test(window.XMLHttpRequest),
