@@ -33,7 +33,7 @@ define("moxie/core/utils/Mime", [
 		"application/json,json," +
 		"audio/mpeg,mp3 mpga mpega mp2," +
 		"audio/x-wav,wav," +
-		"audio/mp4,m4a," +
+		"audio/x-m4a,m4a," +
 		"audio/ogg,oga ogg," +
 		"audio/aiff,aiff aif," +
 		"audio/flac,flac," +
