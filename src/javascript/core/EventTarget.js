@@ -144,7 +144,7 @@ define('moxie/core/EventTarget', [
 			@return {Boolean} true by default and false if any handler returned false
 			*/
 			dispatchEvent: function(type) {
-				var uid, list, args, tmpEvt, evt = {}, result = true;
+				var uid, list, args, tmpEvt, evt = {}, result = true, undef;
 				
 				if (Basic.typeOf(type) !== 'string') {
 					// we can't use original object directly (because of Silverlight)
@@ -153,7 +153,7 @@ define('moxie/core/EventTarget', [
 					if (Basic.typeOf(tmpEvt.type) === 'string') {
 						type = tmpEvt.type;
 
-						if (tmpEvt.total && tmpEvt.loaded) { // progress event
+						if (tmpEvt.total !== undef && tmpEvt.loaded !== undef) { // progress event
 							evt.total = tmpEvt.total;
 							evt.loaded = tmpEvt.loaded;
 						}
