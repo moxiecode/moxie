@@ -144,7 +144,7 @@ define("moxie/runtime/flash/Runtime", [
 
 
 		// minimal requirement for Flash Player version
-		if (getShimVersion() < 11.3) {
+		if (getShimVersion() < 10) {
 			this.mode = false; // with falsy mode, runtime won't operable, no matter what the mode was before
 		}
 

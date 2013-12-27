@@ -30,5 +30,10 @@
 			<type>2</type>
 			<location>/Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/bin/flash</location>
 		</link>
+		<link>
+			<name>bin-release3</name>
+			<type>2</type>
+			<location>/Users/jagga/Sites/mxi/plupload/www/plupload/js</location>
+		</link>
 	</linkedResources>
 </projectDescription>
