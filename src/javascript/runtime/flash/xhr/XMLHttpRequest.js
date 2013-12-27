@@ -110,21 +110,20 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 				if ('blob' === responseType) {
 					return blob;
-				} else if (!!~Basic.inArray(responseType, ["", "text"])) {
-					frs = new FileReaderSync();
-					return frs.readAsText(blob);
-				} else if ('arraybuffer' === responseType) {
+				}
 
-					// do something
-
-				} else if ('json' === responseType && !!window.JSON) {
+				try { 
 					frs = new FileReaderSync();
-					try {
+
+					if (!!~Basic.inArray(responseType, ["", "text"])) {
+						return frs.readAsText(blob);
+					} else if ('json' === responseType && !!window.JSON) {
 						return JSON.parse(frs.readAsText(blob));
-					} catch (ex) {}
+					}
+				} finally {
+					blob.destroy();
 				}
 			}
-
 			return null;
 		},
 
