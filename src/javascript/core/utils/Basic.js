@@ -156,6 +156,42 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 		callNext(i);
 	};
+
+
+	/**
+	Recieve an array of functions (usually async) to call in parallel, each  function
+	receives a callback as first argument that it should call, when it completes. After 
+	everything is complete, main callback is called. Passing truthy value to the
+	callback as a first argument will interrupt the process and invoke main callback
+	immediately.
+
+	@method inParallel
+	@static
+	@param {Array} queue Array of functions to call in sequence
+	@param {Function} cb Main callback that is called in the end, or in case of erro
+	*/
+	var inParallel = function(queue, cb) {
+		var count = 0, num = queue.length, cbArgs = new Array(num);
+
+		each(queue, function(fn, i) {
+			fn(function(error) {
+				if (error) {
+					return cb(error);
+				}
+				
+				var args = [].slice.call(arguments);
+				args.shift(); // strip error - undefined or not
+
+				cbArgs[i] = args;
+				count++;
+
+				if (count === num) {
+					cbArgs.unshift(null);
+					cb.apply(this, cbArgs);
+				} 
+			});
+		});
+	};
 	
 	
 	/**
@@ -333,6 +369,7 @@ define('moxie/core/utils/Basic', [], function() {
 		each: each,
 		isEmptyObj: isEmptyObj,
 		inSeries: inSeries,
+		inParallel: inParallel,
 		inArray: inArray,
 		arrayDiff: arrayDiff,
 		arrayIntersect: arrayIntersect,
