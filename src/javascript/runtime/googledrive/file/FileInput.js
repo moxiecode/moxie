@@ -49,6 +49,8 @@ define("moxie/runtime/googledrive/file/FileInput", [
 				PickerBuilder.setCallback(function(data) {
 					var queue = [];
 
+					_files = [];
+
 					if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
 						// get minimal file info
 						Basic.each(data[google.picker.Response.DOCUMENTS], function(doc) {
