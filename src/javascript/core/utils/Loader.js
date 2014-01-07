@@ -9,12 +9,14 @@
  */
 
 /**
-@class moxie/runtime/googledrive/utils/Loader
+@class moxie/core/utils/Loader
 @private
 */
-define("moxie/runtime/googledrive/utils/Loader", [], function() {
+define("moxie/core/utils/Loader", [
+	"moxie/core/utils/Basic"
+], function(Basic) {
 
-	var loadScript = function(url, cb) {
+	var loadScript = function(url, cb, attrs) {
 		var head, script, cbCalled = false;
 
 		head = document.getElementsByTagName('head')[0];
@@ -35,7 +37,14 @@ define("moxie/runtime/googledrive/utils/Loader", [], function() {
 			}
 		};
 
+		if (typeof(attrs) === 'object') {
+			Basic.each(attrs, function(value, key) {
+				script.setAttribute(key, value);
+			});
+		}
+
 		script.src = url;
+		
 		head.appendChild(script);
 		return script;
 	};
