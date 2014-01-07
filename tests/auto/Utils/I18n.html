@@ -35,8 +35,8 @@ test("sprintf()", function() {
 	);
 
 	equal(
-		o.sprintf('%d files queued', 1),
-		"1 files queued",
+		o.sprintf('%d files queued', 0),
+		"0 files queued",
 		"Token in the beginning of the string."
 	);
 

@@ -54,7 +54,8 @@ define("moxie/core/I18n", [
 			var args = [].slice.call(arguments, 1);
 
 			return str.replace(/%[a-z]/g, function() {
-				return args.shift() || '';
+				var value = args.shift();
+				return Basic.typeOf(value) !== 'undefined' ? value : '';
 			});
 		}
 	};
