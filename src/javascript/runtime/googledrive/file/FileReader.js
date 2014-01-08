@@ -30,7 +30,10 @@ define("moxie/runtime/googledrive/file/FileReader", [
 
 				_xhr = new window.XMLHttpRequest();
 				_xhr.open('GET', blob.downloadUrl);
-				_xhr.setRequestHeader('Authorization', 'Bearer ' + gapi.auth.getToken().access_token);
+				
+				if ('gapi' in window) {
+					_xhr.setRequestHeader('Authorization', 'Bearer ' + gapi.auth.getToken().access_token);
+				}
 
 				if (blob.range) {
 					_xhr.setRequestHeader('Range', 'bytes=' + blob.range[0] + '-' + (blob.range[1] - 1));
