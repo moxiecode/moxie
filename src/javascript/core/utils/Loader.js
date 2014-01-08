@@ -49,8 +49,15 @@ define("moxie/core/utils/Loader", [
 		return script;
 	};
 
+
+	var interpolateProgress = function(loaded, total, partNum, totalParts) {
+		var partSize = total / totalParts;
+		return Math.ceil((partNum - 1) * partSize + partSize * loaded / total);
+	};
+
 	
 	return {
-		loadScript: loadScript
+		loadScript: loadScript,
+		interpolateProgress: interpolateProgress
 	};
 });
