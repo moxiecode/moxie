@@ -20,8 +20,10 @@ define("moxie/runtime/googledrive/xhr/XMLHttpRequest", [
 	"moxie/runtime/googledrive/file/FileReader",
 	"moxie/xhr/FormData",
 	"moxie/core/utils/Basic",
-	"moxie/core/Exceptions"
-], function(extensions, Html5XHR, File, FileReader, GoogleDriveFileReader, FormData, Basic, x) {
+	"moxie/core/Exceptions",
+	"moxie/runtime/RuntimeTarget",
+	"moxie/core/utils/Loader"
+], function(extensions, Html5XHR, File, FileReader, GoogleDriveFileReader, FormData, Basic, x, RuntimeTarget, Loader) {
 	
 	function XMLHttpRequest() {
 		var self = this;
@@ -32,12 +34,20 @@ define("moxie/runtime/googledrive/xhr/XMLHttpRequest", [
 
 		Basic.extend(this, {
 			send: function(meta, data) {
-				var target = this, file, fr;
+				var target = this, file, fr, xhr;
 
 				if (data instanceof FormData && data.hasBlob()) {
 					file = data.getBlob();
 
 					fr = new FileReader();
+
+					fr.onprogress = function(e) {
+						target.trigger({
+							type: 'UploadProgress',
+							loaded: Loader.interpolateProgress(e.loaded, e.total, 1, 2),
+							total: e.total
+						});
+					};
 
 					fr.onload = function() {
 						data.append(data.getBlobName(), new File(null, {
@@ -50,7 +60,36 @@ define("moxie/runtime/googledrive/xhr/XMLHttpRequest", [
 
 						file.destroy();
 
-						Html5Send.call(target, meta, data);
+						// we are going to intercept progress events (and inevitably some others) for smoother feedback
+						xhr = new RuntimeTarget();
+
+						xhr.bind('LoadStart Progress Abort Error', function(e) {
+							target.trigger(e);
+						});
+
+						xhr.bind('UploadProgress', function(e) {
+							target.trigger({
+								type: 'UploadProgress',
+								loaded: Loader.interpolateProgress(e.loaded, e.total, 2, 2),
+								total: e.total
+							});
+						});
+
+						xhr.bind('Load', function(e) {
+							target.trigger(e);
+						});
+
+						xhr.bind('RuntimeInit', function(e, runtime) {
+							Html5Send.call(xhr, meta, data);
+						});
+
+						xhr.bind('RuntimeError', function(e, err) {
+							target.dispatchEvent('RuntimeError', err);
+						});
+
+						xhr.connectRuntime({
+							runtime_order: 'html5'
+						});
 					};
 
 					fr.readAsBinaryString(file);
