@@ -422,7 +422,7 @@ package com
 				tmpBa.writeUTFBytes(
 					dashdash + boundary + crlf +
 					'Content-Disposition: form-data; name="' + _blobFieldName + '"; filename="' + _blobName + '"' + crlf +
-					'Content-Type: ' + _options.mimeType + crlf + crlf
+					'Content-Type: ' + (_options.mimeType || 'application/octet-stream') + crlf + crlf
 				);
 			
 				tmpBa.writeBytes(ba, 0, ba.length);
