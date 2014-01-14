@@ -47,7 +47,14 @@ define("moxie/runtime/html5/file/FileDrop", [
 					if (e.dataTransfer.items && e.dataTransfer.items[0].webkitGetAsEntry) {
 						var entries = [];
 						Basic.each(e.dataTransfer.items, function(item) {
-							entries.push(item.webkitGetAsEntry());
+							var entry = item.webkitGetAsEntry();
+							if (entry.isFile) {
+							  // file() fails on OSX when the file contains a special character (eg. umlaut)
+								entry.file = function(success) {
+									success(item.getAsFile());
+								};
+							}
+							entries.push(entry);
 						});
 						_readEntries(entries, function() {
 							comp.trigger("drop");
