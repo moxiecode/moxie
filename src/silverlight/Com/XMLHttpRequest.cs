@@ -261,7 +261,7 @@ namespace Moxiecode.Com
 					header +=
 						dashdash + boundary + crlf +
 						"Content-Disposition: form-data; name=\"" + _blobFieldName + "\"; filename=\"" + _blobName + '"' +
-						crlf + "Content-Type: " + _options["mimeType"] + crlf + crlf;
+                        crlf + "Content-Type: " + (!String.IsNullOrEmpty(_options["mimeType"]) ? _options["mimeType"] : "application/octet-stream") + crlf + crlf;
 				}
 
 				_multipartHeader = _stringToByteArray(header);
