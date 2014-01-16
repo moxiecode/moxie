@@ -1,8 +1,8 @@
 {
     "name": "mOxie",
     "description": "Custom implementations of the XHR2 and File API.",
-    "version": "1.1.0",
-    "releaseDate": "2013-12-27",
+    "version": "1.2.0",
+    "releaseDate": "2014-01-16",
     "author": "Moxiecode Systems AB <support@moxiecode.com>",
     "contributors": [{
         "name": "Davit Barbakadze",
