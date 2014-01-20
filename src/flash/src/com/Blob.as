@@ -195,7 +195,7 @@ package com
 		}
 		
 		
-		public function destroy() : void
+		public function destroy(obj:* = null) : void
 		{			
 			for each (var src:Object in _sources) {
 				if (--src.buffer.refs <= 0) {
