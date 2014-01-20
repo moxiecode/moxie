@@ -65,10 +65,13 @@ define("moxie/runtime/html4/Runtime", [
 			stream_upload: function() {
 				return I.can('select_file');
 			},
-			summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
-				return (Env.browser === 'Firefox' && Env.version >= 4) ||
-					(Env.browser === 'Opera' && Env.version >= 12) ||
-					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
+			summon_file_dialog: Test(function() { // Stolen from Modernizr @see https://github.com/Modernizr/Modernizr/blob/44eddf9f7ef78f5fc02892c4bf79ff9c2d40ce04/feature-detects/forms/fileinput.js
+				if(navigator.userAgent.match(/(Android (1.0|1.1|1.5|1.6|2.0|2.1))|(Windows Phone (OS 7|8.0))|(XBLWP)|(ZuneWP)|(w(eb)?OSBrowser)|(webOS)|(Kindle\/(1.0|2.0|2.5|3.0))/)) {
+					return false;
+				}
+				var elem = createElement('input');
+				elem.type = 'file';
+				return !elem.disabled;
 			}()),
 			upload_filesize: True,
 			use_http_method: function(methods) {
