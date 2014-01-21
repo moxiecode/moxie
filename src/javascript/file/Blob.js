@@ -122,7 +122,7 @@ define('moxie/file/Blob', [
 			*/
 			detach: function(data) {
 				if (this.ruid) {
-					this.getRuntime().exec.call(this, 'Blob', 'destroy', blobpool[this.uid]);
+					this.getRuntime().exec.call(this, 'Blob', 'destroy');
 					this.disconnectRuntime();
 					this.ruid = null;
 				}
