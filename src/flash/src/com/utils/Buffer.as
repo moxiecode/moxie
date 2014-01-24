@@ -47,7 +47,7 @@ package com.utils
 		
 		
 		public function purge() : void {
-			if (_fileRef && _fileRef.data.length) {
+			if (_fileRef && _fileRef.data && _fileRef.data.length) {
 				_fileRef.data.clear();
 			}
 		}
