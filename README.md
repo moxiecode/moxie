@@ -15,9 +15,6 @@ XHR2 and File API pollyfills are multi-runtime, which means that they will fallb
   * [Generate API Documentation](#generate-docs)
   * [Build Packages](#build-packages)
 * [Getting Started](#getting-started)
-  * [File Picker](https://github.com/moxiecode/moxie/wiki/File-Picker)
-  * XHR L2 pollyfill
-  * Image Wrapper
 * [API Reference](https://github.com/moxiecode/moxie/wiki/API)
 * [Support](#support)
 * [Contribute](#contribute)
@@ -135,6 +132,15 @@ All of the following commands will generate packages under `tmp/` folder.
 * `jake release` - Generates full user and development packages.
 * `jake package` - Generates full user package.
 * `jake package[comma-separated-list-of-components-to-include] runtimes=comma-separated-list-of-runtimes-to-use` (see [all available options](#compile-js-options))
+
+### Getting started
+
+You can customize various parameters, such as the path the the Moxie.swf file by changing properties on `mOxie.Env` after the script is loaded:
+
+    <script src="moxie.js"></script>
+    <script>mOxie.Env.swf_url = './flash/Moxie.min.swf';</script>
+
+Also see the [File Picker](https://github.com/moxiecode/moxie/wiki/File-Picker) example on the wiki.
 
 <a name="support" />
 ### Support
