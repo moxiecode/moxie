@@ -1,7 +1,21 @@
 {
-  "name": "moxie",
-  "version": "1.0",
-  "main": "./bin/js/moxie.js",
-  "dependencies": {
-  }
+	"name": "moxie",
+    "version": "1.2.0",
+	"main": [
+		"./bin/js/moxie.min.js",
+		"./bin/flash/Moxie.swf",
+		"./bin/flash/Moxie.min.swf",
+		"./bin/silverlight/Moxie.xap",
+		"./bin/silverlight/Moxie.min.xap"
+	],
+	"ignore": [
+		"tests/"
+		"src/"
+		"build/"
+		"Jakefile.js"
+		"package.json",
+		"bower.json",
+		"README.md",
+		".*"
+	]
 }
