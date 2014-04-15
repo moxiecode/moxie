@@ -439,12 +439,12 @@ namespace Moxiecode.MXI.Image
 							details is Dictionary<string, string> &&
 							((Dictionary<string, string>)details).TryGetValue(values[0], out description))
 						{
-							hash.Add(tag, description);
+							hash[tag] = description;
 						}
 					}
 					else
 					{
-						hash.Add(tag, values[0]);
+						hash[tag] = values[0];
 					}
 				} 
 				else 
