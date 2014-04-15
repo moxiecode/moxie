@@ -111,7 +111,7 @@ define("moxie/runtime/html5/file/FileInput", [
 					}
 
 					// clearing the value enables the user to select the same file again if they want to
-					if (Env.browser !== 'IE') {
+					if (Env.browser !== 'IE' && Env.browser !== 'IEMobile') {
 						this.value = '';
 					} else {
 						// in IE input[type="file"] is read-only so the only way to reset it is to re-insert it
