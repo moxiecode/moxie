@@ -210,9 +210,13 @@ package mxi.image {
 			
 			// fix formatting of some tags
 			if (Exif.hasOwnProperty('ExifVersion') && Exif.ExifVersion is Array) {
-				for (var i:uint = 0, exifVersion:String = ''; i < Exif.ExifVersion.length; i++) {
-					exifVersion += String.fromCharCode(Exif.ExifVersion[i]);	
-				}
+				var ch:String, exifVersion:String = '';
+				for (var i:uint = 0; i < Exif.ExifVersion.length; i++) {
+					ch = String.fromCharCode(Exif.ExifVersion[i]);
+					if (/[\d\w]+/.test(ch)) { // ignore weird values
+						exifVersion += ch;
+					}
+				}				
 				Exif.ExifVersion = exifVersion;
 			}
 			
