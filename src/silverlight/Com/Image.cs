@@ -54,7 +54,7 @@ namespace Moxiecode.Com
 			if (blob is string) {
 				if ((blob = Moxie.compFactory.get((string)blob)) == null) {
 					Error(this, new ErrorEventArgs(ImageError.WRONG_FORMAT));
-                    return;
+					return;
 				}
 			}
 
@@ -74,7 +74,7 @@ namespace Moxiecode.Com
 			if (source is string) {
 				if ((source = Moxie.compFactory.get((string)source)) == null) {
 					Error(this, new ErrorEventArgs(ImageError.WRONG_FORMAT));
-                    return;
+					return;
 				}
 			}
 
@@ -114,7 +114,7 @@ namespace Moxiecode.Com
 				type = PNG.MIME;
 			} else {
 				Error(this, new ErrorEventArgs(ImageError.WRONG_FORMAT));
-                return;
+				return;
 			}
 
 			Dictionary<string, int> info = _img.info();
