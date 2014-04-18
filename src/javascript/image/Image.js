@@ -216,7 +216,7 @@ define("moxie/image/Image", [
 					this.getRuntime().exec.call(this, 'Image', 'downsize', width, height, crop, preserveHeaders);
 				} catch(ex) {
 					// for now simply trigger error event
-					this.trigger('error', ex);
+					this.trigger('error', ex.code);
 				}
 			},
 
