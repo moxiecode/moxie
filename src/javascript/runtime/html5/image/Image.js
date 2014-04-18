@@ -219,7 +219,7 @@ define("moxie/runtime/html5/image/Image", [
 			_img = new Image();
 			_img.onerror = function() {
 				_purge.call(this);
-				comp.trigger('error', new x.ImageError(x.ImageError.WRONG_FORMAT));
+				comp.trigger('error', x.ImageError.WRONG_FORMAT);
 			};
 			_img.onload = function() {
 				comp.trigger('load');
@@ -239,7 +239,7 @@ define("moxie/runtime/html5/image/Image", [
 					callback(this.result);
 				};
 				fr.onerror = function() {
-					comp.trigger('error', new x.FileException(x.FileException.NOT_READABLE_ERR));
+					comp.trigger('error', x.ImageError.WRONG_FORMAT);
 				};
 				fr.readAsDataURL(file);
 			} else {

@@ -18,6 +18,7 @@ package
 	import mxi.Extend;
 	import mxi.Utils;
 	import mxi.events.ODataEvent;
+	import mxi.events.OErrorEvent;
 	import mxi.events.OProgressEvent;
 	
 	[SWF(width='500', height='500')] 
@@ -128,6 +129,7 @@ package
 		public function onComponentEvent(uid:String, e:*, exType:String) : void 
 		{
 			var evt:Object = {};
+			var data:* = e.hasOwnProperty('data') ? e.data : null;
 			
 			switch (e.type) 
 			{						
@@ -136,11 +138,15 @@ package
 					evt.loaded = e.bytesLoaded;
 					evt.total = e.bytesTotal;
 					break;
+				
+				case OErrorEvent.ERROR:
+					data = e.code;
+					break;
 			}
 									
 			evt.type = [uid, exType].join('::');
 									
-			_fireEvent(evt, e.hasOwnProperty('data') ? e.data : null);
+			_fireEvent(evt, data);
 		}
 		
 		
@@ -152,7 +158,7 @@ package
 		 * @param type Name of event to fire.
 		 * @param obj Object with optional data.
 		 */
-		private function _fireEvent(evt:*, obj:Object = null):void {
+		private function _fireEvent(evt:*, obj:* = null):void {
 			try {
 				ExternalInterface.call(eventDispatcher, evt, obj);
 			} catch(err:*) {

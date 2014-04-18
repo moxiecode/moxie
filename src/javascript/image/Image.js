@@ -425,7 +425,7 @@ define("moxie/image/Image", [
 					return imgCopy;
 				} catch(ex) {
 					// for now simply trigger error event
-					this.trigger('error', ex);
+					this.trigger('error', ex.code);
 				}
 			},
 
@@ -504,7 +504,7 @@ define("moxie/image/Image", [
 				}
 			} catch(ex) {
 				// for now simply trigger error event
-				this.trigger('error', ex);
+				this.trigger('error', ex.code);
 			}
 		}
 
