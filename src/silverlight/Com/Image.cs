@@ -53,7 +53,8 @@ namespace Moxiecode.Com
 		{
 			if (blob is string) {
 				if ((blob = Moxie.compFactory.get((string)blob)) == null) {
-					throw new ImageError(ImageError.WRONG_FORMAT);
+					Error(this, new ErrorEventArgs(ImageError.WRONG_FORMAT));
+                    return;
 				}
 			}
 
@@ -72,7 +73,8 @@ namespace Moxiecode.Com
 		{
 			if (source is string) {
 				if ((source = Moxie.compFactory.get((string)source)) == null) {
-					throw new ImageError(ImageError.WRONG_FORMAT);
+					Error(this, new ErrorEventArgs(ImageError.WRONG_FORMAT));
+                    return;
 				}
 			}
 
@@ -111,7 +113,8 @@ namespace Moxiecode.Com
 				_img = new PNG(stream);
 				type = PNG.MIME;
 			} else {
-				throw new ImageError(ImageError.WRONG_FORMAT);
+				Error(this, new ErrorEventArgs(ImageError.WRONG_FORMAT));
+                return;
 			}
 
 			Dictionary<string, int> info = _img.info();

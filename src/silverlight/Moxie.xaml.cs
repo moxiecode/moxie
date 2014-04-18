@@ -136,10 +136,14 @@ namespace Moxiecode
 			{
 				_fireEvent(uid + "::" + eventName, ((DataEventArgs)eventArgs).Data);
 			}
-			else
+			else if (eventArgs is ErrorEventArgs)
 			{
-				_fireEvent(uid + "::" + eventName, null);
+				_fireEvent(uid + "::" + eventName, ((ErrorEventArgs)eventArgs).Code);
 			}
+            else
+            {
+                _fireEvent(uid + "::" + eventName, null);
+            }
 		}
 
 		/// <summary>

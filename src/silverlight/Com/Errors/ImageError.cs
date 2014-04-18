@@ -13,8 +13,8 @@ namespace Moxiecode.Com.Errors
 {
 	public class ImageError : Exception
 	{
-		public const uint WRONG_FORMAT = 0;
-		public const uint OUT_OF_DIMENSIONS = 1;
+		public const uint WRONG_FORMAT = 1;
+		public const uint MAX_RESOLUTION_ERR = 2;
 
 		public uint code;
 

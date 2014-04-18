@@ -78,36 +78,36 @@ namespace Moxiecode.MXI.Image
 			List<byte[]> headers = getHeaders("app1");
 			meta = new Dictionary<string, object>();
 
-            try
-            {
-                if (headers.Count != 0)
-                {
-                    exifParser = new ExifParser();
-                    if (exifParser.init(headers[0]))
-                    {
+			try
+			{
+				if (headers.Count != 0)
+				{
+					exifParser = new ExifParser();
+					if (exifParser.init(headers[0]))
+					{
 
-                        tiff = exifParser.TIFF();
-                        if (tiff != null)
-                        {
-                            meta.Add("tiff", tiff);
-                        }
+						tiff = exifParser.TIFF();
+						if (tiff != null)
+						{
+							meta.Add("tiff", tiff);
+						}
 
-                        exif = exifParser.EXIF();
-                        if (exif != null)
-                        {
-                            meta.Add("exif", exif);
-                        }
+						exif = exifParser.EXIF();
+						if (exif != null)
+						{
+							meta.Add("exif", exif);
+						}
 
-                        gps = exifParser.GPS();
-                        if (gps != null)
-                        {
-                            meta.Add("gps", gps);
-                        }
+						gps = exifParser.GPS();
+						if (gps != null)
+						{
+							meta.Add("gps", gps);
+						}
 
-                        exifParser.purge();
-                    }
-                }
-            } catch (Exception ex) {}
+						exifParser.purge();
+					}
+				}
+			} catch (Exception ex) {}
 			return meta;
 		}
 	
