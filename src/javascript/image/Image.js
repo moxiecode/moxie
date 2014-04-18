@@ -193,7 +193,25 @@ define("moxie/image/Image", [
 			@param {Boolean} [crop=false] Whether to crop the image to exact dimensions
 			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
-			downsize: function(width, height, crop, preserveHeaders) {
+			downsize: function(opts) {
+				var defaults = {
+					width: this.width,
+					height: this.height,
+					crop: false,
+					preserveHeaders: true
+				};
+
+				if (typeof(opts) === 'object') {
+					opts = Basic.extend(defaults, opts);
+				} else {
+					opts = Basic.extend(defaults, {
+						width: arguments[0],
+						height: arguments[1],
+						crop: arguments[2],
+						preserveHeaders: arguments[3]
+					});
+				}
+
 				try {
 					if (!this.size) { // only preloaded image objects can be used as source
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
@@ -204,16 +222,7 @@ define("moxie/image/Image", [
 						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
 					}
 
-					if (!width && !height || Basic.typeOf(crop) === 'undefined') {
-						crop = false;
-					}
-
-					width = width || this.width;
-					height = height || this.height;
-
-					preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
-
-					this.getRuntime().exec.call(this, 'Image', 'downsize', width, height, crop, preserveHeaders);
+					this.getRuntime().exec.call(this, 'Image', 'downsize', opts.width, opts.height, opts.crop, opts.preserveHeaders);
 				} catch(ex) {
 					// for now simply trigger error event
 					this.trigger('error', ex.code);
