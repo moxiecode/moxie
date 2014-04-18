@@ -200,16 +200,15 @@ package com
 			var self:Image = this, scale:Number, orientation:uint = 1, selector:Function, output:BitmapData,
 				
 				// when scaled directly, Flash produces low quality result, so we do it here gradually
-				downScale:Function = function(tmpWidth:Number, tmpHeight:Number) : void {				
-					_prepareBitmapData(tmpWidth, tmpHeight, function(bd:BitmapData) : void { // modifies output internally
+				downScale:Function = function(tmpWidth:Number, tmpHeight:Number) : void 
+				{				
+					// modifies output internally
+					_prepareBitmapData(tmpWidth, tmpHeight, function(bd:BitmapData) : void 
+					{ 
 						var matrix:Matrix, imgWidth:Number, imgHeight:Number;
 						
 						scale = selector(tmpWidth / output.width, tmpHeight / output.height);
-						if (scale > 1 && (!crop || preserveHeaders)) { // if we do not crop or strip off headers
-							dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
-							return;
-						}
-						
+
 						matrix = new Matrix;
 						matrix.scale(scale, scale);
 						
@@ -274,6 +273,14 @@ package com
 				// retain proportions
 				selector = Math.min;			
 				scale = selector(width / output.width, height / output.height);
+				
+				// if image is smaller and we do not crop or strip off headers, there's nothing to do
+				if (scale > 1 && preserveHeaders) { 
+					dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
+					return;
+				}
+				
+				// calculate scaled dimensions
 				width = Math.round(output.width * scale);
 				height = Math.round(output.height * scale);
 			} else {
