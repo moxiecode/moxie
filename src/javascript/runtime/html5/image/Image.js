@@ -274,11 +274,17 @@ define("moxie/runtime/html5/image/Image", [
 			img = _getImg();
 
 			// unify dimensions
-			mathFn = !crop ? Math.min : Math.max;
-			scale = mathFn(width/img.width, height/img.height);
+			if (!crop) {
+				scale = Math.min(width/img.width, height/img.height);
+			} else {
+				scale = Math.max(width/img.width, height/img.height);
+				// one of the dimensions may exceed the actual image dimensions - we need to take the smallest value
+				width = Math.min(width, img.width);
+				height = Math.min(height, img.height);
+			}
 		
 			// we only downsize here
-			if (scale > 1 && (!crop || preserveHeaders)) { // when cropping one of dimensions may still exceed max, so process it anyway
+			if (scale > 1 && !crop && preserveHeaders) {
 				this.trigger('Resize');
 				return;
 			}
@@ -291,7 +297,6 @@ define("moxie/runtime/html5/image/Image", [
 			// calculate dimensions of proportionally resized image
 			destWidth = Math.round(img.width * scale);	
 			destHeight = Math.round(img.height * scale);
-
 
 			// scale image and canvas
 			if (crop) {

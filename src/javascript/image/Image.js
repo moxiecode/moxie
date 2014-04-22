@@ -306,14 +306,18 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Embeds the image, or better to say, it's visual representation into the specified node. Depending on the runtime
-			in use, might be a canvas, or image (actual ) element or shim object (Flash or SilverLight - very rare, used for
-			legacy browsers that do not have canvas or proper dataURI support).
+			Embeds a visual representation of the image into the specified node. Depending on the runtime, 
+			it might be a canvas, an img node or a thrid party shim object (Flash or SilverLight - very rare, 
+			can be used in legacy browsers that do not have canvas or proper dataURI support).
 
 			@method embed
 			@param {DOMElement} el DOM element to insert the image object into
-			@param {Object} options Set of key/value pairs controlling the mime type, dimensions and cropping factor of resulting
-			representation
+			@param {Object} [options]
+				@param {Number} [options.width] The width of an embed (defaults to the image width)
+				@param {Number} [options.height] The height of an embed (defaults to the image height)
+				@param {String} [type="image/jpeg"] Mime type
+				@param {Number} [quality=90] Quality of an embed, if mime type is image/jpeg
+				@param {Boolean} [crop=false] Whether to crop an embed to the specified dimensions
 			*/
 			embed: function(el) {
 				var self = this
@@ -411,7 +415,7 @@ define("moxie/image/Image", [
 						width = options.width;
 						height = options.height || width;
 					} else {
-						// if container element has > 0 dimensions, take them
+						// if container element has measurable dimensions, use them
 						var dimensions = Dom.getSize(el);
 						if (dimensions.w && dimensions.h) { // both should be > 0
 							width = dimensions.w;

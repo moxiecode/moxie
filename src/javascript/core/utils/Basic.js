@@ -133,7 +133,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@method inSeries
 	@static
 	@param {Array} queue Array of functions to call in sequence
-	@param {Function} cb Main callback that is called in the end, or in case of erro
+	@param {Function} cb Main callback that is called in the end, or in case of error
 	*/
 	var inSeries = function(queue, cb) {
 		var i = 0, length = queue.length;

@@ -285,6 +285,9 @@ package com
 				height = Math.round(output.height * scale);
 			} else {
 				selector = Math.max;
+				
+				width = Math.min(width, output.width);
+				height = Math.min(height, output.height);
 			}
 			
 			if (output.width / 2 > width && output.height / 2 > height) {
