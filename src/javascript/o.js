@@ -17,10 +17,10 @@ Globally exposed namespace with the most frequently used public classes and hand
 @static
 @private
 */
-(function() {
+(function(exports) {
 	"use strict";
 
-	var o = {}, inArray = moxie.core.utils.Basic.inArray;
+	var o = {}, inArray = exports.moxie.core.utils.Basic.inArray;
 
 	// directly add some public classes
 	// (we do it dynamically here, since for custom builds we cannot know beforehand what modules were included)
@@ -34,17 +34,17 @@ Globally exposed namespace with the most frequently used public classes and hand
 				o[name] = ns[name];
 			}
 		}
-	})(window.moxie);
+	})(exports.moxie);
 
 	// add some manually
-	o.Env = window.moxie.core.utils.Env;
-	o.Mime = window.moxie.core.utils.Mime;
-	o.Exceptions = window.moxie.core.Exceptions;
+	o.Env = exports.moxie.core.utils.Env;
+	o.Mime = exports.moxie.core.utils.Mime;
+	o.Exceptions = exports.moxie.core.Exceptions;
 
 	// expose globally
-	window.mOxie = o;
-	if (!window.o) {
-		window.o = o;
+	exports.mOxie = o;
+	if (!exports.o) {
+		exports.o = o;
 	}
 	return o;
-})();
+})(this);
