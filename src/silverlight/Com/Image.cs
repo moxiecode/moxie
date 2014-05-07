@@ -170,12 +170,15 @@ namespace Moxiecode.Com
 				// retain proportions
 				scale = Math.Min((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
 			} else {
+				w = Math.Min(w, _bm.PixelWidth);
+				h = Math.Min(h, _bm.PixelHeight);
+
 				// without explicit cast to double, result is implicitly cast back to int (wtf?)
 				scale = Math.Max((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
 			}
 
 			try {
-				if (scale > 1 && (!(bool)crop || _preserveHeaders)) {
+				if (scale > 1 && !(bool)crop && _preserveHeaders) {
 					Resize(this, null);
 					return;
 				} else {
