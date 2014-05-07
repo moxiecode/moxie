@@ -277,10 +277,11 @@ define("moxie/runtime/html5/image/Image", [
 			if (!crop) {
 				scale = Math.min(width/img.width, height/img.height);
 			} else {
-				scale = Math.max(width/img.width, height/img.height);
 				// one of the dimensions may exceed the actual image dimensions - we need to take the smallest value
 				width = Math.min(width, img.width);
 				height = Math.min(height, img.height);
+
+				scale = Math.max(width/img.width, height/img.height);
 			}
 		
 			// we only downsize here
