@@ -9,10 +9,10 @@
 		"./bin/silverlight/Moxie.min.xap"
 	],
 	"ignore": [
-		"tests/"
-		"src/"
-		"build/"
-		"Jakefile.js"
+		"tests/",
+		"src/",
+		"build/",
+		"Jakefile.js",
 		"package.json",
 		"bower.json",
 		"README.md",
