@@ -32,14 +32,18 @@ define("moxie/runtime/html5/file/FileDrop", [
 				dropZone = _options.container;
 
 				Events.addEvent(dropZone, 'dragover', function(e) {
+					if (!_hasFiles(e)) {
+						return;
+					}
 					e.preventDefault();
-					e.stopPropagation();
 					e.dataTransfer.dropEffect = 'copy';
 				}, comp.uid);
 
 				Events.addEvent(dropZone, 'drop', function(e) {
+					if (!_hasFiles(e)) {
+						return;
+					}
 					e.preventDefault();
-					e.stopPropagation();
 
 					_files = [];
 
@@ -59,14 +63,10 @@ define("moxie/runtime/html5/file/FileDrop", [
 				}, comp.uid);
 
 				Events.addEvent(dropZone, 'dragenter', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
 					comp.trigger("dragenter");
 				}, comp.uid);
 
 				Events.addEvent(dropZone, 'dragleave', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
 					comp.trigger("dragleave");
 				}, comp.uid);
 			},
@@ -80,6 +80,20 @@ define("moxie/runtime/html5/file/FileDrop", [
 				_files = _allowedExts = _options = null;
 			}
 		});
+
+
+		function _hasFiles(e) {
+			if (!e.dataTransfer || !e.dataTransfer.types) { // e.dataTransfer.files is not available in Gecko during dragover
+				return false;
+			}
+
+			var types = Basic.toArray(e.dataTransfer.types || []);
+
+			return Basic.inArray("Files", types) !== -1 ||
+				Basic.inArray("public.file-url", types) !== -1 || // Safari < 5
+				Basic.inArray("application/x-moz-file", types) !== -1 // Gecko < 1.9.2 (< Firefox 3.6)
+				;
+		}
 
 		
 		function _extractExts(accept) {
@@ -135,6 +149,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 			});
 		}
 
+
 		function _readEntry(entry, cb) {
 			if (entry.isFile) {
 				entry.file(function(file) {
@@ -152,6 +167,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 				cb(); // not file, not directory? what then?..
 			}
 		}
+
 
 		function _readDirEntry(dirEntry, cb) {
 			var entries = [], dirReader = dirEntry.createReader();
