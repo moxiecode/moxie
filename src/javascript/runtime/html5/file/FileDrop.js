@@ -106,8 +106,11 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 
 		function _isAcceptable(file) {
+			if (!_allowedExts.length) {
+				return true;
+			}
 			var ext = Mime.getFileExtension(file.name);
-			return !ext || !_allowedExts.length || Basic.inArray(ext, _allowedExts) !== -1;
+			return !ext || Basic.inArray(ext, _allowedExts) !== -1;
 		}
 
 
