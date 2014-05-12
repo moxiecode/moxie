@@ -1,6 +1,7 @@
 package com
 {
 	import com.errors.RuntimeError;
+	import com.events.BlobEvent;
 	import com.utils.URLStreamProgress;
 	
 	import flash.events.DataEvent;
@@ -111,18 +112,14 @@ package com
 		
 				
 		public function send(meta:Object, data:* = null) : void
-		{				
-			if (_blob) {
-				data = _blob;
-			}
-									
+		{	
 			meta.method = meta.method.toUpperCase();
 			_options = meta;
 									
-			if (typeof data === 'string') {
+			if (data && typeof data === 'string') {
 				var blob:* = Moxie.compFactory.get(data);
 				if (blob) {
-					data = blob;
+					_blob = blob;
 					if (blob is File && blob.hasOwnProperty('name')) { 
 						_blobName = blob.name;
 					} 
@@ -133,11 +130,23 @@ package com
 				}
 			}
 									
-			if (data && data is Blob && _options.method == 'POST') {
-				if (_options.transport == 'client' && _multipart && data.isFileRef() && Utils.isEmptyObj(_headers)) {
-					_uploadFileRef(data);
+			if (_blob && _options.method == 'POST') 
+			{		
+				// make sure that blob is available for manipulation
+				if (_blob.locked) {
+					_blob.addEventListener(BlobEvent.UNLOCKED, function onBlobUnlock() : void {
+						_blob.removeEventListener(BlobEvent.UNLOCKED, onBlobUnlock);
+						send(meta);
+					});
+					return;
+				}
+				// lock the blob
+				_blob.locked = true; 
+				
+				if (_options.transport == 'client' && _multipart && _blob.isFileRef() && Utils.isEmptyObj(_headers)) {
+					_uploadFileRef(_blob);
 				} else {
-					_preloadBlob(data, _doURLStreamRequest);
+					_preloadBlob(_blob, _doURLStreamRequest);
 				}
 				return;
 			}
@@ -219,6 +228,11 @@ package com
 			removeEventListeners(e.target);	
 			_readyState = XMLHttpRequest.DONE;
 			dispatchEvent(new Event(Event.COMPLETE));
+			
+			// unlock the blob
+			if (_blob && _blob is Blob) {
+				_blob.locked = false;
+			}
 		}
 		
 		private function onComplete(e:*) : void {

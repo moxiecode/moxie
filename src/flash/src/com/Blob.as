@@ -1,13 +1,15 @@
 package com
 {
+	import com.events.BlobEvent;
 	import com.utils.Buffer;
+	import com.utils.OEventDispatcher;
 	
 	import flash.net.FileReference;
 	import flash.utils.ByteArray;
 	
 	import mxi.Utils;
 
-	public class Blob
+	public class Blob extends OEventDispatcher
 	{	
 		private var _uid:String;
 		public function get uid() : String {
@@ -22,6 +24,18 @@ package com
 		private var _type:String;
 		public function get type() : String {
 			return _type;
+		}
+		
+		// coordinate access to blob's contents (simultaneous queries cause conflicts)
+		private var _locked:Boolean = false;
+		public function set locked(state:Boolean) : void {
+			_locked = state;
+			if (!_locked) {
+				dispatchEvent(new BlobEvent(BlobEvent.UNLOCKED));
+			}
+		}
+		public function get locked() : Boolean {
+			return _locked;
 		}
 		
 		// cumulative size of all the sources this blob is part of
@@ -204,5 +218,6 @@ package com
 			}
 			Moxie.compFactory.remove(_uid);
 		}
+		
 	}
 }

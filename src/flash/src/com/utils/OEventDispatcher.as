@@ -24,13 +24,13 @@ package com.utils
 		public override function removeEventListener(type:String, callback:Function, useCapture:Boolean=false):void
 		{			
 			var index:uint, e:Object;
-			
+						
 			index = hasListener(type, callback, useCapture);
 			if (index === false) {
 				return;
-			}
-			
-			e = _events.splice(index, 1);
+			}		
+			e = _events[index];
+			_events.splice(index, 1);
 			super.removeEventListener(e.type, e.callback, e.useCapture);
 		}
 		

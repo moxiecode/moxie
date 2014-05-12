@@ -1,12 +1,12 @@
 package com
 {	
-	import com.errors.ImageError;
-	import com.errors.RuntimeError;
-	import com.events.ImageEvent;
-	import com.utils.OEventDispatcher;
-	
 	import com.adobe.images.JPGEncoder;
 	import com.adobe.images.PNGEncoder;
+	import com.errors.ImageError;
+	import com.errors.RuntimeError;
+	import com.events.BlobEvent;
+	import com.events.ImageEvent;
+	import com.utils.OEventDispatcher;
 	
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
@@ -107,6 +107,17 @@ package com
 				return;
 			}
 			
+			if (blob.locked) {
+				blob.addEventListener(BlobEvent.UNLOCKED, function onBlobUnlock() : void {
+					blob.removeEventListener(BlobEvent.UNLOCKED, onBlobUnlock);
+					loadFromBlob(blob);
+				});
+				return;
+			}
+			
+			// lock the blob
+			blob.locked = true;
+			
 			if (blob.hasOwnProperty('name')) {
 				name = blob.name;
 			}
@@ -121,6 +132,7 @@ package com
 				fr.removeAllEventsListeners();
 				loadFromByteArray(fr.result);
 				blob.purge();
+				blob.locked = false; // unlock
 			});
 			
 			fr.readAsByteArray(blob);
