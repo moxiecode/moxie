@@ -798,8 +798,10 @@ define("moxie/xhr/XMLHttpRequest", [
 			_xhr = new RuntimeTarget();
 
 			function loadEnd() {
-				_xhr.destroy();
-				_xhr = null;
+				if (_xhr) { // it could have been destroyed by now
+					_xhr.destroy();
+					_xhr = null;
+				}
 				self.dispatchEvent('loadend');
 				self = null;
 			}
