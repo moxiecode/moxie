@@ -779,7 +779,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			};
 		});
 
-		xhr.open('POST', 'http://plupload.com/index.php');
+		xhr.open('POST', 'http://moxiecode.com/about.php');
 		xhr.responseType = 'json';
 
 		xhr.onerror = function() {
@@ -922,7 +922,6 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			queue.push(function(cb) {
 				var xhr = new o.XMLHttpRequest();
 				xhr.open('get', 'XMLHttpRequest/http-status.php?status=' + status);
-				xhr.responseType = 'json';
 
 				xhr.onloadend = function() {
 					equal(xhr.status, response, status + " requested; " + response + " received.");
