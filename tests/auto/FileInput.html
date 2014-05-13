@@ -61,9 +61,10 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			ok(!$('#qunit-fixture').find('.moxie-shim').length, "HTML structure removed.");
 		};
 
-		fi.onerror = function() {
+		fi.bind("Error RuntimeError", function() {
+			ok(true, "Runtime not supported.");
 			start();
-		};
+		});
 
 		stop();
 		fi.init();
