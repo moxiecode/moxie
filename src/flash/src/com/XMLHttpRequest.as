@@ -256,6 +256,11 @@ package com
 			removeEventListeners(e.target);
 			_readyState = XMLHttpRequest.DONE;
 			dispatchEvent(new OErrorEvent(OErrorEvent.ERROR));
+			
+			// unlock the blob
+			if (_blob && _blob is Blob) {
+				_blob.locked = false;
+			}
 		}
 		
 		private function removeEventListeners(target:*) : void {

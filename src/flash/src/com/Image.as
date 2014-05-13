@@ -135,6 +135,10 @@ package com
 				blob.locked = false; // unlock
 			});
 			
+			fr.addEventListener(OErrorEvent.ERROR, function(e:Event) : void {
+				blob.locked = false;
+			});
+			
 			fr.readAsByteArray(blob);
 		}
 		
