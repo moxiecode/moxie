@@ -163,7 +163,7 @@ package com
 				return null;
 			}
 			
-			blob = new File([_response], { name: _options.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase() });
+			blob = new File([_response], { name: _options.url.replace(/^.+?\/([\w\-\.]+)(\?.*$|$)/, '$1').toLowerCase() });
 			Moxie.compFactory.add(blob.uid, blob);
 			return blob.toObject();
 		}
