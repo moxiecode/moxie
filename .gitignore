@@ -1,5 +1,6 @@
 src/silverlight/Bin/
 src/silverlight/obj/
+bin
 tmp
 wiki
 jslint.xml
