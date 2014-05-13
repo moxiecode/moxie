@@ -732,9 +732,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		});
 
 		xhr.open('POST', '/unknown');
-		xhr.responseType = 'json'; // force bypassing default XMLHttpRequest
 
-		stop();
 		xhr.onloadend = function() {
 			start();
 
@@ -743,18 +741,15 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			equal(xhr.readyState, self.XHR.DONE, "readyState switched to DONE.");
 			equal(xhr.status, 404, "status code 404.");
 			equal(xhr.statusText, "Not Found", "statusText - Not Found.");
-			equal(xhr.response, null, "response is null.");
 		};
 
-		try {
-			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
-		} catch (ex) {
+		xhr.bind('error runtimeerror', function() {
 			start();
-			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
-				throw ex; // pass further
-			}
 			ok(true, "Runtime not supported.");
-		}
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
 	});
 });
 
