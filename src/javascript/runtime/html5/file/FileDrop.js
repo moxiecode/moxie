@@ -14,14 +14,15 @@
 */
 define("moxie/runtime/html5/file/FileDrop", [
 	"moxie/runtime/html5/Runtime",
+	'moxie/file/File',
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime"
-], function(extensions, Basic, Dom, Events, Mime) {
+], function(extensions, File, Basic, Dom, Events, Mime) {
 	
 	function FileDrop() {
-		var _files = [], _allowedExts = [], _options;
+		var self = this, _files = [], _allowedExts = [], _options;
 
 		Basic.extend(this, {
 			init: function(options) {
@@ -50,14 +51,16 @@ define("moxie/runtime/html5/file/FileDrop", [
 					// Chrome 21+ accepts folders via Drag'n'Drop
 					if (e.dataTransfer.items && e.dataTransfer.items[0].webkitGetAsEntry) {
 						_readItems(e.dataTransfer.items, function() {
+							comp.files = _files;
 							comp.trigger("drop");
 						});
 					} else {
 						Basic.each(e.dataTransfer.files, function(file) {
 							if (_isAcceptable(file)) {
-								_files.push(file);
+								_addFile(file, entry.fullPath);
 							}
 						});
+						comp.files = _files;
 						comp.trigger("drop");
 					}
 				}, comp.uid);
@@ -71,13 +74,9 @@ define("moxie/runtime/html5/file/FileDrop", [
 				}, comp.uid);
 			},
 
-			getFiles: function() {
-				return _files;
-			},
-
 			destroy: function() {
 				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
-				_files = _allowedExts = _options = null;
+				self = _files = _allowedExts = _options = null;
 			}
 		});
 
@@ -93,6 +92,13 @@ define("moxie/runtime/html5/file/FileDrop", [
 				Basic.inArray("public.file-url", types) !== -1 || // Safari < 5
 				Basic.inArray("application/x-moz-file", types) !== -1 // Gecko < 1.9.2 (< Firefox 3.6)
 				;
+		}
+
+
+		function _addFile(file, relativePath) {
+			var fileObj = new File(self.ruid, file);
+			fileObj.relativePath = relativePath || '';
+			_files.push(fileObj);
 		}
 
 		
@@ -124,7 +130,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 					if (entry.isFile) {
 						var file = item.getAsFile();
 						if (_isAcceptable(file)) {
-							_files.push(file);
+							_addFile(file, entry.fullPath);
 						}
 					} else {
 						entries.push(entry);
@@ -157,7 +163,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 			if (entry.isFile) {
 				entry.file(function(file) {
 					if (_isAcceptable(file)) {
-						_files.push(file);
+						_addFile(file, entry.fullPath);
 					}
 					cb();
 				}, function() {

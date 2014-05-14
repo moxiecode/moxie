@@ -142,19 +142,7 @@ define('moxie/file/FileDrop', [
 		
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
-
-					self.bind("Drop", function() {
-						var files = runtime.exec.call(self, 'FileDrop', 'getFiles');
-
-						self.files = [];
-
-						Basic.each(files, function(file) {
-							self.files.push(new File(self.ruid, file));
-						});
-					}, 999);
-
 					runtime.exec.call(self, 'FileDrop', 'init', options);
-
 					self.dispatchEvent('ready');
 				});
 							
