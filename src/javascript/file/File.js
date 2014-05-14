@@ -67,6 +67,15 @@ define('moxie/file/File', [
 			@default UID
 			*/
 			name: name || Basic.guid('file_'),
+
+			/**
+			Relative path to the file inside a directory
+
+			@property relativePath
+			@type {String}
+			@default ''
+			*/
+			relativePath: '',
 			
 			/**
 			Date of last modification
