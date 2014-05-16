@@ -15,10 +15,9 @@ define('moxie/file/FileInput', [
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
 	'moxie/core/I18n',
-	'moxie/file/File',
 	'moxie/runtime/Runtime',
 	'moxie/runtime/RuntimeClient'
-], function(Basic, Mime, Dom, x, EventTarget, I18n, File, Runtime, RuntimeClient) {
+], function(Basic, Mime, Dom, x, EventTarget, I18n, Runtime, RuntimeClient) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
