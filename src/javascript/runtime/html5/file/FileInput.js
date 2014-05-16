@@ -96,19 +96,18 @@ define("moxie/runtime/html5/file/FileInput", [
 				}, comp.uid);
 
 
-				input.onchange = function onChange() { // there should be only one handler for this
-					_files = [];
+				input.onchange = function onChange(e) { // there should be only one handler for this
+					comp.files = [];
 
-					if (_options.directory) {
-						// folders are represented by dots, filter them out (Chrome 11+)
-						Basic.each(this.files, function(file) {
-							if (file.name !== ".") { // if it doesn't looks like a folder
-								_files.push(file);
+					Basic.each(this.files, function(file) {
+						if (_options.directory) {
+							// folders are represented by dots, filter them out (Chrome 11+)
+							if (file.name == ".") { // if it doesn't look like a folder
+								return true;
 							}
-						});
-					} else {
-						_files = [].slice.call(this.files);
-					}
+						}
+						comp.files.push(new File(I.uid, file));
+					});
 
 					// clearing the value enables the user to select the same file again if they want to
 					if (Env.browser !== 'IE' && Env.browser !== 'IEMobile') {
@@ -119,7 +118,10 @@ define("moxie/runtime/html5/file/FileInput", [
 						this.parentNode.replaceChild(clone, this);
 						clone.onchange = onChange;
 					}
-					comp.trigger('change');
+
+					if (comp.files.length) {
+						comp.trigger('change');
+					}
 				};
 
 				// ready event is perfectly asynchronous

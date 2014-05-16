@@ -233,20 +233,6 @@ define('moxie/file/FileInput', [
 						self.trigger("Refresh");
 					}, 999);
 
-					self.bind("Change", function() {
-						var files = runtime.exec.call(self, 'FileInput', 'getFiles');
-
-						self.files = [];
-
-						Basic.each(files, function(file) {
-							// ignore empty files (IE10 for example hangs if you try to send them via XHR)
-							if (file.size === 0) {
-								return true; 
-							}
-							self.files.push(new File(self.ruid, file));
-						});
-					}, 999);
-
 					// re-position and resize shim container
 					self.bind('Refresh', function() {
 						var pos, size, browseButton, shimContainer;
