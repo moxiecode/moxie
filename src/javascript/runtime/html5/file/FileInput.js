@@ -100,13 +100,24 @@ define("moxie/runtime/html5/file/FileInput", [
 					comp.files = [];
 
 					Basic.each(this.files, function(file) {
+						var relativePath = '';
+
 						if (_options.directory) {
 							// folders are represented by dots, filter them out (Chrome 11+)
-							if (file.name == ".") { // if it doesn't look like a folder
+							if (file.name == ".") {
+								// if it looks like a folder...
 								return true;
 							}
 						}
-						comp.files.push(new File(I.uid, file));
+
+						if (file.webkitRelativePath) {
+							relativePath = '/' + file.webkitRelativePath.replace(/^\//, '');
+						}
+						
+						file = new File(I.uid, file);
+						file.relativePath = relativePath;
+
+						comp.files.push(file);
 					});
 
 					// clearing the value enables the user to select the same file again if they want to
