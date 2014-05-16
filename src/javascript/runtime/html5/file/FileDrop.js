@@ -56,9 +56,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 						});
 					} else {
 						Basic.each(e.dataTransfer.files, function(file) {
-							if (_isAcceptable(file)) {
-								_addFile(file, entry.fullPath);
-							}
+							_addFile(file);
 						});
 						comp.files = _files;
 						comp.trigger("drop");
@@ -96,9 +94,11 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 
 		function _addFile(file, relativePath) {
-			var fileObj = new File(self.ruid, file);
-			fileObj.relativePath = relativePath || '';
-			_files.push(fileObj);
+			if (_isAcceptable(file)) {
+				var fileObj = new File(self.ruid, file);
+				fileObj.relativePath = relativePath || '';
+				_files.push(fileObj);
+			}
 		}
 
 		
@@ -128,10 +128,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 				if (entry) {
 					// file() fails on OSX when the filename contains a special character (e.g. umlaut): see #61
 					if (entry.isFile) {
-						var file = item.getAsFile();
-						if (_isAcceptable(file)) {
-							_addFile(file, entry.fullPath);
-						}
+						_addFile(item.getAsFile(), entry.fullPath);
 					} else {
 						entries.push(entry);
 					}
@@ -162,9 +159,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 		function _readEntry(entry, cb) {
 			if (entry.isFile) {
 				entry.file(function(file) {
-					if (_isAcceptable(file)) {
-						_addFile(file, entry.fullPath);
-					}
+					_addFile(file, entry.fullPath);
 					cb();
 				}, function() {
 					// fire an error event maybe
