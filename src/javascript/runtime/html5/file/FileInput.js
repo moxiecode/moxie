@@ -14,22 +14,22 @@
 */
 define("moxie/runtime/html5/file/FileInput", [
 	"moxie/runtime/html5/Runtime",
+	"moxie/file/File",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, Dom, Events, Mime, Env) {
+], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 	
 	function FileInput() {
-		var _files = [], _options;
+		var _options;
 
 		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, I = comp.getRuntime(), input, shimContainer, mimes, browseButton, zIndex, top;
 
 				_options = options;
-				_files = [];
 
 				// figure out accept string
 				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
@@ -133,9 +133,6 @@ define("moxie/runtime/html5/file/FileInput", [
 				shimContainer = null;
 			},
 
-			getFiles: function() {
-				return _files;
-			},
 
 			disable: function(state) {
 				var I = this.getRuntime(), input;
@@ -161,7 +158,7 @@ define("moxie/runtime/html5/file/FileInput", [
 
 				shim.removeInstance(this.uid);
 
-				_files = _options = shimContainer = shim = null;
+				_options = shimContainer = shim = null;
 			}
 		});
 	}
