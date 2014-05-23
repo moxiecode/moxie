@@ -340,7 +340,7 @@ package com
 			if (type == 'image/jpeg') {	
 				ba = new JPGEncoder(quality).encode(bd);
 				
-				if (_img) {
+				if (_img && _img is JPEG) {
 					// strip off any headers that might be left by encoder, etc
 					_img.stripHeaders(ba);
 					// restore the original headers if requested
