@@ -49,5 +49,8 @@
         "dateformat": "1.x",
         "request": "2.25.x",
         "async": "0.2.x"
+    },
+    "scripts": {
+        "test": "jake test"
     }
 }
