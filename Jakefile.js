@@ -219,3 +219,45 @@ task("package", [], function (params) {
 	], path.join(tmpDir, utils.format("moxie_%s.zip", suffix)), complete);
 }, true);
 
+
+desc("Run tests");
+task("test", [], function() {
+	var baseDir = 'tests/auto';
+	//var suite = eval('(' + fs.readFileSync(baseDir + '/tests.js').toString() + ')');
+	var suite = {
+		"title": "mOxie", 
+		"tests": [
+			{"title": "utils.Basic", "url": "Utils/Basic.html"},
+			{"title": "utils.Dom", "url": "Utils/Dom.html"},
+			{"title": "utils.Url", "url": "Utils/Url.html"},
+			{"title": "utils.Mime", "url": "Utils/Mime.html"},
+			{"title": "utils.I18n", "url": "Utils/I18n.html"},
+			{"title": "EventTarget", "url": "EventTarget.html"}		
+		]
+	};
+	var tests = suite.tests.map(function(test) {  return baseDir + '/' + test.url; });
+
+	var config = {
+		  hub: "http://localhost:9000"
+		, farm: 'saucelabs'
+		, saucelabs: {
+			  user: process.env.SAUCE_USERNAME
+			, pass: process.env.SAUCE_ACCESS_KEY
+			, slots: 1
+		}
+		, args: tests
+		, browsers: [
+			  { id: 'ie', version: 10, osId: 'win' }
+			, { id: 'chrome', version: 28, osId: 'mac' }
+			//, { id: 'firefox', version: 16, osId: 'mac' }
+		]
+
+		, verbose: true
+		, wait: true
+	};
+
+	require('./node_modules/bunyip/lib/bunyip').main(config);
+
+}, true);
+
+
