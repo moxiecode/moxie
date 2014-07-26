@@ -223,20 +223,9 @@ task("package", [], function (params) {
 desc("Run tests");
 task("test", [], function() {
 	var baseDir = 'tests/auto';
-	//var suite = eval('(' + fs.readFileSync(baseDir + '/tests.js').toString() + ')');
-	var suite = {
-		"title": "mOxie", 
-		"tests": [
-			{"title": "utils.Basic", "url": "Utils/Basic.html"},
-			{"title": "utils.Dom", "url": "Utils/Dom.html"},
-			{"title": "utils.Url", "url": "Utils/Url.html"},
-			{"title": "utils.Mime", "url": "Utils/Mime.html"},
-			{"title": "utils.I18n", "url": "Utils/I18n.html"},
-			{"title": "EventTarget", "url": "EventTarget.html"}		
-		]
-	};
+	var suite = eval('(' + fs.readFileSync(baseDir + '/tests.js').toString() + ')');
 	var tests = suite.tests.map(function(test) {  return baseDir + '/' + test.url; });
-
+	
 	var config = {
 		  hub: "http://localhost:9000"
 		, farm: 'saucelabs'
