@@ -27,7 +27,7 @@ define("moxie/runtime/dropbox/Runtime", [
 	var type = "dropbox", extensions = {};
 
 
-	function Dropbox(options) {
+	function DropboxRuntime(options) {
 		var I = this
 		, Test = Runtime.capTest
 		, True = Runtime.capTrue
@@ -77,7 +77,11 @@ define("moxie/runtime/dropbox/Runtime", [
 		Basic.extend(this, {
 			init : function() {
 				script = Loader.loadScript("https://www.dropbox.com/static/api/1/dropins.js", function() {
-					I.trigger("Init");
+					if (Dropbox.isBrowserSupported()) {
+						I.trigger("Init");
+					} else {
+						I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+					}
 				}, {
 					"id": 'dropboxjs',
 					"data-app-key": options.dropbox.appKey
@@ -96,7 +100,7 @@ define("moxie/runtime/dropbox/Runtime", [
 		Basic.extend(this.getShim(), extensions);
 	}
 
-	Runtime.addConstructor(type, Dropbox);
+	Runtime.addConstructor(type, DropboxRuntime);
 
 	return extensions;
 });

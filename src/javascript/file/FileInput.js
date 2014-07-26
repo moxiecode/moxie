@@ -15,10 +15,9 @@ define('moxie/file/FileInput', [
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
 	'moxie/core/I18n',
-	'moxie/file/File',
 	'moxie/runtime/Runtime',
 	'moxie/runtime/RuntimeClient'
-], function(Basic, Mime, Dom, x, EventTarget, I18n, File, Runtime, RuntimeClient) {
+], function(Basic, Mime, Dom, x, EventTarget, I18n, Runtime, RuntimeClient) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
@@ -231,20 +230,6 @@ define('moxie/file/FileInput', [
 
 					self.bind("Ready", function() {
 						self.trigger("Refresh");
-					}, 999);
-
-					self.bind("Change", function() {
-						var files = runtime.exec.call(self, 'FileInput', 'getFiles');
-
-						self.files = [];
-
-						Basic.each(files, function(file) {
-							// ignore empty files (IE10 for example hangs if you try to send them via XHR)
-							if (file.size === 0) {
-								return true; 
-							}
-							self.files.push(new File(self.ruid, file));
-						});
 					}, 999);
 
 					// re-position and resize shim container
