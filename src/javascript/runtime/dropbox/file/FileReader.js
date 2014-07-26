@@ -14,8 +14,7 @@
 */
 define("moxie/runtime/dropbox/file/FileReader", [
 	"moxie/runtime/dropbox/Runtime",
-	"moxie/core/utils/Basic",
 	"moxie/runtime/googledrive/file/FileReader"
-], function(extensions, Basic, FileReader) {
+], function(extensions, FileReader) {
 	return (extensions.FileReader = FileReader);
 });
