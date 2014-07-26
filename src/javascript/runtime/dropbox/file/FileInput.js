@@ -14,15 +14,16 @@
 */
 define("moxie/runtime/dropbox/file/FileInput", [
 	"moxie/runtime/dropbox/Runtime",
+	"moxie/file/File",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, Dom, Events, Mime, Env) {
+], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 
 	function FileInput() {
-		var _files = [], _options, _disabled = false;
+		var _options, _disabled = false;
 
 		Basic.extend(this, {
 			init: function(options) {
@@ -52,17 +53,20 @@ define("moxie/runtime/dropbox/file/FileInput", [
 					extensions: exts,
 
 					success: function(files) {
-						_files = [];
+						comp.files = [];
 
 						Basic.each(files, function(file) {
-							_files.push({
+							comp.files.push(new File(I.uid, {
 								name: file.name,
 								size: parseInt(file.bytes, 10),
-								downloadUrl: file.link
-							});
+								downloadUrl: file.link,
+								thumbnail: file.thumbnailLink
+							}));
 						});
 
-						comp.trigger('change');
+						if (comp.files.length) {
+							comp.trigger('change');
+						}
 					}
 				};
 
@@ -88,11 +92,6 @@ define("moxie/runtime/dropbox/file/FileInput", [
 			},
 
 
-			getFiles: function() {
-				return _files;
-			},
-
-
 			disable: function(state) {
 				_disabled = state;
 			},
@@ -109,7 +108,7 @@ define("moxie/runtime/dropbox/file/FileInput", [
 
 				// destroy _picker
 
-				_files = _options = shim = null;
+				_options = shim = null;
 			}
 		});
 	}
