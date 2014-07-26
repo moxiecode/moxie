@@ -83,6 +83,12 @@ And several runtimes (Java is in production right now):
 
 Use combination of these in `jake mkjs` to acquire customized JavaScript file.
 
+To compile all available runtimes, run:
+
+```
+jake mkjs runtimes=all
+```
+
 <a name="compile-flash" />
 #### Compile Flash
 
