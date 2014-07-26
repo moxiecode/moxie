@@ -7,6 +7,22 @@ var resolveModules = (function() {
 
 	return function(modules, options) {
 
+		function getAvailbleRuntimes() {
+			var runtimesDir = options.baseDir + '/runtime';
+
+			// each runtime is represented by a directory inside runtime/ dir
+			var files = fs.readdirSync(runtimesDir)
+			, runtimes = []
+			;
+			files.forEach(function(file) {
+				if (fs.lstatSync(runtimesDir + '/' + file).isDirectory()) {
+					runtimes.push(file);
+				}
+			});
+			return runtimes;
+		}
+
+
 		function resolveId(id) {
 			id = id.replace(/\./g, '/');
 
@@ -29,7 +45,13 @@ var resolveModules = (function() {
 		}));
 
 		// come up with the list of runtime modules to get included
-		var runtimes = (process.env.runtimes || 'html5,flash,silverlight,html4').split(/,/);
+		var runtimes;
+		if (process.env.runtimes == 'all') {
+			runtimes = getAvailbleRuntimes();
+		} else {
+			runtimes = (process.env.runtimes || 'html5,flash,silverlight,html4').split(/,/);
+		}		
+
 
 		var runtimeModules = [];
 		if (runtimes.length) {
