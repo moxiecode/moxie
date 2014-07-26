@@ -72,12 +72,14 @@ Currently there are only several major components that you should care about (th
 * `xhr/XMLHttpRequest`
 * `image/Image`
 
-And four runtimes (Java is in production right now):
+And several runtimes (Java is in production right now):
 
-* _HTML5_
-* _Flash_
-* _Silverlight_
-* _HTML4_
+* _html5_
+* _flash_
+* _silverlight_
+* _html4_
+* _[googledrive](https://github.com/moxiecode/moxie/wiki/Additional-Runtimes)_
+* _[dropbox](https://github.com/moxiecode/moxie/wiki/Additional-Runtimes)_
 
 Use combination of these in `jake mkjs` to acquire customized JavaScript file.
 
