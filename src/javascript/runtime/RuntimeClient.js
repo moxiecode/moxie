@@ -42,7 +42,7 @@ define('moxie/runtime/RuntimeClient', [
 						return;
 					}
 
-					type = items.shift();
+					type = items.shift().toLowerCase();
 					constructor = Runtime.getConstructor(type);
 					if (!constructor) {
 						initialize(items);
