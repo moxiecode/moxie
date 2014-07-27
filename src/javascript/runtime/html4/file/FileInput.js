@@ -91,31 +91,33 @@ define("moxie/runtime/html4/file/FileInput", [
 					return;
 				}
 
-				if (this.files) {
+				if (this.files) { // check if browser is fresh enough
 					file = this.files[0];
+
+					// ignore empty files (IE10 for example hangs if you try to send them via XHR)
+					if (file.size === 0) {
+						form.parentNode.removeChild(form);
+						return;
+					}
 				} else {
 					file = {
 						name: this.value
 					};
 				}
+
 				file = new File(I.uid, file);
 
+				// clear event handler
+				this.onchange = function() {}; 
+				addInput.call(comp); 
 
-				this.onchange = function() {}; // clear event handler
-				addInput.call(comp);
+				comp.files = [file];
 
-				// ignore empty files (IE10 for example hangs if you try to send them via XHR)
-				if (file.size === 0) {
-					form.parentNode.removeChild(form);
-				} else {
-					comp.files = [file];
-
-					// substitute all ids with file uids (consider file.uid read-only - we cannot do it the other way around)
-					input.setAttribute('id', file.uid);
-					form.setAttribute('id', file.uid + '_form');
-
-					comp.trigger('change');
-				}
+				// substitute all ids with file uids (consider file.uid read-only - we cannot do it the other way around)
+				input.setAttribute('id', file.uid);
+				form.setAttribute('id', file.uid + '_form');
+				
+				comp.trigger('change');
 
 				input = form = null;
 			};
