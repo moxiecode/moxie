@@ -114,8 +114,6 @@ define("moxie/runtime/html4/file/FileInput", [
 					input.setAttribute('id', file.uid);
 					form.setAttribute('id', file.uid + '_form');
 
-					// set upload target
-					form.setAttribute('target', file.uid + '_iframe');
 					comp.trigger('change');
 				}
 

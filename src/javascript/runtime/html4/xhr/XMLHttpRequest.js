@@ -161,10 +161,12 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 					form.setAttribute('method', meta.method);
 					form.setAttribute('enctype', 'multipart/form-data');
 					form.setAttribute('encoding', 'multipart/form-data');
-					form.setAttribute('target', uid + '_iframe');
 
 					I.getShimContainer().appendChild(form);
 				}
+
+				// set upload target
+				form.setAttribute('target', uid + '_iframe');
 
 				if (data instanceof FormData) {
 					data.each(function(value, name) {
