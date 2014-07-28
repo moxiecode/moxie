@@ -110,7 +110,8 @@ define("moxie/runtime/html5/image/JPEG", [
 			this.meta = {
 				tiff: _ep.TIFF(),
 				exif: _ep.EXIF(),
-				gps: _ep.GPS()
+				gps: _ep.GPS(),
+				thumb: _ep.thumb()
 			};
 		}
 
