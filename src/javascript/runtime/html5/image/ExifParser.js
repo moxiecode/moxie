@@ -24,7 +24,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 		data = new BinaryReader();
 
 		tags = {
-			tiff : {
+			tiff: {
 				/*
 				The image orientation viewed in terms of rows and columns.
 
@@ -45,7 +45,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 				0x8769: 'ExifIFDPointer',
 				0x8825:	'GPSInfoIFDPointer'
 			},
-			exif : {
+			exif: {
 				0x9000: 'ExifVersion',
 				0xA001: 'ColorSpace',
 				0xA002: 'PixelXDimension',
@@ -68,7 +68,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 				0xA409: 'Saturation',
 				0xA40A: 'Sharpness'
 			},
-			gps : {
+			gps: {
 				0x0000: 'GPSVersionID',
 				0x0001: 'GPSLatitudeRef',
 				0x0002: 'GPSLatitude',
@@ -395,30 +395,33 @@ define("moxie/runtime/html5/image/ExifParser", [
 			},
 
 			EXIF: function() {
-				var Exif;
+				var Exif = null;
 
-				// Populate EXIF hash
-				Exif = extractTags(offsets.exifIFD, tags.exif);
+				if (offsets.exifIFD) {
+					Exif = extractTags(offsets.exifIFD, tags.exif);
 
-				// Fix formatting of some tags
-				if (Exif.ExifVersion && Basic.typeOf(Exif.ExifVersion) === 'array') {
-					for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
-						exifVersion += String.fromCharCode(Exif.ExifVersion[i]);
+					// Fix formatting of some tags
+					if (Exif.ExifVersion && Basic.typeOf(Exif.ExifVersion) === 'array') {
+						for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
+							exifVersion += String.fromCharCode(Exif.ExifVersion[i]);
+						}
+						Exif.ExifVersion = exifVersion;
 					}
-					Exif.ExifVersion = exifVersion;
 				}
 
 				return Exif;
 			},
 
 			GPS: function() {
-				var GPS;
+				var GPS = null;
 
-				GPS = extractTags(offsets.gpsIFD, tags.gps);
+				if (offsets.gpsIFD) {
+					var GPS = extractTags(offsets.gpsIFD, tags.gps);
 
-				// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
-				if (GPS.GPSVersionID && Basic.typeOf(GPS.GPSVersionID) === 'array') {
-					GPS.GPSVersionID = GPS.GPSVersionID.join('.');
+					// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
+					if (GPS.GPSVersionID && Basic.typeOf(GPS.GPSVersionID) === 'array') {
+						GPS.GPSVersionID = GPS.GPSVersionID.join('.');
+					}
 				}
 
 				return GPS;
@@ -427,7 +430,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 			thumb: function() {
 				if (offsets.IFD1) {
 					var IFD1Tags = extractTags(offsets.IFD1, tags.thumb);
-					if (IFD1Tags.JPEGInterchangeFormat) {
+					if ('JPEGInterchangeFormat' in IFD1Tags) {
 						return data.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
 					}
 				}
