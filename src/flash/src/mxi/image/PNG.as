@@ -51,7 +51,8 @@ package mxi.image
 					type: PNG.MIME
 				};
 			}
-				
+			
+			purge();
 			return null;
 		}
 		
