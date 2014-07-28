@@ -100,6 +100,10 @@ define("moxie/runtime/html5/utils/BinaryReader", [], function() {
 				}
 
 				return str;
+			},
+
+			length: function() {
+				return bin.length;
 			}
 		};
 	};
