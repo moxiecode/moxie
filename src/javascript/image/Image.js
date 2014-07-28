@@ -402,6 +402,7 @@ define("moxie/image/Image", [
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
 
+					// high-resolution images cannot be consistently handled across the runtimes
 					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
 						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
 					}
@@ -594,8 +595,8 @@ define("moxie/image/Image", [
 	}
 
 	// virtual world will crash on you if image has a resolution higher than this:
-	Image.MAX_RESIZE_WIDTH = 6500;
-	Image.MAX_RESIZE_HEIGHT = 6500; 
+	Image.MAX_RESIZE_WIDTH = 8192;
+	Image.MAX_RESIZE_HEIGHT = 8192; 
 
 	Image.prototype = EventTarget.instance;
 
