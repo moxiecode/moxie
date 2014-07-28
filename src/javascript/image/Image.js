@@ -434,7 +434,11 @@ define("moxie/image/Image", [
 						imgCopy.downsize(width, height, crop, false);
 					});
 
-					imgCopy.clone(this, false);
+					if (this.meta.thumb) {
+						imgCopy.load('data:image/jpeg;base64,' + Encode.btoa(this.meta.thumb));
+					} else {
+						imgCopy.clone(this, false);
+					}
 
 					return imgCopy;
 				} catch(ex) {
