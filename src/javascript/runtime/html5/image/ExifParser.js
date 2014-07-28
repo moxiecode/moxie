@@ -74,6 +74,11 @@ define("moxie/runtime/html5/image/ExifParser", [
 				0x0002: 'GPSLatitude',
 				0x0003: 'GPSLongitudeRef',
 				0x0004: 'GPSLongitude'
+			},
+
+			thumb: {
+				0x0201: 'JPEGInterchangeFormat',
+				0x0202: 'JPEGInterchangeFormatLength'
 			}
 		};
 
@@ -320,6 +325,12 @@ define("moxie/runtime/html5/image/ExifParser", [
 				offsets.gpsIFD = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
 				delete Tiff.GPSInfoIFDPointer;
 			}
+
+			// check if we got thumb data as well
+			var IFD1Offset = data.LONG(offsets.IFD0 + data.SHORT(offsets.IFD0) * 12 + 2);
+			if (IFD1Offset) {
+				offsets.IFD1 = offsets.tiffHeader + IFD1Offset;
+			}
 			return true;
 		}
 
@@ -411,6 +422,16 @@ define("moxie/runtime/html5/image/ExifParser", [
 				}
 
 				return GPS;
+			},
+
+			thumb: function() {
+				if (offsets.IFD1) {
+					var IFD1Tags = extractTags(offsets.IFD1, tags.thumb);
+					if (IFD1Tags.JPEGInterchangeFormat) {
+						return data.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
+					}
+				}
+				return null;
 			},
 
 			setExif: function(tag, value) {
