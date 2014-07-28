@@ -434,8 +434,9 @@ define("moxie/image/Image", [
 						imgCopy.downsize(width, height, crop, false);
 					});
 
-					if (this.meta.thumb) {
-						imgCopy.load('data:image/jpeg;base64,' + Encode.btoa(this.meta.thumb));
+					// if embedded thumb data is available and dimensions are big enough, use it
+					if (this.meta.thumb && this.meta.thumb.width >= width && this.meta.thumb.height >= height) {
+						imgCopy.load(this.meta.thumb.data);
 					} else {
 						imgCopy.clone(this, false);
 					}
