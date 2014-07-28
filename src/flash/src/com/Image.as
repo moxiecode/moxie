@@ -146,13 +146,20 @@ package com
 		public function loadFromBitmapData(bd:BitmapData) : void
 		{						
 			_bd = bd;
+			
+			// in case we were not able to extract the width/height directly from byte array
+			if (!width || !height) {
+				width = bd.width;
+				height = bd.height;
+			}
+			
 			dispatchEvent(new ODataEvent(ODataEvent.DATA));
 		}
 				
 		
 		public function loadFromByteArray(ba:ByteArray) : void
 		{
-			var callback:Function, info:Object;
+			var callback:Function, info:Object, loader:Loader;
 						
 			if (JPEG.test(ba)) {
 				_img = new JPEG(ba);		
@@ -167,34 +174,36 @@ package com
 						
 			Utils.extend(this, _img.info());
 			size = ba.length;
-												
-			// Flash Players prior to version 11 didn't support high resolution images, this is a workaround
-			_prepareBitmapData(width, height, function(bd:BitmapData) : void {	
-				var loader:Loader = new Loader;
-				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event) : void {
-										
-					loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, arguments.callee);
-					_img.purge(); // free some resources
-										
-					// draw preloaded data onto the prepared BitmapData
-					bd.draw(e.target.content as IBitmapDrawable, null, null, null, null, true);
-					loader.unload();
-					loadFromBitmapData(bd);	
-					ba.clear();
-				});
-				
-				loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function(e:*) : void {
-					ba.clear();
-					Moxie.log(e);
-				});
-				
-				try {
-					loader.loadBytes(ba);
-				} catch (ex:*) {
-					Moxie.log(ex);
+			
+			loader = new Loader;
+			
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event) : void 
+			{					
+				loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, arguments.callee);
+								
+				_prepareBitmapData(loader.width, loader.height, function(bd:BitmapData) : void {
+					if (bd) {
+						bd.draw(loader.content as IBitmapDrawable, null, null, null, null, true);
+						loadFromBitmapData(bd);	
+					} else {
+						dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, RuntimeError.OUT_OF_MEMORY));
+					}
 					
-				}
+					loader.unload();
+					ba.clear();
+				});
 			});
+			
+			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function(e:*) : void {
+				ba.clear();
+				//Moxie.log(e);
+			});
+			
+			try {
+				loader.loadBytes(ba);
+			} catch (ex:*) {
+				//Moxie.log(ex);	
+			}
 		}
 		
 		
@@ -413,7 +422,7 @@ package com
 			});
 			
 			bc.addEventListener(BitmapDataUnlimitedEvent.ERROR, function(e:BitmapDataUnlimitedEvent) : void {
-				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, RuntimeError.OUT_OF_MEMORY));
+				callback(null);
 			});
 			
 			bc.create(width, height, true);
