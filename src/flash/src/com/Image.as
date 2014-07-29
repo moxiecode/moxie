@@ -189,6 +189,7 @@ package com
 						dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, RuntimeError.OUT_OF_MEMORY));
 					}
 					
+					_img.purge();
 					loader.unload();
 					ba.clear();
 				});

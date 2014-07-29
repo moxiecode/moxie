@@ -59,7 +59,6 @@ package mxi.image
 				idx += length - 2;			
 			}
 			
-			purge();
 			return null;
 		}	
 		

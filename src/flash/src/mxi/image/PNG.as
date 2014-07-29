@@ -50,9 +50,7 @@ package mxi.image
 					height: _br.LONG(idx += 4),
 					type: PNG.MIME
 				};
-			}
-			
-			purge();
+			}			
 			return null;
 		}
 		
