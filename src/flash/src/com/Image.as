@@ -160,18 +160,25 @@ package com
 		public function loadFromByteArray(ba:ByteArray) : void
 		{
 			var callback:Function, info:Object, loader:Loader;
-						
+			
 			if (JPEG.test(ba)) {
 				_img = new JPEG(ba);		
 				_img.extractHeaders(); // preserve headers for later
 				meta = _img.metaInfo();
+				
+				// save thumb as Blob
+				if (meta.hasOwnProperty('thumb') && meta.thumb) {
+					var blob:Blob = new Blob([meta.thumb.data], { type: 'image/jpeg' });
+					Moxie.compFactory.add(blob.uid, blob);
+					meta.thumb.data = blob.toObject();
+				}
 			} else if (PNG.test(ba)) {
 				_img = new PNG(ba);
 			} else {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, ImageError.WRONG_FORMAT));
 				return;
 			}
-						
+			
 			Utils.extend(this, _img.info());
 			size = ba.length;
 			

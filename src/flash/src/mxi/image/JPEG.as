@@ -39,23 +39,27 @@ package mxi.image
 			return true;
 		}
 		
-		public function info() : Object 
+		public function info(br:BinaryReader = null) : Object 
 		{
 			var idx:uint = 0, marker:uint, length:uint;
 			
+			if (!br) {
+				br = _br;
+			}
+			
 			// examine all through the end, since some images might have very large APP segments
-			while (idx <= _br.length) {
-				marker = _br.SHORT(idx += 2);
+			while (idx <= br.length) {
+				marker = br.SHORT(idx += 2);
 				
 				if (marker >= 0xFFC0 && marker <= 0xFFC3) { // SOFn
 					idx += 5; // marker (2 bytes) + length (2 bytes) + Sample precision (1 byte)
 					return {
-						height: _br.SHORT(idx),
-						width: _br.SHORT(idx += 2),
+						height: br.SHORT(idx),
+						width: br.SHORT(idx += 2),
 						type: JPEG.MIME
 					};
 				}
-				length = _br.SHORT(idx += 2);
+				length = br.SHORT(idx += 2);
 				idx += length - 2;			
 			}
 			
@@ -66,7 +70,7 @@ package mxi.image
 		public function metaInfo() : Object
 		{
 			var exifParser:ExifParser, headers:Array, 
-				meta:Object = {}, exif:Object, gps:Object, tiff:Object;
+				meta:Object = {}, exif:Object, gps:Object, tiff:Object, thumb:Object;
 			
 			headers = getHeaders('app1');
 			
@@ -87,6 +91,11 @@ package mxi.image
 					gps = exifParser.GPS();
 					if (gps) {
 						meta['gps'] = gps;
+					}
+					
+					thumb = getThumb(exifParser);
+					if (thumb) {
+						meta['thumb'] = thumb;
 					}
 	
 					exifParser.purge();
@@ -154,6 +163,28 @@ package mxi.image
 				binData.writeBytes(br.SEGMENT());
 				br.clear();
 			}
+		}
+		
+		
+		public function getThumb(ep:ExifParser) : Object 
+		{
+			var thumb:ByteArray = ep.thumb(), br:BinaryReader, thumbInfo:Object = null;
+			
+			if (thumb) {
+				br = new BinaryReader;
+				br.init(thumb);
+				thumbInfo = info(br);
+				br.clear();
+				
+				if (thumbInfo) {
+					return {
+						width: thumbInfo.width,
+						height: thumbInfo.height,
+						data: thumb	
+					};
+				}
+			}
+			return null;
 		}
 		
 		

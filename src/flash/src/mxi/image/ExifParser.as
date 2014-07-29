@@ -65,6 +65,11 @@ package mxi.image {
 				0x0002: 'GPSLatitude',
 				0x0003: 'GPSLongitudeRef',
 				0x0004: 'GPSLongitude'
+			},
+			
+			thumb: {
+				0x0201: 'JPEGInterchangeFormat',
+				0x0202: 'JPEGInterchangeFormatLength'
 			}
 		},
 			
@@ -244,6 +249,24 @@ package mxi.image {
 		}
 		
 		
+		public function thumb():ByteArray {
+			var IFD1Tags:Object;
+			
+			if (offsets.hasOwnProperty('IFD1')) {
+				try { // survive invalid offsets
+					IFD1Tags = extractTags(offsets.IFD1, tags.thumb);
+				} catch (ex:Error) {
+					return null;
+				}
+				
+				if (IFD1Tags.hasOwnProperty('JPEGInterchangeFormat') && IFD1Tags.hasOwnProperty('JPEGInterchangeFormatLength')) {
+					return data.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
+				}
+			}
+			return null;
+		}
+		
+		
 		public function setExif(tag:String, value:*) : Boolean {
 			// Right now only setting of width/height is possible
 			if (tag !== 'PixelXDimension' && tag !== 'PixelYDimension') return false;
@@ -284,7 +307,14 @@ package mxi.image {
 			if (Tiff.hasOwnProperty('GPSInfoIFDPointer')) {
 				offsets['gpsIFD'] = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
 				delete Tiff.GPSInfoIFDPointer;
-			}			
+			}
+			
+			// check if we got thumb data as well
+			var IFD1Offset:uint = data.LONG(offsets.IFD0 + data.SHORT(offsets.IFD0) * 12 + 2);
+			if (IFD1Offset) {
+				offsets['IFD1'] = offsets.tiffHeader + IFD1Offset;
+			}
+			
 			return true;
 		}
 		
