@@ -62,8 +62,13 @@ namespace Moxiecode.MXI.Image
 				{ 0x0002, "GPSLatitude" },
 				{ 0x0003, "GPSLongitudeRef" },
 				{ 0x0004, "GPSLongitude" }
-			}
-		} };
+			} },
+ 
+			{ "thumb", new Dictionary<int, string>() {
+				{ 0x0201, "JPEGInterchangeFormat" },
+				{ 0x0202, "JPEGInterchangeFormatLength" }
+			} }
+		};
 			
 		private Dictionary<string, object>	tagDescs = new Dictionary<string, object>() {			
 			{ "ColorSpace", new Dictionary<int, string>() {
@@ -281,6 +286,24 @@ namespace Moxiecode.MXI.Image
 
 			return Gps;
 		}
+
+
+		public byte[] thumb()
+		{
+			Dictionary<string, object> IFD1Tags;
+
+			if (!offsets.ContainsKey("IFD1")) {
+				return null;
+			}
+
+			IFD1Tags = extractTags(offsets["IFD1"], tags["thumb"]);
+			if (IFD1Tags.ContainsKey("JPEGInterchangeFormat") && IFD1Tags.ContainsKey("JPEGInterchangeFormatLength"))
+			{
+				return data.SEGMENT(Convert.ToInt32(offsets["tiffHeader"] + Convert.ToInt32(IFD1Tags["JPEGInterchangeFormat"])), Convert.ToInt32(IFD1Tags["JPEGInterchangeFormatLength"]));
+			}
+
+			return null;
+		}
 		
 		
 		public bool setExif(string tag, int value) 
@@ -333,6 +356,12 @@ namespace Moxiecode.MXI.Image
 				this.offsets.Add("gpsIFD", this.offsets["tiffHeader"] + Convert.ToInt32(GPSInfoIFDPointer));
 				Tiff.Remove("GPSInfoIFDPointer");
 			}
+
+			long ifd1Offset = data.LONG(this.offsets["IFD0"] + data.SHORT(this.offsets["IFD0"]) * 12 + 2);
+			if (ifd1Offset > 0) {
+				this.offsets.Add("IFD1", this.offsets["tiffHeader"] + ifd1Offset);
+			}
+
 			return true;
 		}
 		

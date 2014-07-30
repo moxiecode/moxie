@@ -45,10 +45,15 @@ namespace Moxiecode.MXI.Image
 		}
 
 
-		public override Dictionary<string, int> info()
+		public override Dictionary<string, int> info(BinaryReader br = null)
 		{
 			Dictionary<string, string> chunk;
 			long idx;
+
+			if (br == null)
+			{
+				br = _br;
+			}
 			
 			chunk = _getChunkAt(8);
 			
