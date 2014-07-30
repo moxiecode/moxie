@@ -109,6 +109,16 @@ namespace Moxiecode.Com
 				type = JPEG.MIME;
 				((JPEG)_img).extractHeaders(); // preserve headers for later
 				meta = ((JPEG)_img).metaInfo();
+
+				// save thumb data as Blob
+				object thumbData;
+				if (meta.ContainsKey("thumb") && ((Dictionary<string,object>)meta["thumb"]).TryGetValue("data", out thumbData)) {
+					Blob blob = new Blob(new List<object> { (byte[])thumbData }, new Dictionary<string, string>{
+						{ "type", "image/jpeg" }
+					});
+					Moxie.compFactory.add(blob.uid, blob);
+					((Dictionary<string, object>)meta["thumb"])["data"] = blob.ToObject();
+				}
 			} else if (PNG.test(stream)) {
 				_img = new PNG(stream);
 				type = PNG.MIME;

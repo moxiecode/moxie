@@ -14,6 +14,6 @@ namespace Moxiecode.MXI.Image
 {
 	public abstract class Format
 	{
-		public abstract Dictionary<string, int> info();
+		public abstract Dictionary<string, int> info(BinaryReader br = null);
 	}
 }
