@@ -130,16 +130,17 @@ define("moxie/runtime/html5/image/JPEG", [
 			, info
 			;
 
-			br.init(binstr);
-			info = _getDimensions(br);
-			br.init(null);
+			if (binstr) {
+				br.init(binstr);
+				info = _getDimensions(br);
+				br.init(null);
 
-			if (!info) {
-				return null;
-			} else {
-				info.data = binstr;
-				return info;
+				if (info) {
+					info.data = binstr;
+					return info;
+				}
 			}
+			return null;
 		}
 
 
