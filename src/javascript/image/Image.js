@@ -188,17 +188,22 @@ define("moxie/image/Image", [
 			Downsizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
 
 			@method downsize
-			@param {Number} width Resulting width
-			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
-			@param {Boolean} [crop=false] Whether to crop the image to exact dimensions
-			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
+			@param {Object} opts
+				@param {Number} opts.width Resulting width
+				@param {Number} [opts.height=width] Resulting height (optional, if not supplied will default to width)
+				@param {Boolean} [opts.crop=false] Whether to crop the image to exact dimensions
+				@param {Boolean} [opts.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
+				@param {String} [opts.resample=false] Resampling algorithm to use for resizing
 			*/
 			downsize: function(opts) {
 				var defaults = {
 					width: this.width,
 					height: this.height,
+					type: this.type || 'image/jpeg',
+					quality: 90,
 					crop: false,
-					preserveHeaders: true
+					preserveHeaders: true,
+					resample: false
 				};
 
 				if (typeof(opts) === 'object') {
@@ -222,7 +227,7 @@ define("moxie/image/Image", [
 						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
 					}
 
-					this.getRuntime().exec.call(this, 'Image', 'downsize', opts.width, opts.height, opts.crop, opts.preserveHeaders);
+					this.getRuntime().exec.call(this, 'Image', 'downsize', opts);
 				} catch(ex) {
 					// for now simply trigger error event
 					this.trigger('error', ex.code);
@@ -319,13 +324,9 @@ define("moxie/image/Image", [
 				@param {Number} [quality=90] Quality of an embed, if mime type is image/jpeg
 				@param {Boolean} [crop=false] Whether to crop an embed to the specified dimensions
 			*/
-			embed: function(el) {
+			embed: function(el, options) {
 				var self = this
 				, imgCopy
-				, type, quality, crop
-				, options = arguments[1] || {}
-				, width = this.width
-				, height = this.height
 				, runtime // this has to be outside of all the closures to contain proper runtime
 				;
 
@@ -402,26 +403,13 @@ define("moxie/image/Image", [
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
 
+					if (!options.width || !options.height) {
+						throw new x.DOMException(x.DOMException.SYNTAX_ERR);
+					}
+
 					// high-resolution images cannot be consistently handled across the runtimes
 					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
 						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
-					}
-
-					type = options.type || this.type || 'image/jpeg';
-					quality = options.quality || 90;
-					crop = Basic.typeOf(options.crop) !== 'undefined' ? options.crop : false;
-
-					// figure out dimensions for the thumb
-					if (options.width) {
-						width = options.width;
-						height = options.height || width;
-					} else {
-						// if container element has measurable dimensions, use them
-						var dimensions = Dom.getSize(el);
-						if (dimensions.w && dimensions.h) { // both should be > 0
-							width = dimensions.w;
-							height = dimensions.h;
-						}
 					}
 
 					imgCopy = new Image();
@@ -431,11 +419,11 @@ define("moxie/image/Image", [
 					});
 
 					imgCopy.bind("Load", function() {
-						imgCopy.downsize(width, height, crop, false);
+						imgCopy.downsize(options);
 					});
 
 					// if embedded thumb data is available and dimensions are big enough, use it
-					if (this.meta.thumb && this.meta.thumb.width >= width && this.meta.thumb.height >= height) {
+					if (this.meta.thumb && this.meta.thumb.width >= options.width && this.meta.thumb.height >= options.height) {
 						imgCopy.load(this.meta.thumb.data);
 					} else {
 						imgCopy.clone(this, false);
