@@ -26,7 +26,7 @@ define("moxie/runtime/flash/file/FileInput", [
 				var files = I.shimExec.call(comp, 'FileInput', 'getFiles');
 				comp.files = [];
 				Basic.each(files, function(file) {
-					comp.files.push(new File(I.ruid, file));
+					comp.files.push(new File(I.uid, file));
 				});
 			}, 999);
 
