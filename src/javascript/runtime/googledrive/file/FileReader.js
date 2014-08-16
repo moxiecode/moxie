@@ -57,6 +57,7 @@ define("moxie/runtime/googledrive/file/FileReader", [
 
 					_fr.onloadend = function() {
 						self.destroy();
+						comp.trigger(e);
 					};
 
 					if (Basic.typeOf(_fr[op]) === 'function') {
