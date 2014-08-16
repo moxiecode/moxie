@@ -132,7 +132,7 @@ define('moxie/file/Blob', [
 				// if dataUrl, convert to binary string
 				if (data.substr(0, 5) == 'data:') {
 					var base64Offset = data.indexOf(';base64,');
-					this.type = data.substr(5, base64Offset);
+					this.type = data.substring(5, base64Offset);
 					data = Encode.atob(data.substring(base64Offset + 8));
 				}
 
