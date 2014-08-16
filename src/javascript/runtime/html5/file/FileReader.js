@@ -43,8 +43,9 @@ define("moxie/runtime/html5/file/FileReader", [
 					comp.trigger(e, _fr.error);
 				});
 
-				_fr.addEventListener('loadend', function() {
+				_fr.addEventListener('loadend', function(e) {
 					_fr = null;
+					comp.trigger(e);
 				});
 
 				if (Basic.typeOf(_fr[op]) === 'function') {
