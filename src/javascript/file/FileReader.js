@@ -172,9 +172,14 @@ define('moxie/file/FileReader', [
 			*/
 			destroy: function() {
 				this.abort();
+
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileReader', 'destroy');
+					this.disconnectRuntime();
+				}
+
 				this.unbindAll();
-				this.getRuntime().exec.call(this, 'FileReader', 'destroy');
-				this.disconnectRuntime();
 			}
 		});
 		
