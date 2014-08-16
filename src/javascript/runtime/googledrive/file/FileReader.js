@@ -24,7 +24,9 @@ define("moxie/runtime/googledrive/file/FileReader", [
 		Basic.extend(this, {
 
 			read: function(op, blob) {
-				var target = this;
+				var comp = this;
+
+				comp.result = '';
 
 				blob = blob.getSource();
 
@@ -42,14 +44,15 @@ define("moxie/runtime/googledrive/file/FileReader", [
 				_xhr.responseType = 'blob';
 				
 				_xhr.onprogress = function(e) {
-					target.trigger(e);
+					comp.trigger(e);
 				};
 
 				_xhr.onload = function(e) {
 					_fr = new window.FileReader();
 
 					_fr.onload = function(e) {
-						target.trigger(e);
+						comp.result = _convertToBinary ? _toBinary(_fr.result) : _fr.result;
+						comp.trigger(e);
 					};
 
 					_fr.onloadend = function() {
@@ -66,19 +69,20 @@ define("moxie/runtime/googledrive/file/FileReader", [
 				};
 
 				_xhr.onerror = function(e) {
-					target.trigger(e);
+					comp.trigger(e);
 				};
 
 				_xhr.send();
 			},
 
-			getResult: function() {
-				return _fr && _fr.result ? (_convertToBinary ? _toBinary(_fr.result) : _fr.result) : null;
-			},
 
 			abort: function() {
 				if (_xhr) {
 					_xhr.abort();
+				}
+
+				if (_fr) {
+					_fr.abort();
 				}
 			},
 
