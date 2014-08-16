@@ -24,13 +24,15 @@ namespace Moxiecode.Com
 			"LoadStart", 
 			"Progress",
 			"Load",
-			"Error"
+			"Error",
+			"LoadEnd"
 		};
 
 		public event EventHandler LoadStart;
 		public event ProgressEventHandler Progress;
 		public event EventHandler Load;
 		public event EventHandler Error;
+		public event EventHandler LoadEnd;
 
 		public const uint EMPTY = 0;
 		public const uint LOADING = 1;
@@ -51,7 +53,8 @@ namespace Moxiecode.Com
 		{
 			if (blob is string) {
 				if ((blob = Moxie.compFactory.get((string)blob)) == null) {
-					throw new ImageError(ImageError.WRONG_FORMAT);
+					Error(this, new ErrorEventArgs(ImageError.WRONG_FORMAT));
+					return;
 				}
 			}
 
@@ -61,7 +64,7 @@ namespace Moxiecode.Com
 			int bytesRead, bytesLoaded = 0;
 			byte[] buffer = new byte[1024 * 200 - 2]; // bytes, should divide by three
 
-			LoadStart(this, null);
+			// LoadStart(this, null);
 
 			while ((bytesRead = Read(_blob, buffer, 0, buffer.Length)) != 0) {
 				bytesLoaded += bytesRead;
@@ -69,6 +72,7 @@ namespace Moxiecode.Com
 			}
 
 			Load(this, null);
+			LoadEnd(this, null);
 		}
 
 
@@ -76,7 +80,8 @@ namespace Moxiecode.Com
 		{
 			if (blob is string){
 				if ((blob = Moxie.compFactory.get((string)blob)) == null){
-					throw new ImageError(ImageError.WRONG_FORMAT);
+					Error(this, new ErrorEventArgs(ImageError.WRONG_FORMAT));
+					return;
 				}
 			}
 
