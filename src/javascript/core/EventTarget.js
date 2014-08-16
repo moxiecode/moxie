@@ -279,6 +279,31 @@ define('moxie/core/EventTarget', [
 						this[h] = null; // object must have defined event properties, even if it doesn't make use of them
 					}
 				}
+			},
+
+			/**
+			Handle properties of on[event] type.
+
+			@method handleEventProps
+			@private
+			*/
+			handleEventProps: function(dispatches) {
+				var self = this;
+
+				this.bind(dispatches.join(' '), function(e) {
+					var prop = 'on' + e.type.toLowerCase();
+					if (Basic.typeOf(this[prop]) === 'function') {
+						this[prop].apply(this, arguments);
+					}
+				});
+
+				// object must have defined event properties, even if it doesn't make use of them
+				Basic.each(dispatches, function(prop) {
+					prop = 'on' + prop.toLowerCase(prop);
+					if (Basic.typeOf(self[prop]) === 'undefined') {
+						self[prop] = null; 
+					}
+				});
 			}
 			
 		});
