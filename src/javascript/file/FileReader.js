@@ -182,45 +182,41 @@ define('moxie/file/FileReader', [
 				this.unbindAll();
 			}
 		});
+
+		// uid must already be assigned
+		this.handleEventProps(dispatches);
+
+		this.bind('Error', function(e, err) {
+			this.readyState = FileReader.DONE;
+			this.error = err;
+		}, 999);
 		
+		this.bind('Load', function(e) {
+			this.readyState = FileReader.DONE;
+		}, 999);
+
 		
 		function _read(op, blob) {
-			var self = this;
+			var self = this;			
 
-			function error(err) {
-				self.readyState = FileReader.DONE;
-				self.error = err;
-				self.trigger('error');
-				self.trigger('loadend');
-			}
-
-			function exec(runtime) {
-				self.bind('Error', function(e, err) {
-					error(err);
-				}, 999);
-				
-				self.bind('Load', function(e) {
-					self.readyState = FileReader.DONE;
-					self.trigger('loadend');
-				}, 999);
-
-				runtime.exec.call(self, 'FileReader', 'read', op, blob);
-			}
+			this.trigger('loadstart');
 
 			if (this.readyState === FileReader.LOADING) {
-				return error(new x.DOMException(x.DOMException.INVALID_STATE_ERR));
+				this.trigger('error', new x.DOMException(x.DOMException.INVALID_STATE_ERR));
+				this.trigger('loadend');
+				return;
 			}
 
 			// if source is not o.Blob/o.File
 			if (!(blob instanceof Blob)) {
-				return error(new x.DOMException(x.DOMException.NOT_FOUND_ERR));
+				this.trigger('error', new x.DOMException(x.DOMException.NOT_FOUND_ERR));
+				this.trigger('loadend');
+				return;
 			}
 
 			this.result = null;
-			this.convertEventPropsToHandlers(dispatches);
 			this.readyState = FileReader.LOADING;
-			this.trigger('loadstart');
-
+			
 			if (blob.isDetached()) {
 				var src = blob.getSource();
 				switch (op) {
@@ -234,9 +230,9 @@ define('moxie/file/FileReader', [
 				}
 				this.readyState = FileReader.DONE;
 				this.trigger('load');
-				loadEnd();
+				this.trigger('loadend');
 			} else {
-				exec(this.connectRuntime(blob.ruid));
+				this.connectRuntime(blob.ruid).exec.call(this, 'FileReader', 'read', op, blob);
 			}
 		}
 	}
