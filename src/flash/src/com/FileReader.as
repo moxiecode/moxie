@@ -113,7 +113,8 @@ package com
 						
 			this.readyState = FileReader.LOADING;
 			
-			dispatchEvent(new OProgressEvent(OProgressEvent.LOADSTART));
+			// loadstart is triggered in JS by the component itself
+			// dispatchEvent(new OProgressEvent(OProgressEvent.LOADSTART));
 			
 			_ba.clear();
 			_index = 0;
