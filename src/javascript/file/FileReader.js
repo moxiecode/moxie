@@ -159,7 +159,7 @@ define('moxie/file/FileReader', [
 					this.readyState = FileReader.DONE;
 				}
 
-				this.getRuntime().exec.call(this, 'FileReader', 'abort');
+				this.exec('FileReader', 'abort');
 				
 				this.trigger('abort');
 				this.trigger('loadend');
@@ -172,13 +172,8 @@ define('moxie/file/FileReader', [
 			*/
 			destroy: function() {
 				this.abort();
-
-				var runtime = this.getRuntime();
-				if (runtime) {
-					runtime.exec.call(this, 'FileReader', 'destroy');
-					this.disconnectRuntime();
-				}
-
+				this.exec('FileReader', 'destroy');
+				this.disconnectRuntime();
 				this.unbindAll();
 			}
 		});
@@ -232,7 +227,8 @@ define('moxie/file/FileReader', [
 				this.trigger('load');
 				this.trigger('loadend');
 			} else {
-				this.connectRuntime(blob.ruid).exec.call(this, 'FileReader', 'read', op, blob);
+				this.connectRuntime(blob.ruid);
+				this.exec('FileReader', 'read', op, blob);
 			}
 		}
 	}
