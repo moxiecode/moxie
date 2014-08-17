@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Image: Test FileReader</title>
+<title>FileReader</title>
 
 <!-- qunit -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -12,6 +12,8 @@
 <!-- testrunner -->
 <script src="../js/reporter.js"></script>
 <script src="../moxie_loader.js"></script>
+
+<script src="../JSON-js/json2.js"></script>
 
 <script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
 
@@ -41,7 +43,7 @@ module("FileReader", {
 });
 
 
-test("Test Error event: try to load a resource having a wrong format", function() {
+test("Test Error event: try to load a resource having a wrong format", function(assert) {
 	var fr = new o.FileReader()
 	, x = this.x
 	, order = []
@@ -55,16 +57,17 @@ test("Test Error event: try to load a resource having a wrong format", function(
 		start();
 		order.push('error');
 
-		ok(true, "Error event fired.");
-		equal(this.readyState, o.FileReader.DONE, "readyState switched to DONE.");
-		deepEqual(this.error, new x.DOMException(x.DOMException.NOT_FOUND_ERR), "Resource cannot be found or has an invalid format.");
+		assert.ok(true, "Error event fired.");
+		assert.equal(this.readyState, o.FileReader.DONE, "readyState switched to DONE.");
+		assert.deepEqual(this.error, new x.DOMException(x.DOMException.NOT_FOUND_ERR), 
+			"Resource cannot be found or has an invalid format.");
 	};
 
 	fr.onloadend = function() {
 		order.push('loadend');
 
-		ok(true, "LoadEnd event fired.");
-		deepEqual(order, ['loadstart', 'error', 'loadend'], "Events fired in proper order: LoadStart, Error, LoadEnd.");
+		assert.ok(true, "LoadEnd event fired.");
+		assert.deepEqual(order, ['loadstart', 'error', 'loadend'], "Events fired in proper order: LoadStart, Error, LoadEnd.");
 		this.destroy();
 	};
 
@@ -73,7 +76,7 @@ test("Test Error event: try to load a resource having a wrong format", function(
 });
 
 
-test("Load detached blob", function() {
+test("Load detached blob", function(assert) {
 	var fr = new o.FileReader()
 	, x = this.x
 	, blob
@@ -93,15 +96,15 @@ test("Load detached blob", function() {
 		start();
 		order.push('load');
 
-		ok(true, "Load event fired.");
-		equal(this.readyState, o.FileReader.DONE, "readyState switched to DONE.");
+		assert.ok(true, "Load event fired.");
+		assert.equal(this.readyState, o.FileReader.DONE, "readyState switched to DONE.");
 	};
 
 	fr.onloadend = function() {
 		order.push('loadend');
 
-		ok(true, "LoadEnd event fired.");
-		deepEqual(order, ['loadstart', 'load', 'loadend'], "Events fired in proper order: LoadStart, Load, LoadEnd.");
+		assert.ok(true, "LoadEnd event fired.");
+		assert.deepEqual(order, ['loadstart', 'load', 'loadend'], "Events fired in proper order: LoadStart, Load, LoadEnd.");
 		this.destroy();
 	};
 
@@ -112,7 +115,7 @@ test("Load detached blob", function() {
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
-	test("readAsDataURL(), runtime: " + runtime, function() {
+	test("readAsDataURL(), runtime: " + runtime, function(assert) {
 		var self = this
 		, url = o.resolveUrl("XMLHttpRequest/poster.jpg")
 		, xhr = new o.XMLHttpRequest()
@@ -158,9 +161,9 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			fr.onloadend = function() {
 				xhr.destroy();
 				start();
-				equal(events.loadstart, 1, "LoadStart fired");
-				ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
-				ok(true, "LoadEnd fired");
+				assert.equal(events.loadstart, 1, "LoadStart fired");
+				assert.ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+				assert.ok(true, "LoadEnd fired");
 
 				var img = new o.Image();
 				img.onload = function() {
@@ -171,7 +174,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 				};
 				img.onerror = function() {
 					start();
-					ok(false, "Resulting dataUrl contains proper image.");
+					assert.ok(false, "Resulting dataUrl contains proper image.");
 					img.destroy();
 					fr.destroy();
 				};
@@ -185,7 +188,163 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 		xhr.bind("Error RuntimeError", function() {
 			start();
-			ok(true, "Runtime not supported.");
+			assert.ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("readAsText(), runtime: " + runtime, function(assert) {
+		var self = this
+		, url = o.resolveUrl("XMLHttpRequest/some.json")
+		, xhr = new o.XMLHttpRequest()
+		, startTime = (new Date).getTime()
+		, endTime
+		, progressRate = 0
+		, events = {
+			loadstart: 0,
+			//loadend: 0,
+			load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
+		}
+		;
+
+		xhr.open('get', url);
+		xhr.responseType = 'blob';
+
+		xhr.onload = function() {
+			var blob = xhr.response;
+			var fr = new o.FileReader();
+
+			start();
+
+			o.each(events, function(times, e) {
+				if (e === 'progress') {
+					var prevTime = startTime;
+					fr.onprogress = function(e) {
+						var time = (new Date).getTime();
+						progressRate += time - prevTime;
+						prevTime = time;
+						events.progress++;
+					};
+				} else {
+					fr['on' + e] = function() {
+						events[e]++;
+					};
+				}
+			});
+
+			fr.onloadend = function() {
+				xhr.destroy();
+				start();
+				
+				assert.equal(events.loadstart, 1, "LoadStart fired");
+				assert.ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+				assert.ok(true, "LoadEnd fired");
+
+				try {
+					var json = JSON.parse(this.result);
+					assert.ok(true, "Result succesfully parsed as JSON");
+					assert.equal(json.info, "Some JSON here", "Parsed text is readable.");
+					assert.equal(json.utf, "სიურპრიზი", "Non-latin characters processed properly.");
+				} catch (ex) {
+					assert.ok(false, "Result succesfully parsed as JSON (Err.: "+ex.message+")");
+				}
+			};
+
+			stop();
+			fr.readAsText(blob);
+		};
+
+		xhr.bind("Error RuntimeError", function() {
+			start();
+			assert.ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+
+});
+
+
+// re-check for #97
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Instances are independent, runtime: " + runtime, function(assert) {
+		var self = this
+		, url = o.resolveUrl("XMLHttpRequest/some.json")
+		, xhr = new o.XMLHttpRequest()
+		;
+
+		xhr.open('get', url);
+		xhr.responseType = 'blob';
+
+		xhr.onload = function() {
+			var blob = xhr.response;
+			var fr1, fr2;
+			
+
+			fr1 = new o.FileReader();
+			start();
+
+			fr1.onload = function() {
+				var result1, result2;
+
+				fr2 = new o.FileReader();
+
+				fr2.onload = function() {
+					start();
+
+					try {
+						result1 = JSON.parse(fr1.result);
+					} catch (ex) {
+						assert.ok(false, "Result 1 succesfully parsed as JSON (Err.: "+ex.message+")");
+						return;
+					}
+
+					assert.equal(result1.info, "Some JSON here", "Structure of the result is what we expected.");
+					assert.equal(fr1.result, fr2.result, "Both read results are identical.");
+
+					fr1.destroy();
+
+					assert.ok(!fr1.result, "First FileReader object is now destroyed.");					
+
+					try {
+						result2 = JSON.parse(fr2.result);
+					} catch (ex) {
+						assert.ok(false, "Result 2 succesfully parsed as JSON (Err.: "+ex.message+")");
+						return;
+					}
+
+					assert.equal(result2.info, "Some JSON here", "Second FileReader still exists and is not empty.");
+				};
+
+				fr2.onloadend = function() {
+					xhr.destroy();
+					fr1.destroy();
+					fr2.destroy();
+				};
+
+				fr2.readAsText(blob);
+			};
+
+			stop();
+			fr1.readAsText(blob);
+		};
+
+		xhr.bind("Error RuntimeError", function() {
+			start();
+			assert.ok(true, "Runtime not supported.");
 		});
 
 		stop();
