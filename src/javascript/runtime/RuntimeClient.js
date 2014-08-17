@@ -112,8 +112,7 @@ define('moxie/runtime/RuntimeClient', [
 				if (runtime && runtime.uid) {
 					return runtime;
 				}
-				runtime = null; // make sure we do not leave zombies rambling around
-				return null;
+				return runtime = null; // make sure we do not leave zombies rambling around
 			},
 
 			/**
@@ -124,8 +123,10 @@ define('moxie/runtime/RuntimeClient', [
 			disconnectRuntime: function() {
 				if (runtime && --runtime.clients <= 0) {
 					runtime.destroy();
-					runtime = null;
 				}
+
+				// once the component is disconnected, it shouldn't have access to the runtime
+				runtime = null;
 			}
 
 		});
