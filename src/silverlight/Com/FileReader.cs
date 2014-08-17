@@ -68,7 +68,7 @@ namespace Moxiecode.Com
 
 			while ((bytesRead = Read(_blob, buffer, 0, buffer.Length)) != 0) {
 				bytesLoaded += bytesRead;
-				Progress(this, new ProgressEventArgs(bytesLoaded, bytesTotal, Convert.ToBase64String(buffer)));
+				Progress(this, new ProgressEventArgs(bytesLoaded, bytesTotal, Convert.ToBase64String(buffer, 0, bytesRead)));
 			}
 
 			Load(this, null);
