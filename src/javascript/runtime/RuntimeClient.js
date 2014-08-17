@@ -26,6 +26,7 @@ define('moxie/runtime/RuntimeClient', [
 			Connects to the runtime specified by the options. Will either connect to existing runtime or create a new one.
 			Increments number of clients connected to the specified runtime.
 
+			@private
 			@method connectRuntime
 			@param {Mixed} options Can be a runtme uid or a set of key-value pairs defining requirements and pre-requisites
 			*/
@@ -102,6 +103,23 @@ define('moxie/runtime/RuntimeClient', [
 				initialize((options.runtime_order || Runtime.order).split(/\s*,\s*/));
 			},
 
+
+			/**
+			Disconnects from the runtime. Decrements number of clients connected to the specified runtime.
+
+			@private
+			@method disconnectRuntime
+			*/
+			disconnectRuntime: function() {
+				if (runtime && --runtime.clients <= 0) {
+					runtime.destroy();
+				}
+
+				// once the component is disconnected, it shouldn't have access to the runtime
+				runtime = null;
+			},
+
+
 			/**
 			Returns the runtime to which the client is currently connected.
 
@@ -115,18 +133,18 @@ define('moxie/runtime/RuntimeClient', [
 				return runtime = null; // make sure we do not leave zombies rambling around
 			},
 
+
 			/**
-			Disconnects from the runtime. Decrements number of clients connected to the specified runtime.
-
-			@method disconnectRuntime
+			Handy shortcut to safely invoke runtime extension methods.
+			
+			@private
+			@method exec
+			@return {Mixed} Whatever runtime extension method returns
 			*/
-			disconnectRuntime: function() {
-				if (runtime && --runtime.clients <= 0) {
-					runtime.destroy();
+			exec: function() {
+				if (runtime) {
+					return runtime.exec.apply(this, arguments);
 				}
-
-				// once the component is disconnected, it shouldn't have access to the runtime
-				runtime = null;
 			}
 
 		});
