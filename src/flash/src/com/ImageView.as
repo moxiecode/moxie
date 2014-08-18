@@ -6,7 +6,7 @@ package com
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	
-	import mxi.events.ODataEvent;
+	import mxi.events.OProgressEvent;
 
 	public class ImageView extends Sprite
 	{
@@ -27,7 +27,7 @@ package com
 						
 			image = new Image;
 			
-			image.addEventListener(ODataEvent.DATA, function() : void {
+			image.addEventListener(OProgressEvent.LOAD, function() : void {
 				var bd:BitmapData, tmpBd:BitmapData, m:Matrix;
 				
 				image.removeAllEventsListeners();
