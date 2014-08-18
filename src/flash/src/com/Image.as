@@ -32,7 +32,7 @@ package com
 		// events dispatched by this class
 		public static var dispatches:Object = { 
 			"Progress": OProgressEvent.PROGRESS,
-			"Load": ODataEvent.DATA,
+			"Load": OProgressEvent.LOAD,
 			"Error": OErrorEvent.ERROR,
 			"Resize": ImageEvent.RESIZE
 		};
@@ -128,7 +128,7 @@ package com
 				dispatchEvent(e);
 			});
 			
-			fr.addEventListener(Event.COMPLETE, function(e:Event) : void {
+			fr.addEventListener(OProgressEvent.LOAD, function(e:OProgressEvent) : void {
 				fr.removeAllEventsListeners();
 				loadFromByteArray(fr.result);
 				blob.purge();
@@ -153,7 +153,7 @@ package com
 				height = bd.height;
 			}
 			
-			dispatchEvent(new ODataEvent(ODataEvent.DATA));
+			dispatchEvent(new OProgressEvent(OProgressEvent.LOAD));
 		}
 				
 		
