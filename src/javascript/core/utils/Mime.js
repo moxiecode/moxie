@@ -115,6 +115,9 @@ define("moxie/core/utils/Mime", [
 						}
 					} else if (Basic.inArray(type, mimes) === -1) {
 						mimes.push(type);
+						if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
+							mimes.push('.' + ext[ii]);
+						}
 					}
 				}
 			}
