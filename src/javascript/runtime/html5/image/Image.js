@@ -21,9 +21,10 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/runtime/html5/image/MegaPixel",
+	"moxie/runtime/html5/image/Resample",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, MegaPixel, Mime, Env) {
+], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, MegaPixel, Resample, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -87,7 +88,7 @@ define("moxie/runtime/html5/image/Image", [
 				};
 
 				// store thumbnail data as blob
-				if (info.meta.thumb) {
+				if (info.meta.thumb && typeof(info.meta.thumb.data) === 'string') {
 					info.meta.thumb.data = new Blob(null, {
 						type: 'image/jpeg',
 						data: info.meta.thumb.data
@@ -97,9 +98,98 @@ define("moxie/runtime/html5/image/Image", [
 				return info;
 			},
 
-			downsize: function() {
-				_downsize.apply(this, arguments);
+			downsize: function(opts) {
+				var tgtWidth, tgtHeight, orientation, scale;
+
+				if (!_canvas && !_img) {
+					throw new x.ImageError(x.DOMException.INVALID_STATE_ERR);
+				}
+
+				orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+				
+				// we will need to check this on export (see getAsBinaryString())
+				_preserveHeaders = opts.preserve_headers || opts.preserveHeaders; // preserve_headers is Plupload syntax
+
+
+				if (!_canvas) {
+					_canvas = document.createElement('canvas');
+					_canvas.width = _img.width;
+					_canvas.height = _img.height;
+					_drawToCanvas(_img, _canvas, 0, 0, _img.width, _img.height);
+				}
+
+				// calculate actual dimensions of the target image
+				if (Basic.inArray(orientation, [5,6,7,8]) !== -1) {
+					// swap dimensions for images that require 90 degree (or multiple of it) rotation
+					tgtWidth = opts.height;
+					tgtHeight = opts.width;
+				} else {
+					tgtWidth = opts.width;
+					tgtHeight = opts.height;
+				}
+
+				if (opts.crop) {
+					// one of the dimensions may exceed the actual image dimensions - we take the smallest value
+					tgtWidth = Math.min(tgtWidth, _canvas.width);
+					tgtHeight = Math.min(tgtHeight, _canvas.height);
+
+					scale = Math.max(tgtWidth / _canvas.width, tgtHeight / _canvas.height);
+				} else {
+					scale = Math.min(tgtWidth / _canvas.width, tgtHeight / _canvas.height);
+				}
+
+
+				// we only downsize here
+				if (scale > 1 && !opts.crop && _preserveHeaders) {
+					this.trigger('Resize');
+					return;
+				}
+
+
+				// extract image data of appropriate dimensions
+				var dataWidth = _canvas.width
+				, dataHeight = _canvas.height
+				, dataX = 0
+				, dataY = 0
+				, data
+				;
+
+				if (opts.crop) {
+					dataWidth = Math.max(dataWidth, Math.ceil(tgtWidth / scale));
+					dataHeight = Math.max(dataHeight, Math.ceil(tgtHeight / scale));
+
+					// if dimensions of the resulting image still larger than canvas, center it
+					if (dataWidth < _canvas.width) {
+						dataX = Math.round((_canvas.width - dataWidth) / 2);
+					}
+
+					if (destHeight < this.height) {
+						dataY = Math.round((_canvas.height - dataHeight) / 2);
+					}
+				}
+
+				data = _canvas.getContext('2d').getImageData(dataX, dataY, dataWidth, dataHeight);
+
+
+				// now we need to resample our image data down gradually
+				var tgtData = _downsize.call(this, data, scale, opts.resample);
+
+				_canvas = null; // purge kinda
+				_canvas = document.createElement("canvas");
+				_canvas.width = tgtData.width;
+				_canvas.height = tgtData.height;				
+				_canvas.getContext('2d').putImageData(tgtData, 0, 0);
+
+				/*
+				// rotate if required, according to orientation tag
+				if (!_preserveHeaders) {
+					_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
+				}*/
+
+				_modified = true;
+				this.trigger('Resize');
 			},
+
 
 			getAsCanvas: function() {
 				if (_canvas) {
@@ -256,88 +346,43 @@ define("moxie/runtime/html5/image/Image", [
 			}
 		}
 
-		function _downsize(width, height, crop, preserveHeaders) {
-			var self = this
-			, scale
-			, mathFn
-			, x = 0
-			, y = 0
-			, img
-			, destWidth
-			, destHeight
-			, orientation
-			;
 
-			_preserveHeaders = preserveHeaders; // we will need to check this on export (see getAsBinaryString())
+		function _downsize(image, scale, algorithm) {
+			var currScale = 1;
+			var factor = 0.8;
+			var finalScale;
 
-			// take into account orientation tag
-			orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+			function pyramid(image, scale, algorithm) {
+				var destWidth = Math.round(image.width * scale);
+				var destHeight = Math.round(image.height * scale);
+				var destImage = _canvas.getContext('2d').createImageData(destWidth, destHeight);
 
-			if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
-				// swap dimensions
-				var tmp = width;
-				width = height;
-				height = tmp;
-			}
+				var rgb, x, y, idx = 0;
 
-			img = _getImg();
-
-			// unify dimensions
-			if (!crop) {
-				scale = Math.min(width/img.width, height/img.height);
-			} else {
-				// one of the dimensions may exceed the actual image dimensions - we need to take the smallest value
-				width = Math.min(width, img.width);
-				height = Math.min(height, img.height);
-
-				scale = Math.max(width/img.width, height/img.height);
-			}
-		
-			// we only downsize here
-			if (scale > 1 && !crop && preserveHeaders) {
-				this.trigger('Resize');
-				return;
-			}
-
-			// prepare canvas if necessary
-			if (!_canvas) {
-				_canvas = document.createElement("canvas");
-			}
-
-			// calculate dimensions of proportionally resized image
-			destWidth = Math.round(img.width * scale);	
-			destHeight = Math.round(img.height * scale);
-
-			// scale image and canvas
-			if (crop) {
-				_canvas.width = width;
-				_canvas.height = height;
-
-				// if dimensions of the resulting image still larger than canvas, center it
-				if (destWidth > width) {
-					x = Math.round((destWidth - width) / 2);
+				for (y = 0; y < destHeight; y++) {
+					for (x = 0; x < destWidth; x++, idx = (y * destWidth + x) * 4) {
+						rgb = Resample[algorithm](image.data, x / scale, y / scale, image.width);
+						destImage.data[idx] = rgb[0];
+						destImage.data[idx + 1] = rgb[1];
+						destImage.data[idx + 2] = rgb[2];
+						destImage.data[idx + 3] = 255;
+					}
 				}
+				image = null;
+				return destImage;
+			}
+			
 
-				if (destHeight > height) {
-					y = Math.round((destHeight - height) / 2);
-				}
-			} else {
-				_canvas.width = destWidth;
-				_canvas.height = destHeight;
+			while ((currScale *= factor) > scale) {
+				image = pyramid(image, factor, algorithm);
 			}
 
-			// rotate if required, according to orientation tag
-			if (!_preserveHeaders) {
-				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
+			finalScale = factor * (scale / currScale);
+			if (finalScale < 1) {
+				image = pyramid(image, finalScale, algorithm);
 			}
 
-			_drawToCanvas.call(this, img, _canvas, -x, -y, destWidth, destHeight);
-
-			this.width = _canvas.width;
-			this.height = _canvas.height;
-
-			_modified = true;
-			self.trigger('Resize');
+			return image;
 		}
 
 
@@ -346,8 +391,7 @@ define("moxie/runtime/html5/image/Image", [
 				// avoid squish bug in iOS6
 				MegaPixel.renderTo(img, canvas, { width: w, height: h, x: x, y: y });
 			} else {
-				var ctx = canvas.getContext('2d');
-				ctx.drawImage(img, x, y, w, h);
+				canvas.getContext('2d').drawImage(img, x, y, w, h);
 			}
 		}
 
