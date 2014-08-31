@@ -62,6 +62,7 @@ define("moxie/image/Image", [
 	];
 
 	function Image() {
+
 		RuntimeClient.call(this);
 
 		Basic.extend(this, {
@@ -174,13 +175,6 @@ define("moxie/image/Image", [
 			@param {Boolean|Object} [mixed]
 			*/
 			load: function() {
-				// this is here because to bind properly we need an uid first, which is created above
-				this.bind('Load Resize', function() {
-					_updateInfo.call(this);
-				}, 999);
-
-				this.convertEventPropsToHandlers(dispatches);
-
 				_load.apply(this, arguments);
 			},
 
@@ -449,6 +443,14 @@ define("moxie/image/Image", [
 				this.unbindAll();
 			}
 		});
+
+
+		// this is here because to bind properly we need an uid first, which is created above
+		this.handleEventProps(dispatches);
+
+		this.bind('Load Resize', function() {
+			_updateInfo.call(this);
+		}, 999);
 
 
 		function _updateInfo(info) {
