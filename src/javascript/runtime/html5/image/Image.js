@@ -349,9 +349,8 @@ define("moxie/runtime/html5/image/Image", [
 
 		function _downsize(image, scale, algorithm) {
 			var currScale = 1;
-			var factor = 0.8;
-			var finalScale;
 			var factor = 0.6;
+			var finalScale = scale;
 
 			function pyramid(image, scale, algorithm) {
 				var destWidth = Math.round(image.width * scale);
@@ -373,12 +372,16 @@ define("moxie/runtime/html5/image/Image", [
 				return destImage;
 			}
 			
+			if (scale < factor && algorithm !== 'nearest') {
+				// for the factor <= 0.5 bilinear and bicubic algorithms drop in quality significantly
+				while ((currScale *= factor) > scale) {
+					image = pyramid(image, factor, algorithm);
+				}
 
-			while ((currScale *= factor) > scale) {
-				image = pyramid(image, factor, algorithm);
+				finalScale = factor * (scale / currScale);
 			}
 
-			finalScale = factor * (scale / currScale);
+			
 			if (finalScale < 1) {
 				image = pyramid(image, finalScale, algorithm);
 			}
