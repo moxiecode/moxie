@@ -54,6 +54,11 @@ define('moxie/core/EventTarget', [
 			*/
 			addEventListener: function(type, fn, priority, scope) {
 				var self = this, list;
+
+				// without uid no event handlers can be added, so make sure we got one
+				if (!this.hasOwnProperty('uid')) {
+					this.uid = Basic.guid('uid_');
+				}
 				
 				type = Basic.trim(type);
 				
