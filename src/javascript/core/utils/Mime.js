@@ -12,7 +12,7 @@ define("moxie/core/utils/Mime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/I18n"
 ], function(Basic, I18n) {
-	
+
 	var mimeData = "" +
 		"application/msword,doc dot," +
 		"application/pdf,pdf," +
@@ -63,12 +63,12 @@ define("moxie/core/utils/Mime", [
 		"video/3gpp,3gpp 3gp," +
 		"video/3gpp2,3g2," +
 		"video/vnd.rn-realvideo,rv," +
-		"video/ogg,ogv," + 
+		"video/ogg,ogv," +
 		"video/x-matroska,mkv," +
 		"application/vnd.oasis.opendocument.formula-template,otf," +
 		"application/octet-stream,exe";
-	
-	
+
+
 	var Mime = {
 
 		mimes: {},
@@ -78,7 +78,7 @@ define("moxie/core/utils/Mime", [
 		// Parses the default mime types string into a mimes and extensions lookup maps
 		addMimeType: function (mimeData) {
 			var items = mimeData.split(/,/), i, ii, ext;
-			
+
 			for (i = 0; i < items.length; i += 2) {
 				ext = items[i + 1].split(/ /);
 
@@ -94,18 +94,18 @@ define("moxie/core/utils/Mime", [
 
 		extList2mimes: function (filters, addMissingExtensions) {
 			var self = this, ext, i, ii, type, mimes = [];
-			
+
 			// convert extensions to mime types list
 			for (i = 0; i < filters.length; i++) {
 				ext = filters[i].extensions.split(/\s*,\s*/);
 
 				for (ii = 0; ii < ext.length; ii++) {
-					
+
 					// if there's an asterisk in the list, then accept attribute is not required
 					if (ext[ii] === '*') {
 						return [];
 					}
-					
+
 					type = self.mimes[ext[ii]];
 					if (!type) {
 						if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
@@ -115,9 +115,6 @@ define("moxie/core/utils/Mime", [
 						}
 					} else if (Basic.inArray(type, mimes) === -1) {
 						mimes.push(type);
-						if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
-							mimes.push('.' + ext[ii]);
-						}
 					}
 				}
 			}
@@ -127,7 +124,7 @@ define("moxie/core/utils/Mime", [
 
 		mimes2exts: function(mimes) {
 			var self = this, exts = [];
-			
+
 			Basic.each(mimes, function(mime) {
 				if (mime === '*') {
 					exts = [];
@@ -137,7 +134,7 @@ define("moxie/core/utils/Mime", [
 				// check if this thing looks like mime type
 				var m = mime.match(/^(\w+)\/(\*|\w+)$/);
 				if (m) {
-					if (m[2] === '*') { 
+					if (m[2] === '*') {
 						// wildcard mime type detected
 						Basic.each(self.extensions, function(arr, mime) {
 							if ((new RegExp('^' + m[1] + '/')).test(mime)) {
@@ -161,12 +158,12 @@ define("moxie/core/utils/Mime", [
 			}
 
 			exts = this.mimes2exts(mimes);
-			
+
 			accept.push({
 				title: I18n.translate('Files'),
 				extensions: exts.length ? exts.join(',') : '*'
 			});
-			
+
 			// save original mimes string
 			accept.mimes = mimes;
 

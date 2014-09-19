@@ -22,9 +22,9 @@ define("moxie/runtime/html5/Runtime", [
 	"moxie/runtime/Runtime",
 	"moxie/core/utils/Env"
 ], function(Basic, x, Runtime, Env) {
-	
+
 	var type = "html5", extensions = {};
-	
+
 	function Html5Runtime(options) {
 		var I = this
 		, Test = Runtime.capTest
@@ -45,13 +45,13 @@ define("moxie/runtime/html5/Runtime", [
 					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 				}()),
 				filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
-					return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10);
+					return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10) || (Env.browser === 'Safari' && Env.version >= 7);
 				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {
 					if (responseType === 'json' && !!window.JSON) { // we can fake this one even if it's not supported
 						return true;
-					} 
+					}
 					return Env.can('return_response_type', responseType);
 				},
 				return_status_code: True,
@@ -67,8 +67,8 @@ define("moxie/runtime/html5/Runtime", [
 				},
 				select_multiple: function() {
 					// it is buggy on Safari Windows and iOS
-					return I.can('select_file') && 
-						!(Env.browser === 'Safari' && Env.os === 'Windows') && 
+					return I.can('select_file') &&
+						!(Env.browser === 'Safari' && Env.os === 'Windows') &&
 						!(Env.os === 'iOS' && Env.verComp(Env.osVersion, "7.0.4", '<'));
 				},
 				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
@@ -87,7 +87,7 @@ define("moxie/runtime/html5/Runtime", [
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 				}()),
 				upload_filesize: True
-			}, 
+			},
 			arguments[2]
 		);
 
