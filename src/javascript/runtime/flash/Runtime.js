@@ -50,6 +50,47 @@ define("moxie/runtime/flash/Runtime", [
 		return parseFloat(version[0] + '.' + version[1]);
 	}
 
+
+	/**
+	Cross-browser SWF removal
+    	- Especially needed to safely and completely remove a SWF in Internet Explorer
+
+   	Originated from SWFObject v2.2 <http://code.google.com/p/swfobject/> 
+	*/
+	function removeSWF(id) {
+        var obj = Dom.get(id);
+        if (obj && obj.nodeName == "OBJECT") {
+            if (Env.browser === 'IE') {
+                obj.style.display = "none";
+                (function onInit(){
+                	// http://msdn.microsoft.com/en-us/library/ie/ms534360(v=vs.85).aspx
+                    if (obj.readyState == 4) {
+                        removeObjectInIE(id);
+                    }
+                    else {
+                        setTimeout(onInit, 10);
+                    }
+                })();
+            }
+            else {
+                obj.parentNode.removeChild(obj);
+            }
+        }
+    }
+
+
+	function removeObjectInIE(id) {
+        var obj = Dom.get(id);
+        if (obj) {
+            for (var i in obj) {
+                if (typeof obj[i] == "function") {
+                    obj[i] = null;
+                }
+            }
+            obj.parentNode.removeChild(obj);
+        }
+    }
+
 	/**
 	Constructor for the Flash Runtime
 
@@ -210,6 +251,8 @@ define("moxie/runtime/flash/Runtime", [
 
 			destroy: (function(destroy) { // extend default destroy method
 				return function() {
+					removeSWF(I.uid); // SWF removal requires special care in IE
+
 					destroy.call(I);
 					clearTimeout(initTimer); // initialization check might be still onwait
 					options = initTimer = destroy = I = null;
