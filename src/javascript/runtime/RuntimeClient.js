@@ -59,9 +59,12 @@ define('moxie/runtime/RuntimeClient', [
 
 						// jailbreak ...
 						setTimeout(function() {
-							runtime.clients++;
-							// this will be triggered on component
-							comp.trigger('RuntimeInit', runtime);
+							// runtime might have been destryed before init.
+							if (runtime) {
+								runtime.clients++;
+								// this will be triggered on component
+								comp.trigger('RuntimeInit', runtime);
+							}
 						}, 1);
 					});
 
