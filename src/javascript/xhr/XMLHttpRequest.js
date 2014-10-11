@@ -908,6 +908,10 @@ define("moxie/xhr/XMLHttpRequest", [
 				_options.required_caps.send_multipart = true;
 			}
 
+			if (!Basic.isEmptyObj(_headers)) {
+				_options.required_caps.send_custom_headers = true;
+			}
+
 			if (!_same_origin_flag) {
 				_options.required_caps.do_cors = true;
 			}
