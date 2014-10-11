@@ -94,7 +94,7 @@ var addCompat = function(options) {
 		var fileName = "moxie." + suffix + ".js";
 		if (fs.existsSync(options.targetDir + "/" + fileName)) {
 			fs.appendFileSync(options.targetDir + "/" + fileName, 
-				"\n(function() {\n" +
+				"\n\n(function() {\n" +
 				"	var baseDir = '';\n" +
 				"	var scripts = document.getElementsByTagName('script');\n" +
 				"	for (var i = 0; i < scripts.length; i++) {\n" +
@@ -110,7 +110,18 @@ var addCompat = function(options) {
 	});
 };
 
+var addDebug = function(srcPath) {
+	if (fs.existsSync(srcPath)) {
+		var buffer = fs.readFileSync(srcPath);
+		fs.writeFileSync(srcPath, ";var MXI_DEBUG = true;\n" + buffer);
+	}
+};
+
+
 module.exports = {
 	resolveModules: resolveModules,
-	addCompat: addCompat
+	addCompat: addCompat,
+	addDebug: addDebug
 };
+
+
