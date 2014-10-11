@@ -360,6 +360,22 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 		return size;
 	};
+
+
+	/**
+	 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
+	 *
+	 * @param {String} str String with tokens
+	 * @return {String} String with replaced tokens
+	 */
+	var sprintf = function(str) {
+		var args = [].slice.call(arguments, 1);
+
+		return str.replace(/%[a-z]/g, function() {
+			var value = args.shift();
+			return typeOf(value) !== 'undefined' ? value : '';
+		});
+	};
 	
 
 	return {
@@ -375,6 +391,7 @@ define('moxie/core/utils/Basic', [], function() {
 		arrayIntersect: arrayIntersect,
 		toArray: toArray,
 		trim: trim,
+		sprintf: sprintf,
 		parseSizeStr: parseSizeStr
 	};
 });

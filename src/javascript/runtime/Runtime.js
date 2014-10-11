@@ -9,10 +9,11 @@
  */
 
 define('moxie/runtime/Runtime', [
+	"moxie/core/utils/Env",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/EventTarget"
-], function(Basic, Dom, EventTarget) {
+], function(Env, Basic, Dom, EventTarget) {
 	var runtimeConstructors = {}, runtimes = {};
 
 	/**
@@ -516,6 +517,10 @@ define('moxie/runtime/Runtime', [
 			defaultMode = 'browser';
 		}
 
+		if (MXI_DEBUG && Env.debug.runtime) {
+			Env.log("\tdefault mode: %s", defaultMode);	
+		}
+
 		if (requiredCaps && !Basic.isEmptyObj(modeCaps)) {
 			// loop over required caps and check if they do require the same mode
 			Basic.each(requiredCaps, function(value, cap) {
@@ -528,11 +533,20 @@ define('moxie/runtime/Runtime', [
 					}
 					
 					if (!mode) {
-						mode = capMode;
+						mode = capMode;						
 					} else if (!(mode = Basic.arrayIntersect(mode, capMode))) {
 						// if cap requires conflicting mode - runtime cannot fulfill required caps
+
+						if (MXI_DEBUG && Env.debug.runtime) {
+							Env.log("\t\t%c: %v (conflicting mode requested: %s)", cap, value, capMode);	
+						}
+
 						return (mode = false);
-					}
+					}					
+				}
+
+				if (MXI_DEBUG && Env.debug.runtime) {
+					Env.log("\t\t%c: %v (compatible modes: %s)", cap, value, mode);	
 				}
 			});
 

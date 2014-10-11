@@ -9,9 +9,10 @@
  */
 
 define('moxie/core/EventTarget', [
+	'moxie/core/utils/Env',
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic'
-], function(x, Basic) {
+], function(Env, x, Basic) {
 	/**
 	Parent object for all event dispatching components and objects
 
@@ -192,6 +193,10 @@ define('moxie/core/EventTarget', [
 					args.shift();
 					evt.type = type;
 					args.unshift(evt);
+
+					if (MXI_DEBUG && Env.debug.events) {
+						Env.log("Event '%s' fired on %u", evt.type, uid);	
+					}
 
 					// Dispatch event to all listeners
 					var queue = [];

@@ -629,5 +629,44 @@ define("moxie/core/utils/Env", [
 	// @deprecated Use `Env.os` instead
 	Env.OS = Env.os;
 
+	if (MXI_DEBUG) {
+		Env.debug = {
+			runtime: true,
+			events: false
+		};
+
+		Env.log = function() {
+			var data = arguments[0];
+
+			if (Basic.typeOf(data) === 'string') {
+				data = Basic.sprintf.apply(this, arguments);
+			}
+
+			if (window && window.console && window.console.log) {
+				window.console.log(data);
+			} else if (document) {
+
+				function logObj(data) {
+					// TODO: this should recursively print out the object in a pretty way
+					console.appendChild(document.createTextNode(data + "\n"));
+				}
+
+				var console = document.getElementById('moxie-console');
+				if (!console) {
+					console = document.createElement('pre');
+					console.id = 'moxie-console';
+					//console.style.display = 'none';
+					document.body.appendChild(console);
+				}
+
+				if (Basic.inArray(Basic.typeOf(data), ['object', 'array']) !== -1) {
+					logObj(data);
+				} else {
+					console.appendChild(document.createTextNode(data + "\n"));
+				}
+			}
+		};
+	}
+
 	return Env;
 });
