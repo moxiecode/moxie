@@ -9,10 +9,11 @@
  */
 
 define('moxie/runtime/RuntimeClient', [
+	'moxie/core/utils/Env',
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic',
 	'moxie/runtime/Runtime'
-], function(x, Basic, Runtime) {
+], function(Env, x, Basic, Runtime) {
 	/**
 	Set of methods and properties, required by a component to acquire ability to connect to a runtime
 
@@ -50,12 +51,21 @@ define('moxie/runtime/RuntimeClient', [
 						return;
 					}
 
+					if (MXI_DEBUG && Env.debug.runtime) {
+						Env.log("Trying runtime: %s", type);
+						Env.log(options);
+					}
+
 					// try initializing the runtime
 					runtime = new constructor(options);
 
 					runtime.bind('Init', function() {
 						// mark runtime as initialized
 						runtime.initialized = true;
+
+						if (MXI_DEBUG && Env.debug.runtime) {
+							Env.log("Runtime '%s' initialized", runtime.type);
+						}
 
 						// jailbreak ...
 						setTimeout(function() {
@@ -66,11 +76,19 @@ define('moxie/runtime/RuntimeClient', [
 					});
 
 					runtime.bind('Error', function() {
+						if (MXI_DEBUG && Env.debug.runtime) {
+							Env.log("Runtime '%s' failed to initialize", runtime.type);
+						}
+
 						runtime.destroy(); // runtime cannot destroy itself from inside at a right moment, thus we do it here
 						initialize(items);
 					});
 
 					/*runtime.bind('Exception', function() { });*/
+
+					if (MXI_DEBUG && Env.debug.runtime) {
+						Env.log("\tmode: %s", runtime.mode);	
+					}
 
 					// check if runtime managed to pick-up operational mode
 					if (!runtime.mode) {
