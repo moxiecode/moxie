@@ -263,7 +263,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 						offset = data.LONG(offset) + offsets.tiffHeader;
 
 						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.LONG(offset + ii*4) / data.LONG(offset + ii*4 + 4);
+							values[ii] = data.LONG(offset + ii*8) / data.LONG(offset + ii*8 + 4);
 						}
 
 						break;
@@ -281,7 +281,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 						offset = data.LONG(offset) + offsets.tiffHeader;
 
 						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.SLONG(offset + ii*4) / data.SLONG(offset + ii*4 + 4);
+							values[ii] = data.SLONG(offset + ii*8) / data.SLONG(offset + ii*8 + 4);
 						}
 
 						break;

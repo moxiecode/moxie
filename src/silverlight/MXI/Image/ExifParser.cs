@@ -432,7 +432,7 @@ namespace Moxiecode.MXI.Image
 						offset = data.LONG(offset) + offsets["tiffHeader"];
 						
 						for (ii = 0; ii < count; ii++) {
-							values[ii] = ((double)data.LONG(offset + ii*4)/(double)data.LONG(offset + ii*4 + 4)).ToString();
+							values[ii] = ((double)data.LONG(offset + ii*8)/(double)data.LONG(offset + ii*8 + 4)).ToString();
 						}
 						break;
 					
@@ -448,7 +448,7 @@ namespace Moxiecode.MXI.Image
 						offset = data.LONG(offset) + offsets["tiffHeader"];
 						
 						for (ii = 0; ii < count; ii++) {
-							values[ii] = ((double)data.SLONG(offset + ii*4)/(double)data.SLONG(offset + ii*4 + 4)).ToString();
+							values[ii] = ((double)data.SLONG(offset + ii*8)/(double)data.SLONG(offset + ii*8 + 4)).ToString();
 						}
 						break;
 					
