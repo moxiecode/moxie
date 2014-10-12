@@ -110,10 +110,12 @@ var addCompat = function(options) {
 	});
 };
 
-var addDebug = function(srcPath) {
+var addDebug = function(srcPath, enable) {
+	enable = enable === undefined ? true : enable;
+
 	if (fs.existsSync(srcPath)) {
 		var buffer = fs.readFileSync(srcPath);
-		fs.writeFileSync(srcPath, ";var MXI_DEBUG = true;\n" + buffer);
+		fs.writeFileSync(srcPath, ";var MXI_DEBUG = "+enable+";\n" + buffer);
 	}
 };
 

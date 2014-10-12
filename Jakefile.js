@@ -89,6 +89,7 @@ task("mkjs", [], function () {
 	tools.addReleaseDetailsTo(targetDir, info);
 
 	// add debug constant to dev source
+	mkjs.addDebug(targetDir + "/moxie.js");
 	mkjs.addDebug(targetDir + "/moxie.dev.js");
 
 	// add compatibility
