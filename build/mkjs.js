@@ -57,7 +57,7 @@ var addCompat = function(options) {
 
 	// add normal
 	if (fs.existsSync(options.targetDir + "/moxie.js")) {
-		fs.appendFileSync(options.targetDir + "/moxie.js", buffer);
+		fs.appendFileSync(options.targetDir + "/moxie.js", "\n" + buffer);
 	}
 
 	// ... minified
