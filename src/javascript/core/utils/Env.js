@@ -636,6 +636,12 @@ define("moxie/core/utils/Env", [
 		};
 
 		Env.log = function() {
+			
+			function logObj(data) {
+				// TODO: this should recursively print out the object in a pretty way
+				console.appendChild(document.createTextNode(data + "\n"));
+			}
+
 			var data = arguments[0];
 
 			if (Basic.typeOf(data) === 'string') {
@@ -645,12 +651,6 @@ define("moxie/core/utils/Env", [
 			if (window && window.console && window.console.log) {
 				window.console.log(data);
 			} else if (document) {
-
-				function logObj(data) {
-					// TODO: this should recursively print out the object in a pretty way
-					console.appendChild(document.createTextNode(data + "\n"));
-				}
-
 				var console = document.getElementById('moxie-console');
 				if (!console) {
 					console = document.createElement('pre');
