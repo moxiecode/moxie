@@ -118,6 +118,10 @@ define('moxie/runtime/Runtime', [
 		if (options.preferred_caps) {
 			defaultMode = Runtime.getMode(modeCaps, options.preferred_caps, defaultMode);
 		}
+
+		if (MXI_DEBUG && Env.debug.runtime) {
+			Env.log("\tdefault mode: %s", defaultMode);	
+		}
 		
 		// small extension factory here (is meant to be extended with actual extensions constructors)
 		_shim = (function() {
@@ -515,10 +519,6 @@ define('moxie/runtime/Runtime', [
 
 		if (Basic.typeOf(defaultMode) === 'undefined') { // only if not specified
 			defaultMode = 'browser';
-		}
-
-		if (MXI_DEBUG && Env.debug.runtime) {
-			Env.log("\tdefault mode: %s", defaultMode);	
 		}
 
 		if (requiredCaps && !Basic.isEmptyObj(modeCaps)) {

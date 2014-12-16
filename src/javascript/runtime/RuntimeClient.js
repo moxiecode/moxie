@@ -87,7 +87,7 @@ define('moxie/runtime/RuntimeClient', [
 					/*runtime.bind('Exception', function() { });*/
 
 					if (MXI_DEBUG && Env.debug.runtime) {
-						Env.log("\tmode: %s", runtime.mode);	
+						Env.log("\tselected mode: %s", runtime.mode);	
 					}
 
 					// check if runtime managed to pick-up operational mode
