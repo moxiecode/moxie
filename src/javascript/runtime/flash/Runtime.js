@@ -188,6 +188,10 @@ define("moxie/runtime/flash/Runtime", [
 
 		// minimal requirement for Flash Player version
 		if (getShimVersion() < 10) {
+			if (MXI_DEBUG && Env.debug.runtime) {
+				Env.log("\tFlash didn't meet minimal version requirement (10).");	
+			}
+
 			this.mode = false; // with falsy mode, runtime won't operable, no matter what the mode was before
 		}
 
@@ -245,6 +249,10 @@ define("moxie/runtime/flash/Runtime", [
 				initTimer = setTimeout(function() {
 					if (I && !I.initialized) { // runtime might be already destroyed by this moment
 						I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+
+						if (MXI_DEBUG && Env.debug.runtime) {
+							Env.log("\tFlash failed to initialize within a specified period of time (typically 5s).");	
+						}
 					}
 				}, 5000);
 			},
