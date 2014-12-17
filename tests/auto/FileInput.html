@@ -17,12 +17,16 @@
 
 <script type="text/javascript">
 
+if (mOxie.Env.debug) {
+	mOxie.Env.debug.runtime = false;
+}
+
 QUnit.config.reorder = false;
 QUnit.config.testTimeout = 10000;
 
 
-module("FileInput", {
-	setup: function() {
+QUnit.module("FileInput", {
+	beforeEach: function() {
 		o.extend(this, {
 			x: o.Exceptions,
 
@@ -37,13 +41,14 @@ module("FileInput", {
 		});
 	},
 
-	teardown: function() {
+	afterEach: function() {
 	}
 });
 
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
-	test("Init and Destroy: " + runtime, function(assert) {
+	QUnit.test("Init and Destroy: " + runtime, function(assert) {
+		var done = assert.async();
 
 		$('<a id="browse_button" href="javascript:;">Browse...</a>')
 			.appendTo(this.DOM);
@@ -54,28 +59,28 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		}));
 
 		fi.onready = function() {
-			start();
-
 			assert.ok($('#qunit-fixture').find('.moxie-shim').length, "HTML structure inserted.");
 
 			this.destroy();
 			assert.ok(!$('#qunit-fixture').find('.moxie-shim').length, "HTML structure removed.");
+			done();
 		};
 
 		fi.bind("Error RuntimeError", function() {
 			assert.ok(true, "Runtime not supported.");
-			start();
+			done();
 		});
 
-		stop();
 		fi.init();
 	});
 });
 
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
-	test("Test position and dimensions of the shim after initialization: " + runtime, function(assert) 
+	QUnit.test("Test position and dimensions of the shim after initialization: " + runtime, function(assert) 
 	{
+		var done = assert.async();
+
 		$('#qunit-fixture').append([
 			'<div id="container">',
 				'<a id="browse_button" href="javascript:;">Browse...</a>',
@@ -87,14 +92,12 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			browse_button: 'browse_button'
 		});
 
-		// we are testing default behavior
+		// we are QUnit.testing default behavior
 		delete options.container;
 
 		var fi = new o.FileInput(options);
 
 		fi.onready = function() {
-			start();
-
 			var $container = $('#container')
 			, $browseBtn = $('#browse_button')
 			, $moxieShim = $('.moxie-shim')
@@ -138,28 +141,24 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 				assert.ok($moxieShim.css('z-index') < $browseBtn.css('z-index'), "Plupload structures are behind browse_button.");
 			}
 
+			done();
 		};
 
 		fi.bind("Error RuntimeError", function() {
 			assert.ok(true, "Runtime not supported.");
-			start();
+			done();
 		});
 
-		stop();
+		
 		fi.init();
 	});
 });
 
 
-
 </script>
 </head>
 <body>
-	<h1 id="qunit-header">mOxie Test Suite</h1>
-	<h2 id="qunit-banner"></h2>
-	<h2 id="qunit-userAgent"></h2>
-	<ol id="qunit-tests">
-	</ol>
+	<div id="qunit"></div>
     <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
 </body>
 </html>
