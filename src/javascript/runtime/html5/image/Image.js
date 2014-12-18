@@ -351,7 +351,6 @@ define("moxie/runtime/html5/image/Image", [
 			var currScale = 1;
 			var factor = 0.8;
 			var finalScale;
-			var factor = 0.6;
 
 			function pyramid(image, scale, algorithm) {
 				var destWidth = Math.round(image.width * scale);
