@@ -163,6 +163,7 @@ define('moxie/runtime/RuntimeClient', [
 				if (runtime) {
 					return runtime.exec.apply(this, arguments);
 				}
+				return null;
 			}
 
 		});
