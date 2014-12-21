@@ -10,6 +10,7 @@
 
 define('moxie/file/FileInput', [
 	'moxie/core/utils/Basic',
+	'moxie/core/utils/Env',
 	'moxie/core/utils/Mime',
 	'moxie/core/utils/Dom',
 	'moxie/core/Exceptions',
@@ -17,7 +18,7 @@ define('moxie/file/FileInput', [
 	'moxie/core/I18n',
 	'moxie/runtime/Runtime',
 	'moxie/runtime/RuntimeClient'
-], function(Basic, Mime, Dom, x, EventTarget, I18n, Runtime, RuntimeClient) {
+], function(Basic, Env, Mime, Dom, x, EventTarget, I18n, Runtime, RuntimeClient) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
@@ -123,6 +124,10 @@ define('moxie/file/FileInput', [
 	];
 
 	function FileInput(options) {
+		if (MXI_DEBUG) {
+			Env.log("Instantiating FileInput...");	
+		}
+
 		var self = this,
 			container, browseButton, defaults;
 

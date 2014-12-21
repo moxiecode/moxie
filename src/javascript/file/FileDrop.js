@@ -13,11 +13,12 @@ define('moxie/file/FileDrop', [
 	'moxie/core/utils/Dom',
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic',
+	'moxie/core/utils/Env',
 	'moxie/file/File',
 	'moxie/runtime/RuntimeClient',
 	'moxie/core/EventTarget',
 	'moxie/core/utils/Mime'
-], function(I18n, Dom, x, Basic, File, RuntimeClient, EventTarget, Mime) {
+], function(I18n, Dom, x, Basic, Env, File, RuntimeClient, EventTarget, Mime) {
 	/**
 	Turn arbitrary DOM element to a drop zone accepting files. Converts selected files to _File_ objects, to be used 
 	in conjunction with _Image_, preloaded in memory with _FileReader_ or uploaded to a server through 
@@ -94,6 +95,10 @@ define('moxie/file/FileDrop', [
 	];
 
 	function FileDrop(options) {
+		if (MXI_DEBUG) {
+			Env.log("Instantiating FileDrop...");	
+		}
+
 		var self = this, defaults;
 
 		// if flat argument passed it should be drop_zone id
