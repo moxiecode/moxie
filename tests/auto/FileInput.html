@@ -58,13 +58,27 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			browse_button: 'browse_button'
 		}));
 
+		// save component uid
+		var uid = fi.uid;
+		var eventsNotCleared = false;
+
 		fi.onready = function() {
 			assert.ok($('#qunit-fixture').find('.moxie-shim').length, "HTML structure inserted.");
 
 			this.destroy();
 			assert.ok(!$('#qunit-fixture').find('.moxie-shim').length, "HTML structure removed.");
+
+			// test if event handlers are removed
+			moxie.core.EventTarget.instance.dispatchEvent(uid + '::Change');
+			assert.equal(eventsNotCleared, false, "All events unbinded.");
+
 			done();
 		};
+
+		fi.onchange = function() {
+			eventsNotCleared = true;
+		};
+
 
 		fi.bind("Error RuntimeError", function() {
 			assert.ok(true, "Runtime not supported.");
