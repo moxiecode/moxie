@@ -5,7 +5,8 @@ var mkswf = function(params, cb) {
 	var defaults = {
 		exe: "mxmlc",
 		target: "11.3",
-		extra: ""
+		extra: "",
+		compress: 'lzma'
 	};
 	var cmd = "<exe> -target-player=<target> -compiler.source-path=<src> -output=<output> -static-link-runtime-shared-libraries=true <extra> <input>";
 
@@ -22,10 +23,17 @@ var mkswf = function(params, cb) {
 		return params[$2] || '';
 	});
 
+
 	exec(cmd, function(error, stdout, stderr) {
 		if (error) {
 			console.log(stderr);
-		}
+		} else if (params.compress === 'lzma') {
+			// re-compress with lzma if possible
+			exec("python ./build/swf2lzma/swf2lzma.py <output> <output>".replace(/<output>/g, params.output), function() {
+				cb();
+			});
+			return;
+		}		
 		cb();
 	});
 };

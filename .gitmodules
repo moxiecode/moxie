@@ -4,3 +4,6 @@
 [submodule "tests/JSON-js"]
 	path = tests/JSON-js
 	url = https://github.com/douglascrockford/JSON-js.git
+[submodule "build/swf2lzma"]
+	path = build/swf2lzma
+	url = https://github.com/jspiro/swf2lzma.git
