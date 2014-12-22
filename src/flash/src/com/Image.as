@@ -8,22 +8,20 @@ package com
 	
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
+	import flash.display.JPEGEncoderOptions;
 	import flash.display.Loader;
+	import flash.display.PNGEncoderOptions;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.geom.Matrix;
 	import flash.system.System;
 	import flash.utils.ByteArray;
-	import flash.display.JPEGEncoderOptions;
-	import flash.display.PNGEncoderOptions;
 	
 	import mxi.Utils;
 	import mxi.events.OErrorEvent;
 	import mxi.events.OProgressEvent;
 	import mxi.image.JPEG;
 	import mxi.image.PNG;
-	import mxi.image.formatlos.BitmapDataUnlimited;
-	import mxi.image.formatlos.events.BitmapDataUnlimitedEvent;
 	
 		
 	public class Image extends OEventDispatcher
@@ -186,19 +184,18 @@ package com
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event) : void 
 			{					
 				loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, arguments.callee);
-								
-				_prepareBitmapData(loader.width, loader.height, function(bd:BitmapData) : void {
-					if (bd) {
-						bd.draw(loader.content as IBitmapDrawable, null, null, null, null, true);
-						loadFromBitmapData(bd);	
-					} else {
-						dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, RuntimeError.OUT_OF_MEMORY));
-					}
+				
+				try {
+					var bd:BitmapData = new BitmapData(loader.width, loader.height);
+					bd.draw(loader.content as IBitmapDrawable, null, null, null, null, true);
+					loadFromBitmapData(bd);	
+				} catch (ex:*) {
+					dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, RuntimeError.OUT_OF_MEMORY));
+				}
 					
-					_img.purge();
-					loader.unload();
-					ba.clear();
-				});
+				_img.purge();
+				loader.unload();
+				ba.clear();
 			});
 			
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function(e:*) : void {
@@ -229,61 +226,59 @@ package com
 		
 		public function downsize(width:uint, height:uint, crop:Boolean = false, preserveHeaders:Boolean = true) : void
 		{			
-			var self:Image = this, scale:Number, orientation:uint = 1, selector:Function, output:BitmapData,
+			var self:Image = this, scale:Number, orientation:uint = 1, selector:Function, output:BitmapData;
 				
-				// when scaled directly, Flash produces low quality result, so we do it here gradually
-				downScale:Function = function(tmpWidth:Number, tmpHeight:Number) : void 
-				{				
-					// modifies output internally
-					_prepareBitmapData(tmpWidth, tmpHeight, function(bd:BitmapData) : void 
-					{ 
-						var matrix:Matrix, imgWidth:Number, imgHeight:Number;
-						
-						scale = selector(tmpWidth / output.width, tmpHeight / output.height);
+			// when scaled directly, Flash produces low quality result, so we do it here gradually
+			function downScale(tmpWidth:Number, tmpHeight:Number) : void 
+			{				
+				// modifies output internally
+				var bd:BitmapData = new BitmapData(tmpWidth, tmpHeight);
+				var matrix:Matrix, imgWidth:Number, imgHeight:Number;
+				
+				scale = selector(tmpWidth / output.width, tmpHeight / output.height);
 
-						matrix = new Matrix;
-						matrix.scale(scale, scale);
-						
-						// check if we need to center the image
-						imgWidth = output.width * scale;
-						imgHeight = output.height * scale;
-						if (imgWidth > tmpWidth) {
-							matrix.translate(-Math.round((imgWidth - tmpWidth) / 2), 0);
-						}
-						if (imgHeight > tmpHeight) {
-							matrix.translate(0, -Math.round((imgHeight - tmpHeight) / 2));
-						}
-						
-						bd.draw(output, matrix, null, null, null, true);
-						output.dispose();			
-						output = bd;
-												
-						if (output.width / 2 > width && output.height / 2 > height) {
-							downScale(output.width / 2, output.height / 2); 
-						} else if (width < output.width || height < output.height) {
-							downScale(width, height);
-						} else {			
-							_bd.dispose();
-							_bd = output;	
-							
-							if (self.type == 'image/jpeg') {
-								if (!_preserveHeaders) {
-									_rotateToOrientation(orientation);
-								} else if (_img) {
-									// insert new values into exif headers
-									_img.updateDimensions(_bd.width, _bd.height);
-									// update image info
-									meta = _img.metaInfo();
-								} 
-							}		
-							
-							self.width = _bd.width;
-							self.height = _bd.height;	
-							
-							dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
-						}
-					});
+				matrix = new Matrix;
+				matrix.scale(scale, scale);
+				
+				// check if we need to center the image
+				imgWidth = output.width * scale;
+				imgHeight = output.height * scale;
+				if (imgWidth > tmpWidth) {
+					matrix.translate(-Math.round((imgWidth - tmpWidth) / 2), 0);
+				}
+				if (imgHeight > tmpHeight) {
+					matrix.translate(0, -Math.round((imgHeight - tmpHeight) / 2));
+				}
+				
+				bd.draw(output, matrix, null, null, null, true);
+				output.dispose();			
+				output = bd;
+										
+				if (output.width / 2 > width && output.height / 2 > height) {
+					downScale(output.width / 2, output.height / 2); 
+				} else if (width < output.width || height < output.height) {
+					downScale(width, height);
+				} else {			
+					_bd.dispose();
+					_bd = output;	
+					
+					if (self.type == 'image/jpeg') {
+						if (!_preserveHeaders) {
+							_rotateToOrientation(orientation);
+						} else if (_img) {
+							// insert new values into exif headers
+							_img.updateDimensions(_bd.width, _bd.height);
+							// update image info
+							meta = _img.metaInfo();
+						} 
+					}		
+					
+					self.width = _bd.width;
+					self.height = _bd.height;	
+					
+					dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
 				};
+			};
 			
 			_preserveHeaders = preserveHeaders; // memorize if we should preserve meta headers on JPEGs on save
 				
@@ -413,26 +408,6 @@ package com
 			flash.system.System.gc();
 			// ...and the second to now sweep away marks from the first call.
 			flash.system.System.gc();
-		}
-		
-		
-		/**
-		 * Prior to FP11, there was a constraint on a resolution that Flash could handle for the BitmapData.
-		 * This doesn't harm anyway (yet).
-		 */  
-		public function _prepareBitmapData(width:uint, height:uint, callback:Function) : void
-		{
-			var bc:BitmapDataUnlimited = new BitmapDataUnlimited;
-			
-			bc.addEventListener(BitmapDataUnlimitedEvent.COMPLETE, function(e:BitmapDataUnlimitedEvent) : void {
-				callback(bc.bitmapData);
-			});
-			
-			bc.addEventListener(BitmapDataUnlimitedEvent.ERROR, function(e:BitmapDataUnlimitedEvent) : void {
-				callback(null);
-			});
-			
-			bc.create(width, height, true);
 		}
 		
 		
