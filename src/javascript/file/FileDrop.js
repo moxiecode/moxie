@@ -141,10 +141,7 @@ define('moxie/file/FileDrop', [
 
 			files: null,
 
-			init: function() {
-	
-				self.convertEventPropsToHandlers(dispatches);
-		
+			init: function() {		
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
 					runtime.exec.call(self, 'FileDrop', 'init', options);
@@ -164,6 +161,8 @@ define('moxie/file/FileDrop', [
 				this.files = null;
 			}
 		});
+
+		this.handleEventProps(dispatches);
 	}
 
 	FileDrop.prototype = EventTarget.instance;

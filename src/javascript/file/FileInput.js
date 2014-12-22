@@ -227,8 +227,6 @@ define('moxie/file/FileInput', [
 			@method init
 			*/
 			init: function() {
-				self.convertEventPropsToHandlers(dispatches);
-
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
 					self.shimid = runtime.shimid;
@@ -316,6 +314,8 @@ define('moxie/file/FileInput', [
 				this.files = null;
 			}
 		});
+
+		this.handleEventProps(dispatches);
 	}
 
 	FileInput.prototype = EventTarget.instance;

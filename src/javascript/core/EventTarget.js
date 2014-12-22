@@ -265,31 +265,6 @@ define('moxie/core/EventTarget', [
 				return this.dispatchEvent.apply(this, arguments);
 			},
 			
-			
-			/**
-			Converts properties of on[event] type to corresponding event handlers,
-			is used to avoid extra hassle around the process of calling them back
-
-			@method convertEventPropsToHandlers
-			@private
-			*/
-			convertEventPropsToHandlers: function(handlers) {
-				var h;
-						
-				if (Basic.typeOf(handlers) !== 'array') {
-					handlers = [handlers];
-				}
-
-				for (var i = 0; i < handlers.length; i++) {
-					h = 'on' + handlers[i];
-					
-					if (Basic.typeOf(this[h]) === 'function') {
-						this.addEventListener(handlers[i], this[h]);
-					} else if (Basic.typeOf(this[h]) === 'undefined') {
-						this[h] = null; // object must have defined event properties, even if it doesn't make use of them
-					}
-				}
-			},
 
 			/**
 			Handle properties of on[event] type.
