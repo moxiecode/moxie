@@ -95,7 +95,23 @@ define("moxie/xhr/XMLHttpRequest", [
 	@uses RuntimeClient
 	@extends EventTarget
 	*/
-	var dispatches = ['loadstart', 'progress', 'abort', 'error', 'load', 'timeout', 'loadend']; // & readystatechange (for historical reasons)
+	var dispatches = [
+		'loadstart',
+
+		'progress',
+
+		'abort',
+
+		'error',
+
+		'load',
+
+		'timeout',
+
+		'loadend'
+
+		// readystatechange (for historical reasons)
+	]; 
 	
 	var NATIVE = 1, RUNTIME = 2;
 					
@@ -337,7 +353,6 @@ define("moxie/xhr/XMLHttpRequest", [
 				_p('readyState', XMLHttpRequest.OPENED);
 				
 				// 20
-				this.convertEventPropsToHandlers(['readystatechange']); // unify event handlers
 				this.dispatchEvent('readystatechange');
 			},
 			
@@ -514,9 +529,6 @@ define("moxie/xhr/XMLHttpRequest", [
 				} else {
 					_options = options;
 				}
-													
-				this.convertEventPropsToHandlers(dispatches);
-				this.upload.convertEventPropsToHandlers(dispatches);
 															
 				// 1-2
 				if (this.readyState !== XMLHttpRequest.OPENED || _send_flag) {
@@ -616,6 +628,9 @@ define("moxie/xhr/XMLHttpRequest", [
 				}
 			}
 		});
+
+		this.handleEventProps(dispatches.concat(['readystatechange'])); // for historical reasons
+		this.upload.handleEventProps(dispatches);
 
 		/* this is nice, but maybe too lengthy
 

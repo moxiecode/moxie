@@ -409,7 +409,7 @@ define("moxie/image/Image", [
 					
 					// high-resolution images cannot be consistently handled across the runtimes
 					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
-						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+						//throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
 					}
 
 					var imgCopy = new Image();
@@ -451,7 +451,7 @@ define("moxie/image/Image", [
 		});
 
 
-		// this is here because to bind properly we need an uid first, which is created above
+		// this is here, because in order to bind properly, we need uid, which is created above
 		this.handleEventProps(dispatches);
 
 		this.bind('Load Resize', function() {
