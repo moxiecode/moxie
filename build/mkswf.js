@@ -4,7 +4,7 @@ var exec = require("child_process").exec;
 var mkswf = function(params, cb) {
 	var defaults = {
 		exe: "mxmlc",
-		target: "10.1.0",
+		target: "11.3",
 		extra: ""
 	};
 	var cmd = "<exe> -target-player=<target> -compiler.source-path=<src> -output=<output> -static-link-runtime-shared-libraries=true <extra> <input>";

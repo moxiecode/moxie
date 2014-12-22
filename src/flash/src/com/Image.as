@@ -1,7 +1,5 @@
 package com
 {	
-	import com.adobe.images.JPGEncoder;
-	import com.adobe.images.PNGEncoder;
 	import com.errors.ImageError;
 	import com.errors.RuntimeError;
 	import com.events.BlobEvent;
@@ -16,9 +14,10 @@ package com
 	import flash.geom.Matrix;
 	import flash.system.System;
 	import flash.utils.ByteArray;
+	import flash.display.JPEGEncoderOptions;
+	import flash.display.PNGEncoderOptions;
 	
 	import mxi.Utils;
-	import mxi.events.ODataEvent;
 	import mxi.events.OErrorEvent;
 	import mxi.events.OProgressEvent;
 	import mxi.image.JPEG;
@@ -355,7 +354,7 @@ package com
 			} 
 			
 			if (type == 'image/jpeg') {	
-				ba = new JPGEncoder(quality).encode(bd);
+				ba = bd.encode(bd.rect, new JPEGEncoderOptions(quality));
 				
 				if (_img && _img is JPEG) {
 					// strip off any headers that might be left by encoder, etc
@@ -366,7 +365,7 @@ package com
 					}
 				}
 			} else if (type == 'image/png') {
-				ba = PNGEncoder.encode(bd);
+				ba = bd.encode(bd.rect, new PNGEncoderOptions());
 			}			
 			return ba;
 		}
