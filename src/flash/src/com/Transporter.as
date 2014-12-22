@@ -7,7 +7,6 @@ package com
 	import flash.events.Event;
 	import flash.utils.ByteArray;
 	
-	import mxi.events.ODataEvent;
 	import mxi.events.OErrorEvent;
 	import mxi.events.OProgressEvent;
 

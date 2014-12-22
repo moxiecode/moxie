@@ -5,7 +5,6 @@ package com
 	import com.utils.URLStreamProgress;
 	
 	import flash.events.DataEvent;
-	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.HTTPStatusEvent;

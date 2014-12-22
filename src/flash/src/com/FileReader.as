@@ -5,17 +5,12 @@ package com
 	import com.utils.OEventDispatcher;
 	import com.utils.Buffer;
 	
-	import flash.errors.IOError;
-	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
-	import flash.geom.Point;
 	import flash.net.FileReference;
 	import flash.utils.ByteArray;
 	
-	import mxi.Extend;
 	import mxi.events.OErrorEvent;
 	import mxi.events.OProgressEvent;
 	

@@ -5,11 +5,9 @@ package com
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
-	import flash.external.ExternalInterface;
 	import flash.net.FileFilter;
 	import flash.net.FileReference;
 	import flash.net.FileReferenceList;
-	import flash.utils.Dictionary;
 	
 	import mxi.Utils;
 	
