@@ -100,6 +100,7 @@
     <Compile Include="Com\Errors\RuntimeError.cs" />
     <Compile Include="Com\Errors\DOMError.cs" />
     <Compile Include="Com\Events\DataEventArgs.cs" />
+    <Compile Include="Com\Events\ErrorEventArgs.cs" />
     <Compile Include="Com\Events\ProgressEventArgs.cs" />
     <Compile Include="Com\File.cs" />
     <Compile Include="Com\FileDrop.cs" />
