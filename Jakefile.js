@@ -132,11 +132,12 @@ task("mkswf", [], function() {
 			}, cb);
 		},
 		function(cb) {
+			// we do not require any fancy stuff in this one, so target FP 11.2 (last version supported by linux)
 			mkswf({
 				src: "./src/flash/src",
 				input: "./src/flash/src/Moxie.as",
 				output: targetDir + "/Moxie.min.swf",
-				extra: "-define=MXI::IncludeImageLibs,false -define=MXI::EnableCSS,false -debug=false -optimize=true -swf-version=16"
+				extra: "-define=MXI::IncludeImageLibs,false -define=MXI::EnableCSS,false -debug=false -optimize=true -swf-version=15"
 			}, cb);
 		}
 	], complete);
