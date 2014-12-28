@@ -1,6 +1,7 @@
 {
 	"title": "Automated Tests", 
 	"tests": [
+		{"title": "Utils/Url", "url": "Utils/Url.html"},
 		{"title": "Runtime", "url": "Runtime.html"},
 		{"title": "File", "url": "File.html"},
 		{"title": "FileInput", "url": "FileInput.html"},
