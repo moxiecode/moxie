@@ -191,7 +191,7 @@ define("moxie/runtime/silverlight/Runtime", [
 						I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
 
 						if (MXI_DEBUG && Env.debug.runtime) {
-							Env.log("\Silverlight failed to initialize specified within a period of time (5-10s).");	
+							Env.log("\Silverlight failed to initialize within a specified period of time (5-10s).");	
 						}
 					}
 				}, Env.OS !== 'Windows'? 10000 : 5000); // give it more time to initialize in non Windows OS (like Mac)
