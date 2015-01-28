@@ -22,13 +22,14 @@ define("moxie/runtime/html5/file/FileDrop", [
 ], function(extensions, File, Basic, Dom, Events, Mime) {
 	
 	function FileDrop() {
-		var self = this, _files = [], _allowedExts = [], _options;
+		var _files = [], _allowedExts = [], _options, _ruid;
 
 		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, dropZone;
 
 				_options = options;
+				_ruid = comp.ruid; // every dropped-in file should have a reference to the runtime
 				_allowedExts = _extractExts(_options.accept);
 				dropZone = _options.container;
 
@@ -74,7 +75,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 			destroy: function() {
 				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
-				self = _files = _allowedExts = _options = null;
+				_ruid = _files = _allowedExts = _options = null;
 			}
 		});
 
@@ -95,7 +96,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 		function _addFile(file, relativePath) {
 			if (_isAcceptable(file)) {
-				var fileObj = new File(self.ruid, file);
+				var fileObj = new File(_ruid, file);
 				fileObj.relativePath = relativePath || '';
 				_files.push(fileObj);
 			}
