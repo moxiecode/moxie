@@ -63,8 +63,21 @@ package
 			// Align and scale stage
 			stage.align = StageAlign.TOP_LEFT;
 			stage.scaleMode = StageScaleMode.EXACT_FIT;
+						
+			// use only FlashVars, ignore QueryString
+			var params:Object, url:String, urlParts:Object, pos:int, query:Object;
 			
-			var params:Object = stage.loaderInfo.parameters;
+			params = root.loaderInfo.parameters;
+			pos = root.loaderInfo.url.indexOf('?');
+			if (pos !== -1) {
+				query = Utils.parseStr(root.loaderInfo.url.substr(pos + 1));		
+				
+				for (var key:String in params) {	
+					if (query.hasOwnProperty(Utils.trim(key))) {
+						delete params[key];
+					}
+				}
+			}
 						
 			// Setup id
 			Moxie.uid = Utils.sanitize(params["uid"]);	
