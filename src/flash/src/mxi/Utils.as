@@ -99,5 +99,26 @@ package mxi
 			return true;
 		}
 		
+		static public function parseStr (str:String) : Object {
+			var hash:Object = {},
+				arr1:Array, arr2:Array;
+			
+			str = unescape(str).replace(/\+/g, " ");
+			
+			arr1 = str.split('&');
+			if (!arr1.length) {
+				return {};
+			}
+			
+			for (var i:uint = 0, length:uint = arr1.length; i < length; i++) {
+				arr2 = arr1[i].split('=');
+				if (!arr2.length) {
+					continue;
+				}
+				hash[Utils.trim(arr2[0])] = Utils.trim(arr2[1]);
+			} 
+			return hash;
+		}
+		
 	}
 }
