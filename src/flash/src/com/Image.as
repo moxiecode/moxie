@@ -349,7 +349,7 @@ package com
 			} 
 			
 			if (type == 'image/jpeg') {	
-				ba = bd.encode(bd.rect, new JPEGEncoderOptions(quality));
+				ba = bd.encode(bd.rect, new JPEGEncoderOptions(100));
 				
 				if (_img && _img is JPEG) {
 					// strip off any headers that might be left by encoder, etc
