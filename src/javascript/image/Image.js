@@ -259,7 +259,7 @@ define("moxie/image/Image", [
 			@param {Number} [quality=90] Applicable only together with mime type image/jpeg
 			@return {Blob} Image as Blob
 			*/
-			ggetAsBlob: function(type, quality) {
+			getAsBlob: function(type, quality) {
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
