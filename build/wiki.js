@@ -51,7 +51,7 @@ var source = {
 				'{{#if example}}',
 					'__Example__\n',
 					'{{#each example}}',
-					'	{{formatExample .}}\n',
+					'{{formatExample .}}\n',
 					'{{/each}}',
 				'{{/if}}',
 			'{{/each}}\n',
@@ -78,7 +78,7 @@ var source = {
 				'{{#if example}}',
 					'__Example__\n',
 					'{{#each example}}',
-					'	{{{formatExample .}}}\n',
+					'{{{formatExample .}}}\n',
 					'{{/each}}',
 				'{{/if}}',
 			'{{/each}}\n',
@@ -106,7 +106,7 @@ var source = {
 		'{{#if example}}',
 			'__Example__\n',
 			'{{#each example}}',
-			'	{{{formatExample .}}}\n',
+			'{{{formatExample .}}}\n',
 			'{{/each}}\n',
 		'{{/if}}',
 	''].join('')),
@@ -242,7 +242,7 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 
 	Handlebars.registerHelper('formatExample', function(example) {
 		var type = /<\w+>/.test(example) ? 'html' : 'javascript';
-		return "```" + type + "\n" + example.replace(/^\xA0+/, '') + "\n\t```\n";
+		return "```" + type + "\n" + example.replace(/^\xA0+/, '') + "\n```\n";
 	});
 
 
