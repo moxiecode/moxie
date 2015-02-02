@@ -1,6 +1,6 @@
-[submodule "tests/js"]
-	path = tests/js
-	url = https://github.com/moxiecode/testrunner.git
 [submodule "tests/JSON-js"]
-	path = tests/JSON-js
+	path = tests/js/JSON-js
 	url = https://github.com/douglascrockford/JSON-js.git
+[submodule "tests/js/testrunner"]
+	path = tests/js/testrunner
+	url = https://github.com/moxiecode/testrunner.git
