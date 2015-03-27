@@ -21,9 +21,8 @@ define("moxie/runtime/googledrive/Runtime", [
 	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
-	"moxie/runtime/Runtime",
 	"moxie/core/utils/Loader"
-], function(Runtime, html5Extensions, Basic, x, Runtime, Loader) {
+], function(Runtime, html5Extensions, Basic, x, Loader) {
 	
 	var type = "googledrive", extensions = {}, Html5Runtime = Runtime.getConstructor('html5');
 
