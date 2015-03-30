@@ -33,7 +33,7 @@ define("moxie/runtime/googledrive/file/FileReader", [
 				_xhr = new window.XMLHttpRequest();
 				_xhr.open('GET', blob.downloadUrl);
 				
-				if ('gapi' in window) {
+				if ('gapi' in window && gapi.auth.getToken()) {
 					_xhr.setRequestHeader('Authorization', 'Bearer ' + gapi.auth.getToken().access_token);
 				}
 
