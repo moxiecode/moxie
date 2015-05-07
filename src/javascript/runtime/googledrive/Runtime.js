@@ -63,7 +63,7 @@ define("moxie/runtime/googledrive/Runtime", [
 				return function() {
 					destroy.call(I);
 					Basic.each(gapiEls, function(gapiEl) {
-						gapiEl.parenNode.removeChild(gapiEl); // remove script
+						gapiEl.parentNode.removeChild(gapiEl); // remove script
 					});
 					gapiEls = [];
 					destroy = I = null;

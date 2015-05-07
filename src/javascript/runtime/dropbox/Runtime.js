@@ -91,7 +91,7 @@ define("moxie/runtime/dropbox/Runtime", [
 			destroy: (function(destroy) { // extend default destroy method
 				return function() {
 					destroy.call(I);
-					script.parenNode.removeChild(script); // remove script
+					script.parentNode.removeChild(script); // remove script
 					destroy = I = null;
 				};
 			}(this.destroy))
