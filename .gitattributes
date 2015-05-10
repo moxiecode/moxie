@@ -5,7 +5,6 @@
 .actionScriptProperties binary merge=union
 .project binary merge=union
 
-
 *.cs text eol=lf
 *.as text eol=lf
 *.cs text eol=lf
@@ -23,3 +22,11 @@
 *.xap binary
 *.min.js binary
 bin/js/moxie.js binary
+
+tests/ export-ignore
+src/ export-ignore
+build/ export-ignore
+Jakefile.js export-ignore
+package.json export-ignore
+.* export-ignore
+
