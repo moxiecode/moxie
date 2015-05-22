@@ -17,17 +17,14 @@
 
 QUnit.config.reorder = false;
 
-module("Url", {
-	setup: function() {
+QUnit.module("Url", {
+	beforeEach: function() {
 		this.DOM = jQuery('#qunit-fixture');
-	},
-
-	teardown: function() {
 	}
 });
 
 
-test("parseUrl()", function() {
+QUnit.test("parseUrl()", function(assert) {
 	var ports = { http: 80, https: 443 };
 	var cases = [
 		[
@@ -108,16 +105,36 @@ test("parseUrl()", function() {
 			"photoupload.py",
 			{scheme: "http", host: "edinburghmc.org.uk", port: 80, path: "/emc/upload/photoupload.py"},
 			"http://edinburghmc.org.uk/emc/upload?meetid=197"
+		], [ // #109
+			"http://en.wikipedia.org/wiki/%22@%22_%28album%29",
+			{scheme: "http", host: "en.wikipedia.org", port: 80, path: "/wiki/%22@%22_%28album%29"},
+			"http://en.wikipedia.org"
+		], [
+			"https://host.domain.tld/a@b.c/folder",
+			{scheme: "https", host: "host.domain.tld", port: 443, path: "/a@b.c/folder"},
+			"https://host.domain.tld/"
+		], [ // #47
+			"https://gooduser:secretpassword@www.example.com/a@b.c/folder?foo=bar",
+			{
+				scheme: "https", 
+				host: "www.example.com", 
+				port: 443, 
+				path: "/a@b.c/folder", 
+				query: "?foo=bar", 
+				user: "gooduser", 
+				pass: "secretpassword"
+			},
+			"https://www.example.com"
 		]
 	];
 
 	o.each(cases, function(c) {
-		deepEqual(o.parseUrl(c[0], c[2]), c[1], c[0]);
+		assert.deepEqual(o.parseUrl(c[0], c[2]), c[1], c[0]);
 	});
 });
 
 
-test("resolveUrl()", function() {
+QUnit.test("resolveUrl()", function(assert) {
 	var scheme = document.location.protocol.replace(/:$/, '')
 	, ports = { http: 80, https: 443 }
 	, host = document.location.hostname
@@ -212,7 +229,7 @@ test("resolveUrl()", function() {
 	];
 
 	o.each(cases, function(c) {
-		deepEqual(o.resolveUrl(c[0]), c[1], c[0]);
+		assert.deepEqual(o.resolveUrl(c[0]), c[1], c[0]);
 	});
 
 });
@@ -220,11 +237,7 @@ test("resolveUrl()", function() {
 </script>
 </head>
 <body>
-	<h1 id="qunit-header">mOxie Test Suite</h1>
-	<h2 id="qunit-banner"></h2>
-	<h2 id="qunit-userAgent"></h2>
-	<ol id="qunit-tests">
-	</ol>
+	<div id="qunit"></div>
     <div id="qunit-fixture"></div>
 </body>
 </html>

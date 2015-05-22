@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>mOxie: I18n Utils</title>
+<title>mOxie: Encode Utils</title>
 
 <!-- qunit -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -17,7 +17,7 @@
 
 QUnit.config.reorder = false;
 
-module("I18n", {
+module("Basic", {
 	setup: function() {
 		this.DOM = jQuery('#qunit-fixture');
 	},
@@ -26,34 +26,27 @@ module("I18n", {
 	}
 });
 
-test("sprintf()", function() {
 
-	equal(
-		o.sprintf("File: %s, size: %d, max file size: %d", "filename.ext", 1024, 1048576),
-		"File: filename.ext, size: 1024, max file size: 1048576",
-		"Different tokens scattered around the string in the moddle and in the end."
-	);
+// #111
+test("unicode in btoa()", function(assert) {
+	
+	try {
+		o.btoa('你好，世界');
+		assert.ok(false, "DOMException is thrown when running btoa on multi-byte string.");
+	} catch (ex) {
+		assert.ok(true, "DOMException is thrown when running btoa on multi-byte string.");
+	}
 
-	equal(
-		o.sprintf('%d files queued', 0),
-		"0 files queued",
-		"Token in the beginning of the string."
-	);
-
-	equal(
-		o.sprintf('Twelve: %d%d', 1, 2),
-		"Twelve: 12",
-		"Sequence of two tokens immediately following each other."
-	);
-
-	equal(
-		o.sprintf('Much more tokens: %d %d %d %d', 1, 2, 3),
-		"Much more tokens: 1 2 3 ",
-		"Extra tokens replaced with empty string."
-	);
-
+	assert.equal(o.btoa('你好，世界', true), "5L2g5aW977yM5LiW55WM", 
+		"Multi-byte string properly encoded with second argument set to true.");
 });
 
+
+test("unicode in atob()", function(assert) {
+
+	assert.equal(o.atob('5L2g5aW977yM5LiW55WM', true), '你好，世界', 
+		"Multi-byte string properly decoded, with second argument set to true.");
+});
 
 </script>
 </head>
