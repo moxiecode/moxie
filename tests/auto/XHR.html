@@ -307,7 +307,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			ok(true, "Runtime not supported.");
 		});	
 		
-		xhr.open('POST', 'XMLHttpRequest/json.php');
+		xhr.open('POST', 'XMLHttpRequest/some.json');
 		xhr.responseType = 'json';
 
 		stop();
@@ -368,7 +368,7 @@ test("test events: native", function() {
 		ok(true, "Runtime not supported.");
 	});	
 	
-	xhr.open('GET', 'XMLHttpRequest/json.php');
+	xhr.open('GET', 'XMLHttpRequest/some.json');
 
 	stop();
 	xhr.send(null);
@@ -523,7 +523,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		;
 
 		// 1
-		xhr.open('get', 'XMLHttpRequest/json.php');
+		xhr.open('get', 'XMLHttpRequest/some.json');
 		xhr.responseType = 'json';
 		stop();
 

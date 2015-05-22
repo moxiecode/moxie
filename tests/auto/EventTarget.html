@@ -18,7 +18,7 @@
 QUnit.config.reorder = false;
 
 QUnit.module("EventTarget", {
-	beforeEach: function() {
+	setup: function() {
 
 		function Constructor() {
 			this.uid = o.guid();
@@ -33,19 +33,21 @@ QUnit.module("EventTarget", {
 
 
 QUnit.test("Trigger asynchronous event", function(assert) {
-	var done = assert.async();
 	var order = [];
 
 	this.o1.bind('AsyncEvent', function() {
 		order.push(2);
 		assert.deepEqual(order, [1,2], 'Event fired asynchronously.');
-		done();
+		start();
 	});
+
+	stop();
 
 	this.o1.trigger({
 		type: 'AsyncEvent',
 		async: true
 	});
+
 	order.push(1);
 });
 
