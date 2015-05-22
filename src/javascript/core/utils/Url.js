@@ -55,7 +55,7 @@ define('moxie/core/utils/Url', [], function() {
 				// if path ends with a filename, strip it
 				if (!/(\/|\/[^\.]+)$/.test(path)) {
 					path = path.replace(/\/[^\/]+$/, '/');
-				} else {
+				} else if (/\?!\//.test(path)) { //add slash only if there is none
 					path += '/';
 				}
 			}
