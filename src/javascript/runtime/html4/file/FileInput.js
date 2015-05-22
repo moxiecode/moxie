@@ -14,15 +14,16 @@
 */
 define("moxie/runtime/html4/file/FileInput", [
 	"moxie/runtime/html4/Runtime",
+	"moxie/file/File",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, Dom, Events, Mime, Env) {
+], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 	
 	function FileInput() {
-		var _uid, _files = [], _mimes = [], _options;
+		var _uid, _mimes = [], _options;
 
 		function addInput() {
 			var comp = this, I = comp.getRuntime(), shimContainer, browseButton, currForm, form, input, uid;
@@ -90,39 +91,35 @@ define("moxie/runtime/html4/file/FileInput", [
 					return;
 				}
 
-				if (this.files) {
+				if (this.files) { // check if browser is fresh enough
 					file = this.files[0];
+
+					// ignore empty files (IE10 for example hangs if you try to send them via XHR)
+					if (file.size === 0) {
+						form.parentNode.removeChild(form);
+						return;
+					}
 				} else {
 					file = {
 						name: this.value
 					};
 				}
 
-				_files = [file];
+				file = new File(I.uid, file);
 
-				this.onchange = function() {}; // clear event handler
-				addInput.call(comp);
+				// clear event handler
+				this.onchange = function() {}; 
+				addInput.call(comp); 
 
-				// after file is initialized as o.File, we need to update form and input ids
-				comp.bind('change', function onChange() {
-					var input = Dom.get(uid), form = Dom.get(uid + '_form'), file;
+				comp.files = [file];
 
-					comp.unbind('change', onChange);
-
-					if (comp.files.length && input && form) {
-						file = comp.files[0];
-
-						input.setAttribute('id', file.uid);
-						form.setAttribute('id', file.uid + '_form');
-
-						// set upload target
-						form.setAttribute('target', file.uid + '_iframe');
-					}
-					input = form = null;
-				}, 998);
+				// substitute all ids with file uids (consider file.uid read-only - we cannot do it the other way around)
+				input.setAttribute('id', file.uid);
+				form.setAttribute('id', file.uid + '_form');
+				
+				comp.trigger('change');
 
 				input = form = null;
-				comp.trigger('change');
 			};
 
 
@@ -204,9 +201,6 @@ define("moxie/runtime/html4/file/FileInput", [
 				});
 			},
 
-			getFiles: function() {
-				return _files;
-			},
 
 			disable: function(state) {
 				var input;
@@ -232,7 +226,7 @@ define("moxie/runtime/html4/file/FileInput", [
 
 				shim.removeInstance(this.uid);
 
-				_uid = _files = _mimes = _options = shimContainer = shim = null;
+				_uid = _mimes = _options = shimContainer = shim = null;
 			}
 		});
 	}

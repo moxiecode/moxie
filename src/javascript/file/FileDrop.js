@@ -13,11 +13,12 @@ define('moxie/file/FileDrop', [
 	'moxie/core/utils/Dom',
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic',
+	'moxie/core/utils/Env',
 	'moxie/file/File',
 	'moxie/runtime/RuntimeClient',
 	'moxie/core/EventTarget',
 	'moxie/core/utils/Mime'
-], function(I18n, Dom, x, Basic, File, RuntimeClient, EventTarget, Mime) {
+], function(I18n, Dom, x, Basic, Env, File, RuntimeClient, EventTarget, Mime) {
 	/**
 	Turn arbitrary DOM element to a drop zone accepting files. Converts selected files to _File_ objects, to be used 
 	in conjunction with _Image_, preloaded in memory with _FileReader_ or uploaded to a server through 
@@ -94,6 +95,10 @@ define('moxie/file/FileDrop', [
 	];
 
 	function FileDrop(options) {
+		if (MXI_DEBUG) {
+			Env.log("Instantiating FileDrop...");	
+		}
+
 		var self = this, defaults;
 
 		// if flat argument passed it should be drop_zone id
@@ -136,25 +141,10 @@ define('moxie/file/FileDrop', [
 
 			files: null,
 
-			init: function() {
-	
-				self.convertEventPropsToHandlers(dispatches);
-		
+			init: function() {		
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
-
-					self.bind("Drop", function() {
-						var files = runtime.exec.call(self, 'FileDrop', 'getFiles');
-
-						self.files = [];
-
-						Basic.each(files, function(file) {
-							self.files.push(new File(self.ruid, file));
-						});
-					}, 999);
-
 					runtime.exec.call(self, 'FileDrop', 'init', options);
-
 					self.dispatchEvent('ready');
 				});
 							
@@ -169,8 +159,12 @@ define('moxie/file/FileDrop', [
 					this.disconnectRuntime();
 				}
 				this.files = null;
+				
+				this.unbindAll();
 			}
 		});
+
+		this.handleEventProps(dispatches);
 	}
 
 	FileDrop.prototype = EventTarget.instance;

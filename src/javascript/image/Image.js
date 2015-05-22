@@ -62,6 +62,7 @@ define("moxie/image/Image", [
 	];
 
 	function Image() {
+
 		RuntimeClient.call(this);
 
 		Basic.extend(this, {
@@ -174,13 +175,6 @@ define("moxie/image/Image", [
 			@param {Boolean|Object} [mixed]
 			*/
 			load: function() {
-				// this is here because to bind properly we need an uid first, which is created above
-				this.bind('Load Resize', function() {
-					_updateInfo.call(this);
-				}, 999);
-
-				this.convertEventPropsToHandlers(dispatches);
-
 				_load.apply(this, arguments);
 			},
 
@@ -188,22 +182,28 @@ define("moxie/image/Image", [
 			Downsizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
 
 			@method downsize
-			@param {Number} width Resulting width
-			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
-			@param {Boolean} [crop=false] Whether to crop the image to exact dimensions
-			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
+			@param {Object} opts
+				@param {Number} opts.width Resulting width
+				@param {Number} [opts.height=width] Resulting height (optional, if not supplied will default to width)
+				@param {Boolean} [opts.crop=false] Whether to crop the image to exact dimensions
+				@param {Boolean} [opts.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
+				@param {String} [opts.resample=false] Resampling algorithm to use for resizing
 			*/
 			downsize: function(opts) {
 				var defaults = {
 					width: this.width,
 					height: this.height,
+					type: this.type || 'image/jpeg',
+					quality: 90,
 					crop: false,
-					preserveHeaders: true
+					preserveHeaders: true,
+					resample: false
 				};
 
 				if (typeof(opts) === 'object') {
 					opts = Basic.extend(defaults, opts);
 				} else {
+					// for backward compatibility
 					opts = Basic.extend(defaults, {
 						width: arguments[0],
 						height: arguments[1],
@@ -222,7 +222,7 @@ define("moxie/image/Image", [
 						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
 					}
 
-					this.getRuntime().exec.call(this, 'Image', 'downsize', opts.width, opts.height, opts.crop, opts.preserveHeaders);
+					this.exec('Image', 'downsize', opts.width, opts.height, opts.crop, opts.preserveHeaders);
 				} catch(ex) {
 					// for now simply trigger error event
 					this.trigger('error', ex.code);
@@ -263,16 +263,7 @@ define("moxie/image/Image", [
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
-
-				if (!type) {
-					type = 'image/jpeg';
-				}
-
-				if (type === 'image/jpeg' && !quality) {
-					quality = 90;
-				}
-
-				return this.getRuntime().exec.call(this, 'Image', 'getAsBlob', type, quality);
+				return this.exec('Image', 'getAsBlob', type || 'image/jpeg', quality || 90);
 			},
 
 			/**
@@ -288,7 +279,7 @@ define("moxie/image/Image", [
 				if (!this.size) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
-				return this.getRuntime().exec.call(this, 'Image', 'getAsDataURL', type, quality);
+				return this.exec('Image', 'getAsDataURL', type || 'image/jpeg', quality || 90);
 			},
 
 			/**
@@ -312,44 +303,49 @@ define("moxie/image/Image", [
 
 			@method embed
 			@param {DOMElement} el DOM element to insert the image object into
-			@param {Object} [options]
-				@param {Number} [options.width] The width of an embed (defaults to the image width)
-				@param {Number} [options.height] The height of an embed (defaults to the image height)
+			@param {Object} [opts]
+				@param {Number} [opts.width] The width of an embed (defaults to the image width)
+				@param {Number} [opts.height] The height of an embed (defaults to the image height)
 				@param {String} [type="image/jpeg"] Mime type
 				@param {Number} [quality=90] Quality of an embed, if mime type is image/jpeg
 				@param {Boolean} [crop=false] Whether to crop an embed to the specified dimensions
 			*/
-			embed: function(el) {
+			embed: function(el, opts) {
 				var self = this
-				, imgCopy
-				, type, quality, crop
-				, options = arguments[1] || {}
-				, width = this.width
-				, height = this.height
 				, runtime // this has to be outside of all the closures to contain proper runtime
 				;
 
-				function onResize() {
+				opts = Basic.extend({
+					width: this.width,
+					height: this.height,
+					type: this.type || 'image/jpeg',
+					quality: 90
+				}, opts || {});
+				
+
+				function render(type, quality) {
+					var img = this;
+
 					// if possible, embed a canvas element directly
 					if (Env.can('create_canvas')) {
-						var canvas = imgCopy.getAsCanvas();
+						var canvas = img.getAsCanvas();
 						if (canvas) {
 							el.appendChild(canvas);
 							canvas = null;
-							imgCopy.destroy();
+							img.destroy();
 							self.trigger('embedded');
 							return;
 						}
 					}
 
-					var dataUrl = imgCopy.getAsDataURL(type, quality);
+					var dataUrl = img.getAsDataURL(type, quality);
 					if (!dataUrl) {
 						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 					}
 
 					if (Env.can('use_data_uri_of', dataUrl.length)) {
-						el.innerHTML = '<img src="' + dataUrl + '" width="' + imgCopy.width + '" height="' + imgCopy.height + '" />';
-						imgCopy.destroy();
+						el.innerHTML = '<img src="' + dataUrl + '" width="' + img.width + '" height="' + img.height + '" />';
+						img.destroy();
 						self.trigger('embedded');
 					} else {
 						var tr = new Transporter();
@@ -363,8 +359,8 @@ define("moxie/image/Image", [
 									//position: 'relative',
 									top: '0px',
 									left: '0px',
-									width: imgCopy.width + 'px',
-									height: imgCopy.height + 'px'
+									width: img.width + 'px',
+									height: img.height + 'px'
 								});
 
 								// some shims (Flash/SilverLight) reinitialize, if parent element is hidden, reordered or it's
@@ -376,20 +372,20 @@ define("moxie/image/Image", [
 									onResize.call(self); // re-feed our image data
 								});*/
 
-								runtime = null;
+								runtime = null; // release
 							}, 999);
 
 							runtime.exec.call(self, "ImageView", "display", this.result.uid, width, height);
-							imgCopy.destroy();
+							img.destroy();
 						});
 
-						tr.transport(Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, Basic.extend({}, options, {
+						tr.transport(Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, {
 							required_caps: {
 								display_media: true
 							},
 							runtime_order: 'flash,silverlight',
 							container: el
-						}));
+						});
 					}
 				}
 
@@ -401,39 +397,28 @@ define("moxie/image/Image", [
 					if (!this.size) { // only preloaded image objects can be used as source
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
-
+					
+					// high-resolution images cannot be consistently handled across the runtimes
 					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
-						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+						//throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
 					}
 
-					type = options.type || this.type || 'image/jpeg';
-					quality = options.quality || 90;
-					crop = Basic.typeOf(options.crop) !== 'undefined' ? options.crop : false;
-
-					// figure out dimensions for the thumb
-					if (options.width) {
-						width = options.width;
-						height = options.height || width;
-					} else {
-						// if container element has measurable dimensions, use them
-						var dimensions = Dom.getSize(el);
-						if (dimensions.w && dimensions.h) { // both should be > 0
-							width = dimensions.w;
-							height = dimensions.h;
-						}
-					}
-
-					imgCopy = new Image();
+					var imgCopy = new Image();
 
 					imgCopy.bind("Resize", function() {
-						onResize.call(self);
+						render.call(this, opts.type, opts.quality);
 					});
 
 					imgCopy.bind("Load", function() {
-						imgCopy.downsize(width, height, crop, false);
+						imgCopy.downsize(opts);
 					});
 
-					imgCopy.clone(this, false);
+					// if embedded thumb data is available and dimensions are big enough, use it
+					if (this.meta.thumb && this.meta.thumb.width >= opts.width && this.meta.thumb.height >= opts.height) {
+						imgCopy.load(this.meta.thumb.data);
+					} else {
+						imgCopy.clone(this, false);
+					}
 
 					return imgCopy;
 				} catch(ex) {
@@ -457,9 +442,17 @@ define("moxie/image/Image", [
 		});
 
 
+		// this is here, because in order to bind properly, we need uid, which is created above
+		this.handleEventProps(dispatches);
+
+		this.bind('Load Resize', function() {
+			_updateInfo.call(this);
+		}, 999);
+
+
 		function _updateInfo(info) {
 			if (!info) {
-				info = this.getRuntime().exec.call(this, 'Image', 'getInfo');
+				info = this.exec('Image', 'getInfo');
 			}
 
 			this.size = info.size;
@@ -594,8 +587,8 @@ define("moxie/image/Image", [
 	}
 
 	// virtual world will crash on you if image has a resolution higher than this:
-	Image.MAX_RESIZE_WIDTH = 6500;
-	Image.MAX_RESIZE_HEIGHT = 6500; 
+	Image.MAX_RESIZE_WIDTH = 8192;
+	Image.MAX_RESIZE_HEIGHT = 8192; 
 
 	Image.prototype = EventTarget.instance;
 

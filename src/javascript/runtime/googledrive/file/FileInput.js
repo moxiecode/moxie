@@ -14,18 +14,22 @@
 */
 define("moxie/runtime/googledrive/file/FileInput", [
 	"moxie/runtime/googledrive/Runtime",
+	"moxie/file/File",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, Dom, Events, Mime, Env) {
+], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 
 	function FileInput() {
-		var _picker, _files = [], _options, _disabled = false;
+		var _picker, _options, _disabled = false;
 
 		function createPicker(cb) {
-			var comp = this, scope = ['https://www.googleapis.com/auth/drive.readonly'];
+			var comp = this
+			, I = comp.getRuntime()
+			, scope = ['https://www.googleapis.com/auth/drive.readonly']
+			;
 
 			gapi.auth.authorize({
 				'client_id': _options.googledrive.clientId,
@@ -49,7 +53,7 @@ define("moxie/runtime/googledrive/file/FileInput", [
 				PickerBuilder.setCallback(function(data) {
 					var queue = [];
 
-					_files = [];
+					comp.files = [];
 
 					if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
 						// get minimal file info
@@ -59,21 +63,23 @@ define("moxie/runtime/googledrive/file/FileInput", [
 									fileId: doc.id
 								})
 								.execute(function(r) {
-									_files.push({
+									comp.files.push(new File(I.uid, {
 										name: r.originalFilename,
 										type: r.mimeType,
 										size: parseInt(r.fileSize, 10),
 										lastModifiedDate: r.modifiedDate,
 										gdid: r.id,
-										downloadUrl: r.downloadUrl
-									});
+										downloadUrl: r.downloadUrl,
+										thumbnail: r.thumbnailLink,
+										resource: r
+									}));
 									cb();
 								});
 							});
 						});
 
 						Basic.inParallel(queue, function(err) {
-							if (!err) {
+							if (!err && comp.files.length) {
 								comp.trigger('change');
 							}
 						});
@@ -122,11 +128,6 @@ define("moxie/runtime/googledrive/file/FileInput", [
 			},
 
 
-			getFiles: function() {
-				return _files;
-			},
-
-
 			disable: function(state) {
 				_disabled = state;
 			},
@@ -143,7 +144,7 @@ define("moxie/runtime/googledrive/file/FileInput", [
 
 				// destroy _picker
 
-				_files = _options = shim = null;
+				_options = shim = null;
 			}
 		});
 	}

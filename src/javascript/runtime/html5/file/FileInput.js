@@ -14,22 +14,22 @@
 */
 define("moxie/runtime/html5/file/FileInput", [
 	"moxie/runtime/html5/Runtime",
+	"moxie/file/File",
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, Dom, Events, Mime, Env) {
+], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 	
 	function FileInput() {
-		var _files = [], _options;
+		var _options;
 
 		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, I = comp.getRuntime(), input, shimContainer, mimes, browseButton, zIndex, top;
 
 				_options = options;
-				_files = [];
 
 				// figure out accept string
 				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
@@ -96,19 +96,29 @@ define("moxie/runtime/html5/file/FileInput", [
 				}, comp.uid);
 
 
-				input.onchange = function onChange() { // there should be only one handler for this
-					_files = [];
+				input.onchange = function onChange(e) { // there should be only one handler for this
+					comp.files = [];
 
-					if (_options.directory) {
-						// folders are represented by dots, filter them out (Chrome 11+)
-						Basic.each(this.files, function(file) {
-							if (file.name !== ".") { // if it doesn't looks like a folder
-								_files.push(file);
+					Basic.each(this.files, function(file) {
+						var relativePath = '';
+
+						if (_options.directory) {
+							// folders are represented by dots, filter them out (Chrome 11+)
+							if (file.name == ".") {
+								// if it looks like a folder...
+								return true;
 							}
-						});
-					} else {
-						_files = [].slice.call(this.files);
-					}
+						}
+
+						if (file.webkitRelativePath) {
+							relativePath = '/' + file.webkitRelativePath.replace(/^\//, '');
+						}
+						
+						file = new File(I.uid, file);
+						file.relativePath = relativePath;
+
+						comp.files.push(file);
+					});
 
 					// clearing the value enables the user to select the same file again if they want to
 					if (Env.browser !== 'IE' && Env.browser !== 'IEMobile') {
@@ -119,7 +129,10 @@ define("moxie/runtime/html5/file/FileInput", [
 						this.parentNode.replaceChild(clone, this);
 						clone.onchange = onChange;
 					}
-					comp.trigger('change');
+
+					if (comp.files.length) {
+						comp.trigger('change');
+					}
 				};
 
 				// ready event is perfectly asynchronous
@@ -131,9 +144,6 @@ define("moxie/runtime/html5/file/FileInput", [
 				shimContainer = null;
 			},
 
-			getFiles: function() {
-				return _files;
-			},
 
 			disable: function(state) {
 				var I = this.getRuntime(), input;
@@ -159,7 +169,7 @@ define("moxie/runtime/html5/file/FileInput", [
 
 				shim.removeInstance(this.uid);
 
-				_files = _options = shimContainer = shim = null;
+				_options = shimContainer = shim = null;
 			}
 		});
 	}

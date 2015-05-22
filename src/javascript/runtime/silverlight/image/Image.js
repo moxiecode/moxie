@@ -15,13 +15,14 @@
 define("moxie/runtime/silverlight/image/Image", [
 	"moxie/runtime/silverlight/Runtime",
 	"moxie/core/utils/Basic",
+	"moxie/file/Blob",
 	"moxie/runtime/flash/image/Image"
-], function(extensions, Basic, Image) {
+], function(extensions, Basic, Blob, Image) {
 	return (extensions.Image = Basic.extend({}, Image, {
 
 		getInfo: function() {
 			var self = this.getRuntime()
-			, grps = ['tiff', 'exif', 'gps']
+			, grps = ['tiff', 'exif', 'gps', 'thumb']
 			, info = { meta: {} }
 			, rawInfo = self.shimExec.call(this, 'Image', 'getInfo')
 			;
@@ -51,6 +52,11 @@ define("moxie/runtime/silverlight/image/Image", [
 						}
 					}
 				});
+
+				// save thumb data as blob
+				if (info.meta && info.meta.thumb) {
+					info.meta.thumb.data = new Blob(self.uid, info.meta.thumb.data);
+				}
 			}
 
 			info.width = parseInt(rawInfo.width, 10);

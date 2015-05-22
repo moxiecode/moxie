@@ -14,9 +14,8 @@ define('moxie/file/FileReader', [
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
 	'moxie/file/Blob',
-	'moxie/file/File',
-	'moxie/runtime/RuntimeTarget'
-], function(Basic, Encode, x, EventTarget, Blob, File, RuntimeTarget) {
+	'moxie/runtime/RuntimeClient'
+], function(Basic, Encode, x, EventTarget, Blob, RuntimeClient) {
 	/**
 	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
 	interface. Where possible uses native FileReader, where - not falls back to shims.
@@ -78,8 +77,9 @@ define('moxie/file/FileReader', [
 	];
 	
 	function FileReader() {
-		var self = this, _fr;
-				
+
+		RuntimeClient.call(this);
+
 		Basic.extend(this, {
 			/**
 			UID of the component instance.
@@ -159,9 +159,7 @@ define('moxie/file/FileReader', [
 					this.readyState = FileReader.DONE;
 				}
 
-				if (_fr) {
-					_fr.getRuntime().exec.call(this, 'FileReader', 'abort');
-				}
+				this.exec('FileReader', 'abort');
 				
 				this.trigger('abort');
 				this.trigger('loadend');
@@ -174,83 +172,63 @@ define('moxie/file/FileReader', [
 			*/
 			destroy: function() {
 				this.abort();
-
-				if (_fr) {
-					_fr.getRuntime().exec.call(this, 'FileReader', 'destroy');
-					_fr.disconnectRuntime();
-				}
-
-				self = _fr = null;
+				this.exec('FileReader', 'destroy');
+				this.disconnectRuntime();
+				this.unbindAll();
 			}
 		});
+
+		// uid must already be assigned
+		this.handleEventProps(dispatches);
+
+		this.bind('Error', function(e, err) {
+			this.readyState = FileReader.DONE;
+			this.error = err;
+		}, 999);
 		
+		this.bind('Load', function(e) {
+			this.readyState = FileReader.DONE;
+		}, 999);
+
 		
 		function _read(op, blob) {
-			_fr = new RuntimeTarget();
+			var self = this;			
 
-			function error(err) {
-				self.readyState = FileReader.DONE;
-				self.error = err;
-				self.trigger('error');
-				loadEnd();
-			}
-
-			function loadEnd() {
-				_fr.destroy();
-				_fr = null;
-				self.trigger('loadend');
-			}
-
-			function exec(runtime) {
-				_fr.bind('Error', function(e, err) {
-					error(err);
-				});
-
-				_fr.bind('Progress', function(e) {
-					self.result = runtime.exec.call(_fr, 'FileReader', 'getResult');
-					self.trigger(e);
-				});
-				
-				_fr.bind('Load', function(e) {
-					self.readyState = FileReader.DONE;
-					self.result = runtime.exec.call(_fr, 'FileReader', 'getResult');
-					self.trigger(e);
-					loadEnd();
-				});
-
-				runtime.exec.call(_fr, 'FileReader', 'read', op, blob);
-			}
-
-			this.convertEventPropsToHandlers(dispatches);
-
-			if (this.readyState === FileReader.LOADING) {
-				return error(new x.DOMException(x.DOMException.INVALID_STATE_ERR));
-			}
-
-			this.readyState = FileReader.LOADING;
 			this.trigger('loadstart');
 
-			// if source is o.Blob/o.File
-			if (blob instanceof Blob) {
-				if (blob.isDetached()) {
-					var src = blob.getSource();
-					switch (op) {
-						case 'readAsText':
-						case 'readAsBinaryString':
-							this.result = src;
-							break;
-						case 'readAsDataURL':
-							this.result = 'data:' + blob.type + ';base64,' + Encode.btoa(src);
-							break;
-					}
-					this.readyState = FileReader.DONE;
-					this.trigger('load');
-					loadEnd();
-				} else {
-					exec(_fr.connectRuntime(blob.ruid));
+			if (this.readyState === FileReader.LOADING) {
+				this.trigger('error', new x.DOMException(x.DOMException.INVALID_STATE_ERR));
+				this.trigger('loadend');
+				return;
+			}
+
+			// if source is not o.Blob/o.File
+			if (!(blob instanceof Blob)) {
+				this.trigger('error', new x.DOMException(x.DOMException.NOT_FOUND_ERR));
+				this.trigger('loadend');
+				return;
+			}
+
+			this.result = null;
+			this.readyState = FileReader.LOADING;
+			
+			if (blob.isDetached()) {
+				var src = blob.getSource();
+				switch (op) {
+					case 'readAsText':
+					case 'readAsBinaryString':
+						this.result = src;
+						break;
+					case 'readAsDataURL':
+						this.result = 'data:' + blob.type + ';base64,' + Encode.btoa(src);
+						break;
 				}
+				this.readyState = FileReader.DONE;
+				this.trigger('load');
+				this.trigger('loadend');
 			} else {
-				error(new x.DOMException(x.DOMException.NOT_FOUND_ERR));
+				this.connectRuntime(blob.ruid);
+				this.exec('FileReader', 'read', op, blob);
 			}
 		}
 	}

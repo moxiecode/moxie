@@ -311,19 +311,19 @@ package com
 		{					
 			var fr:FileReader = new FileReader;
 			
-			fr.addEventListener(Event.OPEN, function(e:Event) : void {
+			fr.addEventListener(OProgressEvent.LOADSTART, function(e:Event) : void {
 				if (_readyState == XMLHttpRequest.ABORTED) {
 					fr.abort();
 				}
 			});
 			
-			fr.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent) : void {
+			fr.addEventListener(OProgressEvent.PROGRESS, function(e:ProgressEvent) : void {
 				if (_readyState == XMLHttpRequest.ABORTED) {
 					fr.abort();
 				}
 			});
 			
-			fr.addEventListener(Event.COMPLETE, function() : void {	
+			fr.addEventListener(OProgressEvent.LOAD, function() : void {	
 				fr.removeAllEventsListeners();
 				if (_readyState == XMLHttpRequest.ABORTED) {
 					fr.abort();

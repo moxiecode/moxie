@@ -21,44 +21,32 @@ define('moxie/file/File', [
 	@param {Object} file Object "Native" file object, as it is represented in the runtime
 	*/
 	function File(ruid, file) {
-		var name, type;
-
 		if (!file) { // avoid extra errors in case we overlooked something
 			file = {};
 		}
 
-		// figure out the type
-		if (file.type && file.type !== '') {
-			type = file.type;
-		} else {
-			type = Mime.getFileMime(file.name);
+		Blob.apply(this, arguments);
+
+		if (!this.type) {
+			this.type = Mime.getFileMime(file.name);
 		}
 
 		// sanitize file name or generate new one
+		var name;
 		if (file.name) {
 			name = file.name.replace(/\\/g, '/');
 			name = name.substr(name.lastIndexOf('/') + 1);
-		} else {
-			var prefix = type.split('/')[0];
+		} else if (this.type) {
+			var prefix = this.type.split('/')[0];
 			name = Basic.guid((prefix !== '' ? prefix : 'file') + '_');
 			
-			if (Mime.extensions[type]) {
-				name += '.' + Mime.extensions[type][0]; // append proper extension if possible
+			if (Mime.extensions[this.type]) {
+				name += '.' + Mime.extensions[this.type][0]; // append proper extension if possible
 			}
 		}
-
-		Blob.apply(this, arguments);
+		
 		
 		Basic.extend(this, {
-			/**
-			File mime type
-
-			@property type
-			@type {String}
-			@default ''
-			*/
-			type: type || '',
-
 			/**
 			File name
 
@@ -67,6 +55,15 @@ define('moxie/file/File', [
 			@default UID
 			*/
 			name: name || Basic.guid('file_'),
+
+			/**
+			Relative path to the file inside a directory
+
+			@property relativePath
+			@type {String}
+			@default ''
+			*/
+			relativePath: '',
 			
 			/**
 			Date of last modification

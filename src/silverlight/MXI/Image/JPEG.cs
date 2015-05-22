@@ -46,24 +46,29 @@ namespace Moxiecode.MXI.Image
 		}
 
 
-		public override Dictionary<string, int> info() 
+		public override Dictionary<string, int> info(BinaryReader br = null) 
 		{
 			long idx = 0; 
 			int marker, length;
+
+			if (br == null)
+			{
+				br = _br;
+			}
 			
 			// examine all through the end, since some images might have very large APP segments
-			while (idx <= _br.Length) {
-				marker = _br.SHORT(idx += 2);
+			while (idx <= br.Length) {
+				marker = br.SHORT(idx += 2);
 
 				if (marker >= 0xFFC0 && marker <= 0xFFC3) { // SOFn 
 					idx += 5; // marker (2 bytes) + length (2 bytes) + Sample precision (1 byte)
 					
 					return new Dictionary<string, int>() {
-						{ "height", _br.SHORT(idx) },
-						{ "width", _br.SHORT(idx += 2) }
+						{ "height", br.SHORT(idx) },
+						{ "width", br.SHORT(idx += 2) }
 					};
 				}
-				length = _br.SHORT(idx += 2);
+				length = br.SHORT(idx += 2);
 				idx += length - 2;			
 			}
 			return null;
@@ -73,7 +78,7 @@ namespace Moxiecode.MXI.Image
 		public Dictionary<string, object> metaInfo()
 		{
 			ExifParser exifParser; 
-			Dictionary <string, object> tiff, exif, gps, meta;
+			Dictionary <string, object> tiff, exif, gps, thumb, meta;
 			
 			List<byte[]> headers = getHeaders("app1");
 			meta = new Dictionary<string, object>();
@@ -104,11 +109,46 @@ namespace Moxiecode.MXI.Image
 							meta.Add("gps", gps);
 						}
 
+						thumb = getThumb(exifParser);
+						if (thumb != null)
+						{
+							if (!thumb.ContainsKey("keys"))
+							{
+								string[] keys = new string[thumb.Keys.Count];
+								thumb.Keys.CopyTo(keys, 0);
+								thumb.Add("keys", keys);
+							}
+
+							meta.Add("thumb", thumb);
+						}
+
 						exifParser.purge();
 					}
 				}
 			} catch (Exception ex) {}
 			return meta;
+		}
+
+
+		public Dictionary<string, object> getThumb(ExifParser exifParser)
+		{
+			byte[] thumb = exifParser.thumb();
+			if (thumb != null)
+			{
+				BinaryReader br = new BinaryReader(new MemoryStream(thumb));
+				Dictionary<string, int> thumbInfo = info(br);
+				br.clear();
+				if (thumbInfo != null)
+				{
+					return new Dictionary<string, object>()
+					{
+						{ "width", thumbInfo["width"] },
+						{ "height", thumbInfo["height"] },
+						{ "data", thumb }
+					};
+				}
+			}
+			return null;
 		}
 	
 		public List<Dictionary<string, object>> extractHeaders() 

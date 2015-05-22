@@ -23,10 +23,11 @@ package com
 	{
 		// events dispatched by this class
 		public static var dispatches:Object = { 
-			"LoadStart": Event.OPEN,
+			"LoadStart": OProgressEvent.LOADSTART,
 			"Progress": OProgressEvent.PROGRESS,
-			"Load": Event.COMPLETE,
-			"Error": OErrorEvent.ERROR
+			"Load": OProgressEvent.LOAD,
+			"Error": OErrorEvent.ERROR,
+			"LoadEnd": OProgressEvent.LOADEND
 		};
 		
 		public static const EMPTY:int = 0;
@@ -95,11 +96,13 @@ package com
 									
 			if (!blob || !(blob is Blob) || blob.isEmpty()) {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, DOMError.NOT_FOUND_ERR));
+				dispatchEvent(new OProgressEvent(OProgressEvent.LOADEND));
 				return;
 			}
 						
 			if (this.readyState === FileReader.LOADING) {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, DOMError.SECURITY_ERR)); // should be invalid state
+				dispatchEvent(new OProgressEvent(OProgressEvent.LOADEND));
 				return;
 			}
 			
@@ -110,7 +113,8 @@ package com
 						
 			this.readyState = FileReader.LOADING;
 			
-			dispatchEvent(new Event(Event.OPEN));
+			// loadstart is triggered in JS by the component itself
+			// dispatchEvent(new OProgressEvent(OProgressEvent.LOADSTART));
 			
 			_ba.clear();
 			_index = 0;
@@ -166,7 +170,8 @@ package com
 			this.readyState = FileReader.DONE;
 			clear();
 			_removeAllEventListeners(e.target);
-			dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, DOMError.NOT_READABLE_ERR));		
+			dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, DOMError.NOT_READABLE_ERR));	
+			dispatchEvent(new OProgressEvent(OProgressEvent.LOADEND));		
 		}		
 		
 		
@@ -192,7 +197,22 @@ package com
 				_src = _blob._sources[_index];
 				_loadSource();
 			} else if (_position === _blob.size) { 
-				_finalize(); // we've reached the end, send the blob data out
+				switch (_op) {
+					case 'asByteArray':
+						this.result = _ba;
+						_ba = null;
+						break;
+					
+					case 'asBase64':
+						_toBase64();
+						this.result = _str;
+						_ba.clear(); // we won't be needing this one in this case anymore
+						_str = null;
+						break;
+				}
+				
+				dispatchEvent(new OProgressEvent(OProgressEvent.LOAD));
+				dispatchEvent(new OProgressEvent(OProgressEvent.LOADEND));
 			}
 		}
 		
@@ -201,25 +221,6 @@ package com
 			target.removeEventListener(ProgressEvent.PROGRESS, onProgress);
 			target.removeEventListener(Event.COMPLETE, onComplete);
 			target.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
-		}
-		
-		
-		private function _finalize() : void {			
-			switch (_op) {
-				case 'asByteArray':
-					this.result = _ba;
-					_ba = null;
-					break;
-				
-				case 'asBase64':
-					_toBase64();
-					this.result = _str;
-					_ba.clear(); // we won't be needing this one in this case anymore
-					_str = null;
-					break;
-			}
-			
-			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
 		

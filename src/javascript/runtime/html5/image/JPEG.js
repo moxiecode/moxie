@@ -23,26 +23,6 @@ define("moxie/runtime/html5/image/JPEG", [
 	function JPEG(binstr) {
 		var _binstr, _br, _hm, _ep, _info, hasExif;
 
-		function _getDimensions() {
-			var idx = 0, marker, length;
-
-			// examine all through the end, since some images might have very large APP segments
-			while (idx <= _binstr.length) {
-				marker = _br.SHORT(idx += 2);
-
-				if (marker >= 0xFFC0 && marker <= 0xFFC3) { // SOFn
-					idx += 5; // marker (2 bytes) + length (2 bytes) + Sample precision (1 byte)
-					return {
-						height: _br.SHORT(idx),
-						width: _br.SHORT(idx += 2)
-					};
-				}
-				length = _br.SHORT(idx += 2);
-				idx += length - 2;
-			}
-			return null;
-		}
-
 		_binstr = binstr;
 
 		_br = new BinaryReader();
@@ -110,9 +90,59 @@ define("moxie/runtime/html5/image/JPEG", [
 			this.meta = {
 				tiff: _ep.TIFF(),
 				exif: _ep.EXIF(),
-				gps: _ep.GPS()
+				gps: _ep.GPS(),
+				thumb: _getThumb()
 			};
 		}
+
+
+		function _getDimensions(br) {
+			var idx = 0
+			, marker
+			, length
+			;
+
+			if (!br) {
+				br = _br;
+			}
+
+			// examine all through the end, since some images might have very large APP segments
+			while (idx <= br.length()) {
+				marker = br.SHORT(idx += 2);
+
+				if (marker >= 0xFFC0 && marker <= 0xFFC3) { // SOFn
+					idx += 5; // marker (2 bytes) + length (2 bytes) + Sample precision (1 byte)
+					return {
+						height: br.SHORT(idx),
+						width: br.SHORT(idx += 2)
+					};
+				}
+				length = br.SHORT(idx += 2);
+				idx += length - 2;
+			}
+			return null;
+		}
+
+
+		function _getThumb() {
+			var binstr =  _ep.thumb()
+			, br = new BinaryReader()
+			, info
+			;
+
+			if (binstr) {
+				br.init(binstr);
+				info = _getDimensions(br);
+				br.init(null);
+
+				if (info) {
+					info.data = binstr;
+					return info;
+				}
+			}
+			return null;
+		}
+
 
 		function _purge() {
 			if (!_ep || !_hm || !_br) { 

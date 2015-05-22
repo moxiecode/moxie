@@ -5,7 +5,10 @@ package mxi.events
 
 	public class OProgressEvent extends ProgressEvent
 	{
+		public static const LOADSTART:String = 'moxieloadstart';
 		public static const PROGRESS:String = 'moxieprogress';
+		public static const LOAD:String = 'moxieload';
+		public static const LOADEND:String = 'moxieloadend';
 		
 		public var data:*;
 		

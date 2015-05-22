@@ -9,9 +9,10 @@
  */
 
 define('moxie/core/EventTarget', [
+	'moxie/core/utils/Env',
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic'
-], function(x, Basic) {
+], function(Env, x, Basic) {
 	/**
 	Parent object for all event dispatching components and objects
 
@@ -54,6 +55,11 @@ define('moxie/core/EventTarget', [
 			*/
 			addEventListener: function(type, fn, priority, scope) {
 				var self = this, list;
+
+				// without uid no event handlers can be added, so make sure we got one
+				if (!this.hasOwnProperty('uid')) {
+					this.uid = Basic.guid('uid_');
+				}
 				
 				type = Basic.trim(type);
 				
@@ -188,6 +194,10 @@ define('moxie/core/EventTarget', [
 					evt.type = type;
 					args.unshift(evt);
 
+					if (MXI_DEBUG && Env.debug.events) {
+						Env.log("Event '%s' fired on %u", evt.type, uid);	
+					}
+
 					// Dispatch event to all listeners
 					var queue = [];
 					Basic.each(list, function(handler) {
@@ -255,30 +265,30 @@ define('moxie/core/EventTarget', [
 				return this.dispatchEvent.apply(this, arguments);
 			},
 			
-			
-			/**
-			Converts properties of on[event] type to corresponding event handlers,
-			is used to avoid extra hassle around the process of calling them back
 
-			@method convertEventPropsToHandlers
+			/**
+			Handle properties of on[event] type.
+
+			@method handleEventProps
 			@private
 			*/
-			convertEventPropsToHandlers: function(handlers) {
-				var h;
-						
-				if (Basic.typeOf(handlers) !== 'array') {
-					handlers = [handlers];
-				}
+			handleEventProps: function(dispatches) {
+				var self = this;
 
-				for (var i = 0; i < handlers.length; i++) {
-					h = 'on' + handlers[i];
-					
-					if (Basic.typeOf(this[h]) === 'function') {
-						this.addEventListener(handlers[i], this[h]);
-					} else if (Basic.typeOf(this[h]) === 'undefined') {
-						this[h] = null; // object must have defined event properties, even if it doesn't make use of them
+				this.bind(dispatches.join(' '), function(e) {
+					var prop = 'on' + e.type.toLowerCase();
+					if (Basic.typeOf(this[prop]) === 'function') {
+						this[prop].apply(this, arguments);
 					}
-				}
+				});
+
+				// object must have defined event properties, even if it doesn't make use of them
+				Basic.each(dispatches, function(prop) {
+					prop = 'on' + prop.toLowerCase(prop);
+					if (Basic.typeOf(self[prop]) === 'undefined') {
+						self[prop] = null; 
+					}
+				});
 			}
 			
 		});

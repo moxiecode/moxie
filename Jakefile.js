@@ -49,7 +49,12 @@ task("mkjs", [], function () {
 	var baseDir = "src/javascript", targetDir = "bin/js";
 
 	var options = {
-		compress: true,
+		compress: {
+			unused: false,
+			global_defs: {
+				MXI_DEBUG: false
+			}
+		},
 		baseDir: baseDir,
 		rootNS: "moxie",
 		expose: "public",
@@ -82,6 +87,10 @@ task("mkjs", [], function () {
 	var info = require('./package.json');
 	info.copyright = copyright;
 	tools.addReleaseDetailsTo(targetDir, info);
+
+	// add debug constant to dev source
+	mkjs.addDebug(targetDir + "/moxie.js");
+	mkjs.addDebug(targetDir + "/moxie.dev.js");
 
 	// add compatibility
 	if (process.env.compat !== 'no') {

@@ -154,6 +154,10 @@ define("moxie/runtime/silverlight/Runtime", [
 
 		// minimal requirement
 		if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
+			if (MXI_DEBUG && Env.debug.runtime) {
+				Env.log("\tSilverlight is not installed or minimal version (2.0.31005.0) requirement not met (not likely).");	
+			}
+
 			this.mode = false;
 		}
 
@@ -185,6 +189,10 @@ define("moxie/runtime/silverlight/Runtime", [
 				initTimer = setTimeout(function() {
 					if (I && !I.initialized) { // runtime might be already destroyed by this moment
 						I.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
+
+						if (MXI_DEBUG && Env.debug.runtime) {
+							Env.log("\Silverlight failed to initialize within a specified period of time (5-10s).");	
+						}
 					}
 				}, Env.OS !== 'Windows'? 10000 : 5000); // give it more time to initialize in non Windows OS (like Mac)
 			},

@@ -24,24 +24,28 @@ define("moxie/runtime/html5/file/FileReader", [
 		Basic.extend(this, {
 
 			read: function(op, blob) {
-				var target = this;
+				var comp = this;
+
+				comp.result = '';
 
 				_fr = new window.FileReader();
 
 				_fr.addEventListener('progress', function(e) {
-					target.trigger(e);
+					comp.trigger(e);
 				});
 
 				_fr.addEventListener('load', function(e) {
-					target.trigger(e);
+					comp.result = _convertToBinary ? _toBinary(_fr.result) : _fr.result;
+					comp.trigger(e);
 				});
 
 				_fr.addEventListener('error', function(e) {
-					target.trigger(e, _fr.error);
+					comp.trigger(e, _fr.error);
 				});
 
-				_fr.addEventListener('loadend', function() {
+				_fr.addEventListener('loadend', function(e) {
 					_fr = null;
+					comp.trigger(e);
 				});
 
 				if (Basic.typeOf(_fr[op]) === 'function') {
@@ -51,10 +55,6 @@ define("moxie/runtime/html5/file/FileReader", [
 					_convertToBinary = true;
 					_fr.readAsDataURL(blob.getSource());
 				}
-			},
-
-			getResult: function() {
-				return _fr && _fr.result ? (_convertToBinary ? _toBinary(_fr.result) : _fr.result) : null;
 			},
 
 			abort: function() {

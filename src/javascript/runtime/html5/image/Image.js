@@ -17,12 +17,13 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Encode",
+	"moxie/file/Blob",
 	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/runtime/html5/image/MegaPixel",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, File, ImageInfo, MegaPixel, Mime, Env) {
+], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, MegaPixel, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -84,6 +85,14 @@ define("moxie/runtime/html5/image/Image", [
 					name: _blob.name || '',
 					meta: _imgInfo && _imgInfo.meta || this.meta || {}
 				};
+
+				// store thumbnail data as blob
+				if (info.meta.thumb) {
+					info.meta.thumb.data = new Blob(null, {
+						type: 'image/jpeg',
+						data: info.meta.thumb.data
+					});
+				}
 
 				return info;
 			},
@@ -225,7 +234,7 @@ define("moxie/runtime/html5/image/Image", [
 				comp.trigger('load');
 			};
 
-			_img.src = /^data:[^;]*;base64,/.test(str) ? str : _toDataUrl(str, _blob.type);
+			_img.src = str.substr(0, 5) == 'data:' ? str : _toDataUrl(str, _blob.type);
 		}
 
 
