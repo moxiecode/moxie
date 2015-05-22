@@ -312,6 +312,8 @@ define('moxie/file/FileInput', [
 					});
 				} 
 				this.files = null;
+
+				this.unbindAll();
 			}
 		});
 

@@ -159,6 +159,8 @@ define('moxie/file/FileDrop', [
 					this.disconnectRuntime();
 				}
 				this.files = null;
+				
+				this.unbindAll();
 			}
 		});
 
