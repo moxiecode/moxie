@@ -115,7 +115,7 @@ define('moxie/core/utils/Encode', [], function() {
 	*/
 	var btoa = function(data, utf8) {
 		if (utf8) {
-			utf8_encode(data);
+			data = utf8_encode(data);
 		}
 
 		if (typeof(window.btoa) === 'function') {
