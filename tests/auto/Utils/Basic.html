@@ -195,6 +195,17 @@ test("trim()", function() {
 	equal(o.trim("  " + str + "     "), str, "Spaces stripped from beginning and end of the string");
 });
 
+
+test("parseSizeStr()", function() {
+	equal(o.parseSizeStr('256k'), 256 * 1024, "256k = " + (256 * 1024) + " bytes");
+	equal(o.parseSizeStr('1mb'), 1024 * 1024, "1mb = " + (1024 * 1024) + " bytes");
+	equal(o.parseSizeStr('1mb'), o.parseSizeStr('1024kb'), "1mb = 1024kb");
+	equal(o.parseSizeStr('1.2mb'), 1258291, "1.2mb = 1258291 bytes"); // #106
+	equal(o.parseSizeStr('1tb'), 1099511627776 , "1tb = 1099511627776 bytes");
+	equal(o.parseSizeStr('1tb'), o.parseSizeStr('1 tb') , "Space after number is ignored: 1tb = 1 tb");
+	equal(o.parseSizeStr('1tb'), o.parseSizeStr('1t') , "Only first letter matters: 1tb = 1t");
+});
+
 </script>
 </head>
 <body>
