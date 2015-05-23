@@ -22,9 +22,9 @@ define("moxie/runtime/html5/Runtime", [
 	"moxie/runtime/Runtime",
 	"moxie/core/utils/Env"
 ], function(Basic, x, Runtime, Env) {
-	
+
 	var type = "html5", extensions = {};
-	
+
 	function Html5Runtime(options) {
 		var I = this
 		, Test = Runtime.capTest
@@ -51,7 +51,7 @@ define("moxie/runtime/html5/Runtime", [
 				return_response_type: function(responseType) {
 					if (responseType === 'json' && !!window.JSON) { // we can fake this one even if it's not supported
 						return true;
-					} 
+					}
 					return Env.can('return_response_type', responseType);
 				},
 				return_status_code: True,
@@ -67,8 +67,8 @@ define("moxie/runtime/html5/Runtime", [
 				},
 				select_multiple: function() {
 					// it is buggy on Safari Windows and iOS
-					return I.can('select_file') && 
-						!(Env.browser === 'Safari' && Env.os === 'Windows') && 
+					return I.can('select_file') &&
+						!(Env.browser === 'Safari' && Env.os === 'Windows') &&
 						!(Env.os === 'iOS' && Env.verComp(Env.osVersion, "7.0.4", '<'));
 				},
 				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
@@ -87,7 +87,7 @@ define("moxie/runtime/html5/Runtime", [
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Chromium', 'Safari']);
 				}()),
 				upload_filesize: True
-			}, 
+			},
 			arguments[2]
 		);
 

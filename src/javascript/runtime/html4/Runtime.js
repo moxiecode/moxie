@@ -22,7 +22,7 @@ define("moxie/runtime/html4/Runtime", [
 	"moxie/runtime/Runtime",
 	"moxie/core/utils/Env"
 ], function(Basic, x, Runtime, Env) {
-	
+
 	var type = 'html4', extensions = {};
 
 	function Html4Runtime(options) {
@@ -48,7 +48,7 @@ define("moxie/runtime/html4/Runtime", [
 			return_response_type: function(responseType) {
 				if (responseType === 'json' && !!window.JSON) {
 					return true;
-				} 
+				}
 				return !!~Basic.inArray(responseType, ['text', 'document', '']);
 			},
 			return_status_code: function(code) {
