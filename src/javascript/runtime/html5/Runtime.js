@@ -45,7 +45,7 @@ define("moxie/runtime/html5/Runtime", [
 					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 				}()),
 				filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
-					return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10);
+					return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10) || (Env.browser === 'Safari' && Env.version >= 7);
 				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {
