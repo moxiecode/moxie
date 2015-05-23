@@ -18,6 +18,7 @@
 		{"title": "XHR-CORS", "url": "XHR-CORS.html"},
 		{"title": "HTML4: FileInput", "url": "runtimes/html4/FileInput.html"},
 		{"title": "GoogleDrive: FileInput", "url": "runtimes/googledrive/FileInput.html"},
-		{"title": "Dropbox: FileInput", "url": "runtimes/dropbox/FileInput.html"}
+		{"title": "Dropbox: FileInput", "url": "runtimes/dropbox/FileInput.html"},
+		{"title": "Flash: Runtime", "url": "runtimes/flash/Runtime.html"}
 	]
 }
