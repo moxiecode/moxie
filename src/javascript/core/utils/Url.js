@@ -53,10 +53,11 @@ define('moxie/core/utils/Url', [], function() {
 			if (/^[^\/]/.test(uri.path)) {
 				path = currentUrl.path;
 				// if path ends with a filename, strip it
-				if (!/(\/|\/[^\.]+)$/.test(path)) {
+				if (/\/[^\/]*\.[^\/]*$/.test(path)) {
 					path = path.replace(/\/[^\/]+$/, '/');
 				} else {
-					path += '/';
+					// avoid double slash at the end (see #127)
+					path = path.replace(/\/?$/, '/');
 				}
 			}
 			uri.path = path + (uri.path || ''); // site may reside at domain.com or domain.com/subdir
@@ -82,7 +83,7 @@ define('moxie/core/utils/Url', [], function() {
 
 	@method resolveUrl
 	@static
-	@param {String} url Either absolute or relative
+	@param {String|Object} url Either absolute or relative, or a result of parseUrl call
 	@return {String} Resolved, absolute url
 	*/
 	var resolveUrl = function(url) {
@@ -90,7 +91,7 @@ define('moxie/core/utils/Url', [], function() {
 			http: 80,
 			https: 443
 		}
-		, urlp = parseUrl(url)
+		, urlp = typeof(url) === 'string' ? parseUrl(url) : url
 		;
 
 		return urlp.scheme + '://' + urlp.host + (urlp.port !== ports[urlp.scheme] ? ':' + urlp.port : '') + urlp.path + (urlp.query ? urlp.query : '');
