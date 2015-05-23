@@ -97,7 +97,6 @@ define("moxie/runtime/googledrive/file/FileInput", [
 				var comp = this, I = comp.getRuntime(), input, shimContainer, mimes, browseButton, zIndex, top;
 
 				_options = options;
-				_files = [];
 
 				// figure out accept string
 				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
