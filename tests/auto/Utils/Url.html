@@ -26,6 +26,11 @@ QUnit.module("Url", {
 
 QUnit.test("parseUrl()", function(assert) {
 	var ports = { http: 80, https: 443 };
+
+	/* [
+		url to parse,
+		what we expect it to become
+	] */
 	var cases = [
 		[
 			"http://example.com",
@@ -125,6 +130,15 @@ QUnit.test("parseUrl()", function(assert) {
 				pass: "secretpassword"
 			},
 			"https://www.example.com"
+		], [ // #127
+			"http://www.example.com/test/#/item",
+			{
+				scheme: "http", 
+				host: "www.example.com", 
+				port: 80, 
+				path: "/test/", 
+				fragment: '/item'
+			}
 		]
 	];
 
@@ -135,17 +149,24 @@ QUnit.test("parseUrl()", function(assert) {
 
 
 QUnit.test("resolveUrl()", function(assert) {
-	var scheme = document.location.protocol.replace(/:$/, '')
-	, ports = { http: 80, https: 443 }
-	, host = document.location.hostname
-	, path = document.location.pathname
-	;
-
+	var path = document.location.pathname;
 	// if path ends with a filename, strip it
 	if (!/(\/|\/[^\.]+)$/.test(path)) {
 		path = path.replace(/[^\/]+$/, ''); 
 	}
-	
+
+	var origin = {
+		scheme: document.location.protocol.replace(/:$/, ''),
+		host: document.location.hostname,
+		path: path
+	};
+
+	/* [
+		url to resolve,
+		what we expect it to become after resolution,
+		current url (optional - if not supplied actual current url will be used)
+	] */
+
 	var cases = [
 		[
 			"http://example.com",
@@ -200,13 +221,13 @@ QUnit.test("resolveUrl()", function(assert) {
 			"http://192.168.0.120/test"
 		], [ 
 			"/", 
-			scheme + "://" + host + "/"
+			origin.scheme + "://" + origin.host + "/"
 		 ], [
 		 	"/test", 
-			scheme + "://" + host + "/test"
+			origin.scheme + "://" + origin.host + "/test"
 		], [ 
 			"/?test=5", 
-			scheme + "://" + host + "/?test=5"
+			origin.scheme + "://" + origin.host + "/?test=5"
 		], /*[ 
 			":8080", 
 			{scheme: scheme, host: host, port: 8080, path: "/"}
@@ -224,12 +245,19 @@ QUnit.test("resolveUrl()", function(assert) {
 			"http://example.com/test/upload.php"
 		], [ 
 			"test/upload.php", 
-			scheme + "://" + host + path + "test/upload.php"
+			origin.scheme + "://" + origin.host + origin.path + "test/upload.php"
+		], [ // #127
+			"api/upload",
+			"http://www.example.com/test/api/upload",
+			"http://www.example.com/test/#/item"
 		]
 	];
 
+
+
 	o.each(cases, function(c) {
-		assert.deepEqual(o.resolveUrl(c[0]), c[1], c[0]);
+		var url = o.parseUrl(c[0], c[2] || origin);
+		assert.deepEqual(o.resolveUrl(url), c[1], c[0]);
 	});
 
 });
