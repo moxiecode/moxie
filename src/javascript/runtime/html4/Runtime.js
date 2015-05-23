@@ -65,11 +65,14 @@ define("moxie/runtime/html4/Runtime", [
 			stream_upload: function() {
 				return I.can('select_file');
 			},
-			summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
-				return (Env.browser === 'Firefox' && Env.version >= 4) ||
+			summon_file_dialog: function() { // yeah... some dirty sniffing here...
+				return I.can('select_file') && (
+					(Env.browser === 'Firefox' && Env.version >= 4) ||
 					(Env.browser === 'Opera' && Env.version >= 12) ||
-					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
-			}()),
+					(Env.browser === 'IE' && Env.version >= 10) ||
+					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
+				);
+			},
 			upload_filesize: True,
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
