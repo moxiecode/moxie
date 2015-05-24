@@ -83,7 +83,7 @@ test("Append falsy field values", function() {
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	
-	test('Send hybrid FormData', function() {
+	test('Send hybrid FormData: ' + runtime, function() {
 		var self = this
 		, xhr = new self.XHR
 		, fd = new o.FormData
