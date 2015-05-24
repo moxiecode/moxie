@@ -1,6 +1,7 @@
+;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.2.2
+ * v1.3
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2015-05-11
+ * Date: 2015-05-24
  */
 /**
  * Inline development version. Only to be used while developing since it uses document.write to load scripts.
@@ -118,34 +119,34 @@
 	exports.define = define;
 	exports.require = require;
 
-	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/runtime/RuntimeTarget","moxie/file/FileReader","moxie/core/utils/Url","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events"]);
+	expose(["moxie/core/utils/Basic","moxie/core/utils/Env","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/FileInput","moxie/core/utils/Encode","moxie/file/Blob","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events"]);
 
 	load('../../src/javascript/core/utils/Basic.js');
+	load('../../src/javascript/core/utils/Env.js');
 	load('../../src/javascript/core/I18n.js');
 	load('../../src/javascript/core/utils/Mime.js');
-	load('../../src/javascript/core/utils/Env.js');
 	load('../../src/javascript/core/utils/Dom.js');
 	load('../../src/javascript/core/Exceptions.js');
 	load('../../src/javascript/core/EventTarget.js');
-	load('../../src/javascript/core/utils/Encode.js');
 	load('../../src/javascript/runtime/Runtime.js');
 	load('../../src/javascript/runtime/RuntimeClient.js');
+	load('../../src/javascript/file/FileInput.js');
+	load('../../src/javascript/core/utils/Encode.js');
 	load('../../src/javascript/file/Blob.js');
 	load('../../src/javascript/file/File.js');
-	load('../../src/javascript/file/FileInput.js');
 	load('../../src/javascript/file/FileDrop.js');
-	load('../../src/javascript/runtime/RuntimeTarget.js');
 	load('../../src/javascript/file/FileReader.js');
 	load('../../src/javascript/core/utils/Url.js');
+	load('../../src/javascript/runtime/RuntimeTarget.js');
 	load('../../src/javascript/file/FileReaderSync.js');
 	load('../../src/javascript/xhr/FormData.js');
 	load('../../src/javascript/xhr/XMLHttpRequest.js');
 	load('../../src/javascript/runtime/Transporter.js');
 	load('../../src/javascript/image/Image.js');
 	load('../../src/javascript/runtime/html5/Runtime.js');
-	load('../../src/javascript/runtime/html5/file/Blob.js');
 	load('../../src/javascript/core/utils/Events.js');
 	load('../../src/javascript/runtime/html5/file/FileInput.js');
+	load('../../src/javascript/runtime/html5/file/Blob.js');
 	load('../../src/javascript/runtime/html5/file/FileDrop.js');
 	load('../../src/javascript/runtime/html5/file/FileReader.js');
 	load('../../src/javascript/runtime/html5/xhr/XMLHttpRequest.js');
@@ -158,16 +159,16 @@
 	load('../../src/javascript/runtime/html5/image/MegaPixel.js');
 	load('../../src/javascript/runtime/html5/image/Image.js');
 	load('../../src/javascript/runtime/flash/Runtime.js');
-	load('../../src/javascript/runtime/flash/file/Blob.js');
 	load('../../src/javascript/runtime/flash/file/FileInput.js');
+	load('../../src/javascript/runtime/flash/file/Blob.js');
 	load('../../src/javascript/runtime/flash/file/FileReader.js');
 	load('../../src/javascript/runtime/flash/file/FileReaderSync.js');
 	load('../../src/javascript/runtime/flash/xhr/XMLHttpRequest.js');
 	load('../../src/javascript/runtime/flash/runtime/Transporter.js');
 	load('../../src/javascript/runtime/flash/image/Image.js');
 	load('../../src/javascript/runtime/silverlight/Runtime.js');
-	load('../../src/javascript/runtime/silverlight/file/Blob.js');
 	load('../../src/javascript/runtime/silverlight/file/FileInput.js');
+	load('../../src/javascript/runtime/silverlight/file/Blob.js');
 	load('../../src/javascript/runtime/silverlight/file/FileDrop.js');
 	load('../../src/javascript/runtime/silverlight/file/FileReader.js');
 	load('../../src/javascript/runtime/silverlight/file/FileReaderSync.js');
@@ -182,6 +183,7 @@
 
 	writeScripts();
 })(this);
+
 (function() {
 	var baseDir = '';
 	var scripts = document.getElementsByTagName('script');
