@@ -213,90 +213,104 @@ define("moxie/core/utils/Env", [
 	    var regexes = {
 
 	        browser : [[
-
+	        
 	            // Presto based
-	            /(opera\smini)\/((\d+)?[\w\.-]+)/i,                                 // Opera Mini
-	            /(opera\s[mobiletab]+).+version\/((\d+)?[\w\.-]+)/i,                // Opera Mobi/Tablet
-	            /(opera).+version\/((\d+)?[\w\.]+)/i,                               // Opera > 9.80
-	            /(opera)[\/\s]+((\d+)?[\w\.]+)/i                                    // Opera < 9.80
-	            
-	            ], [NAME, VERSION, MAJOR], [
+	            /(opera\smini)\/([\w\.-]+)/i,                                       // Opera Mini
+	            /(opera\s[mobiletab]+).+version\/([\w\.-]+)/i,                      // Opera Mobi/Tablet
+	            /(opera).+version\/([\w\.]+)/i,                                     // Opera > 9.80
+	            /(opera)[\/\s]+([\w\.]+)/i                                          // Opera < 9.80
 
-	            /\s(opr)\/((\d+)?[\w\.]+)/i                                         // Opera Webkit
-	            ], [[NAME, 'Opera'], VERSION, MAJOR], [
+	            ], [NAME, VERSION], [
+
+	            /\s(opr)\/([\w\.]+)/i                                               // Opera Webkit
+	            ], [[NAME, 'Opera'], VERSION], [
 
 	            // Mixed
-	            /(kindle)\/((\d+)?[\w\.]+)/i,                                       // Kindle
-	            /(lunascape|maxthon|netfront|jasmine|blazer)[\/\s]?((\d+)?[\w\.]+)*/i,
+	            /(kindle)\/([\w\.]+)/i,                                             // Kindle
+	            /(lunascape|maxthon|netfront|jasmine|blazer)[\/\s]?([\w\.]+)*/i,
 	                                                                                // Lunascape/Maxthon/Netfront/Jasmine/Blazer
 
 	            // Trident based
-	            /(avant\s|iemobile|slim|baidu)(?:browser)?[\/\s]?((\d+)?[\w\.]*)/i,
+	            /(avant\s|iemobile|slim|baidu)(?:browser)?[\/\s]?([\w\.]*)/i,
 	                                                                                // Avant/IEMobile/SlimBrowser/Baidu
-	            /(?:ms|\()(ie)\s((\d+)?[\w\.]+)/i,                                  // Internet Explorer
+	            /(?:ms|\()(ie)\s([\w\.]+)/i,                                        // Internet Explorer
 
 	            // Webkit/KHTML based
-	            /(rekonq)((?:\/)[\w\.]+)*/i,                                        // Rekonq
-	            /(chromium|flock|rockmelt|midori|epiphany|silk|skyfire|ovibrowser|bolt|iron)\/((\d+)?[\w\.-]+)/i
+	            /(rekonq)\/([\w\.]+)*/i,                                            // Rekonq
+	            /(chromium|flock|rockmelt|midori|epiphany|silk|skyfire|ovibrowser|bolt|iron|vivaldi)\/([\w\.-]+)/i
 	                                                                                // Chromium/Flock/RockMelt/Midori/Epiphany/Silk/Skyfire/Bolt/Iron
-	            ], [NAME, VERSION, MAJOR], [
+	            ], [NAME, VERSION], [
 
-	            /(trident).+rv[:\s]((\d+)?[\w\.]+).+like\sgecko/i                   // IE11
-	            ], [[NAME, 'IE'], VERSION, MAJOR], [
+	            /(trident).+rv[:\s]([\w\.]+).+like\sgecko/i                         // IE11
+	            ], [[NAME, 'IE'], VERSION], [
 
-	            /(yabrowser)\/((\d+)?[\w\.]+)/i                                     // Yandex
-	            ], [[NAME, 'Yandex'], VERSION, MAJOR], [
+	            /(edge)\/((\d+)?[\w\.]+)/i                                          // Microsoft Edge
+	            ], [NAME, VERSION], [
 
-	            /(comodo_dragon)\/((\d+)?[\w\.]+)/i                                 // Comodo Dragon
-	            ], [[NAME, /_/g, ' '], VERSION, MAJOR], [
+	            /(yabrowser)\/([\w\.]+)/i                                           // Yandex
+	            ], [[NAME, 'Yandex'], VERSION], [
 
-	            /(chrome|omniweb|arora|[tizenoka]{5}\s?browser)\/v?((\d+)?[\w\.]+)/i
+	            /(comodo_dragon)\/([\w\.]+)/i                                       // Comodo Dragon
+	            ], [[NAME, /_/g, ' '], VERSION], [
+
+	            /(chrome|omniweb|arora|[tizenoka]{5}\s?browser)\/v?([\w\.]+)/i,
 	                                                                                // Chrome/OmniWeb/Arora/Tizen/Nokia
-	            ], [NAME, VERSION, MAJOR], [
+	            /(uc\s?browser|qqbrowser)[\/\s]?([\w\.]+)/i
+	                                                                                // UCBrowser/QQBrowser
+	            ], [NAME, VERSION], [
 
-	            /(dolfin)\/((\d+)?[\w\.]+)/i                                        // Dolphin
-	            ], [[NAME, 'Dolphin'], VERSION, MAJOR], [
+	            /(dolfin)\/([\w\.]+)/i                                              // Dolphin
+	            ], [[NAME, 'Dolphin'], VERSION], [
 
-	            /((?:android.+)crmo|crios)\/((\d+)?[\w\.]+)/i                       // Chrome for Android/iOS
-	            ], [[NAME, 'Chrome'], VERSION, MAJOR], [
+	            /((?:android.+)crmo|crios)\/([\w\.]+)/i                             // Chrome for Android/iOS
+	            ], [[NAME, 'Chrome'], VERSION], [
 
-	            /((?:android.+))version\/((\d+)?[\w\.]+)\smobile\ssafari/i          // Android Browser
-	            ], [[NAME, 'Android Browser'], VERSION, MAJOR], [
+	            /XiaoMi\/MiuiBrowser\/([\w\.]+)/i                                   // MIUI Browser
+	            ], [VERSION, [NAME, 'MIUI Browser']], [
 
-	            /version\/((\d+)?[\w\.]+).+?mobile\/\w+\s(safari)/i                 // Mobile Safari
-	            ], [VERSION, MAJOR, [NAME, 'Mobile Safari']], [
+	            /android.+version\/([\w\.]+)\s+(?:mobile\s?safari|safari)/i         // Android Browser
+	            ], [VERSION, [NAME, 'Android Browser']], [
 
-	            /version\/((\d+)?[\w\.]+).+?(mobile\s?safari|safari)/i              // Safari & Safari Mobile
-	            ], [VERSION, MAJOR, NAME], [
+	            /FBAV\/([\w\.]+);/i                                                 // Facebook App for iOS
+	            ], [VERSION, [NAME, 'Facebook']], [
 
-	            /webkit.+?(mobile\s?safari|safari)((\/[\w\.]+))/i                   // Safari < 3.0
-	            ], [NAME, [MAJOR, mapper.str, maps.browser.oldsafari.major], [VERSION, mapper.str, maps.browser.oldsafari.version]], [
+	            /version\/([\w\.]+).+?mobile\/\w+\s(safari)/i                       // Mobile Safari
+	            ], [VERSION, [NAME, 'Mobile Safari']], [
 
-	            /(konqueror)\/((\d+)?[\w\.]+)/i,                                    // Konqueror
-	            /(webkit|khtml)\/((\d+)?[\w\.]+)/i
-	            ], [NAME, VERSION, MAJOR], [
+	            /version\/([\w\.]+).+?(mobile\s?safari|safari)/i                    // Safari & Safari Mobile
+	            ], [VERSION, NAME], [
+
+	            /webkit.+?(mobile\s?safari|safari)(\/[\w\.]+)/i                     // Safari < 3.0
+	            ], [NAME, [VERSION, mapper.str, maps.browser.oldsafari.version]], [
+
+	            /(konqueror)\/([\w\.]+)/i,                                          // Konqueror
+	            /(webkit|khtml)\/([\w\.]+)/i
+	            ], [NAME, VERSION], [
 
 	            // Gecko based
-	            /(navigator|netscape)\/((\d+)?[\w\.-]+)/i                           // Netscape
-	            ], [[NAME, 'Netscape'], VERSION, MAJOR], [
+	            /(navigator|netscape)\/([\w\.-]+)/i                                 // Netscape
+	            ], [[NAME, 'Netscape'], VERSION], [
 	            /(swiftfox)/i,                                                      // Swiftfox
-	            /(icedragon|iceweasel|camino|chimera|fennec|maemo\sbrowser|minimo|conkeror)[\/\s]?((\d+)?[\w\.\+]+)/i,
+	            /(icedragon|iceweasel|camino|chimera|fennec|maemo\sbrowser|minimo|conkeror)[\/\s]?([\w\.\+]+)/i,
 	                                                                                // IceDragon/Iceweasel/Camino/Chimera/Fennec/Maemo/Minimo/Conkeror
-	            /(firefox|seamonkey|k-meleon|icecat|iceape|firebird|phoenix)\/((\d+)?[\w\.-]+)/i,
+	            /(firefox|seamonkey|k-meleon|icecat|iceape|firebird|phoenix)\/([\w\.-]+)/i,
 	                                                                                // Firefox/SeaMonkey/K-Meleon/IceCat/IceApe/Firebird/Phoenix
-	            /(mozilla)\/((\d+)?[\w\.]+).+rv\:.+gecko\/\d+/i,                    // Mozilla
+	            /(mozilla)\/([\w\.]+).+rv\:.+gecko\/\d+/i,                          // Mozilla
 
 	            // Other
-	            /(uc\s?browser|polaris|lynx|dillo|icab|doris|amaya|w3m|netsurf|qqbrowser)[\/\s]?((\d+)?[\w\.]+)/i,
-	                                                                                // UCBrowser/Polaris/Lynx/Dillo/iCab/Doris/Amaya/w3m/NetSurf/QQBrowser
-	            /(links)\s\(((\d+)?[\w\.]+)/i,                                      // Links
-	            /(gobrowser)\/?((\d+)?[\w\.]+)*/i,                                  // GoBrowser
-	            /(ice\s?browser)\/v?((\d+)?[\w\._]+)/i,                             // ICE Browser
-	            /(mosaic)[\/\s]((\d+)?[\w\.]+)/i                                    // Mosaic
-	            ], [NAME, VERSION, MAJOR]
+	            /(polaris|lynx|dillo|icab|doris|amaya|w3m|netsurf)[\/\s]?([\w\.]+)/i,
+	                                                                                // Polaris/Lynx/Dillo/iCab/Doris/Amaya/w3m/NetSurf
+	            /(links)\s\(([\w\.]+)/i,                                            // Links
+	            /(gobrowser)\/?([\w\.]+)*/i,                                        // GoBrowser
+	            /(ice\s?browser)\/v?([\w\._]+)/i,                                   // ICE Browser
+	            /(mosaic)[\/\s]([\w\.]+)/i                                          // Mosaic
+	            ], [NAME, VERSION]
 	        ],
 
 	        engine : [[
+
+	            /windows.+\sedge\/([\w\.]+)/i                                       // EdgeHTML
+	            ], [VERSION, [NAME, 'EdgeHTML']], [
 
 	            /(presto)\/([\w\.]+)/i,                                             // Presto
 	            /(webkit|trident|netfront|netsurf|amaya|lynx|w3m)\/([\w\.]+)/i,     // WebKit/Trident/NetFront/NetSurf/Amaya/Lynx/w3m
@@ -311,6 +325,8 @@ define("moxie/core/utils/Env", [
 	        os : [[
 
 	            // Windows based
+	            /microsoft\s(windows)\s(vista|xp)/i                                 // Windows (iTunes)
+	            ], [NAME, VERSION], [
 	            /(windows)\snt\s6\.2;\s(arm)/i,                                     // Windows RT
 	            /(windows\sphone(?:\sos)*|windows\smobile|windows)[\s\/]?([ntce\d\.\s]+\w)/i
 	            ], [NAME, [VERSION, mapper.str, maps.os.windows.version]], [
@@ -321,12 +337,15 @@ define("moxie/core/utils/Env", [
 	            /\((bb)(10);/i                                                      // BlackBerry 10
 	            ], [[NAME, 'BlackBerry'], VERSION], [
 	            /(blackberry)\w*\/?([\w\.]+)*/i,                                    // Blackberry
-	            /(tizen)\/([\w\.]+)/i,                                              // Tizen
-	            /(android|webos|palm\os|qnx|bada|rim\stablet\sos|meego)[\/\s-]?([\w\.]+)*/i
-	                                                                                // Android/WebOS/Palm/QNX/Bada/RIM/MeeGo
+	            /(tizen)[\/\s]([\w\.]+)/i,                                          // Tizen
+	            /(android|webos|palm\os|qnx|bada|rim\stablet\sos|meego|contiki)[\/\s-]?([\w\.]+)*/i,
+	                                                                                // Android/WebOS/Palm/QNX/Bada/RIM/MeeGo/Contiki
+	            /linux;.+(sailfish);/i                                              // Sailfish OS
 	            ], [NAME, VERSION], [
 	            /(symbian\s?os|symbos|s60(?=;))[\/\s-]?([\w\.]+)*/i                 // Symbian
-	            ], [[NAME, 'Symbian'], VERSION],[
+	            ], [[NAME, 'Symbian'], VERSION], [
+	            /\((series40);/i                                                    // Series 40
+	            ], [NAME], [
 	            /mozilla.+\(mobile;.+gecko.+firefox/i                               // Firefox OS
 	            ], [[NAME, 'Firefox OS'], VERSION], [
 
@@ -335,9 +354,10 @@ define("moxie/core/utils/Env", [
 
 	            // GNU/Linux based
 	            /(mint)[\/\s\(]?(\w+)*/i,                                           // Mint
-	            /(joli|[kxln]?ubuntu|debian|[open]*suse|gentoo|arch|slackware|fedora|mandriva|centos|pclinuxos|redhat|zenwalk)[\/\s-]?([\w\.-]+)*/i,
+	            /(mageia|vectorlinux)[;\s]/i,                                       // Mageia/VectorLinux
+	            /(joli|[kxln]?ubuntu|debian|[open]*suse|gentoo|arch|slackware|fedora|mandriva|centos|pclinuxos|redhat|zenwalk|linpus)[\/\s-]?([\w\.-]+)*/i,
 	                                                                                // Joli/Ubuntu/Debian/SUSE/Gentoo/Arch/Slackware
-	                                                                                // Fedora/Mandriva/CentOS/PCLinuxOS/RedHat/Zenwalk
+	                                                                                // Fedora/Mandriva/CentOS/PCLinuxOS/RedHat/Zenwalk/Linpus
 	            /(hurd|linux)\s?([\w\.]+)*/i,                                       // Hurd/Linux
 	            /(gnu)\s?([\w\.]+)*/i                                               // GNU
 	            ], [NAME, VERSION], [
@@ -356,14 +376,16 @@ define("moxie/core/utils/Env", [
 	            /(ip[honead]+)(?:.*os\s*([\w]+)*\slike\smac|;\sopera)/i             // iOS
 	            ], [[NAME, 'iOS'], [VERSION, /_/g, '.']], [
 
-	            /(mac\sos\sx)\s?([\w\s\.]+\w)*/i                                    // Mac OS
-	            ], [NAME, [VERSION, /_/g, '.']], [
+	            /(mac\sos\sx)\s?([\w\s\.]+\w)*/i,
+	            /(macintosh|mac(?=_powerpc)\s)/i                                    // Mac OS
+	            ], [[NAME, 'Mac OS'], [VERSION, /_/g, '.']], [
 
 	            // Other
+	            /((?:open)?solaris)[\/\s-]?([\w\.]+)*/i,                            // Solaris
 	            /(haiku)\s(\w+)/i,                                                  // Haiku
 	            /(aix)\s((\d)(?=\.|\)|\s)[\w\.]*)*/i,                               // AIX
-	            /(macintosh|mac(?=_powerpc)|plan\s9|minix|beos|os\/2|amigaos|morphos|risc\sos)/i,
-	                                                                                // Plan9/Minix/BeOS/OS2/AmigaOS/MorphOS/RISCOS
+	            /(plan\s9|minix|beos|os\/2|amigaos|morphos|risc\sos|openvms)/i,
+	                                                                                // Plan9/Minix/BeOS/OS2/AmigaOS/MorphOS/RISCOS/OpenVMS
 	            /(unix)\s?([\w\.]+)*/i                                              // UNIX
 	            ], [NAME, VERSION]
 	        ]
