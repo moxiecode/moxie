@@ -14,8 +14,9 @@
 */
 define("moxie/runtime/html5/image/ExifParser", [
 	"moxie/core/utils/Basic",
-	"moxie/runtime/html5/utils/BinaryReader"
-], function(Basic, BinaryReader) {
+	"moxie/runtime/html5/utils/BinaryReader",
+	"moxie/core/Exceptions"
+], function(Basic, BinaryReader, x) {
 	
 	return function ExifParser() {
 		// Private ExifParser fields
@@ -213,6 +214,12 @@ define("moxie/runtime/html5/image/ExifParser", [
 				count = data.LONG(offset+=2);
 
 				offset += 4;
+
+				// we can't prevent inconsistencies in tags, but we can avoid extreme ones
+				if (offset + count > length) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				}
+
 				values = [];
 
 				switch (type) {
@@ -314,7 +321,11 @@ define("moxie/runtime/html5/image/ExifParser", [
 			}
 
 			offsets.IFD0 = offsets.tiffHeader + data.LONG(idx += 2);
-			Tiff = extractTags(offsets.IFD0, tags.tiff);
+			try {
+				Tiff = extractTags(offsets.IFD0, tags.tiff);
+			} catch(ex) {
+				return false;
+			}
 
 			if ('ExifIFDPointer' in Tiff) {
 				offsets.exifIFD = offsets.tiffHeader + Tiff.ExifIFDPointer;
@@ -398,7 +409,11 @@ define("moxie/runtime/html5/image/ExifParser", [
 				var Exif = null;
 
 				if (offsets.exifIFD) {
-					Exif = extractTags(offsets.exifIFD, tags.exif);
+					try {
+						Exif = extractTags(offsets.exifIFD, tags.exif);
+					} catch(ex) {
+						return null;
+					}
 
 					// Fix formatting of some tags
 					if (Exif.ExifVersion && Basic.typeOf(Exif.ExifVersion) === 'array') {
@@ -416,7 +431,11 @@ define("moxie/runtime/html5/image/ExifParser", [
 				var GPS = null;
 
 				if (offsets.gpsIFD) {
-					var GPS = extractTags(offsets.gpsIFD, tags.gps);
+					try {
+						GPS = extractTags(offsets.gpsIFD, tags.gps);
+					} catch (ex) {
+						return null;
+					}
 
 					// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
 					if (GPS.GPSVersionID && Basic.typeOf(GPS.GPSVersionID) === 'array') {
@@ -429,7 +448,11 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 			thumb: function() {
 				if (offsets.IFD1) {
-					var IFD1Tags = extractTags(offsets.IFD1, tags.thumb);
+					try {
+						var IFD1Tags = extractTags(offsets.IFD1, tags.thumb);
+					} catch (ex) {
+						return null;
+					}
 					if ('JPEGInterchangeFormat' in IFD1Tags) {
 						return data.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
 					}
