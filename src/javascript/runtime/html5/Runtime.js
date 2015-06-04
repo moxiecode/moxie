@@ -85,7 +85,7 @@ define("moxie/runtime/html5/Runtime", [
 						(Env.browser === 'Firefox' && Env.version >= 4) ||
 						(Env.browser === 'Opera' && Env.version >= 12) ||
 						(Env.browser === 'IE' && Env.version >= 10) ||
-						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
+						!!~Basic.inArray(Env.browser, ['Chrome', 'Chromium', 'Safari'])
 					);
 				},
 				upload_filesize: True
