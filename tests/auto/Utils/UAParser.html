@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>mOxie: Basic Utils</title>
+<title>mOxie: UAParser</title>
 
 <!-- qunit -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -15,16 +15,7 @@
 
 <script type="text/javascript">
 
-QUnit.config.reorder = false;
-
-module("UAParser", {
-	setup: function() {
-		
-	},
-
-	teardown: function() {
-	}
-});
+module("UAParser");
 
 
 test("UA strings", function() {
@@ -33,16 +24,15 @@ test("UA strings", function() {
 	    	// desc: '' // optional
 	    	ua: "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0",
 	    	expect: {
-	    		name: "Firefox",
+	    		browser: "Firefox",
 	    		version: "41.0",
-	    		major: "41",
 	    		os: "Ubuntu"
 	    	}
 	    }
 	];
 
 	function genTitle(obj) {
-		return obj.name + ' ' + obj.version + '/' + obj.os;
+		return obj.browser + ' ' + obj.version + '/' + obj.os;
 	}
 
 
@@ -52,11 +42,11 @@ test("UA strings", function() {
 		var result = uaParser.getResult();
 
 		deepEqual({
-				name: result.browser.name,
+				browser: result.browser.name,
 				version: result.browser.version,
 				os: result.os.name
 			}, {
-				name: item.expect.name,
+				browser: item.expect.browser,
 				version: item.expect.version,
 				os: item.expect.os
 			}, 

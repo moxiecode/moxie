@@ -42,10 +42,13 @@ define("moxie/runtime/html5/Runtime", [
 					// this comes directly from Modernizr: http://www.modernizr.com/
 					var div = document.createElement('div');
 					// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
-					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
+					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 
+						(Env.browser !== 'IE' || Env.verComp(Env.version, 9, '>'));
 				}()),
 				filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
-					return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10) || (Env.browser === 'Safari' && Env.version >= 7);
+					return (Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '>=')) || 
+						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) || 
+						(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '>='));
 				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {
@@ -63,7 +66,7 @@ define("moxie/runtime/html5/Runtime", [
 					return Env.can('use_fileinput') && window.File;
 				},
 				select_folder: function() {
-					return I.can('select_file') && Env.browser === 'Chrome' && Env.version >= 21;
+					return I.can('select_file') && Env.browser === 'Chrome' && Env.verComp(Env.version, 21, '>=');
 				},
 				select_multiple: function() {
 					// it is buggy on Safari Windows and iOS
@@ -82,9 +85,9 @@ define("moxie/runtime/html5/Runtime", [
 				},
 				summon_file_dialog: function() { // yeah... some dirty sniffing here...
 					return I.can('select_file') && (
-						(Env.browser === 'Firefox' && Env.version >= 4) ||
-						(Env.browser === 'Opera' && Env.version >= 12) ||
-						(Env.browser === 'IE' && Env.version >= 10) ||
+						(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '>=')) ||
+						(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '>=')) ||
+						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) ||
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
 					);
 				},

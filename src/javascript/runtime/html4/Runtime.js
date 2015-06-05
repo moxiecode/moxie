@@ -38,7 +38,9 @@ define("moxie/runtime/html4/Runtime", [
 			do_cors: false,
 			drag_and_drop: false,
 			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
-				return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10) || (Env.browser === 'Safari' && Env.version >= 7);
+				return (Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '>=')) || 
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) || 
+					(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '>='));
 			}()),
 			resize_image: function() {
 				return extensions.Image && I.can('access_binary') && Env.can('create_canvas');
@@ -67,9 +69,9 @@ define("moxie/runtime/html4/Runtime", [
 			},
 			summon_file_dialog: function() { // yeah... some dirty sniffing here...
 				return I.can('select_file') && (
-					(Env.browser === 'Firefox' && Env.version >= 4) ||
-					(Env.browser === 'Opera' && Env.version >= 12) ||
-					(Env.browser === 'IE' && Env.version >= 10) ||
+					(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '>=')) ||
+					(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '>=')) ||
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) ||
 					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
 				);
 			},
