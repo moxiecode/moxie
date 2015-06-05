@@ -2,6 +2,7 @@
 	"title": "Automated Tests", 
 	"tests": [
 		{"title": "utils.Basic", "url": "Utils/Basic.html"},
+		{"title": "utils.UAParser", "url": "Utils/UAParser.html"},
 		{"title": "utils.Dom", "url": "Utils/Dom.html"},
 		{"title": "utils.Url", "url": "Utils/Url.html"},
 		{"title": "utils.Mime", "url": "Utils/Mime.html"},
