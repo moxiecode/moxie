@@ -78,7 +78,7 @@ define("moxie/runtime/html4/file/FileInput", [
 				height: '100%'
 			});
 
-			if (Env.browser === 'IE' && Env.version < 10) {
+			if (Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) {
 				Basic.extend(input.style, {
 					filter : "progid:DXImageTransform.Microsoft.Alpha(opacity=0)"
 				});
