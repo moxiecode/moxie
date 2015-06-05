@@ -12,13 +12,14 @@ define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
 	
-	// UAParser.js v0.6.2
-	// Lightweight JavaScript-based User-Agent string parser
-	// https://github.com/faisalman/ua-parser-js
-	//
-	// Copyright © 2012-2013 Faisalman <fyzlman@gmail.com>
-	// Dual licensed under GPLv2 & MIT
-
+	/**
+	 * UAParser.js v0.7.7
+	 * Lightweight JavaScript-based User-Agent string parser
+	 * https://github.com/faisalman/ua-parser-js
+	 *
+	 * Copyright © 2012-2015 Faisal Salman <fyzlman@gmail.com>
+	 * Dual licensed under GPLv2 & MIT
+	 */
 	var UAParser = (function (undefined) {
 
 	    //////////////
@@ -428,7 +429,7 @@ define("moxie/core/utils/Env", [
 	        this.setUA(ua);
 	    };
 
-	    return new UAParser().getResult();
+	    return UAParser;
 	})();
 
 
@@ -636,13 +637,18 @@ define("moxie/core/utils/Env", [
 	}());
 
 
+	var uaResult = new UAParser().getResult();
+
+
 	var Env = {
 		can: can,
+
+		uaParser: UAParser,
 		
-		browser: UAParser.browser.name,
-		version: parseFloat(UAParser.browser.major),
-		os: UAParser.os.name, // everybody intuitively types it in a lowercase for some reason
-		osVersion: UAParser.os.version,
+		browser: uaResult.browser.name,
+		version: parseFloat(uaResult.browser.major),
+		os: uaResult.os.name, // everybody intuitively types it in a lowercase for some reason
+		osVersion: uaResult.os.version,
 
 		verComp: version_compare,
 		
