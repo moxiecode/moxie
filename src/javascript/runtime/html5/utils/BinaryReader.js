@@ -12,99 +12,195 @@
 @class moxie/runtime/html5/utils/BinaryReader
 @private
 */
-define("moxie/runtime/html5/utils/BinaryReader", [], function() {
-	return function() {
-		var II = false, bin;
+define("moxie/runtime/html5/utils/BinaryReader", [
+	"moxie/core/utils/Basic",
+], function(Basic) {
 
-		// Private functions
-		function read(idx, size) {
-			var mv = II ? 0 : -8 * (size - 1), sum = 0, i;
+	
+	function BinaryReader(data) {
+		if (data instanceof ArrayBuffer) {
+			ArrayBufferReader.apply(this, arguments);
+		} else {
+			UTF16StringReader.apply(this, arguments);
+		}
+	}
 
-			for (i = 0; i < size; i++) {
-				sum |= (bin.charCodeAt(idx + i) << Math.abs(mv + i*8));
+	Basic.extend(BinaryReader.prototype, {
+		
+		littleEndian: false,
+
+
+		read: function(idx, size) {
+			var sum, mv, i;
+
+			if (idx + size > this.length()) {
+				throw new Error("You are trying to read outside the source boundaries.");
 			}
+			
+			mv = this.littleEndian 
+				? 0 
+				: -8 * (size - 1)
+			;
 
+			for (i = 0, sum = 0; i < size; i++) {
+				sum |= (this.readByteAt(idx + i) << Math.abs(mv + i*8));
+			}
 			return sum;
-		}
+		},
 
-		function putstr(segment, idx, length) {
-			length = arguments.length === 3 ? length : bin.length - idx - 1;
-			bin = bin.substr(0, idx) + segment + bin.substr(length + idx);
-		}
 
-		function write(idx, num, size) {
-			var str = '', mv = II ? 0 : -8 * (size - 1), i;
+		BYTE: function(idx) {
+			return this.read(idx, 1);
+		},
 
-			for (i = 0; i < size; i++) {
-				str += String.fromCharCode((num >> Math.abs(mv + i*8)) & 255);
-			}
 
-			putstr(str, idx, size);
-		}
+		SHORT: function(idx) {
+			return this.read(idx, 2);
+		},
 
-		// Public functions
-		return {
-			II: function(order) {
-				if (order === undefined) {
-					return II;
-				} else {
-					II = order;
+
+		LONG: function(idx) {
+			return this.read(idx, 4);
+		},
+
+
+		SLONG: function(idx) { // 2's complement notation
+			var num = this.read(idx, 4);
+			return (num > 2147483647 ? num - 4294967296 : num);
+		},
+
+
+		CHAR: function(idx) {
+			return String.fromCharCode(this.read(idx, 1));
+		},
+
+
+		clear: function() {}
+	});
+
+
+	function ArrayBufferReader(data) {
+		var _dv = new DataView(data);
+
+		Basic.extend(this, {
+			
+			readByteAt: function(idx) {
+				return _dv.getUint8(idx);
+			},
+
+
+			write: function(idx, num, size) {
+				var mv, i, str = '';
+
+				if (idx > this.length()) {
+					throw new Error("You are trying to write outside the source boundaries.");
+				}
+
+				mv = this.littleEndian 
+					? 0 
+					: -8 * (size - 1)
+				;
+
+				for (i = 0; i < size; i++) {
+					_dv.setUint8(idx + i, (num >> Math.abs(mv + i*8)) & 255);
 				}
 			},
 
-			init: function(binData) {
-				II = false;
-				bin = binData;
+
+			SEGMENT: function(idx, size, value) {
+				switch (arguments.length) {
+					case 2:
+						return data.slice(idx, idx + size);
+
+					case 1:
+						return data.slice(idx);
+
+					case 3:
+						if (value instanceof ArrayBuffer) {					
+							var arr = new Uint8Array(this.length() - size + value.byteLength);
+							if (idx > 0) {
+								arr.set(new Uint8Array(data.slice(0, idx)), 0);
+							}
+							arr.set(new Uint8Array(value), idx);
+							arr.set(new Uint8Array(data.slice(idx + size)), idx + value.byteLength);
+
+							this.clear();
+							data = arr.buffer;
+							_dv = new DataView(data);
+							break;
+						}
+
+					default: return data;
+				}
 			},
+
+
+			length: function() {
+				return data.byteLength;
+			},
+
+
+			clear: function() {
+				_dv = data = null;
+			}
+		});
+	}
+
+
+	function UTF16StringReader(data) {
+		Basic.extend(this, {
+			
+			readByteAt: function(idx) {
+				return data.charCodeAt(idx);
+			},
+
+
+			write: function(idx, num, size) {
+				var mv, i, str = '';
+
+				if (idx > this.length()) {
+					throw new Error("You are trying to write outside the source boundaries.");
+				}
+
+				mv = this.littleEndian 
+					? 0 
+					: -8 * (size - 1)
+				;
+
+				for (i = 0; i < size; i++) {
+					str += String.fromCharCode((num >> Math.abs(mv + i*8)) & 255);
+				}
+
+				putstr(str, idx, size);
+			},
+
 
 			SEGMENT: function(idx, length, segment) {
 				switch (arguments.length) {
 					case 1:
-						return bin.substr(idx, bin.length - idx - 1);
+						return data.substr(idx);
 					case 2:
-						return bin.substr(idx, length);
+						return data.substr(idx, length);
 					case 3:
 						putstr(segment, idx, length);
 						break;
-					default: return bin;
+					default: return data;
 				}
 			},
 
-			BYTE: function(idx) {
-				return read(idx, 1);
-			},
-
-			SHORT: function(idx) {
-				return read(idx, 2);
-			},
-
-			LONG: function(idx, num) {
-				if (num === undefined) {
-					return read(idx, 4);
-				} else {
-					write(idx, num, 4);
-				}
-			},
-
-			SLONG: function(idx) { // 2's complement notation
-				var num = read(idx, 4);
-
-				return (num > 2147483647 ? num - 4294967296 : num);
-			},
-
-			STRING: function(idx, size) {
-				var str = '';
-
-				for (size += idx; idx < size; idx++) {
-					str += String.fromCharCode(read(idx, 1));
-				}
-
-				return str;
-			},
 
 			length: function() {
-				return bin.length;
+				return data.length;
 			}
-		};
-	};
+		});
+
+
+		function putstr(segment, idx, length) {
+			length = arguments.length === 3 ? length : data.length - idx - 1;
+			data = data.substr(0, idx) + segment + data.substr(length + idx);
+		}
+	}
+
+
+	return BinaryReader;
 });
