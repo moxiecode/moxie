@@ -65,13 +65,13 @@ task("mkjs", [], function () {
 		outputCoverage: targetDir + "/moxie.cov.js"
 	};
 
-	var modules = [].slice.call(arguments);
+	var resolvedModules, modules = [].slice.call(arguments);
 	if (!modules.length) {
 		modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest", "image/Image"];
 	}
 
 	// resolve dependencies
-	modules = mkjs.resolveModules(modules, options);	
+	resolvedModules = mkjs.resolveModules(modules, options);	
 
 	// start fresh
 	if (fs.existsSync(targetDir)) {
@@ -79,10 +79,16 @@ task("mkjs", [], function () {
 	}
 	jake.mkdirP(targetDir);
 
-	amdlc.compileMinified(modules, options);
-	amdlc.compileSource(modules, options);
-	amdlc.compileDevelopment(modules, options);
-	amdlc.compileCoverage(modules, options);
+	amdlc.compileMinified(resolvedModules, options);
+	amdlc.compileSource(resolvedModules, options);
+
+	// for dev and cov versions expose all modules to be able to test them properly
+	options.expose = 'all';
+	options.force = true;
+	resolvedModules = mkjs.resolveModules(modules, options);	
+	amdlc.compileDevelopment(resolvedModules, options);
+	amdlc.compileCoverage(resolvedModules, options);
+
 
 	var info = require('./package.json');
 	info.copyright = copyright;
