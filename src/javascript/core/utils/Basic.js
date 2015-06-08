@@ -75,26 +75,20 @@ define('moxie/core/utils/Basic', [], function() {
 		var length, key, i, undef;
 
 		if (obj) {
-			try {
-				length = obj.length;
-			} catch(ex) {
-				length = undef;
-			}
-
-			if (length === undef) {
+			if (typeOf(obj) === 'array') {
+				// Loop array items
+				for (i = 0, length = obj.length; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
+					}
+				}
+			} else {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (callback(obj[key], key) === false) {
 							return;
 						}
-					}
-				}
-			} else {
-				// Loop array items
-				for (i = 0; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
 					}
 				}
 			}
