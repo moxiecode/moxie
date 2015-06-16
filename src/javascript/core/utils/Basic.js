@@ -162,7 +162,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@method inParallel
 	@static
 	@param {Array} queue Array of functions to call in sequence
-	@param {Function} cb Main callback that is called in the end, or in case of erro
+	@param {Function} cb Main callback that is called in the end, or in case of error
 	*/
 	var inParallel = function(queue, cb) {
 		var count = 0, num = queue.length, cbArgs = new Array(num);
