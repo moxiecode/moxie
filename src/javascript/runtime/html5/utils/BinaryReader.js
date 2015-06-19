@@ -136,7 +136,7 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 
 
 			length: function() {
-				return data.byteLength;
+				return data ? data.byteLength : 0;
 			},
 
 
@@ -190,7 +190,11 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 
 
 			length: function() {
-				return data.length;
+				return data ? data.length : 0;
+			}, 
+
+			clear: function() {
+				data = null;
 			}
 		});
 
