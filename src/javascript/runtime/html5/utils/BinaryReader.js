@@ -13,7 +13,7 @@
 @private
 */
 define("moxie/runtime/html5/utils/BinaryReader", [
-	"moxie/core/utils/Basic",
+	"moxie/core/utils/Basic"
 ], function(Basic) {
 
 	
@@ -24,6 +24,7 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 			UTF16StringReader.apply(this, arguments);
 		}
 	}
+	 
 
 	Basic.extend(BinaryReader.prototype, {
 		
@@ -46,6 +47,24 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 				sum |= (this.readByteAt(idx + i) << Math.abs(mv + i*8));
 			}
 			return sum;
+		},
+
+
+		write: function(idx, num, size) {
+			var mv, i, str = '';
+
+			if (idx > this.length()) {
+				throw new Error("You are trying to write outside the source boundaries.");
+			}
+
+			mv = this.littleEndian 
+				? 0 
+				: -8 * (size - 1)
+			;
+
+			for (i = 0; i < size; i++) {
+				this.writeByteAt(idx + i, (num >> Math.abs(mv + i*8)) & 255);
+			}
 		},
 
 
@@ -72,10 +91,7 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 
 		CHAR: function(idx) {
 			return String.fromCharCode(this.read(idx, 1));
-		},
-
-
-		clear: function() {}
+		}
 	});
 
 
@@ -89,23 +105,10 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 			},
 
 
-			write: function(idx, num, size) {
-				var mv, i, str = '';
-
-				if (idx > this.length()) {
-					throw new Error("You are trying to write outside the source boundaries.");
-				}
-
-				mv = this.littleEndian 
-					? 0 
-					: -8 * (size - 1)
-				;
-
-				for (i = 0; i < size; i++) {
-					_dv.setUint8(idx + i, (num >> Math.abs(mv + i*8)) & 255);
-				}
+			writeByteAt: function(idx, value) {
+				_dv.setUint8(idx, value);
 			},
-
+			
 
 			SEGMENT: function(idx, size, value) {
 				switch (arguments.length) {
@@ -159,23 +162,8 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 			},
 
 
-			write: function(idx, num, size) {
-				var mv, i, str = '';
-
-				if (idx > this.length()) {
-					throw new Error("You are trying to write outside the source boundaries.");
-				}
-
-				mv = this.littleEndian 
-					? 0 
-					: -8 * (size - 1)
-				;
-
-				for (i = 0; i < size; i++) {
-					str += String.fromCharCode((num >> Math.abs(mv + i*8)) & 255);
-				}
-
-				putstr(str, idx, size);
+			writeByteAt: function(idx, value) {
+				putstr(value, idx, 1);
 			},
 
 
