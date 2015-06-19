@@ -116,6 +116,10 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 						return data.slice(idx);
 
 					case 3:
+						if (value === null) {
+							value = new ArrayBuffer();
+						}
+
 						if (value instanceof ArrayBuffer) {					
 							var arr = new Uint8Array(this.length() - size + value.byteLength);
 							if (idx > 0) {
@@ -182,7 +186,7 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 					case 2:
 						return data.substr(idx, length);
 					case 3:
-						putstr(segment, idx, length);
+						putstr(segment !== null ? segment : '', idx, length);
 						break;
 					default: return data;
 				}
