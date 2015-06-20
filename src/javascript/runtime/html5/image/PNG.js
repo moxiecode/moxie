@@ -18,13 +18,10 @@ define("moxie/runtime/html5/image/PNG", [
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(x, Basic, BinaryReader) {
 	
-	function PNG(binstr) {
-		var _binstr, _br, _hm, _ep, _info;
+	function PNG(data) {
+		var _br, _hm, _ep, _info;
 
-		_binstr = binstr;
-
-		_br = new BinaryReader();
-		_br.init(_binstr);
+		_br = new BinaryReader(data);
 
 		// check if it's png
 		(function() {
@@ -58,8 +55,8 @@ define("moxie/runtime/html5/image/PNG", [
 			if (!_br) {
 				return; // ignore any repeating purge requests
 			}
-			_br.init(null);
-			_binstr = _info = _hm = _ep = _br = null;
+			_br.clear();
+			data = _info = _hm = _ep = _br = null;
 		}
 
 		_info = _getDimensions.call(this);
@@ -67,7 +64,7 @@ define("moxie/runtime/html5/image/PNG", [
 		Basic.extend(this, {
 			type: 'image/png',
 
-			size: _binstr.length,
+			size: _br.length(),
 
 			width: _info.width,
 
