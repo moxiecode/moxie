@@ -316,7 +316,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 			clear: function() {
 				__super__.clear();
-				data = tags = tagDescs = Tiff = offsets = parent = null;
+				data = tags = tagDescs = Tiff = offsets = __super__ = null;
 			}
 		});
 
