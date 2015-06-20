@@ -188,8 +188,6 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 		var img = new o.Image;
 		img.onload = function() {
-			start();
-
 			info = {
 				width: img.width,
 				height: img.height,
@@ -202,7 +200,6 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			// there was a time when image info was returned as second argument
 			ok(!arguments[1], "second argument undefined."); 
 
-			stop();
 			img.downsize(width, height, true);
 		};
 
