@@ -244,22 +244,6 @@ define("moxie/runtime/html5/image/ExifParser", [
 				return this.CHAR(idx);
 			},
 
-			TEXT: function(idx, count) {
-				return this.asArray('ASCII', idx, count).join('');
-			},
-
-
-			asArray: function(type, idx, count) {
-				var values = [];
-
-				for (var i = 0; i < count; i++) {
-					values[i] = this[type](idx + i);
-				}
-
-				return values;
-			},
-
-
 			TIFF: function() {
 				return Tiff || null;
 			},
@@ -338,7 +322,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 
 		// Check if that's APP1 and that it has EXIF
-		if (this.SHORT(0) !== 0xFFE1 || this.TEXT(4, 5).toUpperCase() !== "EXIF\0") {
+		if (this.SHORT(0) !== 0xFFE1 || this.STRING(4, 5).toUpperCase() !== "EXIF\0") {
 			throw new x.ImageError(x.ImageError.INVALID_META_ERR);
 		}
 

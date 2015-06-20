@@ -91,6 +91,21 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 
 		CHAR: function(idx) {
 			return String.fromCharCode(this.read(idx, 1));
+		},
+
+
+		STRING: function(idx, count) {
+			return this.asArray('CHAR', idx, count).join('');
+		},
+
+
+		asArray: function(type, idx, count) {
+			var values = [];
+
+			for (var i = 0; i < count; i++) {
+				values[i] = this[type](idx + i);
+			}
+			return values;
 		}
 	});
 
