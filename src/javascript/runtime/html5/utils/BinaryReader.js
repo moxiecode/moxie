@@ -163,7 +163,7 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 
 
 			writeByteAt: function(idx, value) {
-				putstr(value, idx, 1);
+				putstr(String.fromCharCode(value), idx, 1);
 			},
 
 
