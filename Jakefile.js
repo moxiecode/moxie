@@ -97,6 +97,7 @@ task("mkjs", [], function () {
 	// add debug constant to dev source
 	mkjs.addDebug(targetDir + "/moxie.js");
 	mkjs.addDebug(targetDir + "/moxie.dev.js");
+	mkjs.addDebug(targetDir + "/moxie.cov.js");
 
 	// add compatibility
 	if (process.env.compat !== 'no') {
