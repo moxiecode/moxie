@@ -20,55 +20,47 @@
 QUnit.config.reorder = false;
 QUnit.config.testTimeout = 10000;
 
+var data = (function() {
+	var data = o.atob(imgB64);
+	return [data, str2ab(data)];
+}());
+
 
 module("HTML5: BinaryReader");
 
 
-test("Process DOMString string", function(assert) {
-	var data = o.atob(imgB64);
-	var br = new o.BinaryReader(data);
+o.each(data, function(data) {
+	test("Process " + o.typeOf(data), function(assert) {
+		var br = new o.BinaryReader(data);
 
-	equal(br.length(), 60964, "length()");
-	equal(br.BYTE(1), 0xD8, "BYTE()");
-	equal(br.SHORT(0), 0xFFD8, "SHORT()");
-	equal(br.CHAR(6), 'E', "CHAR()");
+		equal(br.length(), 60964, "length()");
+		equal(br.BYTE(1), 0xD8, "BYTE()");
+		equal(br.SHORT(0), 0xFFD8, "SHORT()");
+		equal(br.CHAR(6), 'E', "CHAR()");
 
-	equal(br.SEGMENT(), data, "SEGMENT()");
-	equal(br.SEGMENT(2), data.substr(2), "SEGMENT(idx)");
-	equal(br.SEGMENT(6, 8), "Exif\0\0II", "SEGMENT(idx, length)");
+		equal(br.STRING(6, 4), 'Exif', "STRING()");
 
-	br.write(10, 2000000000, 4);
-	equal(br.LONG(10), 2000000000, "LONG()");
+		equal(br.SEGMENT(), data, "SEGMENT()");
 
-	br.write(20, 3000000000, 4);
-	equal(br.SLONG(20), -1294967296, "SLONG()");
+		if (o.typeOf(data) === 'string') {
+			equal(br.SEGMENT(2), data.substr(2), "SEGMENT(idx)");
+			equal(br.SEGMENT(6, 8), "Exif\0\0II", "SEGMENT(idx, length)");
+		} else {
+			deepEqual(br.SEGMENT(2), data.slice(2), "SEGMENT(idx)");
+			deepEqual(br.SEGMENT(6, 8), str2ab("Exif\0\0II"), "SEGMENT(idx, length)");
+		}
 
-	br.littleEndian = true;
-	equal(br.SHORT(0), 0xD8FF, "SHORT()");
-});
+		br.write(10, 2000000000, 4);
+		equal(br.LONG(10), 2000000000, "LONG()");
 
+		br.write(20, 3000000000, 4);
+		equal(br.SLONG(20), -1294967296, "SLONG()");
 
-test("Process ArrayBuffer string", function(assert) {
-	var data = str2ab(o.atob(imgB64));
-	var br = new o.BinaryReader(data);
+		br.littleEndian = true;
+		equal(br.SHORT(0), 0xD8FF, "SHORT()");
 
-	equal(br.length(), 60964, "length()");
-	equal(br.BYTE(1), 0xD8, "BYTE()");
-	equal(br.SHORT(0), 0xFFD8, "SHORT()");
-	equal(br.CHAR(6), 'E', "CHAR()");
-
-	equal(br.SEGMENT(), data, "SEGMENT()");
-	deepEqual(br.SEGMENT(2), data.slice(2), "SEGMENT(idx)");
-	deepEqual(br.SEGMENT(6, 8), str2ab("Exif\0\0II"), "SEGMENT(idx, length)");
-
-	br.write(10, 2000000000, 4);
-	equal(br.LONG(10), 2000000000, "LONG()");
-
-	br.write(20, 3000000000, 4);
-	equal(br.SLONG(20), -1294967296, "SLONG()");
-
-	br.littleEndian = true;
-	equal(br.SHORT(0), 0xD8FF, "SHORT()");
+		br.clear();
+	});
 });
 
 
