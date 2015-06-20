@@ -20,6 +20,7 @@
 		{"title": "XHR-CORS", "url": "XHR-CORS.html"},
 		{"title": "HTML4: FileInput", "url": "runtimes/html4/FileInput.html"},
 		{"title": "HTML5: BinaryReader", "url": "runtimes/html5/BinaryReader.html"},
+		{"title": "HTML5: ExifParser", "url": "runtimes/html5/ExifParser.html"},
 		{"title": "GoogleDrive: FileInput", "url": "runtimes/googledrive/FileInput.html"},
 		{"title": "Dropbox: FileInput", "url": "runtimes/dropbox/FileInput.html"},
 		{"title": "Flash: Runtime", "url": "runtimes/flash/Runtime.html"}
