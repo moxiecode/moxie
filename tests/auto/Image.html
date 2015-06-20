@@ -178,9 +178,9 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
-	test("Test image resizing: " + runtime, function() {
+	test("Test image resizing (with crop): " + runtime, function() {
 		var self = this
-		, url = o.resolveUrl("Image/250.jpg")
+		, url = o.resolveUrl("XMLHttpRequest/image.jpg")
 		, width = 150
 		, height = 150
 		, info = {}
@@ -203,7 +203,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			ok(!arguments[1], "second argument undefined."); 
 
 			stop();
-			img.downsize(width, height);
+			img.downsize(width, height, true);
 		};
 
 		img.onresize = function(e) {
@@ -211,16 +211,14 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 			ok(true, "onresize triggered.");
 			ok(!arguments[1], "second argument undefined.");
-
-			var smallerSide = width > height ? height : width;
 			
 			deepEqual({
 				width: this.width,
 				height: this.height,
 				type: info.type
 			}, {
-				width: smallerSide,
-				height: smallerSide,
+				width: width,
+				height: height,
 				type: img.type
 			}, "Image information updated accordingly.");
 
