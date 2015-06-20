@@ -169,17 +169,17 @@ test("Basic things", function(assert) {
 
 
 	jh = new o.JPEGHeaders(data);
-
 	ep = new o.ExifParser(jh.get("APP1")[0]);
 
 	assert.equal(ep.ASCII(4), 'E', "ASCII()");
-	assert.equal(ep.TEXT(4, 4), 'Exif', "TEXT()");
+	assert.equal(ep.STRING(4, 4), 'Exif', "STRING()");
 	
 
 	ep.clear();
 	assert.deepEqual(ep.SEGMENT(), null, "Instance destroyed properly.");
-
 	assert.deepEqual(ep.length(), 0, "Length is 0 after destruction.");
+
+	jh.purge();
 });
 
 

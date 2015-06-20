@@ -356,7 +356,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 		function extractTags(IFD_offset, tags2extract) {
 			var data = this;
-			var length, i, tag, type, count, offset, value, values = [], hash = {};
+			var length, i, tag, type, count, size, offset, value, values = [], hash = {};
 			
 			var types = {
 				1 : 'BYTE',
@@ -367,7 +367,18 @@ define("moxie/runtime/html5/image/ExifParser", [
 				5 : 'RATIONAL',
 				9 : 'SLONG',
 				10: 'SRATIONAL'
-			}; 
+			};
+
+			var sizes = {
+				'BYTE' 		: 1,
+				'UNDEFINED'	: 1,
+				'ASCII'		: 1,
+				'SHORT'		: 2,
+				'LONG' 		: 4,
+				'RATIONAL' 	: 8,
+				'SLONG'		: 4,
+				'SRATIONAL'	: 8
+			};
 
 			length = data.SHORT(IFD_offset);
 
@@ -387,52 +398,34 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 				type = types[data.SHORT(offset+=2)];
 				count = data.LONG(offset+=2);
+				size = sizes[type];
+
+				if (!size) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				}
 
 				offset += 4;
 
-				switch (type) {
-					case 'BYTE':
-					case 'UNDEFINED':
-					case 'ASCII':
-						if (count > 4) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-						break;
-
-					case 'SHORT':
-						if (count > 2) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-					case 'LONG':
-					case 'SLONG':
-						if (count > 1) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-						break;
-
-					case 'RATIONAL':
-					case 'SRATIONAL':
-						offset = data.LONG(offset) + offsets.tiffHeader;
-						break;
-
-					default:
-						throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				// tag can only fit 4 bytes of data, if data is larger we look outside
+				if (size * count > 4) {
+					// instead of data it contains an offset of the data
+					offset = data.LONG(offset) + offsets.tiffHeader;
 				}
 
-				values = data.asArray(type, offset, count);
-
+				// special care for the string
 				if (type === 'ASCII') {
-					hash[tag] = Basic.trim(values.join('').replace(/\0$/, ''));
+					// strip trailing NULL
+					hash[tag] = Basic.trim(data.STRING(offset, count).replace(/\0$/, ''));
 					continue;
-				} 
-
-				value = (count == 1 ? values[0] : values);
-
-				if (tagDescs.hasOwnProperty(tag) && typeof value != 'object') {
-					hash[tag] = tagDescs[tag][value];
 				} else {
-					hash[tag] = value;
+					values = data.asArray(type, offset, count);
+					value = (count == 1 ? values[0] : values);
+
+					if (tagDescs.hasOwnProperty(tag) && typeof value != 'object') {
+						hash[tag] = tagDescs[tag][value];
+					} else {
+						hash[tag] = value;
+					}
 				}
 			}
 
