@@ -128,7 +128,7 @@ define("moxie/runtime/html5/image/JPEG", [
 			;
 
 			if (data) {
-				br = new BinaryReader();
+				br = new BinaryReader(data);
 				info = _getDimensions(br);
 				br.clear();
 
