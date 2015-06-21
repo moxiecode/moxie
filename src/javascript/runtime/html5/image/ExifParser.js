@@ -298,7 +298,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 						var IFD1Tags = extractTags.call(this, offsets.IFD1, tags.thumb);
 						
 						if ('JPEGInterchangeFormat' in IFD1Tags) {
-							return data.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
+							return this.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
 						}
 					} catch (ex) {}
 				}
