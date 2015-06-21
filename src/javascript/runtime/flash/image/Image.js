@@ -40,17 +40,6 @@ define("moxie/runtime/flash/image/Image", [
 			}
 		},
 
-		getInfo: function() {
-			var self = this.getRuntime()
-			, info = self.shimExec.call(this, 'Image', 'getInfo')
-			;
-
-			if (info.meta && info.meta.thumb) {
-				info.meta.thumb.data = new Blob(self.uid, info.meta.thumb.data);
-			}
-			return info;
-		},
-
 		loadFromImage: function(img) {
 			var self = this.getRuntime();
 			return self.shimExec.call(this, 'Image', 'loadFromImage', img.uid);
