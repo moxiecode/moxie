@@ -410,16 +410,20 @@ define("moxie/runtime/html5/image/ExifParser", [
 
 				offset += 4;
 
-				// tag can only fit 4 bytes of data, if data is larger we look outside
+				// tag can only fit 4 bytes of data, if data is larger we should look outside
 				if (size * count > 4) {
-					// instead of data it contains an offset of the data
+					// instead of data tag contains an offset of the data
 					offset = data.LONG(offset) + offsets.tiffHeader;
 				}
 
+				// in case we left the boundaries of data throw an early exception
+				if (offset + size * count >= this.length()) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				} 
+
 				// special care for the string
 				if (type === 'ASCII') {
-					// strip trailing NULL
-					hash[tag] = Basic.trim(data.STRING(offset, count).replace(/\0$/, ''));
+					hash[tag] = Basic.trim(data.STRING(offset, count).replace(/\0$/, '')); // strip trailing NULL
 					continue;
 				} else {
 					values = data.asArray(type, offset, count);
