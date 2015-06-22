@@ -347,7 +347,11 @@ define("moxie/runtime/html5/image/ExifParser", [
 			delete Tiff.GPSInfoIFDPointer;
 		}
 
-		// check if we got thumb data as well
+		if (Basic.isEmptyObj(Tiff)) {
+			Tiff = null;
+		}
+
+		// check if we have a thumb as well
 		var IFD1Offset = this.LONG(offsets.IFD0 + this.SHORT(offsets.IFD0) * 12 + 2);
 		if (IFD1Offset) {
 			offsets.IFD1 = offsets.tiffHeader + IFD1Offset;
