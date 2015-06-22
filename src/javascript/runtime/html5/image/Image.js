@@ -86,14 +86,6 @@ define("moxie/runtime/html5/image/Image", [
 					meta: _imgInfo && _imgInfo.meta || this.meta || {}
 				};
 
-				// store thumbnail data as blob
-				if (info.meta.thumb) {
-					info.meta.thumb.data = new Blob(null, {
-						type: 'image/jpeg',
-						data: info.meta.thumb.data
-					});
-				}
-
 				return info;
 			},
 

@@ -20,13 +20,10 @@ define("moxie/runtime/html5/image/JPEG", [
 	"moxie/runtime/html5/image/ExifParser"
 ], function(Basic, x, JPEGHeaders, BinaryReader, ExifParser) {
 	
-	function JPEG(binstr) {
-		var _binstr, _br, _hm, _ep, _info, hasExif;
+	function JPEG(data) {
+		var _br, _hm, _ep, _info, hasExif = false;
 
-		_binstr = binstr;
-
-		_br = new BinaryReader();
-		_br.init(_binstr);
+		_br = new BinaryReader(data);
 
 		// check if it is jpeg
 		if (_br.SHORT(0) !== 0xFFD8) {
@@ -34,11 +31,11 @@ define("moxie/runtime/html5/image/JPEG", [
 		}
 
 		// backup headers
-		_hm = new JPEGHeaders(binstr);
+		_hm = new JPEGHeaders(data);
 
 		// extract exif info
-		_ep = new ExifParser();
-		hasExif = !!_ep.init(_hm.get('app1')[0]);
+		_ep = new ExifParser(_hm.get('app1')[0]);
+		hasExif = true;
 
 		// get dimensions
 		_info = _getDimensions.call(this);
@@ -46,7 +43,7 @@ define("moxie/runtime/html5/image/JPEG", [
 		Basic.extend(this, {
 			type: 'image/jpeg',
 
-			size: _binstr.length,
+			size: _br.length(),
 
 			width: _info && _info.width || 0,
 
@@ -66,19 +63,19 @@ define("moxie/runtime/html5/image/JPEG", [
 				}
 
 				// update internal headers
-				_hm.set('app1', _ep.getBinary());
+				_hm.set('app1', _ep.SEGMENT());
 			},
 
 			writeHeaders: function() {
 				if (!arguments.length) {
 					// if no arguments passed, update headers internally
-					return (_binstr = _hm.restore(_binstr));
+					return _hm.restore(data);
 				}
 				return _hm.restore(arguments[0]);
 			},
 
-			stripHeaders: function(binstr) {
-				return _hm.strip(binstr);
+			stripHeaders: function(data) {
+				return _hm.strip(data);
 			},
 
 			purge: function() {
@@ -125,18 +122,18 @@ define("moxie/runtime/html5/image/JPEG", [
 
 
 		function _getThumb() {
-			var binstr =  _ep.thumb()
-			, br = new BinaryReader()
+			var data =  _ep.thumb()
+			, br
 			, info
 			;
 
-			if (binstr) {
-				br.init(binstr);
+			if (data) {
+				br = new BinaryReader(data);
 				info = _getDimensions(br);
-				br.init(null);
+				br.clear();
 
 				if (info) {
-					info.data = binstr;
+					info.data = data;
 					return info;
 				}
 			}
@@ -148,10 +145,10 @@ define("moxie/runtime/html5/image/JPEG", [
 			if (!_ep || !_hm || !_br) { 
 				return; // ignore any repeating purge requests
 			}
-			_ep.purge();
+			_ep.clear();
 			_hm.purge();
-			_br.init(null);
-			_binstr = _info = _hm = _ep = _br = null;
+			_br.clear();
+			_info = _hm = _ep = _br = null;
 		}
 	}
 

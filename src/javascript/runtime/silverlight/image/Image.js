@@ -52,11 +52,6 @@ define("moxie/runtime/silverlight/image/Image", [
 						}
 					}
 				});
-
-				// save thumb data as blob
-				if (info.meta && info.meta.thumb) {
-					info.meta.thumb.data = new Blob(self.uid, info.meta.thumb.data);
-				}
 			}
 
 			info.width = parseInt(rawInfo.width, 10);

@@ -18,11 +18,10 @@ define("moxie/runtime/html5/image/ExifParser", [
 	"moxie/core/Exceptions"
 ], function(Basic, BinaryReader, x) {
 	
-	return function ExifParser() {
-		// Private ExifParser fields
-		var data, tags, Tiff, offsets = {}, tagDescs;
-
-		data = new BinaryReader();
+	function ExifParser(data) {
+		var __super__, tags, tagDescs, offsets, idx, Tiff;
+		
+		BinaryReader.call(this, data);
 
 		tags = {
 			tiff: {
@@ -124,10 +123,10 @@ define("moxie/runtime/html5/image/ExifParser", [
 			},
 
 			'Flash': {
-				0x0000: 'Flash did not fire.',
-				0x0001: 'Flash fired.',
-				0x0005: 'Strobe return light not detected.',
-				0x0007: 'Strobe return light detected.',
+				0x0000: 'Flash did not fire',
+				0x0001: 'Flash fired',
+				0x0005: 'Strobe return light not detected',
+				0x0007: 'Strobe return light detected',
 				0x0009: 'Flash fired, compulsory flash mode',
 				0x000D: 'Flash fired, compulsory flash mode, return light not detected',
 				0x000F: 'Flash fired, compulsory flash mode, return light detected',
@@ -196,13 +195,204 @@ define("moxie/runtime/html5/image/ExifParser", [
 			}
 		};
 
+		offsets = {
+			tiffHeader: 10
+		};
+		
+		idx = offsets.tiffHeader;
+
+		__super__ = {
+			clear: this.clear
+		};
+
+		// Public functions
+		Basic.extend(this, {
+			
+			read: function() {
+				try {
+					return ExifParser.prototype.read.apply(this, arguments);
+				} catch (ex) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				}
+			},
+
+
+			write: function() {
+				try {
+					return ExifParser.prototype.write.apply(this, arguments);
+				} catch (ex) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				}
+			},
+
+
+			UNDEFINED: function() {
+				return this.BYTE.apply(this, arguments);
+			},
+
+
+			RATIONAL: function(idx) {
+				return this.LONG(idx) / this.LONG(idx + 4)
+			},
+
+
+			SRATIONAL: function(idx) {
+				return this.SLONG(idx) / this.SLONG(idx + 4)
+			},
+
+			ASCII: function(idx) {
+				return this.CHAR(idx);
+			},
+
+			TIFF: function() {
+				return Tiff || null;
+			},
+
+
+			EXIF: function() {
+				var Exif = null;
+
+				if (offsets.exifIFD) {
+					try {
+						Exif = extractTags.call(this, offsets.exifIFD, tags.exif);
+					} catch(ex) {
+						return null;
+					}
+
+					// Fix formatting of some tags
+					if (Exif.ExifVersion && Basic.typeOf(Exif.ExifVersion) === 'array') {
+						for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
+							exifVersion += String.fromCharCode(Exif.ExifVersion[i]);
+						}
+						Exif.ExifVersion = exifVersion;
+					}
+				}
+
+				return Exif;
+			},
+
+
+			GPS: function() {
+				var GPS = null;
+
+				if (offsets.gpsIFD) {
+					try {
+						GPS = extractTags.call(this, offsets.gpsIFD, tags.gps);
+					} catch (ex) {
+						return null;
+					}
+
+					// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
+					if (GPS.GPSVersionID && Basic.typeOf(GPS.GPSVersionID) === 'array') {
+						GPS.GPSVersionID = GPS.GPSVersionID.join('.');
+					}
+				}
+
+				return GPS;
+			},
+
+
+			thumb: function() {
+				if (offsets.IFD1) {
+					try {
+						var IFD1Tags = extractTags.call(this, offsets.IFD1, tags.thumb);
+						
+						if ('JPEGInterchangeFormat' in IFD1Tags) {
+							return this.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
+						}
+					} catch (ex) {}
+				}
+				return null;
+			},
+
+
+			setExif: function(tag, value) {
+				// Right now only setting of width/height is possible
+				if (tag !== 'PixelXDimension' && tag !== 'PixelYDimension') { return false; }
+
+				return setTag.call(this, 'exif', tag, value);
+			},
+
+
+			clear: function() {
+				__super__.clear();
+				data = tags = tagDescs = Tiff = offsets = __super__ = null;
+			}
+		});
+
+
+		// Check if that's APP1 and that it has EXIF
+		if (this.SHORT(0) !== 0xFFE1 || this.STRING(4, 5).toUpperCase() !== "EXIF\0") {
+			throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+		}
+
+		// Set read order of multi-byte data
+		this.littleEndian = (this.SHORT(idx) == 0x4949);
+
+		// Check if always present bytes are indeed present
+		if (this.SHORT(idx+=2) !== 0x002A) {
+			throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+		}
+
+		offsets.IFD0 = offsets.tiffHeader + this.LONG(idx += 2);
+		Tiff = extractTags.call(this, offsets.IFD0, tags.tiff);
+
+		if ('ExifIFDPointer' in Tiff) {
+			offsets.exifIFD = offsets.tiffHeader + Tiff.ExifIFDPointer;
+			delete Tiff.ExifIFDPointer;
+		}
+
+		if ('GPSInfoIFDPointer' in Tiff) {
+			offsets.gpsIFD = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
+			delete Tiff.GPSInfoIFDPointer;
+		}
+
+		if (Basic.isEmptyObj(Tiff)) {
+			Tiff = null;
+		}
+
+		// check if we have a thumb as well
+		var IFD1Offset = this.LONG(offsets.IFD0 + this.SHORT(offsets.IFD0) * 12 + 2);
+		if (IFD1Offset) {
+			offsets.IFD1 = offsets.tiffHeader + IFD1Offset;
+		}
+
+
 		function extractTags(IFD_offset, tags2extract) {
-			var length = data.SHORT(IFD_offset), i, ii,
-				tag, type, count, tagOffset, offset, value, values = [], hash = {};
+			var data = this;
+			var length, i, tag, type, count, size, offset, value, values = [], hash = {};
+			
+			var types = {
+				1 : 'BYTE',
+				7 : 'UNDEFINED',
+				2 : 'ASCII',
+				3 : 'SHORT',
+				4 : 'LONG',
+				5 : 'RATIONAL',
+				9 : 'SLONG',
+				10: 'SRATIONAL'
+			};
+
+			var sizes = {
+				'BYTE' 		: 1,
+				'UNDEFINED'	: 1,
+				'ASCII'		: 1,
+				'SHORT'		: 2,
+				'LONG' 		: 4,
+				'RATIONAL' 	: 8,
+				'SLONG'		: 4,
+				'SRATIONAL'	: 8
+			};
+
+			length = data.SHORT(IFD_offset);
+
+			// The size of APP1 including all these elements shall not exceed the 64 Kbytes specified in the JPEG standard.
 
 			for (i = 0; i < length; i++) {
+				values = [];
+
 				// Set binary reader pointer to beginning of the next tag
-				offset = tagOffset = IFD_offset + 12 * i + 2;
+				offset = IFD_offset + 2 + i*12;
 
 				tag = tags2extract[data.SHORT(offset)];
 
@@ -210,139 +400,44 @@ define("moxie/runtime/html5/image/ExifParser", [
 					continue; // Not the tag we requested
 				}
 
-				type = data.SHORT(offset+=2);
+				type = types[data.SHORT(offset+=2)];
 				count = data.LONG(offset+=2);
+				size = sizes[type];
 
-				offset += 4;
-
-				// we can't prevent inconsistencies in tags, but we can avoid extreme ones
-				if (offset + count > length) {
+				if (!size) {
 					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
 				}
 
-				values = [];
+				offset += 4;
 
-				switch (type) {
-					case 1: // BYTE
-					case 7: // UNDEFINED
-						if (count > 4) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.BYTE(offset + ii);
-						}
-
-						break;
-
-					case 2: // STRING
-						if (count > 4) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-						hash[tag] = data.STRING(offset, count - 1);
-
-						continue;
-
-					case 3: // SHORT
-						if (count > 2) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.SHORT(offset + ii*2);
-						}
-
-						break;
-
-					case 4: // LONG
-						if (count > 1) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.LONG(offset + ii*4);
-						}
-
-						break;
-
-					case 5: // RATIONAL
-						offset = data.LONG(offset) + offsets.tiffHeader;
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.LONG(offset + ii*8) / data.LONG(offset + ii*8 + 4);
-						}
-
-						break;
-
-					case 9: // SLONG
-						offset = data.LONG(offset) + offsets.tiffHeader;
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.SLONG(offset + ii*4);
-						}
-
-						break;
-
-					case 10: // SRATIONAL
-						offset = data.LONG(offset) + offsets.tiffHeader;
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.SLONG(offset + ii*8) / data.SLONG(offset + ii*8 + 4);
-						}
-
-						break;
-
-					default:
-						continue;
+				// tag can only fit 4 bytes of data, if data is larger we should look outside
+				if (size * count > 4) {
+					// instead of data tag contains an offset of the data
+					offset = data.LONG(offset) + offsets.tiffHeader;
 				}
 
-				value = (count == 1 ? values[0] : values);
+				// in case we left the boundaries of data throw an early exception
+				if (offset + size * count >= this.length()) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				} 
 
-				if (tagDescs.hasOwnProperty(tag) && typeof value != 'object') {
-					hash[tag] = tagDescs[tag][value];
+				// special care for the string
+				if (type === 'ASCII') {
+					hash[tag] = Basic.trim(data.STRING(offset, count).replace(/\0$/, '')); // strip trailing NULL
+					continue;
 				} else {
-					hash[tag] = value;
+					values = data.asArray(type, offset, count);
+					value = (count == 1 ? values[0] : values);
+
+					if (tagDescs.hasOwnProperty(tag) && typeof value != 'object') {
+						hash[tag] = tagDescs[tag][value];
+					} else {
+						hash[tag] = value;
+					}
 				}
 			}
 
 			return hash;
-		}
-
-		function getIFDOffsets() {
-			var idx = offsets.tiffHeader;
-
-			// Set read order of multi-byte data
-			data.II(data.SHORT(idx) == 0x4949);
-
-			// Check if always present bytes are indeed present
-			if (data.SHORT(idx+=2) !== 0x002A) {
-				return false;
-			}
-
-			offsets.IFD0 = offsets.tiffHeader + data.LONG(idx += 2);
-			try {
-				Tiff = extractTags(offsets.IFD0, tags.tiff);
-			} catch(ex) {
-				return false;
-			}
-
-			if ('ExifIFDPointer' in Tiff) {
-				offsets.exifIFD = offsets.tiffHeader + Tiff.ExifIFDPointer;
-				delete Tiff.ExifIFDPointer;
-			}
-
-			if ('GPSInfoIFDPointer' in Tiff) {
-				offsets.gpsIFD = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
-				delete Tiff.GPSInfoIFDPointer;
-			}
-
-			// check if we got thumb data as well
-			var IFD1Offset = data.LONG(offsets.IFD0 + data.SHORT(offsets.IFD0) * 12 + 2);
-			if (IFD1Offset) {
-				offsets.IFD1 = offsets.tiffHeader + IFD1Offset;
-			}
-			return true;
 		}
 
 		// At the moment only setting of simple (LONG) values, that do not require offset recalculation, is supported
@@ -360,12 +455,12 @@ define("moxie/runtime/html5/image/ExifParser", [
 				}
 			}
 			offset = offsets[ifd.toLowerCase() + 'IFD'];
-			length = data.SHORT(offset);
+			length = this.SHORT(offset);
 
 			for (var i = 0; i < length; i++) {
 				tagOffset = offset + 12 * i + 2;
 
-				if (data.SHORT(tagOffset) == tag) {
+				if (this.SHORT(tagOffset) == tag) {
 					valueOffset = tagOffset + 8;
 					break;
 				}
@@ -375,108 +470,17 @@ define("moxie/runtime/html5/image/ExifParser", [
 				return false;
 			}
 
-			data.LONG(valueOffset, value);
+			try {
+				this.write(valueOffset, value, 4);
+			} catch(ex) {
+				return false;
+			}
+
 			return true;
 		}
+	}
 
+	ExifParser.prototype = BinaryReader.prototype;
 
-		// Public functions
-		return {
-			init: function(segment) {
-				// Reset internal data
-				offsets = {
-					tiffHeader: 10
-				};
-
-				if (segment === undefined || !segment.length) {
-					return false;
-				}
-
-				data.init(segment);
-
-				// Check if that's APP1 and that it has EXIF
-				if (data.SHORT(0) === 0xFFE1 && data.STRING(4, 5).toUpperCase() === "EXIF\0") {
-					return getIFDOffsets();
-				}
-				return false;
-			},
-
-			TIFF: function() {
-				return Tiff;
-			},
-
-			EXIF: function() {
-				var Exif = null;
-
-				if (offsets.exifIFD) {
-					try {
-						Exif = extractTags(offsets.exifIFD, tags.exif);
-					} catch(ex) {
-						return null;
-					}
-
-					// Fix formatting of some tags
-					if (Exif.ExifVersion && Basic.typeOf(Exif.ExifVersion) === 'array') {
-						for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
-							exifVersion += String.fromCharCode(Exif.ExifVersion[i]);
-						}
-						Exif.ExifVersion = exifVersion;
-					}
-				}
-
-				return Exif;
-			},
-
-			GPS: function() {
-				var GPS = null;
-
-				if (offsets.gpsIFD) {
-					try {
-						GPS = extractTags(offsets.gpsIFD, tags.gps);
-					} catch (ex) {
-						return null;
-					}
-
-					// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
-					if (GPS.GPSVersionID && Basic.typeOf(GPS.GPSVersionID) === 'array') {
-						GPS.GPSVersionID = GPS.GPSVersionID.join('.');
-					}
-				}
-
-				return GPS;
-			},
-
-			thumb: function() {
-				if (offsets.IFD1) {
-					try {
-						var IFD1Tags = extractTags(offsets.IFD1, tags.thumb);
-					} catch (ex) {
-						return null;
-					}
-					if ('JPEGInterchangeFormat' in IFD1Tags) {
-						return data.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
-					}
-				}
-				return null;
-			},
-
-			setExif: function(tag, value) {
-				// Right now only setting of width/height is possible
-				if (tag !== 'PixelXDimension' && tag !== 'PixelYDimension') {return false;}
-
-				return setTag('exif', tag, value);
-			},
-
-
-			getBinary: function() {
-				return data.SEGMENT();
-			},
-
-			purge: function() {
-				data.init(null);
-				data = Tiff = null;
-				offsets = {};
-			}
-		};
-	};
+	return ExifParser;
 });
