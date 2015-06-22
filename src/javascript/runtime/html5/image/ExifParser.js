@@ -455,12 +455,12 @@ define("moxie/runtime/html5/image/ExifParser", [
 				}
 			}
 			offset = offsets[ifd.toLowerCase() + 'IFD'];
-			length = data.SHORT(offset);
+			length = this.SHORT(offset);
 
 			for (var i = 0; i < length; i++) {
 				tagOffset = offset + 12 * i + 2;
 
-				if (data.SHORT(tagOffset) == tag) {
+				if (this.SHORT(tagOffset) == tag) {
 					valueOffset = tagOffset + 8;
 					break;
 				}
@@ -471,7 +471,7 @@ define("moxie/runtime/html5/image/ExifParser", [
 			}
 
 			try {
-				data.write(valueOffset, value, 4);
+				this.write(valueOffset, value, 4);
 			} catch(ex) {
 				return false;
 			}

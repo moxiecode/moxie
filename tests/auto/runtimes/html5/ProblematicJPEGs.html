@@ -47,6 +47,20 @@ function onJPEGsLoaded(jpegs) {
 		});
 	});
 
+
+	test("setExif()", function(assert) {
+		var jh = new o.JPEGHeaders(jpegs[0].source);
+		var ep = new o.ExifParser(jh.get("app1")[0]);
+		var exif = ep.EXIF();
+
+		var result = ep.setExif('PixelXDimension', 150) && ep.setExif('PixelYDimension', 150);
+
+		var exifAfterChange = ep.EXIF();
+
+		assert.ok(result, "Exif data successfully changed.");
+		assert.notEqual(exif, exifAfterChange, "Exif before and after the change differs.");
+	});
+
 	QUnit.start();
 }
 
