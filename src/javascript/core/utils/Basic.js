@@ -75,20 +75,20 @@ define('moxie/core/utils/Basic', [], function() {
 		var length, key, i, undef;
 
 		if (obj) {
-			if (typeOf(obj) === 'array') {
-				// Loop array items
-				for (i = 0, length = obj.length; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
-					}
-				}
-			} else {
+			if (typeOf(obj) === 'object') {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (callback(obj[key], key) === false) {
 							return;
 						}
+					}
+				}
+			} else if (typeOf(obj.length) === 'number') { // it might be Array or, for example, FileList
+				// Loop array items
+				for (i = 0, length = obj.length; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
 					}
 				}
 			}
