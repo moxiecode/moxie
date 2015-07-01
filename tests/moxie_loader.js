@@ -1,7 +1,6 @@
 (function() {
 	var baseURL;
 
-	// Get base where the tinymce script is located
 	var scripts = document.getElementsByTagName('script');
 	for (var i = 0; i < scripts.length; i++) {
 		var src = scripts[i].src;
