@@ -194,7 +194,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 	test("readAsText(), runtime: " + runtime, function(assert) {
 		var self = this
-		, url = o.resolveUrl("XMLHttpRequest/some.json")
+		, url = o.resolveUrl("XMLHttpRequest/json.php")
 		, xhr = new o.XMLHttpRequest()
 		, startTime = (new Date).getTime()
 		, endTime
@@ -274,7 +274,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 	test("Instances are independent, runtime: " + runtime, function(assert) {
 		var self = this
-		, url = o.resolveUrl("XMLHttpRequest/some.json")
+		, url = o.resolveUrl("XMLHttpRequest/json.php")
 		, xhr = new o.XMLHttpRequest()
 		;
 
