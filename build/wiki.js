@@ -15,8 +15,9 @@ var source = {
 	''].join('')),
 
 	page: Handlebars.compile([
+		'_**Important!** This page is auto-generated from the comments in the source files. All changes will be overwritten! If you are looking to contribute, modify the comment in the corresponding source file instead._\n\n',
 		'### Table of Contents\n',
-		'* [Constructor](#{{class}}-method)\n',
+		'* [Constructor](#Constructor-method)\n',
 		'{{#if property}}',
 			'* [Properties](#properties)\n',
 			'{{#each property}}',
@@ -26,7 +27,7 @@ var source = {
 		'{{#if method}}',
 			'* [Methods](#methods)\n',
 			'{{#each method}}',
-			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-{{formatAnchorSuffix params}}-method) {{#if static}}`static`{{/if}}\n',
+			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-method{{formatAnchorSuffix params}}) {{#if static}}`static`{{/if}}\n',
 			'{{/each}}',
 		'{{/if}}',
 		'{{#if event}}',
@@ -62,7 +63,9 @@ var source = {
 			'## Methods\n\n',
 
 			'{{#each method}}',
-				'{{> method}}',
+				'<a name="{{name}}-method{{formatAnchorSuffix params}}" />\n',
+				'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
+				'{{> body}}',
 			'{{/each}}\n',
 		'{{/if}}',
 
@@ -72,28 +75,19 @@ var source = {
 			'{{#each event}}',
 				'<a name="{{name}}-event" />\n',
 				'### {{name}}\n\n',
-
-				'{{{description}}}\n\n',
-
-				'{{#if example}}',
-					'__Example__\n',
-					'{{#each example}}',
-					'{{{formatExample .}}}\n',
-					'{{/each}}',
-				'{{/if}}',
+				'{{> body}}',
 			'{{/each}}\n',
 		'{{/if}}',
 	''].join('')),
 
 	constructor: Handlebars.compile([
 		'## Constructor\n',
-		'{{> method}}',
+		'<a name="Constructor-method" />\n',
+		'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
+		'{{> body}}',
 	''].join('')),
 
-	method: Handlebars.compile([
-		'<a name="{{name}}-{{formatAnchorSuffix params}}-method" />\n',
-		'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
-
+	body: Handlebars.compile([
 		'{{{description}}}\n\n',
 
 		'{{#if params}}',
@@ -197,7 +191,7 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 			defineArgIndentation(data.classes[item.class].params);
 		}
 		
-		if (item.itemtype === 'method' && item.params) {
+		if (['method', 'event'].indexOf(item.itemtype) !== -1 && item.params) {
 			defineArgIndentation(item.params);
 		}
 
@@ -212,6 +206,9 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 		if (fn.is_constructor != 1) {
 			return '';
 		}
+
+		// avoid fancy anchors for constructors
+		fn.name = "Constructor";
 
 		fn.srcUrl = srcUrl + fn.file + '#L' + fn.line;
 		return source.constructor(fn);
@@ -236,7 +233,11 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 
 
 	Handlebars.registerHelper('formatAnchorSuffix', function(params) {
-		return Handlebars.helpers.formatSignature(params).replace(/\W+/g, '');
+		var suffix = Handlebars.helpers.formatSignature(params).replace(/\W+/g, '');
+		if (suffix) {
+			suffix = '-' + suffix;
+		}
+		return suffix;
 	});
 
 
@@ -271,7 +272,7 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 
 	// define partials
 	Handlebars.registerPartial('argument', source.argument);
-	Handlebars.registerPartial('method', source.method);
+	Handlebars.registerPartial('body', source.body);
 
 
 	// generate TOC
