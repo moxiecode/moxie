@@ -207,9 +207,6 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 			return '';
 		}
 
-		// avoid fancy anchors for constructors
-		fn.name = "Constructor";
-
 		fn.srcUrl = srcUrl + fn.file + '#L' + fn.line;
 		return source.constructor(fn);
 	});
