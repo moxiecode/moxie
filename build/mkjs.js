@@ -33,7 +33,7 @@ var resolveModules = (function() {
 		}
 
 		// there is no need to reparse if we already did this once
-		if (resolved.length) {
+		if (resolved.length && !options.force) {
 			return resolved;
 		}
 

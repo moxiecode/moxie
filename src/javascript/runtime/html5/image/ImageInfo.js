@@ -28,16 +28,16 @@ define("moxie/runtime/html5/image/ImageInfo", [
 
 	@class ImageInfo
 	@constructor
-	@param {String} binstr Image source as binary string
+	@param {String} data Image source as binary string
 	*/
-	return function(binstr) {
+	return function(data) {
 		var _cs = [JPEG, PNG], _img;
 
 		// figure out the format, throw: ImageError.WRONG_FORMAT if not supported
 		_img = (function() {
 			for (var i = 0; i < _cs.length; i++) {
 				try {
-					return new _cs[i](binstr);
+					return new _cs[i](data);
 				} catch (ex) {
 					// console.info(ex);
 				}
@@ -118,7 +118,9 @@ define("moxie/runtime/html5/image/ImageInfo", [
 
 			@method purge
 			*/
-			purge: function() {}
+			purge: function() {
+				data = null;
+			}
 		});
 
 		Basic.extend(this, _img);

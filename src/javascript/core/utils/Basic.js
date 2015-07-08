@@ -75,26 +75,20 @@ define('moxie/core/utils/Basic', [], function() {
 		var length, key, i, undef;
 
 		if (obj) {
-			try {
-				length = obj.length;
-			} catch(ex) {
-				length = undef;
-			}
-
-			if (length === undef) {
+			if (typeOf(obj.length) === 'number') { // it might be Array, FileList or even arguments object
+				// Loop array items
+				for (i = 0, length = obj.length; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
+					}
+				}
+			} else if (typeOf(obj) === 'object') {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (callback(obj[key], key) === false) {
 							return;
 						}
-					}
-				}
-			} else {
-				// Loop array items
-				for (i = 0; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
 					}
 				}
 			}
@@ -168,7 +162,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@method inParallel
 	@static
 	@param {Array} queue Array of functions to call in sequence
-	@param {Function} cb Main callback that is called in the end, or in case of erro
+	@param {Function} cb Main callback that is called in the end, or in case of error
 	*/
 	var inParallel = function(queue, cb) {
 		var count = 0, num = queue.length, cbArgs = new Array(num);

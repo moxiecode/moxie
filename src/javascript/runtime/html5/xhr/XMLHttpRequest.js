@@ -35,7 +35,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 		Basic.extend(this, {
 			send: function(meta, data) {
 				var target = this
-				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.version >= 4 && Env.version < 7)
+				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.verComp(Env.version, 4, '>=') && Env.verComp(Env.version, 7, '<'))
 				, isAndroidBrowser = Env.browser === 'Android Browser'
 				, mustSendAsBinary = false
 				;
@@ -294,7 +294,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 		
 		function _getNativeXHR() {
-			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
+			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.verComp(Env.version, 8, '<'))) { // IE7 has native XHR but it's buggy
 				return new window.XMLHttpRequest();
 			} else {
 				return (function() {

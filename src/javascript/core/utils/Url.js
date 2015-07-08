@@ -91,7 +91,7 @@ define('moxie/core/utils/Url', [], function() {
 			http: 80,
 			https: 443
 		}
-		, urlp = typeof(url) === 'string' ? parseUrl(url) : url
+		, urlp = typeof(url) === 'object' ? url : parseUrl(url);
 		;
 
 		return urlp.scheme + '://' + urlp.host + (urlp.port !== ports[urlp.scheme] ? ':' + urlp.port : '') + urlp.path + (urlp.query ? urlp.query : '');
