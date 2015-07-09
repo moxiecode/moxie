@@ -19,12 +19,12 @@ function resolveRelative(path, base) {
 	}
 
     // Upper directory
-    if (path.startsWith("../")) {
+    if (/^\.\.\//.test(path)) {
         return resolveRelative(path.slice(3), base.replace(/\/[^\/]*$/, ''));
     }
 
     // Relative to the root
-    if (path.startsWith('/')) {
+    if (/^\//.test(path)) {
         var match = base.match(/(\w*:\/\/)?[^\/]*\//) || [base];
         return match[0] + path.slice(1);
     }
