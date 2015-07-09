@@ -30,7 +30,6 @@ test("UA strings", function() {
 
 
 	$.each(uas, function(i, item) {
-		console.info(item);
 		var uaParser = new o.Env.uaParser(item.ua);
 		var result = uaParser.getResult();
 
