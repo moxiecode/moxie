@@ -1,9 +1,9 @@
-[submodule "tests/JSON-js"]
-	path = tests/js/JSON-js
-	url = https://github.com/douglascrockford/JSON-js.git
 [submodule "build/swf2lzma"]
 	path = build/swf2lzma
 	url = https://github.com/jspiro/swf2lzma.git
 [submodule "tests/js/testrunner"]
 	path = tests/js/testrunner
 	url = https://github.com/moxiecode/testrunner.git
+[submodule "tests/js/JSON-js"]
+	path = tests/js/JSON-js
+	url = https://github.com/douglascrockford/JSON-js.git
