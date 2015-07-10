@@ -2,8 +2,7 @@
 	var scripts = [
 		"//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js",
 		"//code.jquery.com/qunit/qunit-1.14.0.js",
-		"js/testrunner/reporter.js",
-		"moxie_loader.js"
+		"js/testrunner/reporter.js"
 	];
 
 	var styles = [
@@ -35,4 +34,8 @@
 	for (i = 0; i < scripts.length; i++) {
 		document.write('<script src="' + (/^(http|\/\/)/.test(scripts[i]) ? scripts[i] : baseUrl + scripts[i]) +'"></script>');
 	}
+
+	var matches = document.location.search.match(/src=(min|dev|cov)/);
+	var source = matches ? matches[1] : 'min';
+	document.write('<script src="' + baseUrl + '/../../bin/js/moxie.' + source + '.js"></script>');
 }());
