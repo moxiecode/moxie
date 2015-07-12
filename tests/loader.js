@@ -26,6 +26,10 @@
 	
 	var baseUrl = getBaseUrl();
 
+	var matches = document.location.search.match(/src=(min|dev|cov)/);
+	var source = matches ? matches[1] : 'min';
+	document.write('<script src="' + baseUrl + '/../../bin/js/moxie.' + source + '.js"></script>');
+
 	var i;
 	for (i = 0; i < styles.length; i++) {
 		document.write('<link rel="stylesheet" href="' + (/^(http|\/\/)/.test(styles[i]) ? styles[i] : baseUrl + styles[i]) + '" type="text/css" />');
@@ -34,8 +38,4 @@
 	for (i = 0; i < scripts.length; i++) {
 		document.write('<script src="' + (/^(http|\/\/)/.test(scripts[i]) ? scripts[i] : baseUrl + scripts[i]) +'"></script>');
 	}
-
-	var matches = document.location.search.match(/src=(min|dev|cov)/);
-	var source = matches ? matches[1] : 'min';
-	document.write('<script src="' + baseUrl + '/../../bin/js/moxie.' + source + '.js"></script>');
 }());
