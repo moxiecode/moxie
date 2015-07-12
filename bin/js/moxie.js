@@ -1892,7 +1892,8 @@ define('moxie/core/EventTarget', [
 			@return {Mixed} Returns a handler if it was found and false, if - not
 			*/
 			hasEventListener: function(type) {
-				return type ? !!(eventpool[this.uid] && eventpool[this.uid][type]) : !!eventpool[this.uid];
+				var list = type ? eventpool[this.uid] && eventpool[this.uid][type] : eventpool[this.uid];
+				return list ? list : false;
 			},
 			
 			/**
