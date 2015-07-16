@@ -493,7 +493,7 @@ define("moxie/image/Image", [
 				// if String
 				else if (srcType === 'string') {
 					// if dataUrl String
-					if (/^data:[^;]*;base64,/.test(src)) {
+					if (src.substr(0, 5) === 'data:') {
 						_load.call(this, new Blob(null, { data: src }), arguments[1]);
 					}
 					// else assume Url, either relative or absolute
