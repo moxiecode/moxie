@@ -238,8 +238,6 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 	test("Test embedded thumb extraction from JPEG: " + runtime, function(assert) {
 		var self = this
-		// test if it extracts properly
-		// test if repeating invokation of getInfo, doesn't screw it up
 		var img = new o.Image();
 
 		img.onload = function() {
