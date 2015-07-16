@@ -457,10 +457,7 @@ define("moxie/image/Image", [
 
 			// store thumbnail data as blob
 			if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
-				info.meta.thumb.data = new Blob(this.ruid, {
-					type: 'image/jpeg',
-					data: info.meta.thumb.data
-				});
+				info.meta.thumb.data = new Blob(this.ruid, info.meta.thumb.data);
 			}
 
 			this.size = info.size;
