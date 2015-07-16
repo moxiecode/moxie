@@ -1,6 +1,6 @@
-;(function() {
-	var jpegs = [
-		{
+;(function(exports) {
+	var jpegs = {
+		'00da154a-0107-11e4-8336-3377b25ece3d.jpg': {
 			desc: '',
 			path: 'Image/exif/00da154a-0107-11e4-8336-3377b25ece3d.jpg',
 			expect: {
@@ -18,7 +18,8 @@
 				}
 			}
 		},
-		{
+		
+		'20111119122131.jpg': {
 			desc: '',
 			path: 'Image/exif/20111119122131.jpg',
 			expect: {
@@ -32,7 +33,8 @@
 				}
 			}
 		},
-		{
+
+		'3a5140ea-44fd-11e2-8df2-55ebef1da60e.jpg': {
 			desc: '',
 			path: 'Image/exif/3a5140ea-44fd-11e2-8df2-55ebef1da60e.jpg',
 			expect: {
@@ -45,7 +47,8 @@
 				}
 			}
 		},
-		{
+		
+		'img_0647.jpg': {
 			desc: "Doesn't resize, #1146",
 			path: 'Image/exif/img_0647.jpg',
 			expect: {
@@ -62,9 +65,16 @@
 				}
 			}
 		},
-		{
+		
+		'19da5c1e-511e-11e4-98b8-477c078e31c6.jpg': {
 			desc: "Doesn't resize, #1146",
 			path: 'Image/exif/19da5c1e-511e-11e4-98b8-477c078e31c6.jpg',
+			hasThumb: true
+		},
+		
+		'IMG_2232.JPG': {
+			desc: "Valid jpeg with embedded thumb.",
+			path: 'Image/exif/IMG_2232.JPG',
 			hasThumb: true
 		}
 	];
@@ -72,7 +82,7 @@
 
 	var queue = [];
 
-	$.each(jpegs, function(i, jpeg) {
+	o.each(jpegs, function(jpeg, name) {
 		queue.push(function(cb) {
 			var xhr = new XMLHttpRequest();
 			xhr.responseType = 'blob';
@@ -107,4 +117,4 @@
 		}
 		onJPEGsLoaded(jpegs);
 	});
-}());
+}(this));

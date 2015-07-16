@@ -13,6 +13,7 @@
 QUnit.config.reorder = false;
 QUnit.config.testTimeout = 10000;
 
+
 module("Image", {
 	setup: function() {
 
@@ -223,6 +224,65 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 		stop();
 		img.load(url, o.extend({}, self.runtimeOptions, { 
+			required_caps: {
+				resize_image: true
+			},
+			runtime_order: runtime 
+		}));
+	});
+});
+
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Test embedded thumb extraction from JPEG: " + runtime, function(assert) {
+		var self = this
+		// test if it extracts properly
+		// test if repeating invokation of getInfo, doesn't screw it up
+		var img = new o.Image();
+
+		img.onload = function() {
+			start();
+
+			// force _updateInfo to be called internally (repeating invokation used to screw the thumbnail)
+			img.trigger('resize');
+
+			var thumb = this.meta.thumb;
+			
+			ok(thumb.data instanceof o.Blob, "Extracted thumb is o.Blob.");
+			deepEqual([
+				thumb.hasOwnProperty('width'),
+				thumb.hasOwnProperty('height')
+			], [
+				true, 
+				true
+			], "Thumb data contains width and height.");
+
+			var thumbImg = new o.Image();
+
+			thumbImg.onload = function() {
+				start();
+				ok(true, "Thumb data is a valid image.");
+			};
+
+			thumbImg.onerror = function() {
+				start();
+				ok(false, "Thumb data is a valid image.");
+			};	
+
+			stop();
+			thumbImg.load(thumb.data);
+		};
+
+		img.bind('Error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+
+		stop();
+		img.load('Image/exif/IMG_2232.JPG', o.extend({}, self.runtimeOptions, { 
 			required_caps: {
 				resize_image: true
 			},
