@@ -455,11 +455,6 @@ define("moxie/image/Image", [
 				info = this.exec('Image', 'getInfo');
 			}
 
-			// store thumbnail data as blob
-			if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
-				info.meta.thumb.data = new Blob(this.ruid, info.meta.thumb.data);
-			}
-
 			this.size = info.size;
 			this.width = info.width;
 			this.height = info.height;
