@@ -289,6 +289,58 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	});
 });
 
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Test orientation fix when headers get stripped: " + runtime, function(assert) {
+		var self = this
+		var img = new o.Image();
+
+		img.onload = function() {
+			start();
+
+			equal(this.meta.tiff.Orientation, 6, 
+				"Orientation: 6: Should be rotated by 90 degrees clock-wise.")
+
+			deepEqual([this.width, this.height], [200, 133], 
+				"Currently it is a landscape photo - width is larger then height.");
+
+			stop();
+			this.downsize({
+				width: 133,
+				height: 200,
+				preserveHeaders: false
+			});
+		};
+
+		img.onresize = function() {
+			start();
+			ok(true, "resize fired.");
+
+			equal(this.meta, false, "Meta headers stripped as requested.");
+
+			deepEqual([this.width, this.height], [200, 133], 
+				"Currently it is a landscape photo - width is larger then height.");
+
+		};
+
+
+		img.bind('Error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+
+		stop();
+		img.load('Image/exif/IMG_2232.JPG', o.extend({}, self.runtimeOptions, { 
+			required_caps: {
+				resize_image: true
+			},
+			runtime_order: runtime 
+		}));
+	});
+});
+
 /* 
 Test Exif extraction
 
