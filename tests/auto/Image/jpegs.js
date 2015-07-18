@@ -77,7 +77,7 @@
 			path: 'Image/exif/IMG_2232.JPG',
 			hasThumb: true
 		}
-	];
+	};
 
 
 	var queue = [];
