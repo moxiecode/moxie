@@ -42,7 +42,7 @@ function onJPEGsLoaded(jpegs) {
 
 
 	test("setExif()", function(assert) {
-		var jh = new o.JPEGHeaders(jpegs[0].source);
+		var jh = new o.JPEGHeaders(jpegs['00da154a-0107-11e4-8336-3377b25ece3d.jpg'].source);
 		var ep = new o.ExifParser(jh.get("app1")[0]);
 		var exif = ep.EXIF();
 
