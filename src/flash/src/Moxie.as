@@ -80,6 +80,10 @@ package
 			}
 						
 			// Setup id
+			if (!params.hasOwnProperty("uid")) {
+				return; // we do not have uid, so we cannot fire error event - lets simply wait until it timeouts
+			}
+			
 			Moxie.uid = Utils.sanitize(params["uid"]);	
 			
 			// Event dispatcher
