@@ -46,9 +46,12 @@ define("moxie/runtime/html5/Runtime", [
 						(Env.browser !== 'IE' || Env.verComp(Env.version, 9, '>'));
 				}()),
 				filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
-					return (Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '>=')) || 
-						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) || 
-						(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '>='));
+					return !(
+						(Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '<')) || 
+						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) || 
+						(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '<')) ||
+						(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<'))
+					);
 				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {

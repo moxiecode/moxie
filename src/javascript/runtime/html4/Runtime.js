@@ -38,9 +38,12 @@ define("moxie/runtime/html4/Runtime", [
 			do_cors: false,
 			drag_and_drop: false,
 			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
-				return (Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '>=')) || 
-					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) || 
-					(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '>='));
+				return !(
+					(Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '<')) || 
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) || 
+					(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '<')) ||
+					(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<'))
+				);
 			}()),
 			resize_image: function() {
 				return extensions.Image && I.can('access_binary') && Env.can('create_canvas');
