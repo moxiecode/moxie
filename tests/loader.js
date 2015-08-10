@@ -2,7 +2,8 @@
 	var scripts = [
 		"//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js",
 		"//code.jquery.com/qunit/qunit-1.14.0.js",
-		"js/testrunner/reporter.js"
+		"js/testrunner/reporter.js",
+		"js/test-runtime.js"
 	];
 
 	var styles = [
