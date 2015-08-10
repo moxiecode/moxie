@@ -334,6 +334,34 @@ test('Runtime.capTrue(), Runtime.capFalse(), Runtime.capTest()', function(assert
 	], "cap: o.Runtime.capTest(falsy) - is always false, whatever the value to check.");
 });
 
+
+// Related #104
+test("getShimContainer()", function(assert) {
+		var rt = new o.RuntimeTarget();
+
+		rt.bind('RuntimeInit', function(e, runtime) {
+			start();
+
+			var shimContainer = runtime.getShimContainer();
+			
+			equal(o.typeOf(shimContainer), 'node', 
+				"Shim container exists and is a node.");
+			deepEqual(shimContainer.parentNode, document.body,
+				"When container is not specified or is specified but doesn't exist, document.body should be used instead.");
+		});
+
+		rt.bind('RuntimeError', function() {
+			start();
+			assert.ok(false, "Runtime cannot be initialized.");
+		});
+
+		stop();
+		rt.connectRuntime({
+			container: "doesnt-exist-el",
+			runtime_order: 'html4'
+		});
+	});
+
 </script>
 </head>
 <body>

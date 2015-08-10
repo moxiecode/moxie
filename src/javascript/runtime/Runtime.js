@@ -263,7 +263,7 @@ define('moxie/runtime/Runtime', [
 
 				// if no container for shim, create one
 				if (!shimContainer) {
-					container = this.options.container ? Dom.get(this.options.container) : document.body;
+					container = Dom.get(this.options.container) || document.body;
 
 					// create shim container and insert it at an absolute position into the outer container
 					shimContainer = document.createElement('div');
