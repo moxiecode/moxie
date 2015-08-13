@@ -177,6 +177,9 @@ define("moxie/runtime/flash/Runtime", [
 			send_custom_headers: function(value) {
 				return value ? 'browser' : 'client';
 			},
+			slice_blob: function(value) {
+				return value ? 'browser' : 'client';
+			},
 			stream_upload: function(value) {
 				return value ? 'client' : 'browser';
 			},
