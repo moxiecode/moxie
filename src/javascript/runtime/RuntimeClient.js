@@ -160,10 +160,19 @@ define('moxie/runtime/RuntimeClient', [
 			@return {Mixed} Whatever runtime extension method returns
 			*/
 			exec: function() {
-				if (runtime) {
-					return runtime.exec.apply(this, arguments);
-				}
-				return null;
+				return runtime ? runtime.exec.apply(this, arguments) : null;
+			},
+
+
+			/**
+			Test runtime client for specific capability
+			
+			@method can
+			@param {String} cap
+			@return {Bool}
+			*/
+			can: function(cap) {
+				return runtime ? runtime.can(cap) : false;
 			}
 
 		});
