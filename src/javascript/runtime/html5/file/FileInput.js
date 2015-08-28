@@ -23,7 +23,7 @@ define("moxie/runtime/html5/file/FileInput", [
 ], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 	
 	function FileInput() {
-		var _options;
+		var _options, _browseBtnZIndex; // save original z-index
 
 		Basic.extend(this, {
 			init: function(options) {
@@ -54,6 +54,7 @@ define("moxie/runtime/html5/file/FileInput", [
 
 
 				browseButton = Dom.get(_options.browse_button);
+				_browseBtnZIndex = Dom.getStyle(browseButton, 'z-index') || 'auto';
 
 				// Route click event to the input[type=file] element for browsers that support such behavior
 				if (I.can('summon_file_dialog')) {
@@ -61,7 +62,7 @@ define("moxie/runtime/html5/file/FileInput", [
 						browseButton.style.position = 'relative';
 					}
 
-					zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 1;
+					zIndex = parseInt(_browseBtnZIndex, 10) || 1;
 
 					browseButton.style.zIndex = zIndex;
 					shimContainer.style.zIndex = zIndex - 1;
@@ -157,19 +158,27 @@ define("moxie/runtime/html5/file/FileInput", [
 				var I = this.getRuntime()
 				, shim = I.getShim()
 				, shimContainer = I.getShimContainer()
+				, container = _options && Dom.get(_options.container)
+				, browseButton = _options && Dom.get(_options.browse_button)
 				;
 				
-				Events.removeAllEvents(shimContainer, this.uid);
-				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
-				Events.removeAllEvents(_options && Dom.get(_options.browse_button), this.uid);
+				if (container) {
+					Events.removeAllEvents(container, this.uid);
+				}
+				
+				if (browseButton) {
+					Events.removeAllEvents(browseButton, this.uid);
+					browseButton.style.zIndex = _browseBtnZIndex; // reset to original value
+				}
 				
 				if (shimContainer) {
+					Events.removeAllEvents(shimContainer, this.uid);
 					shimContainer.innerHTML = '';
 				}
 
 				shim.removeInstance(this.uid);
 
-				_options = shimContainer = shim = null;
+				_options = shimContainer = container = browseButton = shim = null;
 			}
 		});
 	}

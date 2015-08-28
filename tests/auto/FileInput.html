@@ -41,6 +41,8 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		$('<a id="browse_button" href="javascript:;">Browse...</a>')
 			.appendTo(this.DOM);
 
+		var browseBtnZIndex = $('#browse_button').css('z-index');
+
 		var fi = new o.FileInput(o.extend({}, this.runtimeOptions, {
 			runtime_order: runtime,
 			browse_button: 'browse_button'
@@ -57,6 +59,9 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 			this.destroy();
 			assert.ok(!$('#qunit-fixture').find('.moxie-shim').length, "HTML structure removed.");
+
+			assert.equal(browseBtnZIndex, $('#browse_button').css('z-index'),
+				"zIndex for the browse_button element has been restored to its original value.");
 
 			// test if event handlers are removed
 			moxie.core.EventTarget.instance.dispatchEvent(uid + '::Change');
