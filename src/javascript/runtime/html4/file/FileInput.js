@@ -162,10 +162,12 @@ define("moxie/runtime/html4/file/FileInput", [
 							browseButton.style.position = 'relative';
 						}						
 
-						zIndex = parseInt(_browseBtnZIndex, 10) || 1;
+						comp.bind('Refresh', function() {
+							zIndex = parseInt(_browseBtnZIndex, 10) || 1;
 
-						browseButton.style.zIndex = zIndex;
-						shimContainer.style.zIndex = zIndex - 1;
+							Dom.get(_options.browse_button).style.zIndex = zIndex;
+							this.getRuntime().getShimContainer().style.zIndex = zIndex - 1;
+						});
 					}
 
 					/* Since we have to place input[type=file] on top of the browse_button for some browsers,
