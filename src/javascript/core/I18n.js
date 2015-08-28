@@ -13,6 +13,9 @@ define("moxie/core/I18n", [
 ], function(Basic) {
 	var i18n = {};
 
+	/**
+	@class moxie/core/I18n
+	*/
 	return {
 		/**
 		 * Extends the language pack object with new items.

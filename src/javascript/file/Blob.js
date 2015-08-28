@@ -17,7 +17,7 @@ define('moxie/file/Blob', [
 	var blobpool = {};
 
 	/**
-	@class Blob
+	@class moxie/file/Blob
 	@constructor
 	@param {String} ruid Unique id of the runtime, to which this blob belongs to
 	@param {Object} blob Object "Native" blob object, as it is represented in the runtime

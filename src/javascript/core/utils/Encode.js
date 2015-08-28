@@ -11,6 +11,10 @@
 define('moxie/core/utils/Encode', [], function() {
 
 	/**
+	@class moxie/core/utils/Encode
+	*/
+
+	/**
 	Encode string with UTF-8
 
 	@method utf8_encode

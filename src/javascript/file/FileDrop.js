@@ -43,7 +43,7 @@ define('moxie/file/FileDrop', [
 			fileDrop.init();
 		</script>
 
-	@class FileDrop
+	@class moxie/file/FileDrop
 	@constructor
 	@extends EventTarget
 	@uses RuntimeClient

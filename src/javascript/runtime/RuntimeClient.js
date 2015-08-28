@@ -17,7 +17,7 @@ define('moxie/runtime/RuntimeClient', [
 	/**
 	Set of methods and properties, required by a component to acquire ability to connect to a runtime
 
-	@class RuntimeClient
+	@class moxie/runtime/RuntimeClient
 	*/
 	return function RuntimeClient() {
 		var runtime;

@@ -90,7 +90,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	/**
 	Implementation of XMLHttpRequest
 
-	@class XMLHttpRequest
+	@class moxie/xhr/XMLHttpRequest
 	@constructor
 	@uses RuntimeClient
 	@extends EventTarget

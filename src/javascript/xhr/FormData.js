@@ -16,7 +16,7 @@ define("moxie/xhr/FormData", [
 	/**
 	FormData
 
-	@class FormData
+	@class moxie/xhr/FormData
 	@constructor
 	*/
 	function FormData() {

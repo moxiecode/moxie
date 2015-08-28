@@ -24,7 +24,7 @@ define('moxie/file/FileInput', [
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
 	with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
 
-	@class FileInput
+	@class moxie/file/FileInput
 	@constructor
 	@extends EventTarget
 	@uses RuntimeClient

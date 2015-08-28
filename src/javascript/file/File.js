@@ -14,7 +14,7 @@ define('moxie/file/File', [
 	'moxie/file/Blob'
 ], function(Basic, Mime, Blob) {
 	/**
-	@class File
+	@class moxie/file/File
 	@extends Blob
 	@constructor
 	@param {String} ruid Unique id of the runtime, to which this blob belongs to

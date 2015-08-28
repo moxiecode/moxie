@@ -17,7 +17,7 @@ define('moxie/runtime/RuntimeTarget', [
 	Instance of this class can be used as a target for the events dispatched by shims,
 	when allowing them onto components is for either reason inappropriate
 
-	@class RuntimeTarget
+	@class moxie/runtime/RuntimeTarget
 	@constructor
 	@protected
 	@extends EventTarget

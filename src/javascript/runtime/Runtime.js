@@ -19,7 +19,7 @@ define('moxie/runtime/Runtime', [
 	/**
 	Common set of methods and properties for every runtime instance
 
-	@class Runtime
+	@class moxie/runtime/Runtime
 
 	@param {Object} options
 	@param {String} type Sanitized name of the runtime

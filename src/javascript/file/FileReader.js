@@ -20,7 +20,7 @@ define('moxie/file/FileReader', [
 	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
 	interface. Where possible uses native FileReader, where - not falls back to shims.
 
-	@class FileReader
+	@class moxie/file/FileReader
 	@constructor FileReader
 	@extends EventTarget
 	@uses RuntimeClient

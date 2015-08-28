@@ -14,6 +14,11 @@ define("moxie/runtime/Transporter", [
 	"moxie/runtime/RuntimeClient",
 	"moxie/core/EventTarget"
 ], function(Basic, Encode, RuntimeClient, EventTarget) {
+
+	/**
+	@class moxie/runtime/Transporter
+	@constructor
+	*/
 	function Transporter() {
 		var mod, _runtime, _data, _size, _pos, _chunk_size;
 

@@ -26,7 +26,7 @@ define("moxie/image/Image", [
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
-	@class Image
+	@class moxie/image/Image
 	@constructor
 	@extends EventTarget
 	*/

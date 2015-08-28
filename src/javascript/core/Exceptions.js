@@ -11,6 +11,7 @@
 define('moxie/core/Exceptions', [
 	'moxie/core/utils/Basic'
 ], function(Basic) {
+	
 	function _findKey(obj, value) {
 		var key;
 		for (key in obj) {
@@ -21,6 +22,9 @@ define('moxie/core/Exceptions', [
 		return null;
 	}
 
+	/**
+	@class moxie/core/Exception
+	*/
 	return {
 		RuntimeError: (function() {
 			var namecodes = {

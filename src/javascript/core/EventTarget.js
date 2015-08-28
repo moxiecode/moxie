@@ -16,7 +16,7 @@ define('moxie/core/EventTarget', [
 	/**
 	Parent object for all event dispatching components and objects
 
-	@class EventTarget
+	@class moxie/core/EventTarget
 	@constructor EventTarget
 	*/
 	function EventTarget() {

@@ -18,7 +18,7 @@ define('moxie/file/FileReaderSync', [
 	it can be used to read only preloaded blobs/files and only below certain size (not yet sure what that'd be,
 	but probably < 1mb). Not meant to be used directly by user.
 
-	@class FileReaderSync
+	@class moxie/file/FileReaderSync
 	@private
 	@constructor
 	*/
