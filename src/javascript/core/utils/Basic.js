@@ -8,6 +8,11 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Basic
+@public
+@static
+*/
 define('moxie/core/utils/Basic', [], function() {
 	/**
 	Gets the true type of the built-in object (better version of typeof).
@@ -19,7 +24,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} o Object to check.
 	@return {String} Object [[Class]]
 	*/
-	var typeOf = function(o) {
+	function typeOf(o) {
 		var undef;
 
 		if (o === undef) {
@@ -32,10 +37,10 @@ define('moxie/core/utils/Basic', [], function() {
 
 		// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
 		return ({}).toString.call(o).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
-	};
+	}
 		
 	/**
-	Extends the specified object with another object.
+	Extends the specified object with another object(s).
 
 	@method extend
 	@static
@@ -43,24 +48,49 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} [obj]* Multiple objects to extend with.
 	@return {Object} Same as target, the extended object.
 	*/
-	var extend = function(target) {
-		var undef;
+	function extend() {
+		return merge(false, arguments);
+	}
 
-		each(arguments, function(arg, i) {
+
+	/**
+	Extends the specified object with another object(s), but only if the property exists in the target.
+
+	@method extendIf
+	@static
+	@param {Object} target Object to extend.
+	@param {Object} [obj]* Multiple objects to extend with.
+	@return {Object} Same as target, the extended object.
+	*/
+	function extendIf() {
+		return merge(true, arguments);
+	}
+
+
+
+	function merge(strict, args) {
+		var undef;
+		var target = args[0];
+
+		each(args, function(arg, i) {
 			if (i > 0) {
 				each(arg, function(value, key) {
-					if (value !== undef) {
-						if (typeOf(target[key]) === typeOf(value) && !!~inArray(typeOf(value), ['array', 'object'])) {
-							extend(target[key], value);
-						} else {
-							target[key] = value;
-						}
+					if (value === undef || strict && target[key] === undef) {
+						return true;
+					}
+
+					if (typeOf(target[key]) === typeOf(value) && inArray(typeOf(value), ['array', 'object']) !== -1) {
+						merge(strict, [target[key], value]);
+					} else {
+						target[key] = value;
 					}
 				});
 			}
 		});
+
 		return target;
-	};
+	}
+
 		
 	/**
 	Executes the callback function for each item in array/object. If you return false in the
@@ -71,18 +101,17 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} obj Object to iterate.
 	@param {function} callback Callback function to execute for each item.
 	*/
-	var each = function(obj, callback) {
+	function each(obj, callback) {
 		var length, key, i, undef;
 
 		if (obj) {
-			if (typeOf(obj.length) === 'number') { // it might be Array, FileList or even arguments object
-				// Loop array items
-				for (i = 0, length = obj.length; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
-					}
-				}
-			} else if (typeOf(obj) === 'object') {
+			try {
+				length = obj.length;
+			} catch(ex) {
+				length = undef;
+			}
+
+			if (length === undef) {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
@@ -91,9 +120,16 @@ define('moxie/core/utils/Basic', [], function() {
 						}
 					}
 				}
+			} else {
+				// Loop array items
+				for (i = 0; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
+					}
+				}
 			}
 		}
-	};
+	}
 
 	/**
 	Checks if object is empty.
@@ -103,7 +139,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} o Object to check.
 	@return {Boolean}
 	*/
-	var isEmptyObj = function(obj) {
+	function isEmptyObj(obj) {
 		var prop;
 
 		if (!obj || typeOf(obj) !== 'object') {
@@ -115,7 +151,7 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 
 		return true;
-	};
+	}
 
 	/**
 	Recieve an array of functions (usually async) to call in sequence, each  function
@@ -129,7 +165,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} queue Array of functions to call in sequence
 	@param {Function} cb Main callback that is called in the end, or in case of error
 	*/
-	var inSeries = function(queue, cb) {
+	function inSeries(queue, cb) {
 		var i = 0, length = queue.length;
 
 		if (typeOf(cb) !== 'function') {
@@ -149,7 +185,7 @@ define('moxie/core/utils/Basic', [], function() {
 			}
 		}
 		callNext(i);
-	};
+	}
 
 
 	/**
@@ -162,9 +198,9 @@ define('moxie/core/utils/Basic', [], function() {
 	@method inParallel
 	@static
 	@param {Array} queue Array of functions to call in sequence
-	@param {Function} cb Main callback that is called in the end, or in case of error
+	@param {Function} cb Main callback that is called in the end, or in case of erro
 	*/
-	var inParallel = function(queue, cb) {
+	function inParallel(queue, cb) {
 		var count = 0, num = queue.length, cbArgs = new Array(num);
 
 		each(queue, function(fn, i) {
@@ -185,7 +221,7 @@ define('moxie/core/utils/Basic', [], function() {
 				} 
 			});
 		});
-	};
+	}
 	
 	
 	/**
@@ -197,7 +233,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} array
 	@return {Int} Index of the element, or -1 if not found
 	*/
-	var inArray = function(needle, array) {
+	function inArray(needle, array) {
 		if (array) {
 			if (Array.prototype.indexOf) {
 				return Array.prototype.indexOf.call(array, needle);
@@ -210,7 +246,7 @@ define('moxie/core/utils/Basic', [], function() {
 			}
 		}
 		return -1;
-	};
+	}
 
 
 	/**
@@ -222,7 +258,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} array
 	@return {Array|Boolean}
 	*/
-	var arrayDiff = function(needles, array) {
+	function arrayDiff(needles, array) {
 		var diff = [];
 
 		if (typeOf(needles) !== 'array') {
@@ -239,7 +275,7 @@ define('moxie/core/utils/Basic', [], function() {
 			}	
 		}
 		return diff.length ? diff : false;
-	};
+	}
 
 
 	/**
@@ -251,7 +287,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} array2
 	@return {Array} Intersection of two arrays or null if there is none
 	*/
-	var arrayIntersect = function(array1, array2) {
+	function arrayIntersect(array1, array2) {
 		var result = [];
 		each(array1, function(item) {
 			if (inArray(item, array2) !== -1) {
@@ -259,7 +295,7 @@ define('moxie/core/utils/Basic', [], function() {
 			}
 		});
 		return result.length ? result : null;
-	};
+	}
 	
 	
 	/**
@@ -270,7 +306,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} obj Object with length field.
 	@return {Array} Array object containing all items.
 	*/
-	var toArray = function(obj) {
+	function toArray(obj) {
 		var i, arr = [];
 
 		for (i = 0; i < obj.length; i++) {
@@ -278,7 +314,7 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 
 		return arr;
-	};
+	}
 	
 			
 	/**
@@ -316,12 +352,12 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {String} str
 	@return {String}
 	*/
-	var trim = function(str) {
+	function trim(str) {
 		if (!str) {
 			return str;
 		}
 		return String.prototype.trim ? String.prototype.trim.call(str) : str.toString().replace(/^\s*/, '').replace(/\s*$/, '');
-	};
+	}
 
 
 	/**
@@ -332,7 +368,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {String/Number} size String to parse or number to just pass through.
 	@return {Number} Size in bytes.
 	*/
-	var parseSizeStr = function(size) {
+	function parseSizeStr(size) {
 		if (typeof(size) !== 'string') {
 			return size;
 		}
@@ -345,16 +381,15 @@ define('moxie/core/utils/Basic', [], function() {
 			},
 			mul;
 
-
-		size = /^([0-9\.]+)([tmgk]?)$/.exec(size.toLowerCase().replace(/[^0-9\.tmkg]/g, ''));
+		size = /^([0-9]+)([mgk]?)$/.exec(size.toLowerCase().replace(/[^0-9mkg]/g, ''));
 		mul = size[2];
 		size = +size[1];
 		
 		if (muls.hasOwnProperty(mul)) {
 			size *= muls[mul];
 		}
-		return Math.floor(size);
-	};
+		return size;
+	}
 
 
 	/**
@@ -363,20 +398,30 @@ define('moxie/core/utils/Basic', [], function() {
 	 * @param {String} str String with tokens
 	 * @return {String} String with replaced tokens
 	 */
-	var sprintf = function(str) {
+	function sprintf(str) {
 		var args = [].slice.call(arguments, 1);
 
 		return str.replace(/%[a-z]/g, function() {
 			var value = args.shift();
 			return typeOf(value) !== 'undefined' ? value : '';
 		});
-	};
+	}
+	
+	
+	
+	function delay(cb, timeout) {
+		var self = this;
+		setTimeout(function() {
+			cb.call(self);
+		}, timeout || 1);
+	}
 	
 
 	return {
 		guid: guid,
 		typeOf: typeOf,
 		extend: extend,
+		extendIf: extendIf,
 		each: each,
 		isEmptyObj: isEmptyObj,
 		inSeries: inSeries,
@@ -387,6 +432,7 @@ define('moxie/core/utils/Basic', [], function() {
 		toArray: toArray,
 		trim: trim,
 		sprintf: sprintf,
-		parseSizeStr: parseSizeStr
+		parseSizeStr: parseSizeStr,
+		delay: delay
 	};
 });
