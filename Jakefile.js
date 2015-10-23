@@ -48,7 +48,13 @@ task("mkjs", [], function () {
 	var amdlc = require('amdlc');
 	var baseDir = "src/javascript", targetDir = "bin/js";
 
+	var modules = [].slice.call(arguments);
+	if (!modules.length) {
+		modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest", "image/Image"];
+	}
+
 	var options = {
+		from: modules.map(function(module) { return module + '.js'; }),
 		compress: {
 			unused: false,
 			global_defs: {
@@ -61,17 +67,16 @@ task("mkjs", [], function () {
 		verbose: true,
 		outputSource: targetDir + "/moxie.js",
 		outputMinified: targetDir + "/moxie.min.js",
-		outputDev: targetDir + "/moxie.dev.js",
-		outputCoverage: targetDir + "/moxie.cov.js"
+		outputDev: false,
+		outputCoverage: false
 	};
 
-	var resolvedModules, modules = [].slice.call(arguments);
-	if (!modules.length) {
-		modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest", "image/Image"];
-	}
 
-	// resolve dependencies
-	resolvedModules = mkjs.resolveModules(modules, options);	
+	// include corresponding runtime extensions
+	[].push.apply(options.from, mkjs.getExtensionPaths4(modules, {
+		runtimes: process.env.runtimes,
+		baseDir: ''
+	}));
 
 	// start fresh
 	if (fs.existsSync(targetDir)) {
@@ -79,15 +84,18 @@ task("mkjs", [], function () {
 	}
 	jake.mkdirP(targetDir);
 
-	amdlc.compileMinified(resolvedModules, options);
-	amdlc.compileSource(resolvedModules, options);
+
+	amdlc.compile(options);
 
 	// for dev and cov versions expose all modules to be able to test them properly
-	options.expose = 'all';
-	options.force = true;
-	resolvedModules = mkjs.resolveModules(modules, options);	
-	amdlc.compileDevelopment(resolvedModules, options);
-	amdlc.compileCoverage(resolvedModules, options);
+	amdlc.compile(utils.extend({}, options, {
+		expose: 'all',
+		force: true,
+		outputSource: false,
+		outputMinified: false,
+		outputDev: targetDir + "/moxie.dev.js",
+		outputCoverage: targetDir + "/moxie.cov.js"
+	}));
 
 
 	var info = require('./package.json');

@@ -19,6 +19,27 @@ function getAvailbleRuntimes(baseDir) {
 }
 
 
+function getExtensionPaths(options) {
+	var modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest"];
+	var extensions = [];
+
+	if (options.imageSupport) {
+		modules.push("image/Image");
+	}
+
+	extensions = getExtensionPaths4(modules, {
+		runtimes: options.runtimes,
+		baseDir: options.extensionsDir
+	});
+
+	// we need to strip of the baseDir for plupload
+	var re = new RegExp('^' + options.baseDir.replace(/\//g, '\/') + '\/?');
+	return extensions.map(function(ext) {
+		return ext.replace(re, '');
+	});
+}
+
+
 /**
 @param {Array} paths Array of module path that can be extended with runtimes
 @param {Object} options
@@ -33,7 +54,7 @@ function getExtensionPaths4(paths, options) {
 	if (runtimes == 'all') {
 		runtimes = getAvailbleRuntimes(options.baseDir);
 	} else {
-		runtimes = (process.env.runtimes || 'html5,flash,silverlight,html4').split(/,/);
+		runtimes = (runtimes || 'html5,flash,silverlight,html4').split(/,/);
 	}
 
 	if (runtimes.length) {
@@ -49,60 +70,6 @@ function getExtensionPaths4(paths, options) {
 
 	return resolvedPaths;
 }
-
-
-
-var resolveModules = (function() {
-	var resolved = []; // cache
-
-	return function(modules, options) {
-
-		
-
-
-		
-
-		// there is no need to reparse if we already did this once
-		if (resolved.length && !options.force) {
-			return resolved;
-		}
-
-		var amdlc = require('amdlc');
-
-		// get complete array of all involved modules
-		modules = amdlc.parseModules(utils.extend({}, options, {
-			from: modules.map(function(module) { return module.replace(/\.js$/, '') + '.js'; })
-		}));
-
-		// come up with the list of runtime modules to get included
-		var runtimes;
-		if (process.env.runtimes == 'all') {
-			runtimes = getAvailbleRuntimes();
-		} else {
-			runtimes = (process.env.runtimes || 'html5,flash,silverlight,html4').split(/,/);
-		}		
-
-
-		var runtimeModules = [];
-		if (runtimes.length) {
-			runtimes.forEach(function(type) {
-				modules.forEach(function(module) {
-					var id = 'runtime/' + type + '/' + resolveId(module.id);
-					if (fs.existsSync(options.baseDir + "/" + id + '.js')) {
-						runtimeModules.push(id + '.js');
-					}
-				});
-			});
-
-			// add runtimes and their modules
-			Array.prototype.push.apply(modules, amdlc.parseModules(utils.extend({}, options, {
-				from: runtimeModules
-			})));
-
-			return (resolved = modules);
-		}
-	}
-}());
 
 
 var addCompat = function(options) {
@@ -152,7 +119,7 @@ var addDebug = function(srcPath, enable) {
 
 
 module.exports = {
-	resolveModules: resolveModules,
+	getExtensionPaths: getExtensionPaths,
 	getExtensionPaths4: getExtensionPaths4,
 	addCompat: addCompat,
 	addDebug: addDebug
