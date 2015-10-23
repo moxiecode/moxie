@@ -36,7 +36,10 @@ define("moxie/runtime/html5/Runtime", [
 				access_image_binary: function() {
 					return I.can('access_binary') && !!extensions.Image;
 				},
-				display_media: Test(Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+				display_media: Test(
+					(Env.can('create_canvas') || Env.can('use_data_uri_over32kb')) && 
+					defined('moxie/image/Image')
+				),
 				do_cors: Test(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()),
 				drag_and_drop: Test(function() {
 					// this comes directly from Modernizr: http://www.modernizr.com/

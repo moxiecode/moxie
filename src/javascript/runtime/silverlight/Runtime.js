@@ -97,7 +97,7 @@ define("moxie/runtime/silverlight/Runtime", [
 		Runtime.call(this, options, type, {
 			access_binary: Runtime.capTrue,
 			access_image_binary: Runtime.capTrue,
-			display_media: Runtime.capTrue,
+			display_media: Runtime.capTest(defined('moxie/image/Image')),
 			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
 			report_upload_progress: Runtime.capTrue,

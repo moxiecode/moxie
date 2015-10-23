@@ -34,7 +34,10 @@ define("moxie/runtime/html4/Runtime", [
 		Runtime.call(this, options, type, {
 			access_binary: Test(window.FileReader || window.File && File.getAsDataURL),
 			access_image_binary: false,
-			display_media: Test(extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb'))),
+			display_media: Test(
+				(Env.can('create_canvas') || Env.can('use_data_uri_over32kb')) && 
+				defined('moxie/image/Image')
+			),
 			do_cors: false,
 			drag_and_drop: false,
 			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest

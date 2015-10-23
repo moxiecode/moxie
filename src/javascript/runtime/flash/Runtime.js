@@ -109,7 +109,7 @@ define("moxie/runtime/flash/Runtime", [
 			access_image_binary: function(value) {
 				return value && I.mode === 'browser';
 			},
-			display_media: Runtime.capTrue,
+			display_media: Runtime.capTest(defined('moxie/image/Image')),
 			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
 			report_upload_progress: function() {
