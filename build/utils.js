@@ -108,11 +108,21 @@ var inSeries = function(queue, cb) {
 };
 
 
+function asFlags(arr) {
+	var obj = {};
+	each(arr, function(flag) {
+		obj[flag] = true;
+	});
+	return obj;
+}
+
+
 extend(util, {
 	  guid: guid
 	, each: each
 	, extend: extend
 	, inSeries: inSeries
+	, asFlags: asFlags
 });
 
 module.exports = util;
