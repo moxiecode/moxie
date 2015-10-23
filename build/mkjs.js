@@ -2,35 +2,65 @@ var fs = require('fs');
 var utils = require('./utils');
 var tools = require('./tools');
 
+
+function getAvailbleRuntimes(baseDir) {
+	var runtimesDir = baseDir + '/runtime';
+
+	// each runtime is represented by a directory inside runtime/ dir
+	var files = fs.readdirSync(runtimesDir)
+	, runtimes = []
+	;
+	files.forEach(function(file) {
+		if (fs.lstatSync(runtimesDir + '/' + file).isDirectory()) {
+			runtimes.push(file);
+		}
+	});
+	return runtimes;
+}
+
+
+/**
+@param {Array} paths Array of module path that can be extended with runtimes
+@param {Object} options
+	@param {String} options.baseDir
+	@param {String|Array} [options.runtimes=all]
+@return {Array} Array of paths to extensions
+*/
+function getExtensionPaths4(paths, options) {
+	var runtimes = options.runtimes;
+	var resolvedPaths = [];
+
+	if (runtimes == 'all') {
+		runtimes = getAvailbleRuntimes(options.baseDir);
+	} else {
+		runtimes = (process.env.runtimes || 'html5,flash,silverlight,html4').split(/,/);
+	}
+
+	if (runtimes.length) {
+		runtimes.forEach(function(type) {
+			paths.forEach(function(path) {
+				path = options.baseDir + '/runtime/' + type + '/' + path.replace(/(^\/|\.js$)/, '') + '.js';
+				if (fs.existsSync(path)) {
+					resolvedPaths.push(path);
+				}
+			});
+		});
+	}
+
+	return resolvedPaths;
+}
+
+
+
 var resolveModules = (function() {
 	var resolved = []; // cache
 
 	return function(modules, options) {
 
-		function getAvailbleRuntimes() {
-			var runtimesDir = options.baseDir + '/runtime';
-
-			// each runtime is represented by a directory inside runtime/ dir
-			var files = fs.readdirSync(runtimesDir)
-			, runtimes = []
-			;
-			files.forEach(function(file) {
-				if (fs.lstatSync(runtimesDir + '/' + file).isDirectory()) {
-					runtimes.push(file);
-				}
-			});
-			return runtimes;
-		}
+		
 
 
-		function resolveId(id) {
-			id = id.replace(/\./g, '/');
-
-			if (options.rootNS) {
-				id = id.replace(options.rootNS.replace(/\./g, '/').replace(/[\/]$/, '') + '/', '');
-			}
-			return id;
-		}
+		
 
 		// there is no need to reparse if we already did this once
 		if (resolved.length && !options.force) {
@@ -73,6 +103,7 @@ var resolveModules = (function() {
 		}
 	}
 }());
+
 
 var addCompat = function(options) {
 	var buffer = fs.readFileSync(options.baseDir + '/o.js');
@@ -122,6 +153,7 @@ var addDebug = function(srcPath, enable) {
 
 module.exports = {
 	resolveModules: resolveModules,
+	getExtensionPaths4: getExtensionPaths4,
 	addCompat: addCompat,
 	addDebug: addDebug
 };
