@@ -6939,6 +6939,10 @@ define("moxie/runtime/html5/file/FileReader", [
 
 				_fr = new window.FileReader();
 
+				if (_fr._realReader) {
+					_fr = _fr._realReader;
+				}
+
 				_fr.addEventListener('progress', function(e) {
 					comp.trigger(e);
 				});
