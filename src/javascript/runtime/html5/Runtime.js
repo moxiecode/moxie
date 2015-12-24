@@ -97,7 +97,8 @@ define("moxie/runtime/html5/Runtime", [
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
 					);
 				},
-				upload_filesize: True
+				upload_filesize: True,
+				use_http_method: True
 			}, 
 			arguments[2]
 		);
