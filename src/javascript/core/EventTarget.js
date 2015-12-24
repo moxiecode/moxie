@@ -225,6 +225,24 @@ define('moxie/core/EventTarget', [
 				}
 				return result;
 			},
+
+			/**
+			Register a handler to the event type that will run only once
+
+			@method bindOnce
+			@since >1.4.1
+			@param {String} type Type or basically a name of the event to subscribe to
+			@param {Function} fn Callback function that will be called when event happens
+			@param {Number} [priority=0] Priority of the event handler - handlers with higher priorities will be called first
+			@param {Object} [scope=this] A scope to invoke event handler in
+			*/
+			bindOnce: function(type, fn, priority, scope) {
+				var self = this;
+				self.bind.call(this, type, function cb() {
+					self.unbind(type, cb);
+					return fn.apply(this, arguments);
+				}, priority, scope);
+			},
 			
 			/**
 			Alias for addEventListener
