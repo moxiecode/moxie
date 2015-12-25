@@ -91,6 +91,37 @@ define('moxie/core/utils/Basic', [], function() {
 		return target;
 	}
 
+
+	/**
+	A way to inherit one `class` from another in a consisstent way (more or less)
+	
+	@method inherit
+	@static
+	@since >1.4.1
+	@param {Function} child
+	@param {Function} parent
+	@return {Function} Prepared constructor
+	*/
+	function inherit(child, parent) {
+		// copy over all parent properties
+		for (var key in parent) {
+			if ({}.hasOwnProperty.call(parent, key)) {
+				child[key] = parent[key];
+			}
+		}
+
+		// give child `class` a place to define its own methods
+		function ctor() {
+			this.constructor = child;
+		}
+		ctor.prototype = parent.prototype;
+		child.prototype = new ctor();
+
+		// keep a way to reference parent methods
+		child.__parent__ = parent.prototype;
+		return child;
+	}
+
 		
 	/**
 	Executes the callback function for each item in array/object. If you return false in the
@@ -422,6 +453,7 @@ define('moxie/core/utils/Basic', [], function() {
 		typeOf: typeOf,
 		extend: extend,
 		extendIf: extendIf,
+		inherit: inherit,
 		each: each,
 		isEmptyObj: isEmptyObj,
 		inSeries: inSeries,

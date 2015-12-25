@@ -199,6 +199,117 @@ test("parseSizeStr()", function() {
 	equal(o.parseSizeStr('1tb'), o.parseSizeStr('1t') , "Only first letter matters: 1tb = 1t");
 });
 
+
+test("inherit()", function() {
+	var Child1, Child2, Parent, GrandParent, child1, child2;
+
+	GrandParent = (function() {
+		function GrandParent() {
+			this.name = 'GrandParent';
+			this._options = {};
+		}
+
+		GrandParent.prototype.setOption = function(name, value) {
+			this._options[name] = value;
+		};
+
+		GrandParent.prototype.getOption = function(name) {
+			return this._options[name];
+		};
+
+		return GrandParent;
+	}());
+
+
+
+	Parent = (function(GrandParent) {
+		o.inherit(Parent, GrandParent);
+
+		function Parent() {
+			Parent.__parent__.constructor.apply(this, arguments);
+
+			this.parent = 'GrandParent';
+			this.name = 'Parent';
+		}
+
+		Parent.prototype.setOption = function(name, value) {
+			if (name === 'one') {
+				this._options[name] = 1;
+			} else {
+				Parent.__parent__.setOption.apply(this, arguments);
+			}
+		};
+
+		return Parent;
+
+	}(GrandParent));
+
+
+	Child1 = (function(Parent) {
+		o.inherit(Child1, Parent);
+
+		function Child1() {
+			Child1.__parent__.constructor.apply(this, arguments);
+
+			this.parent = 'Parent';
+			this.name = 'Child1';
+		}
+
+		Child1.prototype.setOption = function(name, value) {
+			if (name == 'two') {
+				this._options[name] = 2;
+			} else {
+				Child1.__parent__.setOption.apply(this, arguments);
+			}
+		};
+
+		return Child1;
+
+	}(Parent));
+
+
+	Child2 = (function(Parent) {
+		o.inherit(Child2, Parent);
+
+		function Child2() {
+			Child2.__parent__.constructor.apply(this, arguments);
+
+			this.parent = 'Parent';
+			this.name = 'Child2';
+		}
+
+		Child2.prototype.setOption = function(name, value) {
+			if (name == 'two') {
+				this._options[name] = -2;
+			} else {
+				Child2.__parent__.setOption.apply(this, arguments);
+			}
+		};
+
+		return Child2;
+
+	}(Parent));
+
+
+	child1 = new Child1();
+	
+	child1.setOption('one', 5);
+	child1.setOption('two', 6);
+	child1.setOption('three', 3);
+
+	equal(child1.getOption('one'), 1, "Parent method properly inherited.");
+	equal(child1.getOption('two'), 2, "Own method properly invoked.");
+	equal(child1.getOption('three'), 3, "Grandparent method properly inherited.");
+
+
+	child2 = new Child2();
+	child2.setOption('two', 2);
+	equal(child2.getOption('one'), undefined, "Properties are independent.");
+	equal(child2.getOption('two'), -2, 
+		"Overrides of the same method in different children of the same parent are different.");
+
+});
+
 </script>
 </head>
 <body>
