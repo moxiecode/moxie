@@ -201,7 +201,7 @@ test("parseSizeStr()", function() {
 
 
 test("inherit()", function() {
-	var Child1, Child2, Parent, GrandParent, child1, child2;
+	var Child1, Child2, Child3, Child4, Parent, GrandParent, child1, child2, child3, child4;
 
 	GrandParent = (function() {
 		function GrandParent() {
@@ -291,6 +291,50 @@ test("inherit()", function() {
 	}(Parent));
 
 
+	Child3 = (function(Parent) {
+		o.inherit(Child3, Parent);
+
+		function Child3() {			
+			this.parent = 'Parent';
+			this.name = 'Child3';
+		}
+
+		Child3.prototype.setOption = function(name, value) {
+			if (name == 'two') {
+				this._options[name] = -2;
+			} else {
+				Child3.__parent__.setOption.apply(this, arguments);
+			}
+		};
+
+		return Child3;
+
+	}(Parent));
+
+
+	Child4 = (function(Parent) {
+		o.inherit(Child4, Parent);
+
+		function Child4() {
+			Parent.apply(this, arguments);
+
+			this.parent = 'Parent';
+			this.name = 'Child4';
+		}
+
+		Child4.prototype.setOption = function(name, value) {
+			if (name == 'two') {
+				this._options[name] = -2;
+			} else {
+				Child4.__parent__.setOption.apply(this, arguments);
+			}
+		};
+
+		return Child4;
+
+	}(Parent));
+
+
 	child1 = new Child1();
 	
 	child1.setOption('one', 5);
@@ -307,6 +351,27 @@ test("inherit()", function() {
 	equal(child2.getOption('one'), undefined, "Properties are independent.");
 	equal(child2.getOption('two'), -2, 
 		"Overrides of the same method in different children of the same parent are different.");
+
+	child3 = new Child3();
+	try {
+		child3.getOption('two');
+		ok(false, 
+			"Properties not available when parent constructor not called.");
+	} catch(ex) {
+		ok(true, 
+			"Properties not available when parent constructor not called.");
+	}
+
+
+	child4 = new Child4();
+	try {
+		child4.getOption('two');
+		ok(true, 
+			"__parent__.constructor property is the same as Parent.");
+	} catch(ex) {
+		ok(false, 
+			"__parent__.constructor property is the same as Parent.");
+	}
 
 });
 
