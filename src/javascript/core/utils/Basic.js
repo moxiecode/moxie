@@ -381,14 +381,14 @@ define('moxie/core/utils/Basic', [], function() {
 			},
 			mul;
 
-		size = /^([0-9]+)([mgk]?)$/.exec(size.toLowerCase().replace(/[^0-9mkg]/g, ''));
+		size = /^([0-9\.]+)([tmgk]?)$/.exec(size.toLowerCase().replace(/[^0-9\.tmkg]/g, ''));
 		mul = size[2];
 		size = +size[1];
 		
 		if (muls.hasOwnProperty(mul)) {
 			size *= muls[mul];
 		}
-		return size;
+		return Math.floor(size);
 	}
 
 
