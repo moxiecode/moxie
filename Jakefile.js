@@ -75,7 +75,7 @@ task("mkjs", [], function () {
 	// include corresponding runtime extensions
 	[].push.apply(options.from, mkjs.getExtensionPaths4(modules, {
 		runtimes: process.env.runtimes,
-		baseDir: ''
+		baseDir: 'src/javascript'
 	}));
 
 	// start fresh

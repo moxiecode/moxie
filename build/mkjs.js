@@ -60,8 +60,8 @@ function getExtensionPaths4(paths, options) {
 	if (runtimes.length) {
 		runtimes.forEach(function(type) {
 			paths.forEach(function(path) {
-				path = options.baseDir + '/runtime/' + type + '/' + path.replace(/(^\/|\.js$)/, '') + '.js';
-				if (fs.existsSync(path)) {
+				path = 'runtime/' + type + '/' + path.replace(/(^\/|\.js$)/, '') + '.js';
+				if (fs.existsSync(options.baseDir + '/' + path)) {
 					resolvedPaths.push(path);
 				}
 			});
