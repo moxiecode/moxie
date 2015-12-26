@@ -47,6 +47,9 @@ define('moxie/runtime/RuntimeClient', [
 					type = items.shift().toLowerCase();
 					constructor = Runtime.getConstructor(type);
 					if (!constructor) {
+						if (MXI_DEBUG && Env.debug.runtime) {
+							Env.log("Constructor for '%s' runtime is not available.", type);
+						}
 						initialize(items);
 						return;
 					}
