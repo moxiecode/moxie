@@ -47,7 +47,7 @@ package com
 			}, options);
 						
 			
-			if (_options.accept !== null) {				
+			if (_options.accept is Array) {				
 				_filters = [];
 				
 				for (var i:int = 0; i < _options.accept.length; i++) {
