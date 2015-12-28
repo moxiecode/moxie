@@ -248,9 +248,9 @@ test('Runtime.thatCan()', function(assert) {
 		upload_filesize: '3gb',
 		select_multiple: true,
 		send_browser_cookies: true
-	}, 'flash,html4,silverlight,html5');
+	}, 'flash,html4,html5,silverlight');
 
-	assert.equal(type, 'silverlight', "Usable Runtime figured out by capability (" + type + ").");
+	assert.equal(type, 'html5', "Usable Runtime figured out by capability (" + type + ").");
 });
 
 test('Runtime.capTrue(), Runtime.capFalse(), Runtime.capTest()', function(assert) {
