@@ -142,7 +142,7 @@ define('moxie/core/utils/Basic', [], function() {
 				length = undef;
 			}
 
-			if (length === undef) {
+			if (length === undef || typeof(length) !== 'number') {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
