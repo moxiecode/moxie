@@ -18,9 +18,10 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	"moxie/file/Blob",
 	"moxie/file/File",
 	"moxie/file/FileReaderSync",
+	"moxie/runtime/flash/file/FileReaderSync",
 	"moxie/xhr/FormData",
 	"moxie/runtime/Transporter"
-], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter) {
+], function(extensions, Basic, Blob, File, FileReaderSync, FileReaderSyncFlash, FormData, Transporter) {
 	
 	var XMLHttpRequest = {
 

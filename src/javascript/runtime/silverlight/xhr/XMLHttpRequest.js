@@ -15,7 +15,8 @@
 define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
 	"moxie/runtime/silverlight/Runtime",
 	"moxie/core/utils/Basic",
-	"moxie/runtime/flash/xhr/XMLHttpRequest"
-], function(extensions, Basic, XMLHttpRequest) {
+	"moxie/runtime/flash/xhr/XMLHttpRequest",
+	"moxie/runtime/silverlight/file/FileReaderSync",
+], function(extensions, Basic, XMLHttpRequest, FileReaderSyncSilverlight) {
 	return (extensions.XMLHttpRequest = Basic.extend({}, XMLHttpRequest));
 });
