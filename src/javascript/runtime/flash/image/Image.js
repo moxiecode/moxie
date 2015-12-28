@@ -16,9 +16,10 @@ define("moxie/runtime/flash/image/Image", [
 	"moxie/runtime/flash/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/runtime/Transporter",
+	"moxie/runtime/flash/runtime/Transporter",
 	"moxie/file/Blob",
 	"moxie/file/FileReaderSync"
-], function(extensions, Basic, Transporter, Blob, FileReaderSync) {
+], function(extensions, Basic, Transporter, TransporterFlash, Blob, FileReaderSync) {
 	
 	var Image = {
 		loadFromBlob: function(blob) {
