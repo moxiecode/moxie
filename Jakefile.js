@@ -71,12 +71,17 @@ task("mkjs", [], function () {
 		outputCoverage: false
 	};
 
+	// we need to strip off the baseDir, since amdlc will be prepending its own anyway
+	var extPaths = mkjs.getExtensionPaths4(modules, {
+		runtimes: process.env.runtimes,
+		baseDir: baseDir
+	}).map(function(item) {
+		var re = new RegExp('^'+baseDir+'\\/', 'i');
+		return item.replace(re, '');
+	});
 
 	// include corresponding runtime extensions
-	[].push.apply(options.from, mkjs.getExtensionPaths4(modules, {
-		runtimes: process.env.runtimes,
-		baseDir: 'src/javascript'
-	}));
+	[].push.apply(options.from, extPaths);
 
 	// start fresh
 	if (fs.existsSync(targetDir)) {
