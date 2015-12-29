@@ -122,11 +122,17 @@ package
 				if (comp.hasOwnProperty(action)) {	
 					return comp[action].apply(comp, args as Array);
 				} else {
-					_fireEvent(uid + "::Exception", { name: "RuntimeError", code: RuntimeError.NOT_SUPPORTED_ERR });
+					_fireEvent(Moxie.uid + "::Exception", { 
+						name: "RuntimeError", 
+						code: RuntimeError.NOT_SUPPORTED_ERR,
+						message: compName + "::" + action
+					});
 				}
-				
 			} catch(err:*) { // re-route exceptions thrown by components (TODO: check marshallExceptions feature)
-				_fireEvent(uid + "::Exception", { name: getQualifiedClassName(err).replace(/^[^:*]::/, ''), code: err.errorID });
+				_fireEvent(Moxie.uid + "::Exception", { 
+					name: err.name,
+					code: err.errorID
+				});
 			}
 		}
 		
