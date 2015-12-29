@@ -219,7 +219,7 @@ package com
 				height: height,
 				type: type,
 				name: name, 
-				meta: meta 
+				meta: _preserveHeaders ? meta : null
 			};
 		}
 			

@@ -83,15 +83,19 @@ define("moxie/runtime/html5/image/Image", [
 					type: _blob.type || Mime.getFileMime(_blob.name),
 					size: _binStr && _binStr.length || _blob.size || 0,
 					name: _blob.name || '',
-					meta: _imgInfo && _imgInfo.meta || this.meta || {}
+					meta: null
 				};
 
-				// store thumbnail data as blob
-				if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
-					info.meta.thumb.data = new Blob(null, {
-						type: 'image/jpeg',
-						data: info.meta.thumb.data
-					});
+				if (_preserveHeaders) {
+					info.meta = _imgInfo && _imgInfo.meta || this.meta || {};
+
+					// store thumbnail data as blob
+					if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
+						info.meta.thumb.data = new Blob(null, {
+							type: 'image/jpeg',
+							data: info.meta.thumb.data
+						});
+					}
 				}
 
 				return info;
