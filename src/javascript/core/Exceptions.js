@@ -29,14 +29,15 @@ define('moxie/core/Exceptions', [
 		RuntimeError: (function() {
 			var namecodes = {
 				NOT_INIT_ERR: 1,
+				EXCEPTION_ERR: 3,
 				NOT_SUPPORTED_ERR: 9,
 				JS_ERR: 4
 			};
 
-			function RuntimeError(code) {
+			function RuntimeError(code, message) {
 				this.code = code;
 				this.name = _findKey(namecodes, code);
-				this.message = this.name + ": RuntimeError " + this.code;
+				this.message = this.name + (message || ": RuntimeError " + this.code);
 			}
 			
 			Basic.extend(RuntimeError, namecodes);
