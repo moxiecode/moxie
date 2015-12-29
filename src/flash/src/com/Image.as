@@ -348,7 +348,9 @@ package com
 				type = this.type !== '' ? this.type : 'image/jpeg';
 			} 
 			
-			if (type == 'image/jpeg') {	
+			if (type == 'image/png') {
+				ba = bd.encode(bd.rect, new PNGEncoderOptions(quality < 60));
+			} else {
 				ba = bd.encode(bd.rect, new JPEGEncoderOptions(quality));
 				
 				if (_img && _img is JPEG) {
@@ -359,8 +361,6 @@ package com
 						_img.insertHeaders(ba);
 					}
 				}
-			} else if (type == 'image/png') {
-				ba = bd.encode(bd.rect, new PNGEncoderOptions());
 			}			
 			return ba;
 		}
