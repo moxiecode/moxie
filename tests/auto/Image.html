@@ -317,10 +317,10 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			start();
 			ok(true, "resize fired.");
 
-			equal(this.meta, false, "Meta headers stripped as requested.");
+			ok(o.isEmptyObj(this.meta), "Meta headers stripped as requested.");
 
-			deepEqual([this.width, this.height], [200, 133], 
-				"Currently it is a landscape photo - width is larger then height.");
+			deepEqual([this.width, this.height], [133, 200], 
+				"Now it has become portrait photo - height is larger then width.");
 
 		};
 
