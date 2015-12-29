@@ -16,8 +16,7 @@ define("moxie/runtime/silverlight/image/Image", [
 	"moxie/runtime/silverlight/Runtime",
 	"moxie/core/utils/Basic",
 	"moxie/file/Blob",
-	"moxie/runtime/flash/image/Image",
-	"moxie/runtime/silverlight/runtime/Transporter"
+	"moxie/runtime/flash/image/Image"
 ], function(extensions, Basic, Blob, Image, TransporterSilverlight) {
 	return (extensions.Image = Basic.extend({}, Image, {
 
