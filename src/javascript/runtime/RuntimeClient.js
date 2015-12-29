@@ -88,10 +88,12 @@ define('moxie/runtime/RuntimeClient', [
 					});
 
 					runtime.bind('Exception', function(e, err) {
+						var message = err.name + "(#" + err.code + ")" + (err.message ? ", from: " + err.message : '');
+						
 						if (MXI_DEBUG && Env.debug.runtime) {
-							Env.log("Runtime '%s' has thrown an exception: %s", runtime.type, err.message || err.name + "(#" + err.code + ")");
+							Env.log("Runtime '%s' has thrown an exception: %s", this.type, message);
 						}
-						comp.trigger('RuntimeError', new x.RuntimeError(x.RuntimeError.EXCEPTION_ERR, err.message || err.name + "(#" + err.code + ")"));
+						comp.trigger('RuntimeError', new x.RuntimeError(x.RuntimeError.EXCEPTION_ERR, message));
 					});
 
 					if (MXI_DEBUG && Env.debug.runtime) {
