@@ -13,14 +13,25 @@ namespace Moxiecode.Com.Errors
 {
 	public class RuntimeError : Exception
 	{
-		public const uint NOT_SUPPORTED_ERR = 1;
-		public const uint COMP_CONFLICT = 23;
+		public const int NOT_SUPPORTED_ERR = 1;
+		public const int COMP_CONFLICT = 23;
 
-		public uint code;
+		private int _code = -1;
 
-		public RuntimeError(uint code) : base("")
+		public int code
 		{
-			this.code = code;
+			get
+			{
+				return this._code > 0 ? this._code : this.HResult;
+			}
+		}
+
+		public RuntimeError(int code = -1) : base("")
+		{
+			if (code > 0)
+			{
+				this._code = code;
+			}
 		}
 	}
 }
