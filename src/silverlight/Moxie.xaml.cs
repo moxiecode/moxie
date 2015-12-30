@@ -18,7 +18,7 @@ using System.Text.RegularExpressions;
 
 using Moxiecode.Com;
 using Moxiecode.Com.Events;
-
+using Moxiecode.Com.Errors;
 
 namespace Moxiecode
 {
@@ -114,7 +114,11 @@ namespace Moxiecode
 			}
 			catch (Exception ex) {
 				// re-route exceptions thrown by components
-				_fireEvent(uid + "::Exception", ex.Message);
+				_fireEvent(Moxie.uid + "::Exception", new Dictionary<string, object>() {
+					{ "name", ex.GetType() },
+					{ "code", RuntimeError.COMP_CONFLICT },
+					{ "message", compName + "::" + action }
+				});
 			}
 			return false;
 		}

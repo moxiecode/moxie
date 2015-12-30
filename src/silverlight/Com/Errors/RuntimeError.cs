@@ -15,6 +15,7 @@ namespace Moxiecode.Com.Errors
 	{
 		public const int NOT_SUPPORTED_ERR = 1;
 		public const int COMP_CONFLICT = 23;
+		public const int COMP_EXCEPTION = 24;
 
 		private int _code = -1;
 
