@@ -150,7 +150,7 @@ namespace Moxiecode.Com
 				{ "size", size },
 				{ "type", type },
 				{ "name", name },
-				{ "meta", meta }
+				{ "meta", _preserveHeaders ? meta : null }
 			};
 		}
 
