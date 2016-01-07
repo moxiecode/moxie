@@ -178,6 +178,138 @@ define("moxie/image/Image", [
 				_load.apply(this, arguments);
 			},
 
+
+			resize: function(options) {
+				var self = this;
+				var orientation;
+				var scale;
+				var fitRatio = 1;
+				
+				var srcRect = {
+					x: 0,
+					y: 0,
+					width: self.width,
+					height: self.height
+				};
+
+				options = Basic.extend({
+					width: self.width,
+					height: self.height,
+					type: self.type || 'image/jpeg',
+					quality: 90,
+					crop: false,
+					fit: true,
+					preserveHeaders: true,
+					resample: 'default',
+					multipass: true
+				}, options);
+
+				try {
+					if (!self.size) { // only preloaded image objects can be used as source
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					}
+
+					// no way to reliably intercept the crash due to high resolution, so we simply avoid it
+					if (self.width > Image.MAX_RESIZE_WIDTH || self.height > Image.MAX_RESIZE_HEIGHT) {
+						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+					}
+
+					// take into account orientation tag
+					orientation = (self.meta && self.meta.tiff && self.meta.tiff.Orientation) || 1;
+
+					if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
+						var tmp = options.width;
+						options.width = options.height;
+						options.height = tmp;
+					}
+
+					if (options.crop) {
+						scale = Math.max(options.width/self.width, options.height/self.height);
+
+						if (scale > 1) {
+							if (options.fit) {
+								srcRect.width = Math.min(Math.ceil(options.width/scale), self.width);
+								srcRect.height = Math.min(Math.ceil(options.height/scale), self.height);
+							} else {
+								srcRect.width = Math.min(options.width, self.width);
+								srcRect.height = Math.min(options.height, self.height);
+							}
+						}
+
+						if (typeof(options.crop) === 'boolean') {
+							options.crop = 'cc';
+						}
+
+						switch (options.crop.toLowerCase()) {
+							case 'rb':
+							case 'rightbottom':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'cb':
+							case 'centerbottom':
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'lb':
+							case 'leftbottom':
+								srcRect.x = 0;
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'lt':
+							case 'lefttop':
+								srcRect.x = 0;
+								srcRect.y = 0;
+								break;
+
+							case 'ct':
+							case 'centertop':
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = 0;
+								break;
+
+							case 'rt':
+							case 'righttop':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = 0;
+								break;
+
+							case 'rc':
+							case 'rightcenter':
+							case 'rightmiddle':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+								break;
+
+
+							case 'lc':
+							case 'leftcenter':
+							case 'leftmiddle':
+								srcRect.x = 0;
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+								break;
+
+							case 'cc':
+							case 'centercenter':
+							case 'centermiddle':
+							default:
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+						}						
+					} else {
+						scale = Math.min(options.width/self.width, options.height/self.height);
+					}
+
+					this.exec('Image', 'resize', srcRect, scale, options);
+				} catch(ex) {
+					// for now simply trigger error event
+					self.trigger('error', ex.code);
+				}
+			},
+
 			/**
 			Downsizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
 
