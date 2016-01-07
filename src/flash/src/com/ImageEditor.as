@@ -2,6 +2,7 @@ package com
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.events.EventDispatcher;
 	import flash.filters.BlurFilter;
 	import flash.filters.ColorMatrixFilter;
 	import flash.filters.ConvolutionFilter;
@@ -9,18 +10,29 @@ package com
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.display.Shader;
+	import flash.display.ShaderJob;
 	
 	import mxi.image.ascb.filters.ColorMatrixArrays;
 	import mxi.image.ascb.filters.ConvolutionMatrixArrays;
 	
 	
-	public class ImageEditor
+	public class ImageEditor extends EventDispatcher
 	{	
+		[Embed (source="/shaders/BilinearScale.pbj", mimeType="application/octet-stream")]
+		private const BilinearScale:Class;
+		
+		[Embed (source="/shaders/BicubicScale.pbj", mimeType="application/octet-stream")]
+		private const BicubicScale:Class;
+		
+		[Embed (source="/shaders/NearestNeighbourScale.pbj", mimeType="application/octet-stream")]
+		private const NearestNeighbourScale:Class;
+		
 		private var _history:Array = [];
 		
 		private var _historyIndex:int = -1;
 		
-		private var _lastReleaseIndex:int = 0;
+		private var _lastCommitIndex:int = 0;
 		
 		private var _bdOriginal:BitmapData;
 		
@@ -28,6 +40,11 @@ package com
 		
 		public function get bitmapData() : BitmapData {
 			return (_bd ? _bd : _bdOriginal).clone();
+		}
+		
+		private var _busy:Boolean = false;
+		public function get busy() : Boolean {
+			return _busy;
 		}
 		
 		private var _crop:Rectangle = null;		
@@ -64,8 +81,8 @@ package com
 		
 		public function commit() : void
 		{
-			_doModifications(_lastReleaseIndex, _historyIndex); // do only incremental modifications if possible
-			_lastReleaseIndex = _historyIndex;
+			_doModifications(_lastCommitIndex, _historyIndex); // do only incremental modifications if possible
+			_lastCommitIndex = _historyIndex;
 			_matrix = new Matrix();
 		}
 		
@@ -87,8 +104,8 @@ package com
 			if (canUndo()) {	
 				_historyIndex--;
 				
-				if (_historyIndex < _lastReleaseIndex) {
-					_lastReleaseIndex = 0;
+				if (_historyIndex < _lastCommitIndex) {
+					_lastCommitIndex = 0;
 					if (_bd) {
 						_bd.dispose();
 						_bd = null;
@@ -156,6 +173,46 @@ package com
 		protected function resize(w:Number, h:Number) : void
 		{
 			_matrix.scale(w / _bd.width, h / _bd.height);
+		}
+		
+		
+		protected function scale(scale:Number, resample:String = 'default') : void
+		{			
+			if (resample == 'default') {
+				_matrix.scale(scale, scale);
+				return;
+			}
+						
+			var shader:Shader = new Shader();
+			
+			switch (resample) {	
+				case 'nearest':
+					shader.byteCode = new NearestNeighbourScale();
+					break;
+				
+				case 'bicubic':
+					shader.byteCode = new BicubicScale(); 
+					break;
+				
+				case 'bilinear':
+				default:
+					shader.byteCode = new BilinearScale(); 
+			}
+			
+			// order matters - byteCode should be assigned first
+			shader.data.src.input = _bd;
+			shader.data.scale.value = [scale];
+			
+			var output:BitmapData = new BitmapData(_bd.width * scale, _bd.height * scale);
+						
+			// shader jobs are wicked cool
+			var job:ShaderJob = new ShaderJob();
+			job.target = output;
+			job.shader = shader;
+			job.start(true); 
+			
+			_bd.dispose();
+			_bd = output;
 		}
 		
 		

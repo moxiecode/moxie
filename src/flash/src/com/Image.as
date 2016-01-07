@@ -14,6 +14,8 @@ package com
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.geom.Matrix;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
 	import flash.system.System;
 	import flash.utils.ByteArray;
 	
@@ -223,6 +225,34 @@ package com
 			};
 		}
 			
+		
+		public function resize(srcRect:Object, scale:Number, options:Object) : void
+		{
+			var imgEditor:ImageEditor;
+			var rect:Rectangle = new Rectangle(srcRect.x, srcRect.y, srcRect.width, srcRect.height);
+			var bd:BitmapData = new BitmapData(srcRect.width, srcRect.height);
+									
+			options = Utils.extend({
+				multipass: true,
+				resample: 'default'
+			}, options);
+			
+			bd.copyPixels(_bd, rect, new Point(0, 0));
+						
+			imgEditor = new ImageEditor(bd);
+			
+			imgEditor.modify('scale', scale, options.resample);
+			imgEditor.commit();
+						
+			bd.dispose();
+			_bd.dispose();
+			_bd = imgEditor.bitmapData;
+			
+			imgEditor.purge();
+			
+			dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
+		}
+		
 		
 		public function downsize(width:uint, height:uint, crop:Boolean = false, preserveHeaders:Boolean = true) : void
 		{			
