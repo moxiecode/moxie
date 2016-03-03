@@ -309,9 +309,11 @@ define("moxie/image/Image", [
 				@param {String} [type="image/jpeg"] Mime type
 				@param {Number} [quality=90] Quality of an embed, if mime type is image/jpeg
 				@param {Boolean} [crop=false] Whether to crop an embed to the specified dimensions
+				@param {Function} [callback=function(){}] After embed to element, excecute this callback function. Only needed when create a canvas.
 			*/
 			embed: function(el, opts) {
 				var self = this
+				var callback = opts.callback || function(){};
 				, runtime // this has to be outside of all the closures to contain proper runtime
 				;
 
@@ -334,6 +336,7 @@ define("moxie/image/Image", [
 							canvas = null;
 							img.destroy();
 							self.trigger('embedded');
+							callback();
 							return;
 						}
 					}
