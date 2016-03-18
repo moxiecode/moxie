@@ -17,9 +17,9 @@ package com
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
+	import mxi.events.OProgressEvent;
 	import mxi.image.ascb.filters.ColorMatrixArrays;
 	import mxi.image.ascb.filters.ConvolutionMatrixArrays;
-	import mxi.events.OProgressEvent;
 	
 	
 	public class ImageEditor extends OEventDispatcher
@@ -216,13 +216,7 @@ package com
 		
 		
 		protected function _scale(scale:Number, resample:String = 'default', multiStep:Boolean = true) : void
-		{			
-			if (resample == 'default') {
-				_matrix.scale(scale, scale);
-				onOperationComplete();
-				return;
-			}
-			
+		{					
 			if (!_bd) {
 				_bd = _bdOriginal.clone();
 			}
@@ -251,13 +245,13 @@ package com
 				if (newScale < 0.5 || newScale > 2) {
 					newScale = newScale < 0.5 ? 0.5 : 2;
 				}
-				
+								
 				// special care for default scaling method
-				if (resample == 'deafult') {
+				if (resample == 'default') {
 					_matrix.scale(newScale, newScale);
 					onOperationComplete();
 					draw();
-					if (_bd.width <= dstWidth) {
+					if (scale < 1 && _bd.width <= dstWidth || _bd.width >= dstWidth) {
 						onDrawComplete();
 					} else {
 						dispatchEvent(new OProgressEvent(OProgressEvent.PROGRESS, step++, totalSteps));
