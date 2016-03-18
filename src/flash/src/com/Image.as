@@ -4,6 +4,7 @@ package com
 	import com.errors.RuntimeError;
 	import com.events.BlobEvent;
 	import com.events.ImageEvent;
+	import com.events.ImageEditorEvent;
 	import com.utils.OEventDispatcher;
 	
 	import flash.display.BitmapData;
@@ -33,7 +34,8 @@ package com
 			"Progress": OProgressEvent.PROGRESS,
 			"Load": OProgressEvent.LOAD,
 			"Error": OErrorEvent.ERROR,
-			"Resize": ImageEvent.RESIZE
+			"Resize": ImageEvent.RESIZE,
+			"ResizeProgress": OProgressEvent.PROGRESS
 		};
 		
 		private var _img:*;
@@ -242,15 +244,20 @@ package com
 			imgEditor = new ImageEditor(bd);
 			
 			imgEditor.modify('scale', scale, options.resample);
+			
+			imgEditor.addEventListener(OProgressEvent.PROGRESS, function(e:OProgressEvent) : void {
+				dispatchEvent(e);
+			});
+			
+			imgEditor.addEventListener(ImageEditorEvent.COMPLETE, function() : void {
+				bd.dispose();
+				_bd.dispose();
+				_bd = imgEditor.bitmapData;
+				imgEditor.destroy();
+				dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
+			});
+			
 			imgEditor.commit();
-						
-			bd.dispose();
-			_bd.dispose();
-			_bd = imgEditor.bitmapData;
-			
-			imgEditor.purge();
-			
-			dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
 		}
 		
 		

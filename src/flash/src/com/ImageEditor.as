@@ -1,8 +1,14 @@
 package com
 {
+	import com.events.ImageEditorEvent;
+	import com.utils.OEventDispatcher;
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.events.EventDispatcher;
+	import flash.display.Shader;
+	import flash.display.ShaderJob;
+	import flash.events.Event;
+	import flash.events.ShaderEvent;
 	import flash.filters.BlurFilter;
 	import flash.filters.ColorMatrixFilter;
 	import flash.filters.ConvolutionFilter;
@@ -10,14 +16,13 @@ package com
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.display.Shader;
-	import flash.display.ShaderJob;
 	
 	import mxi.image.ascb.filters.ColorMatrixArrays;
 	import mxi.image.ascb.filters.ConvolutionMatrixArrays;
+	import mxi.events.OProgressEvent;
 	
 	
-	public class ImageEditor extends EventDispatcher
+	public class ImageEditor extends OEventDispatcher
 	{	
 		[Embed (source="/shaders/BilinearScale.pbj", mimeType="application/octet-stream")]
 		private const BilinearScale:Class;
@@ -28,30 +33,32 @@ package com
 		[Embed (source="/shaders/NearestNeighbourScale.pbj", mimeType="application/octet-stream")]
 		private const NearestNeighbourScale:Class;
 		
-		private var _history:Array = [];
-		
-		private var _historyIndex:int = -1;
-		
-		private var _lastCommitIndex:int = 0;
-		
 		private var _bdOriginal:BitmapData;
-		
 		private var _bd:BitmapData;
+		
+		private var _matrix:Matrix = new Matrix();
+		
+		private var _history:Array = [];
+		private var _historyIndex:int = 0;
+		private var _commitIndex:int = 0;
+		private var _renderIndex:int = 0;
+		
+		private var _currOp:Object = null;
+		
+		
+		private var _lastModifyIndex:int = 0;
+		
+		private var _busy:Boolean = false;
+		private var _crop:Rectangle = null;		
+				
 		
 		public function get bitmapData() : BitmapData {
 			return (_bd ? _bd : _bdOriginal).clone();
 		}
 		
-		private var _busy:Boolean = false;
 		public function get busy() : Boolean {
 			return _busy;
 		}
-		
-		private var _crop:Rectangle = null;		
-		
-		private var _matrix:Matrix = new Matrix();
-				
-		private var _commitAfterEveryModify:Boolean = false;
 		
 		
 		public function ImageEditor(bd:BitmapData)
@@ -59,31 +66,39 @@ package com
 			_bdOriginal = bd.clone();
 		}
 		
-		
+		/**
+		 * @param {String} op Operation name to undertake
+		 * @param {...} args Variable number of arguments for the specified operation
+		 */
 		public function modify(op:String, ... args) : void
 		{	
+			if (typeof(this['_'+op]) != 'function') { // ignore operation that we cannot handle
+				return;
+			}
+						
 			if (canRedo()) {
 				_history.length = _historyIndex + 1; // discard extra redoable ops
 			}
 			
 			_history.push({
-				'op': op,
+				'method': '_'+op,
 				'args': args
 			});
 
-			if (_commitAfterEveryModify) {
-				commit();
-			}
-			
 			_historyIndex++;
 		}
 		
-		
-		public function commit() : void
-		{
-			_doModifications(_lastCommitIndex, _historyIndex); // do only incremental modifications if possible
-			_lastCommitIndex = _historyIndex;
-			_matrix = new Matrix();
+		/**
+		 * Commits all  pending operations, if any
+		 * 
+		 * @param {Boolean} [sync=true] Whether to commit modifications synchronously
+		 */ 
+		public function commit(sync:Boolean = true) : void
+		{			
+			if (!_busy) {
+				_busy = true;				
+				commitNext(); 
+			}
 		}
 		
 		
@@ -98,14 +113,14 @@ package com
 			return _historyIndex < _history.length;
 		}
 		
-		
+			
 		public function undo() : void
 		{
 			if (canUndo()) {	
 				_historyIndex--;
 				
-				if (_historyIndex < _lastCommitIndex) {
-					_lastCommitIndex = 0;
+				if (_historyIndex < _commitIndex) {
+					_commitIndex = 0;
 					if (_bd) {
 						_bd.dispose();
 						_bd = null;
@@ -114,6 +129,7 @@ package com
 				}
 			}
 		}
+		
 		
 		public function redo() : void
 		{
@@ -132,141 +148,232 @@ package com
 		}
 		
 		
-		protected function _doModifications(start:int, end:int) : void
-		{		
-			if (!_bd) {
-				_bd = _bdOriginal.clone();
-			}
-			
-			var mod:Object;
-			for (var i:int = start; i <= end; i++) {
-				mod = _history[i];
-				if (typeof(this[mod.op]) == 'function') {
-					this[mod.op].apply(null, mod.args);
-				} 
-			}
-			
-			_draw();
+		public function destroy() : void 
+		{
+			purge();
+			removeAllEventsListeners();
 		}
 		
 		
-		protected function rotate(angle:Number) : void
+		private function commitNext() : void
+		{
+			if (_commitIndex < _historyIndex) {
+				_currOp = _history[_commitIndex];
+				this[_currOp.method].apply(null, _currOp.args);
+			} else {
+				_busy = false;
+				dispatchEvent(new ImageEditorEvent(ImageEditorEvent.COMPLETE));	
+			}	
+		}
+		
+		
+		private function onOperationComplete() : void
+		{
+			_commitIndex++;
+			dispatchEvent(new ImageEditorEvent(ImageEditorEvent.COMMIT_COMPLETE));
+			commitNext();
+		}
+		
+		
+		private function onDrawComplete() : void
+		{
+			_renderIndex = _commitIndex;
+			dispatchEvent(new ImageEditorEvent(ImageEditorEvent.DRAW_COMPLETE));	
+		}
+		
+		
+		
+		protected function _rotate(angle:Number) : void
 		{		
 			_matrix.translate(-_bd.width/2,-_bd.height/2);
 			_matrix.rotate(angle / 180 * Math.PI);
 			_matrix.translate(_bd.width/2,_bd.height/2);
+			onOperationComplete();
 		}
 		
-		protected function flipH() : void
+		protected function _flipH() : void
 		{
 			_matrix.scale(-1, 1);
 			_matrix.translate(_bd.width, 0);
+			onOperationComplete();
 		}
 		
 		
-		protected function flipV() : void
+		protected function _flipV() : void
 		{
 			_matrix.scale(1, -1);
 			_matrix.translate(0, _bd.height);
+			onOperationComplete();
 		}
 		
-		protected function resize(w:Number, h:Number) : void
+		protected function _resize(w:Number, h:Number) : void
 		{
 			_matrix.scale(w / _bd.width, h / _bd.height);
+			onOperationComplete();
 		}
 		
 		
-		protected function scale(scale:Number, resample:String = 'default') : void
+		protected function _scale(scale:Number, resample:String = 'default', multiStep:Boolean = true) : void
 		{			
 			if (resample == 'default') {
 				_matrix.scale(scale, scale);
+				onOperationComplete();
 				return;
 			}
-						
-			var shader:Shader = new Shader();
 			
-			switch (resample) {	
-				case 'nearest':
-					shader.byteCode = new NearestNeighbourScale();
-					break;
-				
-				case 'bicubic':
-					shader.byteCode = new BicubicScale(); 
-					break;
-				
-				case 'bilinear':
-				default:
-					shader.byteCode = new BilinearScale(); 
+			if (!_bd) {
+				_bd = _bdOriginal.clone();
+			}
+			draw();
+			
+			var step:uint = 1;
+			var dstWidth:Number = _bd.width * scale;
+						
+			// find out how many steps will we require until we arrive at final dimensions
+			// we only need this to fire a progress event as we descend
+			var totalSteps:uint = 1;
+			if (multiStep) {
+				totalSteps = (function(tmpWidth:Number, newScale:Number) : uint {
+					var steps:uint = 1;
+					while (newScale < 0.5 || newScale > 2) {
+						tmpWidth = newScale < 0.5 ? tmpWidth / 2 : tmpWidth * 2;
+						newScale = dstWidth / tmpWidth;
+						steps++;
+					}
+					return steps;
+				}(_bd.width, scale));
 			}
 			
-			// order matters - byteCode should be assigned first
-			shader.data.src.input = _bd;
-			shader.data.scale.value = [scale];
 			
-			var output:BitmapData = new BitmapData(_bd.width * scale, _bd.height * scale);
-						
-			// shader jobs are wicked cool
-			var job:ShaderJob = new ShaderJob();
-			job.target = output;
-			job.shader = shader;
-			job.start(true); 
+			function scale2(newScale:Number) : void {				
+				if (newScale < 0.5 || newScale > 2) {
+					newScale = newScale < 0.5 ? 0.5 : 2;
+				}
+				
+				// special care for default scaling method
+				if (resample == 'deafult') {
+					_matrix.scale(newScale, newScale);
+					onOperationComplete();
+					draw();
+					if (_bd.width <= dstWidth) {
+						onDrawComplete();
+					} else {
+						dispatchEvent(new OProgressEvent(OProgressEvent.PROGRESS, step++, totalSteps));
+						scale2(dstWidth / _bd.width);
+					}
+					return;
+				}
+				
+				// ... proceed with shaders and PixelBender
+				var shader:Shader = new Shader();
+				var job:ShaderJob = new ShaderJob();
+				var tmpBd:BitmapData = new BitmapData(_bd.width * newScale, _bd.height * newScale);
+				
+				switch (resample) {	
+					case 'nearest':
+						shader.byteCode = new NearestNeighbourScale();
+						break;
+					
+					case 'bicubic':
+						shader.byteCode = new BicubicScale(); 
+						break;
+					
+					case 'bilinear':
+						shader.byteCode = new BilinearScale();
+						break;
+					
+					default: return;
+				}
+				
+				// order matters - byteCode should be assigned first (that's why it is above this)
+				shader.data.src.input = _bd;
+				shader.data.scale.value = [newScale];			
+				
+				job.target = tmpBd;
+				job.shader = shader;
+				
+				job.addEventListener(ShaderEvent.COMPLETE, function onJobComplete() : void {					
+					_bd.dispose();
+					_bd = tmpBd;
+					
+					if (tmpBd.width <= dstWidth) {
+						onOperationComplete();
+						onDrawComplete();
+					} else {
+						dispatchEvent(new OProgressEvent(OProgressEvent.PROGRESS, step++, totalSteps));
+						scale2(dstWidth / tmpBd.width);
+					}	
+				}, false, 0, true);
+				
+				job.start(); 				
+			}
 			
-			_bd.dispose();
-			_bd = output;
+			scale2(scale);
 		}
 		
 		
-		protected function crop(rect:Rectangle) : void
-		{
-			
-		}
-		
-		
-		protected function sharpen() : void
+		protected function _sharpen() : void
 		{
 			applyConvolution(ConvolutionMatrixArrays.SHARPEN);
+			onOperationComplete();
+			onDrawComplete();
 		}
 		
-		protected function emboss() : void
+		protected function _emboss() : void
 		{
 			applyConvolution(ConvolutionMatrixArrays.EMBOSS);
+			onOperationComplete();
+			onDrawComplete();
 		}
 		
-		protected function grayscale() : void
+		protected function _grayscale() : void
 		{
 			applyColorMatrix(ColorMatrixArrays.GRAYSCALE);
+			onOperationComplete();
+			onDrawComplete();
 		}
 		
-		protected function sepia() : void
+		protected function _sepia() : void
 		{
 			applyColorMatrix(ColorMatrixArrays.SEPIA);
+			onOperationComplete();
+			onDrawComplete();
 		}
 		
 		
-		protected function invert() : void
+		protected function _invert() : void
 		{
 			applyColorMatrix(ColorMatrixArrays.DIGITAL_NEGATIVE);
+			onOperationComplete();
+			onDrawComplete();
 		}
 		
 		
-		protected function brightness(value:int) : void
+		protected function _brightness(value:int) : void
 		{			
 			applyColorMatrix(ColorMatrixArrays.getBrightnessArray(Math.floor(255 * value)));
+			onOperationComplete();
+			onDrawComplete();
 		}
 		
 		
-		protected function contrast(value:Number) : void
+		protected function _contrast(value:Number) : void
 		{	
 			applyColorMatrix(ColorMatrixArrays.getContrastArray(value));
+			onOperationComplete();
+			onDrawComplete();
+			
 		}
 		
-		protected function saturate(value:Number) : void
+		protected function _saturate(value:Number) : void
 		{	
 			applyColorMatrix(ColorMatrixArrays.getSaturationArray(value));
+			onOperationComplete();
+			onDrawComplete();
 		}
 		
 		
-		protected function blur(value:Number = 0.02, quality:int = 1) : void
+		protected function _blur(value:Number = 0.02, quality:int = 1) : void
 		{
 			if (!_bd) {
 				_bd = _bdOriginal.clone();
@@ -279,6 +386,8 @@ package com
 			}
 			
 			_bd.applyFilter(_bd, _bd.rect, new Point(0, 0), new BlurFilter(value, value, quality));
+			onOperationComplete();
+			onDrawComplete();
 		}
 		
 		
@@ -287,6 +396,7 @@ package com
 			if (!_bd) {
 				_bd = _bdOriginal.clone();
 			}
+			draw();
 			_bd.applyFilter(_bd, _bd.rect, new Point(0, 0), new ConvolutionFilter(3, 3, matrix, devisor));
 		}
 		
@@ -296,12 +406,20 @@ package com
 			if (!_bd) {
 				_bd = _bdOriginal.clone();
 			}
+			draw();
 			_bd.applyFilter(_bd, _bd.rect, new Point(0, 0), new ColorMatrixFilter(matrix));
 		}
 		
 		
-		private function _draw() : void
+		/**
+		 * Redraws current bitmap taking into account pending transformations
+		 */ 
+		private function draw() : void
 		{	
+			if (_renderIndex >= _commitIndex) {
+				return;
+			}
+			
 			// Finding the four corners of the bounfing box after transformation
 			var tl:Point = _matrix.transformPoint(new Point(0, 0));
 			var tr:Point = _matrix.transformPoint(new Point(_bd.width, 0));
@@ -314,7 +432,7 @@ package com
 			var left:Number = Math.min(tl.x, tr.x, bl.x, br.x);
 			var right:Number = Math.max(tl.x, tr.x, bl.x, br.x);
 			
-			// Ajusting final position
+			// Adjusting final position
 			_matrix.translate(-left, -top);
 			
 			// Calculating the size of the new BitmapData
@@ -326,6 +444,8 @@ package com
 			result.draw(_bd, _matrix);	
 			_bd.dispose();
 			_bd = result;
+			
+			_matrix = new Matrix();			
 		}
 		
 		
