@@ -230,28 +230,58 @@ package com
 		
 		public function resize(srcRect:Object, scale:Number, options:Object) : void
 		{
+			var self:Image = this;
 			var imgEditor:ImageEditor;
 			var rect:Rectangle = new Rectangle(srcRect.x, srcRect.y, srcRect.width, srcRect.height);
 			var bd:BitmapData = new BitmapData(srcRect.width, srcRect.height);
 									
 			options = Utils.extend({
 				multipass: true,
-				resample: 'default'
+				resample: 'default',
+				preserveHeaders: false
 			}, options);
+			
+			_preserveHeaders = options.preserveHeaders; // memorize if we should preserve meta headers on JPEGs on save
 			
 			bd.copyPixels(_bd, rect, new Point(0, 0));
 						
+			
 			imgEditor = new ImageEditor(bd);
 						
 			imgEditor.addEventListener(OProgressEvent.PROGRESS, function(e:OProgressEvent) : void {
 				dispatchEvent(e);
 			});
 			
-			imgEditor.addEventListener(ImageEditorEvent.COMPLETE, function() : void {
+			imgEditor.addEventListener(ImageEditorEvent.COMPLETE, function() : void {				
 				bd.dispose();
+				
 				_bd.dispose();
 				_bd = imgEditor.bitmapData;
 				imgEditor.destroy();
+				
+				if (self.type != 'image/jpeg') 
+				{
+					// if we are to strip the exif information, we have to orient the image manually
+					if (!_preserveHeaders) 
+					{
+						// take into account Orientation tag
+						var orientation:uint = 1;
+						if (self.type == 'image/jpeg' && meta.hasOwnProperty('tiff') && meta.tiff.hasOwnProperty('Orientation')) {
+							orientation = parseInt(meta.tiff.Orientation, 10);
+						}
+						_rotateToOrientation(orientation);
+					} 
+					else if (_img) 
+					{ 	// insert new values into exif headers
+						_img.updateDimensions(_bd.width, _bd.height);
+						// update image info
+						meta = _img.metaInfo();
+					} 
+				}
+				
+				self.width = _bd.width;
+				self.height = _bd.height;
+				
 				dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
 			});
 			
@@ -259,109 +289,7 @@ package com
 				.modify('scale', scale, options.resample)
 				.commit();
 		}
-		
-		
-		public function downsize(width:uint, height:uint, crop:Boolean = false, preserveHeaders:Boolean = true) : void
-		{			
-			var self:Image = this, scale:Number, orientation:uint = 1, selector:Function, output:BitmapData;
-				
-			// when scaled directly, Flash produces low quality result, so we do it here gradually
-			function downScale(tmpWidth:Number, tmpHeight:Number) : void 
-			{				
-				// modifies output internally
-				var bd:BitmapData = new BitmapData(tmpWidth, tmpHeight);
-				var matrix:Matrix, imgWidth:Number, imgHeight:Number;
-				
-				scale = selector(tmpWidth / output.width, tmpHeight / output.height);
-
-				matrix = new Matrix;
-				matrix.scale(scale, scale);
-				
-				// check if we need to center the image
-				imgWidth = output.width * scale;
-				imgHeight = output.height * scale;
-				if (imgWidth > tmpWidth) {
-					matrix.translate(-Math.round((imgWidth - tmpWidth) / 2), 0);
-				}
-				if (imgHeight > tmpHeight) {
-					matrix.translate(0, -Math.round((imgHeight - tmpHeight) / 2));
-				}
-				
-				bd.draw(output, matrix, null, null, null, true);
-				output.dispose();			
-				output = bd;
-										
-				if (output.width / 2 > width && output.height / 2 > height) {
-					downScale(output.width / 2, output.height / 2); 
-				} else if (width < output.width || height < output.height) {
-					downScale(width, height);
-				} else {			
-					_bd.dispose();
-					_bd = output;	
-					
-					if (self.type == 'image/jpeg') {
-						if (!_preserveHeaders) {
-							_rotateToOrientation(orientation);
-						} else if (_img) {
-							// insert new values into exif headers
-							_img.updateDimensions(_bd.width, _bd.height);
-							// update image info
-							meta = _img.metaInfo();
-						} 
-					}		
-					
-					self.width = _bd.width;
-					self.height = _bd.height;	
-					
-					dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
-				};
-			};
 			
-			_preserveHeaders = preserveHeaders; // memorize if we should preserve meta headers on JPEGs on save
-				
-			output = _bd.clone();
-			
-			// take into account Orientation tag
-			if (self.type == 'image/jpeg' && meta.hasOwnProperty('tiff') && meta.tiff.hasOwnProperty('Orientation')) {
-				orientation = parseInt(meta.tiff.Orientation, 10);
-			}
-			
-			if ([5,6,7,8].indexOf(orientation) !== -1) { // values that have different orientation
-				// swap dimensions
-				var mem:uint = width;
-				width = height;
-				height = mem;
-			}
-			
-			if (!crop) {
-				// retain proportions
-				selector = Math.min;			
-				scale = selector(width / output.width, height / output.height);
-				
-				// if image is smaller and we do not crop or strip off headers, there's nothing to do
-				if (scale > 1 && preserveHeaders) { 
-					dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
-					return;
-				}
-				
-				// calculate scaled dimensions
-				width = Math.round(output.width * scale);
-				height = Math.round(output.height * scale);
-			} else {
-				selector = Math.max;
-				
-				width = Math.min(width, output.width);
-				height = Math.min(height, output.height);
-			}
-			
-			if (output.width / 2 > width && output.height / 2 > height) {
-				downScale(output.width / 2, output.height / 2); // modifies output internally
-			} else {
-				downScale(width, height);
-			}	
-		}
-		
-		
 		
 		public function getAsBitmapData() : BitmapData
 		{
@@ -485,11 +413,13 @@ package com
 					break;
 			}
 			
-			imageEditor.commit();
+			imageEditor.addEventListenerOnce(ImageEditorEvent.COMPLETE, function() : void {
+				_bd.dispose();
+				_bd = imageEditor.bitmapData;
+				imageEditor.destroy();
+			});
 			
-			_bd.dispose();
-			_bd = imageEditor.bitmapData;
-			imageEditor.purge();
+			imageEditor.commit();			
 		}
 		
 	}
