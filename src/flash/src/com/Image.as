@@ -242,9 +242,7 @@ package com
 			bd.copyPixels(_bd, rect, new Point(0, 0));
 						
 			imgEditor = new ImageEditor(bd);
-			
-			imgEditor.modify('scale', scale, options.resample);
-			
+						
 			imgEditor.addEventListener(OProgressEvent.PROGRESS, function(e:OProgressEvent) : void {
 				dispatchEvent(e);
 			});
@@ -257,7 +255,9 @@ package com
 				dispatchEvent(new ImageEvent(ImageEvent.RESIZE));
 			});
 			
-			imgEditor.commit();
+			imgEditor
+				.modify('scale', scale, options.resample)
+				.commit();
 		}
 		
 		

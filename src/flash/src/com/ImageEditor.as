@@ -70,10 +70,10 @@ package com
 		 * @param {String} op Operation name to undertake
 		 * @param {...} args Variable number of arguments for the specified operation
 		 */
-		public function modify(op:String, ... args) : void
+		public function modify(op:String, ... args) : ImageEditor
 		{	
 			if (typeof(this['_'+op]) != 'function') { // ignore operation that we cannot handle
-				return;
+				return this;
 			}
 						
 			if (canRedo()) {
@@ -86,6 +86,8 @@ package com
 			});
 
 			_historyIndex++;
+			
+			return this;
 		}
 		
 		/**
