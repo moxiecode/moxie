@@ -36,7 +36,7 @@ package com
 		private var _bdOriginal:BitmapData;
 		private var _bd:BitmapData;
 		
-		private var _matrix:Matrix = new Matrix();
+		private var _matrix:Matrix = null;
 		
 		private var _history:Array = [];
 		private var _historyIndex:int = 0;
@@ -127,7 +127,7 @@ package com
 						_bd.dispose();
 						_bd = null;
 					}
-					_matrix = new Matrix();
+					_matrix = null;
 				}
 			}
 		}
@@ -187,6 +187,9 @@ package com
 		
 		protected function _rotate(angle:Number) : void
 		{		
+			if (!_matrix) {
+				_matrix = new Matrix;
+			}
 			_matrix.translate(-_bd.width/2,-_bd.height/2);
 			_matrix.rotate(angle / 180 * Math.PI);
 			_matrix.translate(_bd.width/2,_bd.height/2);
@@ -195,6 +198,9 @@ package com
 		
 		protected function _flipH() : void
 		{
+			if (!_matrix) {
+				_matrix = new Matrix;
+			}
 			_matrix.scale(-1, 1);
 			_matrix.translate(_bd.width, 0);
 			onOperationComplete();
@@ -203,6 +209,9 @@ package com
 		
 		protected function _flipV() : void
 		{
+			if (!_matrix) {
+				_matrix = new Matrix;
+			}
 			_matrix.scale(1, -1);
 			_matrix.translate(0, _bd.height);
 			onOperationComplete();
@@ -210,6 +219,9 @@ package com
 		
 		protected function _resize(w:Number, h:Number) : void
 		{
+			if (!_matrix) {
+				_matrix = new Matrix;
+			}
 			_matrix.scale(w / _bd.width, h / _bd.height);
 			onOperationComplete();
 		}
@@ -221,6 +233,12 @@ package com
 				_bd = _bdOriginal.clone();
 			}
 			draw();
+			
+			if (scale == 1) {
+				onOperationComplete();
+				onDrawComplete();
+				return;
+			}
 			
 			var step:uint = 1;
 			var dstWidth:Number = _bd.width * scale;
@@ -248,10 +266,11 @@ package com
 								
 				// special care for default scaling method
 				if (resample == 'default') {
+					_matrix = new Matrix;
 					_matrix.scale(newScale, newScale);
-					onOperationComplete();
 					draw();
-					if (scale < 1 && _bd.width <= dstWidth || _bd.width >= dstWidth) {
+					if (scale < 1 && _bd.width <= dstWidth || scale > 1 && _bd.width >= dstWidth) {
+						onOperationComplete();
 						onDrawComplete();
 					} else {
 						dispatchEvent(new OProgressEvent(OProgressEvent.PROGRESS, step++, totalSteps));
@@ -292,7 +311,7 @@ package com
 					_bd.dispose();
 					_bd = tmpBd;
 										
-					if (scale < 1 && tmpBd.width <= dstWidth || tmpBd.width >= dstWidth) {
+					if (scale < 1 && tmpBd.width <= dstWidth || scale > 1 && tmpBd.width >= dstWidth) {
 						onOperationComplete();
 						onDrawComplete();
 					} else {
@@ -412,7 +431,7 @@ package com
 		 */ 
 		private function draw() : void
 		{	
-			if (_renderIndex >= _commitIndex) {
+			if (!_matrix) {
 				return;
 			}
 			
@@ -441,7 +460,7 @@ package com
 			_bd.dispose();
 			_bd = result;
 			
-			_matrix = new Matrix();			
+			_matrix = null;			
 		}
 		
 		
