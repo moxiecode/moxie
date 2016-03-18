@@ -295,8 +295,8 @@ package com
 				job.addEventListener(ShaderEvent.COMPLETE, function onJobComplete() : void {					
 					_bd.dispose();
 					_bd = tmpBd;
-					
-					if (tmpBd.width <= dstWidth) {
+										
+					if (scale < 1 && tmpBd.width <= dstWidth || tmpBd.width >= dstWidth) {
 						onOperationComplete();
 						onDrawComplete();
 					} else {
