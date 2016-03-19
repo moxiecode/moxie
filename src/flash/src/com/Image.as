@@ -259,7 +259,7 @@ package com
 				_bd = imgEditor.bitmapData;
 				imgEditor.destroy();
 				
-				if (self.type != 'image/jpeg') 
+				if (self.type == 'image/jpeg') 
 				{
 					// if we are to strip the exif information, we have to orient the image manually
 					if (!_preserveHeaders) 
@@ -413,13 +413,11 @@ package com
 					break;
 			}
 			
-			imageEditor.addEventListenerOnce(ImageEditorEvent.COMPLETE, function() : void {
-				_bd.dispose();
-				_bd = imageEditor.bitmapData;
-				imageEditor.destroy();
-			});
+			imageEditor.commit(true);
 			
-			imageEditor.commit();			
+			_bd.dispose();
+			_bd = imageEditor.bitmapData;
+			imageEditor.destroy();
 		}
 		
 	}
