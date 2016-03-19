@@ -243,14 +243,19 @@ define("moxie/image/Image", [
 					if (options.crop) {
 						scale = Math.max(options.width/self.width, options.height/self.height);
 
-						if (scale > 1) {
-							if (options.fit) {
-								srcRect.width = Math.min(Math.ceil(options.width/scale), self.width);
-								srcRect.height = Math.min(Math.ceil(options.height/scale), self.height);
-							} else {
-								srcRect.width = Math.min(options.width, self.width);
-								srcRect.height = Math.min(options.height, self.height);
-							}
+						if (options.fit) {
+							// first scale it up or down to fit the original image
+							srcRect.width = Math.min(Math.ceil(options.width/scale), self.width);
+							srcRect.height = Math.min(Math.ceil(options.height/scale), self.height);
+							
+							// recalculate the scale for adapted dimensions
+							scale = options.width/srcRect.width; 
+						} else {
+							srcRect.width = Math.min(options.width, self.width);
+							srcRect.height = Math.min(options.height, self.height);
+
+							// now we do not need to scale it any further
+							scale = 1; 
 						}
 
 						if (typeof(options.crop) === 'boolean') {
@@ -316,6 +321,10 @@ define("moxie/image/Image", [
 								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
 								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
 						}						
+
+						// original image might be smaller than requested crop, so - avoid negative values
+						srcRect.x = Math.max(srcRect.x, 0);
+						srcRect.y = Math.max(srcRect.y, 0);
 					} else {
 						scale = Math.min(options.width/self.width, options.height/self.height);
 					}
