@@ -100,6 +100,11 @@ package com
 			if (!_busy) {
 				_busy = true;
 				_sync = sync;
+				
+				if (!_bd) {
+					_bd = _bdOriginal.clone();
+				}
+				
 				commitNext(); 
 			}
 		}
@@ -189,8 +194,9 @@ package com
 		protected function _rotate(angle:Number) : void
 		{		
 			if (!_matrix) {
-				_matrix = new Matrix;
+				_matrix = new Matrix();
 			}
+			
 			_matrix.translate(-_bd.width/2,-_bd.height/2);
 			_matrix.rotate(angle / 180 * Math.PI);
 			_matrix.translate(_bd.width/2,_bd.height/2);
@@ -200,7 +206,7 @@ package com
 		protected function _flipH() : void
 		{
 			if (!_matrix) {
-				_matrix = new Matrix;
+				_matrix = new Matrix();
 			}
 			_matrix.scale(-1, 1);
 			_matrix.translate(_bd.width, 0);
@@ -211,7 +217,7 @@ package com
 		protected function _flipV() : void
 		{
 			if (!_matrix) {
-				_matrix = new Matrix;
+				_matrix = new Matrix();
 			}
 			_matrix.scale(1, -1);
 			_matrix.translate(0, _bd.height);
@@ -221,7 +227,7 @@ package com
 		protected function _resize(w:Number, h:Number) : void
 		{
 			if (!_matrix) {
-				_matrix = new Matrix;
+				_matrix = new Matrix();
 			}
 			_matrix.scale(w / _bd.width, h / _bd.height);
 			onOperationComplete();
@@ -230,9 +236,6 @@ package com
 		
 		protected function _scale(scale:Number, resample:String = 'default', multiStep:Boolean = true) : void
 		{					
-			if (!_bd) {
-				_bd = _bdOriginal.clone();
-			}
 			draw();
 			
 			if (scale == 1) {
@@ -281,7 +284,7 @@ package com
 								
 				// special care for default scaling method
 				if (resample == 'default') {
-					_matrix = new Matrix;
+					_matrix = new Matrix();
 					_matrix.scale(newScale, newScale);
 					draw();
 					if (scale < 1 && _bd.width <= dstWidth || scale > 1 && _bd.width >= dstWidth) {
@@ -400,10 +403,6 @@ package com
 		
 		protected function _blur(value:Number = 0.02, quality:int = 1) : void
 		{
-			if (!_bd) {
-				_bd = _bdOriginal.clone();
-			}
-			
 			value = Math.floor(255 * value);
 			
 			if (value & 1) {
@@ -418,9 +417,6 @@ package com
 		
 		protected function applyConvolution(matrix:Array, devisor:Number = 1.0) : void
 		{
-			if (!_bd) {
-				_bd = _bdOriginal.clone();
-			}
 			draw();
 			_bd.applyFilter(_bd, _bd.rect, new Point(0, 0), new ConvolutionFilter(3, 3, matrix, devisor));
 		}
@@ -428,9 +424,6 @@ package com
 		
 		protected function applyColorMatrix(matrix:Array) : void
 		{
-			if (!_bd) {
-				_bd = _bdOriginal.clone();
-			}
 			draw();
 			_bd.applyFilter(_bd, _bd.rect, new Point(0, 0), new ColorMatrixFilter(matrix));
 		}
