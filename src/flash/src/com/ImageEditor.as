@@ -167,8 +167,10 @@ package com
 		{
 			if (_commitIndex < _historyIndex) {
 				_currOp = _history[_commitIndex];
-				this[_currOp.method].apply(null, _currOp.args);
+				this[_currOp.method].apply(this, _currOp.args);
 			} else {
+				draw();
+				onDrawComplete();
 				_busy = false;
 				dispatchEvent(new ImageEditorEvent(ImageEditorEvent.COMPLETE));	
 			}	
