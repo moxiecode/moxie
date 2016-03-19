@@ -49,7 +49,7 @@ package com
 		private var _lastModifyIndex:int = 0;
 		
 		private var _busy:Boolean = false;
-		private var _crop:Rectangle = null;		
+		private var _sync:Boolean = false;		
 				
 		
 		public function get bitmapData() : BitmapData {
@@ -95,10 +95,11 @@ package com
 		 * 
 		 * @param {Boolean} [sync=true] Whether to commit modifications synchronously
 		 */ 
-		public function commit(sync:Boolean = true) : void
-		{			
+		public function commit(sync:Boolean = false) : void
+		{						
 			if (!_busy) {
-				_busy = true;				
+				_busy = true;
+				_sync = sync;
 				commitNext(); 
 			}
 		}
@@ -259,6 +260,20 @@ package com
 			}
 			
 			
+			function onJobComplete(tmpBd:BitmapData) : void {					
+				_bd.dispose();
+				_bd = tmpBd;
+				
+				if (scale < 1 && tmpBd.width <= dstWidth || scale > 1 && tmpBd.width >= dstWidth) {
+					onOperationComplete();
+					onDrawComplete();
+				} else {
+					dispatchEvent(new OProgressEvent(OProgressEvent.PROGRESS, step++, totalSteps));
+					scale2(dstWidth / tmpBd.width);
+				}	
+			}
+			
+			
 			function scale2(newScale:Number) : void {				
 				if (newScale < 0.5 || newScale > 2) {
 					newScale = newScale < 0.5 ? 0.5 : 2;
@@ -307,20 +322,15 @@ package com
 				job.target = tmpBd;
 				job.shader = shader;
 				
-				job.addEventListener(ShaderEvent.COMPLETE, function onJobComplete() : void {					
-					_bd.dispose();
-					_bd = tmpBd;
-										
-					if (scale < 1 && tmpBd.width <= dstWidth || scale > 1 && tmpBd.width >= dstWidth) {
-						onOperationComplete();
-						onDrawComplete();
-					} else {
-						dispatchEvent(new OProgressEvent(OProgressEvent.PROGRESS, step++, totalSteps));
-						scale2(dstWidth / tmpBd.width);
-					}	
-				}, false, 0, true);
-				
-				job.start(); 				
+				if (_sync) {
+					job.start(true);
+					onJobComplete(job.target);
+				} else {
+					job.addEventListener(ShaderEvent.COMPLETE, function(e:ShaderEvent) : void {
+						onJobComplete(e.target.target);
+					}, false, 0, true);
+					job.start();
+				}				 				
 			}
 			
 			scale2(scale);
