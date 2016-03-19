@@ -1,5 +1,6 @@
 package com.utils
 {
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	public class OEventDispatcher extends EventDispatcher
@@ -20,6 +21,15 @@ package com.utils
 			
 			super.addEventListener(type, callback, useCapture, priority, useWeak); 
 		}
+		
+		
+		public function addEventListenerOnce(type:String, callback:Function, useCapture:Boolean = false, priority:int = 0, useWeak:Boolean = false) : void {
+			addEventListener(type, function onDispatched() : void {
+				removeEventListener(type, onDispatched);
+				callback.apply(this, arguments);
+			}, useCapture, priority, useWeak);
+		}
+		
 		
 		public override function removeEventListener(type:String, callback:Function, useCapture:Boolean=false):void
 		{			
@@ -52,6 +62,31 @@ package com.utils
 				super.removeEventListener(_events[i].type, _events[i].callback, _events[i].useCapture); // call super method directly
 			}
 			_events = [];
+		}
+		
+		
+		public function bind(type:String, callback:Function, useCapture:Boolean = false, priority:int = 0, useWeak:Boolean = false) : void {
+			addEventListener.apply(this, arguments);
+		}
+		
+		
+		public function bindOnce(type:String, callback:Function, useCapture:Boolean = false, priority:int = 0, useWeak:Boolean = false) : void {
+			addEventListenerOnce.apply(this, arguments);
+		}
+		
+		
+		public function trigger(event:Event) : Boolean {
+			return dispatchEvent.apply(this, arguments);
+		}
+		
+		
+		public function unbind(type:String, callback:Function, useCapture:Boolean=false) : void {
+			removeEventListener.apply(this, arguments);
+		}
+		
+		
+		public function unbindAll() : void {
+			removeAllEventsListeners.apply(this, arguments);
 		}
 	}
 }

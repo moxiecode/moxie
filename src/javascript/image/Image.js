@@ -178,10 +178,169 @@ define("moxie/image/Image", [
 				_load.apply(this, arguments);
 			},
 
+
+			/**
+			Resizes the image to fit the specified width/height. If crop is specified, image will also be 
+			cropped to the exact dimensions.
+
+			@method resize
+			@since 3.0
+			@param {Object} options
+				@param {Number} options.width Resulting width
+				@param {Number} [options.height=width] Resulting height (optional, if not supplied will default to width)
+				@param {String} [options.type='image/jpeg'] MIME type of the resulting image
+				@param {Number} [options.quality=90] In the case of JPEG, controls the quality of resulting image
+				@param {Boolean} [options.crop='cc'] If not falsy, image will be cropped, by default from center
+				@param {Boolean} [options.fit=true] In case of crop whether to upscale the image to fit the exact dimensions
+				@param {Boolean} [options.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
+				@param {String} [options.resample='default'] Resampling algorithm to use during resize
+				@param {Boolean} [options.multipass=true] Whether to scale the image in steps (results in better quality)
+			*/
+			resize: function(options) {
+				var self = this;
+				var orientation;
+				var scale;
+				var fitRatio = 1;
+				
+				var srcRect = {
+					x: 0,
+					y: 0,
+					width: self.width,
+					height: self.height
+				};
+
+				options = Basic.extend({
+					width: self.width,
+					height: self.height,
+					type: self.type || 'image/jpeg',
+					quality: 90,
+					crop: false,
+					fit: true,
+					preserveHeaders: true,
+					resample: 'default',
+					multipass: true
+				}, options);
+
+				try {
+					if (!self.size) { // only preloaded image objects can be used as source
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					}
+
+					// no way to reliably intercept the crash due to high resolution, so we simply avoid it
+					if (self.width > Image.MAX_RESIZE_WIDTH || self.height > Image.MAX_RESIZE_HEIGHT) {
+						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+					}
+
+					// take into account orientation tag
+					orientation = (self.meta && self.meta.tiff && self.meta.tiff.Orientation) || 1;
+
+					if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
+						var tmp = options.width;
+						options.width = options.height;
+						options.height = tmp;
+					}
+
+					if (options.crop) {
+						scale = Math.max(options.width/self.width, options.height/self.height);
+
+						if (options.fit) {
+							// first scale it up or down to fit the original image
+							srcRect.width = Math.min(Math.ceil(options.width/scale), self.width);
+							srcRect.height = Math.min(Math.ceil(options.height/scale), self.height);
+							
+							// recalculate the scale for adapted dimensions
+							scale = options.width/srcRect.width; 
+						} else {
+							srcRect.width = Math.min(options.width, self.width);
+							srcRect.height = Math.min(options.height, self.height);
+
+							// now we do not need to scale it any further
+							scale = 1; 
+						}
+
+						if (typeof(options.crop) === 'boolean') {
+							options.crop = 'cc';
+						}
+
+						switch (options.crop.toLowerCase()) {
+							case 'rb':
+							case 'right-bottom':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'cb':
+							case 'center-bottom':
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'lb':
+							case 'left-bottom':
+								srcRect.x = 0;
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'lt':
+							case 'left-top':
+								srcRect.x = 0;
+								srcRect.y = 0;
+								break;
+
+							case 'ct':
+							case 'center-top':
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = 0;
+								break;
+
+							case 'rt':
+							case 'right-top':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = 0;
+								break;
+
+							case 'rc':
+							case 'right-center':
+							case 'right-middle':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+								break;
+
+
+							case 'lc':
+							case 'left-center':
+							case 'left-middle':
+								srcRect.x = 0;
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+								break;
+
+							case 'cc':
+							case 'center-center':
+							case 'center-middle':
+							default:
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+						}						
+
+						// original image might be smaller than requested crop, so - avoid negative values
+						srcRect.x = Math.max(srcRect.x, 0);
+						srcRect.y = Math.max(srcRect.y, 0);
+					} else {
+						scale = Math.min(options.width/self.width, options.height/self.height);
+					}
+
+					this.exec('Image', 'resize', srcRect, scale, options);
+				} catch(ex) {
+					// for now simply trigger error event
+					self.trigger('error', ex.code);
+				}
+			},
+
 			/**
 			Downsizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
 
 			@method downsize
+			@deprecated use resize()
 			@param {Object} opts
 				@param {Number} opts.width Resulting width
 				@param {Number} [opts.height=width] Resulting height (optional, if not supplied will default to width)
@@ -212,21 +371,7 @@ define("moxie/image/Image", [
 					});
 				}
 
-				try {
-					if (!this.size) { // only preloaded image objects can be used as source
-						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-					}
-
-					// no way to reliably intercept the crash due to high resolution, so we simply avoid it
-					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
-						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
-					}
-
-					this.exec('Image', 'downsize', opts.width, opts.height, opts.crop, opts.preserveHeaders);
-				} catch(ex) {
-					// for now simply trigger error event
-					this.trigger('error', ex.code);
-				}
+				this.resize(opts);
 			},
 
 			/**
