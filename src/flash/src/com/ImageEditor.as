@@ -332,7 +332,7 @@ package com
 					onJobComplete(job.target);
 				} else {
 					job.addEventListener(ShaderEvent.COMPLETE, function(e:ShaderEvent) : void {
-						onJobComplete(e.target.target);
+						onJobComplete(tmpBd);
 					}, false, 0, true);
 					job.start();
 				}				 				
