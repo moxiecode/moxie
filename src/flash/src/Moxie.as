@@ -68,16 +68,12 @@ package
 			var params:Object, url:String, urlParts:Object, pos:int, query:Object;
 			
 			params = root.loaderInfo.parameters;
+									
 			pos = root.loaderInfo.url.indexOf('?');
 			if (pos !== -1) {
-				query = Utils.parseStr(root.loaderInfo.url.substr(pos + 1));		
-				
-				for (var key:String in params) {	
-					if (query.hasOwnProperty(Utils.trim(key))) {
-						delete params[key];
-					}
-				}
+				return; // we do not allow anything from query sring, so if there's anything, we - quit
 			}
+			
 						
 			// Setup id
 			if (!params.hasOwnProperty("uid")) {
