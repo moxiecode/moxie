@@ -64,17 +64,15 @@ package
 			stage.align = StageAlign.TOP_LEFT;
 			stage.scaleMode = StageScaleMode.EXACT_FIT;
 						
-			// use only FlashVars, ignore QueryString
-			var params:Object, url:String, urlParts:Object, pos:int, query:Object;
+			// use only FlashVars, ignore QueryString			
+			var params:Object = root.loaderInfo.parameters;
+			var url:String = root.loaderInfo.url;				
+			var pos:int = url.indexOf('?');
 			
-			params = root.loaderInfo.parameters;
-									
-			pos = root.loaderInfo.url.indexOf('?');
-			if (pos !== -1) {
-				return; // we do not allow anything from query sring, so if there's anything, we - quit
+			if (pos !== -1 && !/^\?[\d\.ab]+$/.test(url.substr(pos))) {
+				return; // we do not allow anything from query sring, except the version (for caching purposes)
 			}
-			
-						
+									
 			// Setup id
 			Moxie.uid = Utils.sanitize(params["uid"]);	
 			
