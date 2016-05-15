@@ -15,5 +15,6 @@ jscoverage
 *.log
 *.sublime-*
 .DS_Store
-node_modules
+node_modules/
+idea/
 
