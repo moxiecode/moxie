@@ -34,7 +34,7 @@ function resolveRelative(path, base) {
 }
 
 
-test("swf safety", function(assert) 
+test("swf ignores query string", function(assert)
 {
 	var vulnerable = false;
 	var url = resolveRelative('../../../../bin/flash/Moxie.swf?uid=0&target=window.opener.flashCallback');
@@ -43,6 +43,25 @@ test("swf safety", function(assert)
 	setTimeout(function() {
 		popup.close();
 		ok(!vulnerable, "swf ignores query string parameters, when loaded directly (rather than embedded).");
+		start();
+	}, 500);
+
+	stop();
+	window.flashCallback = function() {
+		vulnerable = true;
+	};
+});
+
+
+test('swf ignores query string with "url-encoded" crap', function(assert)
+{
+	var vulnerable = false;
+	var url = resolveRelative('../../../../bin/flash/Moxie.swf?%guid=0&%gtarget=window.opener.flashCallback');
+	var popup = window.open(url, '_blank');
+
+	setTimeout(function() {
+		popup.close();
+		ok(!vulnerable, "swf ignores query string parameters (even when when they are sneaked in via pseudo url-encoded gibberish), when loaded directly (rather than embedded).");
 		start();
 	}, 500);
 
