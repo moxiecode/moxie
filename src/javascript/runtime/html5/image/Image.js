@@ -21,9 +21,11 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/runtime/html5/image/MegaPixel",
+	"moxie/runtime/html5/image/ResizerCanvas",
+	"moxie/runtime/html5/image/ResizerWebGL",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, MegaPixel, Mime, Env) {
+], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, MegaPixel, ResizerCanvas, ResizerWebGL, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -100,6 +102,34 @@ define("moxie/runtime/html5/image/Image", [
 
 				return info;
 			},
+
+
+			resize: function(rect, scale, options) {
+				var canvas = document.createElement('canvas');
+				canvas.width = rect.width;
+				canvas.height = rect.height;
+
+				canvas.getContext("2d").drawImage(_getImg(), rect.x, rect.y, rect.width, rect.height, 0, 0, canvas.width, canvas.height);
+
+				try {
+					_canvas = ResizerWebGL.scale(canvas, scale);
+				} catch(ex) {
+					_canvas = ResizerCanvas.scale(canvas, scale);
+				}
+
+				// rotate if required, according to orientation tag
+				if (!options.preserveHeaders) {
+					var orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+					_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
+				}
+
+				this.width = _canvas.width;
+				this.height = _canvas.height;
+
+				_modified = true;
+				this.trigger('Resize');
+			},
+
 
 			downsize: function() {
 				_downsize.apply(this, arguments);
