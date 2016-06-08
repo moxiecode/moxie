@@ -20,12 +20,11 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/file/Blob",
 	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
-	"moxie/runtime/html5/image/MegaPixel",
 	"moxie/runtime/html5/image/ResizerCanvas",
 	"moxie/runtime/html5/image/ResizerWebGL",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, MegaPixel, ResizerCanvas, ResizerWebGL, Mime, Env) {
+], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, ResizerCanvas, ResizerWebGL, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -283,17 +282,6 @@ define("moxie/runtime/html5/image/Image", [
 				return callback(file.getAsDataURL());
 			}
 		}
-
-		function _drawToCanvas(img, canvas, x, y, w, h) {
-			if (Env.OS === 'iOS') { 
-				// avoid squish bug in iOS6
-				MegaPixel.renderTo(img, canvas, { width: w, height: h, x: x, y: y });
-			} else {
-				var ctx = canvas.getContext('2d');
-				ctx.drawImage(img, x, y, w, h);
-			}
-		}
-
 
 		/**
 		* Transform canvas coordination according to specified frame size and orientation
