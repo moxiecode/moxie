@@ -200,8 +200,7 @@ define("moxie/image/Image", [
 				var self = this;
 				var orientation;
 				var scale;
-				var fitRatio = 1;
-				
+
 				var srcRect = {
 					x: 0,
 					y: 0,

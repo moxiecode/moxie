@@ -20,10 +20,11 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/file/Blob",
 	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
-	"moxie/runtime/html5/image/MegaPixel",
+	"moxie/runtime/html5/image/ResizerCanvas",
+	"moxie/runtime/html5/image/ResizerWebGL",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, MegaPixel, Mime, Env) {
+], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, ResizerCanvas, ResizerWebGL, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -101,8 +102,30 @@ define("moxie/runtime/html5/image/Image", [
 				return info;
 			},
 
-			downsize: function() {
-				_downsize.apply(this, arguments);
+
+			resize: function(rect, scale, options) {
+				var canvas = document.createElement('canvas');
+				canvas.width = rect.width;
+				canvas.height = rect.height;
+
+				canvas.getContext("2d").drawImage(_getImg(), rect.x, rect.y, rect.width, rect.height, 0, 0, canvas.width, canvas.height);
+
+				_canvas = ResizerCanvas.scale(canvas, scale);
+
+				_preserveHeaders = options.preserveHeaders;
+
+				// rotate if required, according to orientation tag
+				if (!_preserveHeaders) {
+					var orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+					_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
+				}
+
+				this.width = _canvas.width;
+				this.height = _canvas.height;
+
+				_modified = true;
+
+				this.trigger('Resize');
 			},
 
 			getAsCanvas: function() {
@@ -260,102 +283,6 @@ define("moxie/runtime/html5/image/Image", [
 			}
 		}
 
-		function _downsize(width, height, crop, preserveHeaders) {
-			var self = this
-			, scale
-			, mathFn
-			, x = 0
-			, y = 0
-			, img
-			, destWidth
-			, destHeight
-			, orientation
-			;
-
-			_preserveHeaders = preserveHeaders; // we will need to check this on export (see getAsBinaryString())
-
-			// take into account orientation tag
-			orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
-
-			if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
-				// swap dimensions
-				var tmp = width;
-				width = height;
-				height = tmp;
-			}
-
-			img = _getImg();
-
-			// unify dimensions
-			if (!crop) {
-				scale = Math.min(width/img.width, height/img.height);
-			} else {
-				// one of the dimensions may exceed the actual image dimensions - we need to take the smallest value
-				width = Math.min(width, img.width);
-				height = Math.min(height, img.height);
-
-				scale = Math.max(width/img.width, height/img.height);
-			}
-		
-			// we only downsize here
-			if (scale > 1 && !crop && preserveHeaders) {
-				this.trigger('Resize');
-				return;
-			}
-
-			// prepare canvas if necessary
-			if (!_canvas) {
-				_canvas = document.createElement("canvas");
-			}
-
-			// calculate dimensions of proportionally resized image
-			destWidth = Math.round(img.width * scale);	
-			destHeight = Math.round(img.height * scale);
-
-			// scale image and canvas
-			if (crop) {
-				_canvas.width = width;
-				_canvas.height = height;
-
-				// if dimensions of the resulting image still larger than canvas, center it
-				if (destWidth > width) {
-					x = Math.round((destWidth - width) / 2);
-				}
-
-				if (destHeight > height) {
-					y = Math.round((destHeight - height) / 2);
-				}
-			} else {
-				_canvas.width = destWidth;
-				_canvas.height = destHeight;
-			}
-
-			// rotate if required, according to orientation tag
-			if (!_preserveHeaders) {
-				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
-			}
-
-			_drawToCanvas.call(this, img, _canvas, -x, -y, destWidth, destHeight);
-
-			this.width = _canvas.width;
-			this.height = _canvas.height;
-
-			_modified = true;
-			self.trigger('Resize');
-		}
-
-
-		function _drawToCanvas(img, canvas, x, y, w, h) {
-			if (Env.OS === 'iOS') { 
-				// avoid squish bug in iOS6
-				MegaPixel.renderTo(img, canvas, { width: w, height: h, x: x, y: y });
-			} else {
-				var ctx = canvas.getContext('2d');
-				ctx.drawImage(img, x, y, w, h);
-			}
-		}
-
-
 		/**
 		* Transform canvas coordination according to specified frame size and orientation
 		* Orientation value is from EXIF tag
@@ -370,9 +297,6 @@ define("moxie/runtime/html5/image/Image", [
 					_canvas.width = height;
 					_canvas.height = width;
 					break;
-				default:
-					_canvas.width = width;
-					_canvas.height = height;
 			}
 
 			/**
