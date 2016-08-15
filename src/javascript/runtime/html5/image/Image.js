@@ -309,9 +309,6 @@ define("moxie/runtime/html5/image/Image", [
 					_canvas.width = height;
 					_canvas.height = width;
 					break;
-				default:
-					_canvas.width = width;
-					_canvas.height = height;
 			}
 
 			/**
