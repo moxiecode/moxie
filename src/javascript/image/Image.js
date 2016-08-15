@@ -355,7 +355,7 @@ define("moxie/image/Image", [
 					quality: 90,
 					crop: false,
 					preserveHeaders: true,
-					resample: false
+					resample: 'default'
 				};
 
 				if (typeof(opts) === 'object') {
