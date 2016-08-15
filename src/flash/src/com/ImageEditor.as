@@ -297,9 +297,6 @@ package com
 				var tmpBd:BitmapData = new BitmapData(_bd.width * newScale, _bd.height * newScale);
 				
 				switch (resample) {	
-					case 'nearest':
-						shader.byteCode = new NearestNeighbourScale();
-						break;
 					
 					case 'bicubic':
 						shader.byteCode = new BicubicScale(); 
@@ -309,7 +306,10 @@ package com
 						shader.byteCode = new BilinearScale();
 						break;
 					
-					default: return;
+					case 'nearest':
+					default:
+						shader.byteCode = new NearestNeighbourScale();
+
 				}
 				
 				// order matters - byteCode should be assigned first (that's why it is above this)
