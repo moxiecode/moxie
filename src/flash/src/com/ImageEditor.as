@@ -253,15 +253,7 @@ package com
 			// we only need this to fire a progress event as we descend
 			var totalSteps:uint = 1;
 			if (multiStep) {
-				totalSteps = (function(tmpWidth:Number, newScale:Number) : uint {
-					var steps:uint = 1;
-					while (newScale < 0.5 || newScale > 2) {
-						tmpWidth = newScale < 0.5 ? tmpWidth / 2 : tmpWidth * 2;
-						newScale = dstWidth / tmpWidth;
-						steps++;
-					}
-					return steps;
-				}(_bd.width, scale));
+				totalSteps = Math.ceil(Math.log(1 / scale) / Math.log(2));
 			}
 			
 			
