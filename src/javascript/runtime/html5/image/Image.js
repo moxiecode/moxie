@@ -111,11 +111,7 @@ define("moxie/runtime/html5/image/Image", [
 
 				canvas.getContext("2d").drawImage(_getImg(), rect.x, rect.y, rect.width, rect.height, 0, 0, canvas.width, canvas.height);
 
-				try {
-					_canvas = ResizerWebGL.scale(canvas, scale);
-				} catch(ex) {
-					_canvas = ResizerCanvas.scale(canvas, scale);
-				}
+				_canvas = ResizerCanvas.scale(canvas, scale);
 
 				_preserveHeaders = options.preserveHeaders;
 
