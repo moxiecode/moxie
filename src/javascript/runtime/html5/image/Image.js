@@ -103,14 +103,14 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 
-			resize: function(rect, scale, options) {
+			resize: function(rect, ratio, options) {
 				var canvas = document.createElement('canvas');
 				canvas.width = rect.width;
 				canvas.height = rect.height;
 
 				canvas.getContext("2d").drawImage(_getImg(), rect.x, rect.y, rect.width, rect.height, 0, 0, canvas.width, canvas.height);
 
-				_canvas = ResizerCanvas.scale(canvas, scale);
+				_canvas = ResizerCanvas.scale(canvas, ratio);
 
 				_preserveHeaders = options.preserveHeaders;
 
@@ -129,21 +129,26 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			getAsCanvas: function() {
-				if (_canvas) {
-					_canvas.id = this.uid + '_canvas';
+				if (!_canvas) {
+					_canvas = _getCanvas();
 				}
+				_canvas.id = this.uid + '_canvas';
 				return _canvas;
 			},
 
 			getAsBlob: function(type, quality) {
 				if (type !== this.type) {
-					// if different mime type requested prepare image for conversion
-					_downsize.call(this, this.width, this.height, false);
+					_modified = true; // reconsider the state
+					return new File(null, {
+						name: _blob.name || '',
+						type: type,
+						data: me.getAsDataURL(type, quality)
+					});
 				}
 				return new File(null, {
 					name: _blob.name || '',
 					type: type,
-					data: me.getAsBinaryString.call(this, type, quality)
+					data: me.getAsBinaryString(type, quality)
 				});
 			},
 
@@ -154,6 +159,9 @@ define("moxie/runtime/html5/image/Image", [
 				if (!_modified) {
 					return _img.src;
 				}
+
+				// make sure we have a canvas to work with
+				_getCanvas();
 
 				if ('image/jpeg' !== type) {
 					return _canvas.toDataURL('image/png');
@@ -186,6 +194,9 @@ define("moxie/runtime/html5/image/Image", [
 					if (!quality) {
 						quality = 90;
 					}
+
+					// make sure we have a canvas to work with
+					_getCanvas();
 
 					try {
 						// older Geckos used to result in an exception on quality argument
@@ -239,6 +250,19 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 
+		function _getCanvas() {
+			var canvas = _getImg();
+			if (canvas.nodeName.toLowerCase() == 'canvas') {
+				return canvas;
+			}
+			_canvas = document.createElement('canvas');
+			_canvas.width = canvas.width;
+			_canvas.height = canvas.height;
+			_canvas.getContext("2d").drawImage(canvas, 0, 0);
+			return _canvas;
+		}
+
+
 		function _toBinary(str) {
 			return Encode.atob(str.substring(str.indexOf('base64,') + 7));
 		}
@@ -289,14 +313,9 @@ define("moxie/runtime/html5/image/Image", [
 		* @author Shinichi Tomita <shinichi.tomita@gmail.com>
 		*/
 		function _rotateToOrientaion(width, height, orientation) {
-			switch (orientation) {
-				case 5:
-				case 6:
-				case 7:
-				case 8:
-					_canvas.width = height;
-					_canvas.height = width;
-					break;
+			if (Basic.inArray(orientation, [5,6,7,8]) > -1) {
+				_canvas.width = height;
+				_canvas.height = width;
 			}
 
 			/**
