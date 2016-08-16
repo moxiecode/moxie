@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.4.1
+ * v1.5
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2014-08-05
+ * Date: 2016-08-16
  */
 /**
  * Compiled inline version. (Library mode)
@@ -105,6 +105,11 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Basic
+@public
+@static
+*/
 define('moxie/core/utils/Basic', [], function() {
 	/**
 	Gets the true type of the built-in object (better version of typeof).
@@ -116,7 +121,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} o Object to check.
 	@return {String} Object [[Class]]
 	*/
-	var typeOf = function(o) {
+	function typeOf(o) {
 		var undef;
 
 		if (o === undef) {
@@ -129,10 +134,10 @@ define('moxie/core/utils/Basic', [], function() {
 
 		// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
 		return ({}).toString.call(o).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
-	};
+	}
 		
 	/**
-	Extends the specified object with another object.
+	Extends the specified object with another object(s).
 
 	@method extend
 	@static
@@ -140,24 +145,80 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} [obj]* Multiple objects to extend with.
 	@return {Object} Same as target, the extended object.
 	*/
-	var extend = function(target) {
-		var undef;
+	function extend() {
+		return merge(false, arguments);
+	}
 
-		each(arguments, function(arg, i) {
+
+	/**
+	Extends the specified object with another object(s), but only if the property exists in the target.
+
+	@method extendIf
+	@static
+	@param {Object} target Object to extend.
+	@param {Object} [obj]* Multiple objects to extend with.
+	@return {Object} Same as target, the extended object.
+	*/
+	function extendIf() {
+		return merge(true, arguments);
+	}
+
+
+
+	function merge(strict, args) {
+		var undef;
+		var target = args[0];
+
+		each(args, function(arg, i) {
 			if (i > 0) {
 				each(arg, function(value, key) {
-					if (value !== undef) {
-						if (typeOf(target[key]) === typeOf(value) && !!~inArray(typeOf(value), ['array', 'object'])) {
-							extend(target[key], value);
-						} else {
-							target[key] = value;
-						}
+					if (value === undef || strict && target[key] === undef) {
+						return true;
+					}
+
+					if (typeOf(target[key]) === typeOf(value) && inArray(typeOf(value), ['array', 'object']) !== -1) {
+						merge(strict, [target[key], value]);
+					} else {
+						target[key] = value;
 					}
 				});
 			}
 		});
+
 		return target;
-	};
+	}
+
+
+	/**
+	A way to inherit one `class` from another in a consisstent way (more or less)
+	
+	@method inherit
+	@static
+	@since >1.4.1
+	@param {Function} child
+	@param {Function} parent
+	@return {Function} Prepared constructor
+	*/
+	function inherit(child, parent) {
+		// copy over all parent properties
+		for (var key in parent) {
+			if ({}.hasOwnProperty.call(parent, key)) {
+				child[key] = parent[key];
+			}
+		}
+
+		// give child `class` a place to define its own methods
+		function ctor() {
+			this.constructor = child;
+		}
+		ctor.prototype = parent.prototype;
+		child.prototype = new ctor();
+
+		// keep a way to reference parent methods
+		child.__parent__ = parent.prototype;
+		return child;
+	}
+
 		
 	/**
 	Executes the callback function for each item in array/object. If you return false in the
@@ -168,18 +229,17 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} obj Object to iterate.
 	@param {function} callback Callback function to execute for each item.
 	*/
-	var each = function(obj, callback) {
+	function each(obj, callback) {
 		var length, key, i, undef;
 
 		if (obj) {
-			if (typeOf(obj.length) === 'number') { // it might be Array, FileList or even arguments object
-				// Loop array items
-				for (i = 0, length = obj.length; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
-					}
-				}
-			} else if (typeOf(obj) === 'object') {
+			try {
+				length = obj.length;
+			} catch(ex) {
+				length = undef;
+			}
+
+			if (length === undef || typeof(length) !== 'number') {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
@@ -188,9 +248,16 @@ define('moxie/core/utils/Basic', [], function() {
 						}
 					}
 				}
+			} else {
+				// Loop array items
+				for (i = 0; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
+					}
+				}
 			}
 		}
-	};
+	}
 
 	/**
 	Checks if object is empty.
@@ -200,7 +267,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} o Object to check.
 	@return {Boolean}
 	*/
-	var isEmptyObj = function(obj) {
+	function isEmptyObj(obj) {
 		var prop;
 
 		if (!obj || typeOf(obj) !== 'object') {
@@ -212,7 +279,7 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 
 		return true;
-	};
+	}
 
 	/**
 	Recieve an array of functions (usually async) to call in sequence, each  function
@@ -226,7 +293,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} queue Array of functions to call in sequence
 	@param {Function} cb Main callback that is called in the end, or in case of error
 	*/
-	var inSeries = function(queue, cb) {
+	function inSeries(queue, cb) {
 		var i = 0, length = queue.length;
 
 		if (typeOf(cb) !== 'function') {
@@ -246,7 +313,7 @@ define('moxie/core/utils/Basic', [], function() {
 			}
 		}
 		callNext(i);
-	};
+	}
 
 
 	/**
@@ -259,9 +326,9 @@ define('moxie/core/utils/Basic', [], function() {
 	@method inParallel
 	@static
 	@param {Array} queue Array of functions to call in sequence
-	@param {Function} cb Main callback that is called in the end, or in case of error
+	@param {Function} cb Main callback that is called in the end, or in case of erro
 	*/
-	var inParallel = function(queue, cb) {
+	function inParallel(queue, cb) {
 		var count = 0, num = queue.length, cbArgs = new Array(num);
 
 		each(queue, function(fn, i) {
@@ -282,7 +349,7 @@ define('moxie/core/utils/Basic', [], function() {
 				} 
 			});
 		});
-	};
+	}
 	
 	
 	/**
@@ -294,7 +361,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} array
 	@return {Int} Index of the element, or -1 if not found
 	*/
-	var inArray = function(needle, array) {
+	function inArray(needle, array) {
 		if (array) {
 			if (Array.prototype.indexOf) {
 				return Array.prototype.indexOf.call(array, needle);
@@ -307,7 +374,7 @@ define('moxie/core/utils/Basic', [], function() {
 			}
 		}
 		return -1;
-	};
+	}
 
 
 	/**
@@ -319,7 +386,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} array
 	@return {Array|Boolean}
 	*/
-	var arrayDiff = function(needles, array) {
+	function arrayDiff(needles, array) {
 		var diff = [];
 
 		if (typeOf(needles) !== 'array') {
@@ -336,7 +403,7 @@ define('moxie/core/utils/Basic', [], function() {
 			}	
 		}
 		return diff.length ? diff : false;
-	};
+	}
 
 
 	/**
@@ -348,7 +415,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Array} array2
 	@return {Array} Intersection of two arrays or null if there is none
 	*/
-	var arrayIntersect = function(array1, array2) {
+	function arrayIntersect(array1, array2) {
 		var result = [];
 		each(array1, function(item) {
 			if (inArray(item, array2) !== -1) {
@@ -356,7 +423,7 @@ define('moxie/core/utils/Basic', [], function() {
 			}
 		});
 		return result.length ? result : null;
-	};
+	}
 	
 	
 	/**
@@ -367,7 +434,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {Object} obj Object with length field.
 	@return {Array} Array object containing all items.
 	*/
-	var toArray = function(obj) {
+	function toArray(obj) {
 		var i, arr = [];
 
 		for (i = 0; i < obj.length; i++) {
@@ -375,7 +442,7 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 
 		return arr;
-	};
+	}
 	
 			
 	/**
@@ -413,12 +480,12 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {String} str
 	@return {String}
 	*/
-	var trim = function(str) {
+	function trim(str) {
 		if (!str) {
 			return str;
 		}
 		return String.prototype.trim ? String.prototype.trim.call(str) : str.toString().replace(/^\s*/, '').replace(/\s*$/, '');
-	};
+	}
 
 
 	/**
@@ -429,7 +496,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@param {String/Number} size String to parse or number to just pass through.
 	@return {Number} Size in bytes.
 	*/
-	var parseSizeStr = function(size) {
+	function parseSizeStr(size) {
 		if (typeof(size) !== 'string') {
 			return size;
 		}
@@ -442,7 +509,6 @@ define('moxie/core/utils/Basic', [], function() {
 			},
 			mul;
 
-
 		size = /^([0-9\.]+)([tmgk]?)$/.exec(size.toLowerCase().replace(/[^0-9\.tmkg]/g, ''));
 		mul = size[2];
 		size = +size[1];
@@ -451,7 +517,7 @@ define('moxie/core/utils/Basic', [], function() {
 			size *= muls[mul];
 		}
 		return Math.floor(size);
-	};
+	}
 
 
 	/**
@@ -460,20 +526,31 @@ define('moxie/core/utils/Basic', [], function() {
 	 * @param {String} str String with tokens
 	 * @return {String} String with replaced tokens
 	 */
-	var sprintf = function(str) {
+	function sprintf(str) {
 		var args = [].slice.call(arguments, 1);
 
 		return str.replace(/%[a-z]/g, function() {
 			var value = args.shift();
 			return typeOf(value) !== 'undefined' ? value : '';
 		});
-	};
+	}
+	
+	
+	
+	function delay(cb, timeout) {
+		var self = this;
+		setTimeout(function() {
+			cb.call(self);
+		}, timeout || 1);
+	}
 	
 
 	return {
 		guid: guid,
 		typeOf: typeOf,
 		extend: extend,
+		extendIf: extendIf,
+		inherit: inherit,
 		each: each,
 		isEmptyObj: isEmptyObj,
 		inSeries: inSeries,
@@ -484,7 +561,8 @@ define('moxie/core/utils/Basic', [], function() {
 		toArray: toArray,
 		trim: trim,
 		sprintf: sprintf,
-		parseSizeStr: parseSizeStr
+		parseSizeStr: parseSizeStr,
+		delay: delay
 	};
 });
 
@@ -1212,6 +1290,9 @@ define("moxie/core/I18n", [
 ], function(Basic) {
 	var i18n = {};
 
+	/**
+	@class moxie/core/I18n
+	*/
 	return {
 		/**
 		 * Extends the language pack object with new items.
@@ -1653,6 +1734,7 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 define('moxie/core/Exceptions', [
 	'moxie/core/utils/Basic'
 ], function(Basic) {
+	
 	function _findKey(obj, value) {
 		var key;
 		for (key in obj) {
@@ -1663,18 +1745,22 @@ define('moxie/core/Exceptions', [
 		return null;
 	}
 
+	/**
+	@class moxie/core/Exception
+	*/
 	return {
 		RuntimeError: (function() {
 			var namecodes = {
 				NOT_INIT_ERR: 1,
+				EXCEPTION_ERR: 3,
 				NOT_SUPPORTED_ERR: 9,
 				JS_ERR: 4
 			};
 
-			function RuntimeError(code) {
+			function RuntimeError(code, message) {
 				this.code = code;
 				this.name = _findKey(namecodes, code);
-				this.message = this.name + ": RuntimeError " + this.code;
+				this.message = this.name + (message || ": RuntimeError " + this.code);
 			}
 			
 			Basic.extend(RuntimeError, namecodes);
@@ -1814,287 +1900,308 @@ define('moxie/core/EventTarget', [
 	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic'
 ], function(Env, x, Basic) {
+
+	// hash of event listeners by object uid
+	var eventpool = {};
+
 	/**
 	Parent object for all event dispatching components and objects
 
-	@class EventTarget
+	@class moxie/core/EventTarget
 	@constructor EventTarget
 	*/
-	function EventTarget() {
-		// hash of event listeners by object uid
-		var eventpool = {};
-				
-		Basic.extend(this, {
-			
-			/**
-			Unique id of the event dispatcher, usually overriden by children
+	function EventTarget() {				
+		/**
+		Unique id of the event dispatcher, usually overriden by children
 
-			@property uid
-			@type String
-			*/
-			uid: null,
-			
-			/**
-			Can be called from within a child  in order to acquire uniqie id in automated manner
+		@property uid
+		@type String
+		*/
+		this.uid = Basic.guid();
+	}
 
-			@method init
-			*/
-			init: function() {
-				if (!this.uid) {
-					this.uid = Basic.guid('uid_');
-				}
-			},
 
-			/**
-			Register a handler to a specific event dispatched by the object
-
-			@method addEventListener
-			@param {String} type Type or basically a name of the event to subscribe to
-			@param {Function} fn Callback function that will be called when event happens
-			@param {Number} [priority=0] Priority of the event handler - handlers with higher priorities will be called first
-			@param {Object} [scope=this] A scope to invoke event handler in
-			*/
-			addEventListener: function(type, fn, priority, scope) {
-				var self = this, list;
-
-				// without uid no event handlers can be added, so make sure we got one
-				if (!this.hasOwnProperty('uid')) {
-					this.uid = Basic.guid('uid_');
-				}
-				
-				type = Basic.trim(type);
-				
-				if (/\s/.test(type)) {
-					// multiple event types were passed for one handler
-					Basic.each(type.split(/\s+/), function(type) {
-						self.addEventListener(type, fn, priority, scope);
-					});
-					return;
-				}
-				
-				type = type.toLowerCase();
-				priority = parseInt(priority, 10) || 0;
-				
-				list = eventpool[this.uid] && eventpool[this.uid][type] || [];
-				list.push({fn : fn, priority : priority, scope : scope || this});
-				
-				if (!eventpool[this.uid]) {
-					eventpool[this.uid] = {};
-				}
-				eventpool[this.uid][type] = list;
-			},
-			
-			/**
-			Check if any handlers were registered to the specified event
-
-			@method hasEventListener
-			@param {String} type Type or basically a name of the event to check
-			@return {Mixed} Returns a handler if it was found and false, if - not
-			*/
-			hasEventListener: function(type) {
-				var list = type ? eventpool[this.uid] && eventpool[this.uid][type] : eventpool[this.uid];
-				return list ? list : false;
-			},
-			
-			/**
-			Unregister the handler from the event, or if former was not specified - unregister all handlers
-
-			@method removeEventListener
-			@param {String} type Type or basically a name of the event
-			@param {Function} [fn] Handler to unregister
-			*/
-			removeEventListener: function(type, fn) {
-				type = type.toLowerCase();
-	
-				var list = eventpool[this.uid] && eventpool[this.uid][type], i;
-	
-				if (list) {
-					if (fn) {
-						for (i = list.length - 1; i >= 0; i--) {
-							if (list[i].fn === fn) {
-								list.splice(i, 1);
-								break;
-							}
-						}
-					} else {
-						list = [];
-					}
-	
-					// delete event list if it has become empty
-					if (!list.length) {
-						delete eventpool[this.uid][type];
-						
-						// and object specific entry in a hash if it has no more listeners attached
-						if (Basic.isEmptyObj(eventpool[this.uid])) {
-							delete eventpool[this.uid];
-						}
-					}
-				}
-			},
-			
-			/**
-			Remove all event handlers from the object
-
-			@method removeAllEventListeners
-			*/
-			removeAllEventListeners: function() {
-				if (eventpool[this.uid]) {
-					delete eventpool[this.uid];
-				}
-			},
-			
-			/**
-			Dispatch the event
-
-			@method dispatchEvent
-			@param {String/Object} Type of event or event object to dispatch
-			@param {Mixed} [...] Variable number of arguments to be passed to a handlers
-			@return {Boolean} true by default and false if any handler returned false
-			*/
-			dispatchEvent: function(type) {
-				var uid, list, args, tmpEvt, evt = {}, result = true, undef;
-				
-				if (Basic.typeOf(type) !== 'string') {
-					// we can't use original object directly (because of Silverlight)
-					tmpEvt = type;
-
-					if (Basic.typeOf(tmpEvt.type) === 'string') {
-						type = tmpEvt.type;
-
-						if (tmpEvt.total !== undef && tmpEvt.loaded !== undef) { // progress event
-							evt.total = tmpEvt.total;
-							evt.loaded = tmpEvt.loaded;
-						}
-						evt.async = tmpEvt.async || false;
-					} else {
-						throw new x.EventException(x.EventException.UNSPECIFIED_EVENT_TYPE_ERR);
-					}
-				}
-				
-				// check if event is meant to be dispatched on an object having specific uid
-				if (type.indexOf('::') !== -1) {
-					(function(arr) {
-						uid = arr[0];
-						type = arr[1];
-					}(type.split('::')));
-				} else {
-					uid = this.uid;
-				}
-				
-				type = type.toLowerCase();
-								
-				list = eventpool[uid] && eventpool[uid][type];
-
-				if (list) {
-					// sort event list by prority
-					list.sort(function(a, b) { return b.priority - a.priority; });
+	Basic.extend(EventTarget.prototype, {
 					
-					args = [].slice.call(arguments);
-					
-					// first argument will be pseudo-event object
-					args.shift();
-					evt.type = type;
-					args.unshift(evt);
+		/**
+		Can be called from within a child  in order to acquire uniqie id in automated manner
 
-					if (MXI_DEBUG && Env.debug.events) {
-						Env.log("Event '%s' fired on %u", evt.type, uid);	
-					}
+		@method init
+		*/
+		init: function() {
+			if (!this.uid) {
+				this.uid = Basic.guid('uid_');
+			}
+		},
 
-					// Dispatch event to all listeners
-					var queue = [];
-					Basic.each(list, function(handler) {
-						// explicitly set the target, otherwise events fired from shims do not get it
-						args[0].target = handler.scope;
-						// if event is marked as async, detach the handler
-						if (evt.async) {
-							queue.push(function(cb) {
-								setTimeout(function() {
-									cb(handler.fn.apply(handler.scope, args) === false);
-								}, 1);
-							});
-						} else {
-							queue.push(function(cb) {
-								cb(handler.fn.apply(handler.scope, args) === false); // if handler returns false stop propagation
-							});
-						}
-					});
-					if (queue.length) {
-						Basic.inSeries(queue, function(err) {
-							result = !err;
-						});
-					}
-				}
-				return result;
-			},
-			
-			/**
-			Alias for addEventListener
+		/**
+		Register a handler to a specific event dispatched by the object
 
-			@method bind
-			@protected
-			*/
-			bind: function() {
-				this.addEventListener.apply(this, arguments);
-			},
-			
-			/**
-			Alias for removeEventListener
+		@method addEventListener
+		@param {String} type Type or basically a name of the event to subscribe to
+		@param {Function} fn Callback function that will be called when event happens
+		@param {Number} [priority=0] Priority of the event handler - handlers with higher priorities will be called first
+		@param {Object} [scope=this] A scope to invoke event handler in
+		*/
+		addEventListener: function(type, fn, priority, scope) {
+			var self = this, list;
 
-			@method unbind
-			@protected
-			*/
-			unbind: function() {
-				this.removeEventListener.apply(this, arguments);
-			},
-			
-			/**
-			Alias for removeAllEventListeners
-
-			@method unbindAll
-			@protected
-			*/
-			unbindAll: function() {
-				this.removeAllEventListeners.apply(this, arguments);
-			},
-			
-			/**
-			Alias for dispatchEvent
-
-			@method trigger
-			@protected
-			*/
-			trigger: function() {
-				return this.dispatchEvent.apply(this, arguments);
-			},
-			
-
-			/**
-			Handle properties of on[event] type.
-
-			@method handleEventProps
-			@private
-			*/
-			handleEventProps: function(dispatches) {
-				var self = this;
-
-				this.bind(dispatches.join(' '), function(e) {
-					var prop = 'on' + e.type.toLowerCase();
-					if (Basic.typeOf(this[prop]) === 'function') {
-						this[prop].apply(this, arguments);
-					}
-				});
-
-				// object must have defined event properties, even if it doesn't make use of them
-				Basic.each(dispatches, function(prop) {
-					prop = 'on' + prop.toLowerCase(prop);
-					if (Basic.typeOf(self[prop]) === 'undefined') {
-						self[prop] = null; 
-					}
-				});
+			// without uid no event handlers can be added, so make sure we got one
+			if (!this.hasOwnProperty('uid')) {
+				this.uid = Basic.guid('uid_');
 			}
 			
-		});
-	}
+			type = Basic.trim(type);
+			
+			if (/\s/.test(type)) {
+				// multiple event types were passed for one handler
+				Basic.each(type.split(/\s+/), function(type) {
+					self.addEventListener(type, fn, priority, scope);
+				});
+				return;
+			}
+			
+			type = type.toLowerCase();
+			priority = parseInt(priority, 10) || 0;
+			
+			list = eventpool[this.uid] && eventpool[this.uid][type] || [];
+			list.push({fn : fn, priority : priority, scope : scope || this});
+			
+			if (!eventpool[this.uid]) {
+				eventpool[this.uid] = {};
+			}
+			eventpool[this.uid][type] = list;
+		},
+		
+		/**
+		Check if any handlers were registered to the specified event
+
+		@method hasEventListener
+		@param {String} type Type or basically a name of the event to check
+		@return {Mixed} Returns a handler if it was found and false, if - not
+		*/
+		hasEventListener: function(type) {
+			var list = type ? eventpool[this.uid] && eventpool[this.uid][type] : eventpool[this.uid];
+			return list ? list : false;
+		},
+		
+		/**
+		Unregister the handler from the event, or if former was not specified - unregister all handlers
+
+		@method removeEventListener
+		@param {String} type Type or basically a name of the event
+		@param {Function} [fn] Handler to unregister
+		*/
+		removeEventListener: function(type, fn) {
+			type = type.toLowerCase();
+
+			var list = eventpool[this.uid] && eventpool[this.uid][type], i;
+
+			if (list) {
+				if (fn) {
+					for (i = list.length - 1; i >= 0; i--) {
+						if (list[i].fn === fn) {
+							list.splice(i, 1);
+							break;
+						}
+					}
+				} else {
+					list = [];
+				}
+
+				// delete event list if it has become empty
+				if (!list.length) {
+					delete eventpool[this.uid][type];
+					
+					// and object specific entry in a hash if it has no more listeners attached
+					if (Basic.isEmptyObj(eventpool[this.uid])) {
+						delete eventpool[this.uid];
+					}
+				}
+			}
+		},
+		
+		/**
+		Remove all event handlers from the object
+
+		@method removeAllEventListeners
+		*/
+		removeAllEventListeners: function() {
+			if (eventpool[this.uid]) {
+				delete eventpool[this.uid];
+			}
+		},
+		
+		/**
+		Dispatch the event
+
+		@method dispatchEvent
+		@param {String/Object} Type of event or event object to dispatch
+		@param {Mixed} [...] Variable number of arguments to be passed to a handlers
+		@return {Boolean} true by default and false if any handler returned false
+		*/
+		dispatchEvent: function(type) {
+			var uid, list, args, tmpEvt, evt = {}, result = true, undef;
+			
+			if (Basic.typeOf(type) !== 'string') {
+				// we can't use original object directly (because of Silverlight)
+				tmpEvt = type;
+
+				if (Basic.typeOf(tmpEvt.type) === 'string') {
+					type = tmpEvt.type;
+
+					if (tmpEvt.total !== undef && tmpEvt.loaded !== undef) { // progress event
+						evt.total = tmpEvt.total;
+						evt.loaded = tmpEvt.loaded;
+					}
+					evt.async = tmpEvt.async || false;
+				} else {
+					throw new x.EventException(x.EventException.UNSPECIFIED_EVENT_TYPE_ERR);
+				}
+			}
+			
+			// check if event is meant to be dispatched on an object having specific uid
+			if (type.indexOf('::') !== -1) {
+				(function(arr) {
+					uid = arr[0];
+					type = arr[1];
+				}(type.split('::')));
+			} else {
+				uid = this.uid;
+			}
+			
+			type = type.toLowerCase();
+							
+			list = eventpool[uid] && eventpool[uid][type];
+
+			if (list) {
+				// sort event list by prority
+				list.sort(function(a, b) { return b.priority - a.priority; });
+				
+				args = [].slice.call(arguments);
+				
+				// first argument will be pseudo-event object
+				args.shift();
+				evt.type = type;
+				args.unshift(evt);
+
+				if (MXI_DEBUG && Env.debug.events) {
+					Env.log("Event '%s' fired on %u", evt.type, uid);	
+				}
+
+				// Dispatch event to all listeners
+				var queue = [];
+				Basic.each(list, function(handler) {
+					// explicitly set the target, otherwise events fired from shims do not get it
+					args[0].target = handler.scope;
+					// if event is marked as async, detach the handler
+					if (evt.async) {
+						queue.push(function(cb) {
+							setTimeout(function() {
+								cb(handler.fn.apply(handler.scope, args) === false);
+							}, 1);
+						});
+					} else {
+						queue.push(function(cb) {
+							cb(handler.fn.apply(handler.scope, args) === false); // if handler returns false stop propagation
+						});
+					}
+				});
+				if (queue.length) {
+					Basic.inSeries(queue, function(err) {
+						result = !err;
+					});
+				}
+			}
+			return result;
+		},
+
+		/**
+		Register a handler to the event type that will run only once
+
+		@method bindOnce
+		@since >1.4.1
+		@param {String} type Type or basically a name of the event to subscribe to
+		@param {Function} fn Callback function that will be called when event happens
+		@param {Number} [priority=0] Priority of the event handler - handlers with higher priorities will be called first
+		@param {Object} [scope=this] A scope to invoke event handler in
+		*/
+		bindOnce: function(type, fn, priority, scope) {
+			var self = this;
+			self.bind.call(this, type, function cb() {
+				self.unbind(type, cb);
+				return fn.apply(this, arguments);
+			}, priority, scope);
+		},
+		
+		/**
+		Alias for addEventListener
+
+		@method bind
+		@protected
+		*/
+		bind: function() {
+			this.addEventListener.apply(this, arguments);
+		},
+		
+		/**
+		Alias for removeEventListener
+
+		@method unbind
+		@protected
+		*/
+		unbind: function() {
+			this.removeEventListener.apply(this, arguments);
+		},
+		
+		/**
+		Alias for removeAllEventListeners
+
+		@method unbindAll
+		@protected
+		*/
+		unbindAll: function() {
+			this.removeAllEventListeners.apply(this, arguments);
+		},
+		
+		/**
+		Alias for dispatchEvent
+
+		@method trigger
+		@protected
+		*/
+		trigger: function() {
+			return this.dispatchEvent.apply(this, arguments);
+		},
+		
+
+		/**
+		Handle properties of on[event] type.
+
+		@method handleEventProps
+		@private
+		*/
+		handleEventProps: function(dispatches) {
+			var self = this;
+
+			this.bind(dispatches.join(' '), function(e) {
+				var prop = 'on' + e.type.toLowerCase();
+				if (Basic.typeOf(this[prop]) === 'function') {
+					this[prop].apply(this, arguments);
+				}
+			});
+
+			// object must have defined event properties, even if it doesn't make use of them
+			Basic.each(dispatches, function(prop) {
+				prop = 'on' + prop.toLowerCase(prop);
+				if (Basic.typeOf(self[prop]) === 'undefined') {
+					self[prop] = null; 
+				}
+			});
+		}
+		
+	});
+
 
 	EventTarget.instance = new EventTarget(); 
 
@@ -2124,7 +2231,7 @@ define('moxie/runtime/Runtime', [
 	/**
 	Common set of methods and properties for every runtime instance
 
-	@class Runtime
+	@class moxie/runtime/Runtime
 
 	@param {Object} options
 	@param {String} type Sanitized name of the runtime
@@ -2368,7 +2475,7 @@ define('moxie/runtime/Runtime', [
 
 				// if no container for shim, create one
 				if (!shimContainer) {
-					container = this.options.container ? Dom.get(this.options.container) : document.body;
+					container = Dom.get(this.options.container) || document.body;
 
 					// create shim container and insert it at an absolute position into the outer container
 					shimContainer = document.createElement('div');
@@ -2725,7 +2832,7 @@ define('moxie/runtime/RuntimeClient', [
 	/**
 	Set of methods and properties, required by a component to acquire ability to connect to a runtime
 
-	@class RuntimeClient
+	@class moxie/runtime/RuntimeClient
 	*/
 	return function RuntimeClient() {
 		var runtime;
@@ -2755,6 +2862,9 @@ define('moxie/runtime/RuntimeClient', [
 					type = items.shift().toLowerCase();
 					constructor = Runtime.getConstructor(type);
 					if (!constructor) {
+						if (MXI_DEBUG && Env.debug.runtime) {
+							Env.log("Constructor for '%s' runtime is not available.", type);
+						}
 						initialize(items);
 						return;
 					}
@@ -2792,7 +2902,14 @@ define('moxie/runtime/RuntimeClient', [
 						initialize(items);
 					});
 
-					/*runtime.bind('Exception', function() { });*/
+					runtime.bind('Exception', function(e, err) {
+						var message = err.name + "(#" + err.code + ")" + (err.message ? ", from: " + err.message : '');
+						
+						if (MXI_DEBUG && Env.debug.runtime) {
+							Env.log("Runtime '%s' has thrown an exception: %s", this.type, message);
+						}
+						comp.trigger('RuntimeError', new x.RuntimeError(x.RuntimeError.EXCEPTION_ERR, message));
+					});
 
 					if (MXI_DEBUG && Env.debug.runtime) {
 						Env.log("\tselected mode: %s", runtime.mode);	
@@ -2868,10 +2985,19 @@ define('moxie/runtime/RuntimeClient', [
 			@return {Mixed} Whatever runtime extension method returns
 			*/
 			exec: function() {
-				if (runtime) {
-					return runtime.exec.apply(this, arguments);
-				}
-				return null;
+				return runtime ? runtime.exec.apply(this, arguments) : null;
+			},
+
+
+			/**
+			Test runtime client for specific capability
+			
+			@method can
+			@param {String} cap
+			@return {Bool}
+			*/
+			can: function(cap) {
+				return runtime ? runtime.can(cap) : false;
 			}
 
 		});
@@ -2908,7 +3034,7 @@ define('moxie/file/FileInput', [
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
 	with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
 
-	@class FileInput
+	@class moxie/file/FileInput
 	@constructor
 	@extends EventTarget
 	@uses RuntimeClient
@@ -3121,7 +3247,7 @@ define('moxie/file/FileInput', [
 
 					// re-position and resize shim container
 					self.bind('Refresh', function() {
-						var pos, size, browseButton, shimContainer;
+						var pos, size, browseButton, shimContainer, zIndex;
 						
 						browseButton = Dom.get(options.browse_button);
 						shimContainer = Dom.get(runtime.shimid); // do not use runtime.getShimContainer(), since it will create container if it doesn't exist
@@ -3129,13 +3255,15 @@ define('moxie/file/FileInput', [
 						if (browseButton) {
 							pos = Dom.getPos(browseButton, Dom.get(options.container));
 							size = Dom.getSize(browseButton);
+							zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 0;
 
 							if (shimContainer) {
 								Basic.extend(shimContainer.style, {
-									top     : pos.y + 'px',
-									left    : pos.x + 'px',
-									width   : size.w + 'px',
-									height  : size.h + 'px'
+									top: pos.y + 'px',
+									left: pos.x + 'px',
+									width: size.w + 'px',
+									height: size.h + 'px',
+									zIndex: zIndex + 1
 								});
 							}
 						}
@@ -3222,6 +3350,10 @@ define('moxie/file/FileInput', [
  */
 
 define('moxie/core/utils/Encode', [], function() {
+
+	/**
+	@class moxie/core/utils/Encode
+	*/
 
 	/**
 	Encode string with UTF-8
@@ -3410,7 +3542,7 @@ define('moxie/file/Blob', [
 	var blobpool = {};
 
 	/**
-	@class Blob
+	@class moxie/file/Blob
 	@constructor
 	@param {String} ruid Unique id of the runtime, to which this blob belongs to
 	@param {Object} blob Object "Native" blob object, as it is represented in the runtime
@@ -3585,7 +3717,7 @@ define('moxie/file/File', [
 	'moxie/file/Blob'
 ], function(Basic, Mime, Blob) {
 	/**
-	@class File
+	@class moxie/file/File
 	@extends Blob
 	@constructor
 	@param {String} ruid Unique id of the runtime, to which this blob belongs to
@@ -3699,7 +3831,7 @@ define('moxie/file/FileDrop', [
 			fileDrop.init();
 		</script>
 
-	@class FileDrop
+	@class moxie/file/FileDrop
 	@constructor
 	@extends EventTarget
 	@uses RuntimeClient
@@ -3852,7 +3984,7 @@ define('moxie/file/FileReader', [
 	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
 	interface. Where possible uses native FileReader, where - not falls back to shims.
 
-	@class FileReader
+	@class moxie/file/FileReader
 	@constructor FileReader
 	@extends EventTarget
 	@uses RuntimeClient
@@ -4251,7 +4383,7 @@ define('moxie/runtime/RuntimeTarget', [
 	Instance of this class can be used as a target for the events dispatched by shims,
 	when allowing them onto components is for either reason inappropriate
 
-	@class RuntimeTarget
+	@class moxie/runtime/RuntimeTarget
 	@constructor
 	@protected
 	@extends EventTarget
@@ -4294,7 +4426,7 @@ define('moxie/file/FileReaderSync', [
 	it can be used to read only preloaded blobs/files and only below certain size (not yet sure what that'd be,
 	but probably < 1mb). Not meant to be used directly by user.
 
-	@class FileReaderSync
+	@class moxie/file/FileReaderSync
 	@private
 	@constructor
 	*/
@@ -4365,7 +4497,7 @@ define("moxie/xhr/FormData", [
 	/**
 	FormData
 
-	@class FormData
+	@class moxie/xhr/FormData
 	@constructor
 	*/
 	function FormData() {
@@ -4558,7 +4690,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	/**
 	Implementation of XMLHttpRequest
 
-	@class XMLHttpRequest
+	@class moxie/xhr/XMLHttpRequest
 	@constructor
 	@uses RuntimeClient
 	@extends EventTarget
@@ -5453,6 +5585,11 @@ define("moxie/runtime/Transporter", [
 	"moxie/runtime/RuntimeClient",
 	"moxie/core/EventTarget"
 ], function(Basic, Encode, RuntimeClient, EventTarget) {
+
+	/**
+	@class moxie/runtime/Transporter
+	@constructor
+	*/
 	function Transporter() {
 		var mod, _runtime, _data, _size, _pos, _chunk_size;
 
@@ -5602,7 +5739,7 @@ define("moxie/image/Image", [
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
-	@class Image
+	@class moxie/image/Image
 	@constructor
 	@extends EventTarget
 	*/
@@ -5754,10 +5891,168 @@ define("moxie/image/Image", [
 				_load.apply(this, arguments);
 			},
 
+
+			/**
+			Resizes the image to fit the specified width/height. If crop is specified, image will also be 
+			cropped to the exact dimensions.
+
+			@method resize
+			@since 3.0
+			@param {Object} options
+				@param {Number} options.width Resulting width
+				@param {Number} [options.height=width] Resulting height (optional, if not supplied will default to width)
+				@param {String} [options.type='image/jpeg'] MIME type of the resulting image
+				@param {Number} [options.quality=90] In the case of JPEG, controls the quality of resulting image
+				@param {Boolean} [options.crop='cc'] If not falsy, image will be cropped, by default from center
+				@param {Boolean} [options.fit=true] In case of crop whether to upscale the image to fit the exact dimensions
+				@param {Boolean} [options.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
+				@param {String} [options.resample='default'] Resampling algorithm to use during resize
+				@param {Boolean} [options.multipass=true] Whether to scale the image in steps (results in better quality)
+			*/
+			resize: function(options) {
+				var self = this;
+				var orientation;
+				var scale;
+
+				var srcRect = {
+					x: 0,
+					y: 0,
+					width: self.width,
+					height: self.height
+				};
+
+				options = Basic.extend({
+					width: self.width,
+					height: self.height,
+					type: self.type || 'image/jpeg',
+					quality: 90,
+					crop: false,
+					fit: true,
+					preserveHeaders: true,
+					resample: 'default',
+					multipass: true
+				}, options);
+
+				try {
+					if (!self.size) { // only preloaded image objects can be used as source
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					}
+
+					// no way to reliably intercept the crash due to high resolution, so we simply avoid it
+					if (self.width > Image.MAX_RESIZE_WIDTH || self.height > Image.MAX_RESIZE_HEIGHT) {
+						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+					}
+
+					// take into account orientation tag
+					orientation = (self.meta && self.meta.tiff && self.meta.tiff.Orientation) || 1;
+
+					if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
+						var tmp = options.width;
+						options.width = options.height;
+						options.height = tmp;
+					}
+
+					if (options.crop) {
+						scale = Math.max(options.width/self.width, options.height/self.height);
+
+						if (options.fit) {
+							// first scale it up or down to fit the original image
+							srcRect.width = Math.min(Math.ceil(options.width/scale), self.width);
+							srcRect.height = Math.min(Math.ceil(options.height/scale), self.height);
+							
+							// recalculate the scale for adapted dimensions
+							scale = options.width/srcRect.width; 
+						} else {
+							srcRect.width = Math.min(options.width, self.width);
+							srcRect.height = Math.min(options.height, self.height);
+
+							// now we do not need to scale it any further
+							scale = 1; 
+						}
+
+						if (typeof(options.crop) === 'boolean') {
+							options.crop = 'cc';
+						}
+
+						switch (options.crop.toLowerCase()) {
+							case 'rb':
+							case 'right-bottom':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'cb':
+							case 'center-bottom':
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'lb':
+							case 'left-bottom':
+								srcRect.x = 0;
+								srcRect.y = self.height - srcRect.height;
+								break;
+
+							case 'lt':
+							case 'left-top':
+								srcRect.x = 0;
+								srcRect.y = 0;
+								break;
+
+							case 'ct':
+							case 'center-top':
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = 0;
+								break;
+
+							case 'rt':
+							case 'right-top':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = 0;
+								break;
+
+							case 'rc':
+							case 'right-center':
+							case 'right-middle':
+								srcRect.x = self.width - srcRect.width;
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+								break;
+
+
+							case 'lc':
+							case 'left-center':
+							case 'left-middle':
+								srcRect.x = 0;
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+								break;
+
+							case 'cc':
+							case 'center-center':
+							case 'center-middle':
+							default:
+								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
+								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
+						}						
+
+						// original image might be smaller than requested crop, so - avoid negative values
+						srcRect.x = Math.max(srcRect.x, 0);
+						srcRect.y = Math.max(srcRect.y, 0);
+					} else {
+						scale = Math.min(options.width/self.width, options.height/self.height);
+					}
+
+					this.exec('Image', 'resize', srcRect, scale, options);
+				} catch(ex) {
+					// for now simply trigger error event
+					self.trigger('error', ex.code);
+				}
+			},
+
 			/**
 			Downsizes the image to fit the specified width/height. If crop is supplied, image will be cropped to exact dimensions.
 
 			@method downsize
+			@deprecated use resize()
 			@param {Object} opts
 				@param {Number} opts.width Resulting width
 				@param {Number} [opts.height=width] Resulting height (optional, if not supplied will default to width)
@@ -5773,7 +6068,7 @@ define("moxie/image/Image", [
 					quality: 90,
 					crop: false,
 					preserveHeaders: true,
-					resample: false
+					resample: 'default'
 				};
 
 				if (typeof(opts) === 'object') {
@@ -5788,21 +6083,7 @@ define("moxie/image/Image", [
 					});
 				}
 
-				try {
-					if (!this.size) { // only preloaded image objects can be used as source
-						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-					}
-
-					// no way to reliably intercept the crash due to high resolution, so we simply avoid it
-					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
-						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
-					}
-
-					this.exec('Image', 'downsize', opts.width, opts.height, opts.crop, opts.preserveHeaders);
-				} catch(ex) {
-					// for now simply trigger error event
-					this.trigger('error', ex.code);
-				}
+				this.resize(opts);
 			},
 
 			/**
@@ -6211,7 +6492,10 @@ define("moxie/runtime/html5/Runtime", [
 				access_image_binary: function() {
 					return I.can('access_binary') && !!extensions.Image;
 				},
-				display_media: Test(Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+				display_media: Test(
+					(Env.can('create_canvas') || Env.can('use_data_uri_over32kb')) && 
+					defined('moxie/image/Image')
+				),
 				do_cors: Test(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()),
 				drag_and_drop: Test(function() {
 					// this comes directly from Modernizr: http://www.modernizr.com/
@@ -6269,7 +6553,8 @@ define("moxie/runtime/html5/Runtime", [
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
 					);
 				},
-				upload_filesize: True
+				upload_filesize: True,
+				use_http_method: True
 			}, 
 			arguments[2]
 		);
@@ -6499,7 +6784,7 @@ define("moxie/runtime/html5/file/FileInput", [
 ], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 	
 	function FileInput() {
-		var _options;
+		var _options, _browseBtnZIndex; // save original z-index
 
 		Basic.extend(this, {
 			init: function(options) {
@@ -6530,17 +6815,13 @@ define("moxie/runtime/html5/file/FileInput", [
 
 
 				browseButton = Dom.get(_options.browse_button);
+				_browseBtnZIndex = Dom.getStyle(browseButton, 'z-index') || 'auto';
 
 				// Route click event to the input[type=file] element for browsers that support such behavior
 				if (I.can('summon_file_dialog')) {
 					if (Dom.getStyle(browseButton, 'position') === 'static') {
 						browseButton.style.position = 'relative';
 					}
-
-					zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 1;
-
-					browseButton.style.zIndex = zIndex;
-					shimContainer.style.zIndex = zIndex - 1;
 
 					Events.addEvent(browseButton, 'click', function(e) {
 						var input = Dom.get(I.uid);
@@ -6549,6 +6830,13 @@ define("moxie/runtime/html5/file/FileInput", [
 						}
 						e.preventDefault();
 					}, comp.uid);
+
+					comp.bind('Refresh', function() {
+						zIndex = parseInt(_browseBtnZIndex, 10) || 1;
+
+						Dom.get(_options.browse_button).style.zIndex = zIndex;
+						this.getRuntime().getShimContainer().style.zIndex = zIndex - 1;
+					});
 				}
 
 				/* Since we have to place input[type=file] on top of the browse_button for some browsers,
@@ -6633,73 +6921,32 @@ define("moxie/runtime/html5/file/FileInput", [
 				var I = this.getRuntime()
 				, shim = I.getShim()
 				, shimContainer = I.getShimContainer()
+				, container = _options && Dom.get(_options.container)
+				, browseButton = _options && Dom.get(_options.browse_button)
 				;
 				
-				Events.removeAllEvents(shimContainer, this.uid);
-				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
-				Events.removeAllEvents(_options && Dom.get(_options.browse_button), this.uid);
+				if (container) {
+					Events.removeAllEvents(container, this.uid);
+				}
+				
+				if (browseButton) {
+					Events.removeAllEvents(browseButton, this.uid);
+					browseButton.style.zIndex = _browseBtnZIndex; // reset to original value
+				}
 				
 				if (shimContainer) {
+					Events.removeAllEvents(shimContainer, this.uid);
 					shimContainer.innerHTML = '';
 				}
 
 				shim.removeInstance(this.uid);
 
-				_options = shimContainer = shim = null;
+				_options = shimContainer = container = browseButton = shim = null;
 			}
 		});
 	}
 
 	return (extensions.FileInput = FileInput);
-});
-
-// Included from: src/javascript/runtime/html5/file/Blob.js
-
-/**
- * Blob.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/**
-@class moxie/runtime/html5/file/Blob
-@private
-*/
-define("moxie/runtime/html5/file/Blob", [
-	"moxie/runtime/html5/Runtime",
-	"moxie/file/Blob"
-], function(extensions, Blob) {
-
-	function HTML5Blob() {
-		function w3cBlobSlice(blob, start, end) {
-			var blobSlice;
-
-			if (window.File.prototype.slice) {
-				try {
-					blob.slice();	// depricated version will throw WRONG_ARGUMENTS_ERR exception
-					return blob.slice(start, end);
-				} catch (e) {
-					// depricated slice method
-					return blob.slice(start, end - start);
-				}
-			// slice method got prefixed: https://bugzilla.mozilla.org/show_bug.cgi?id=649672
-			} else if ((blobSlice = window.File.prototype.webkitSlice || window.File.prototype.mozSlice)) {
-				return blobSlice.call(blob, start, end);
-			} else {
-				return null; // or throw some exception
-			}
-		}
-
-		this.slice = function() {
-			return new Blob(this.getRuntime().uid, w3cBlobSlice.apply(this, arguments));
-		};
-	}
-
-	return (extensions.Blob = HTML5Blob);
 });
 
 // Included from: src/javascript/runtime/html5/file/FileDrop.js
@@ -8611,141 +8858,275 @@ define("moxie/runtime/html5/image/ImageInfo", [
 	};
 });
 
-// Included from: src/javascript/runtime/html5/image/MegaPixel.js
+// Included from: src/javascript/runtime/html5/image/ResizerCanvas.js
 
 /**
-(The MIT License)
-
-Copyright (c) 2012 Shinichi Tomita <shinichi.tomita@gmail.com>;
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/**
- * Mega pixel image rendering library for iOS6 Safari
+ * ResizerCanvas.js
  *
- * Fixes iOS6 Safari's image file rendering issue for large size image (over mega-pixel),
- * which causes unexpected subsampling when drawing it in canvas.
- * By using this library, you can safely render the image with proper stretching.
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
  *
- * Copyright (c) 2012 Shinichi Tomita <shinichi.tomita@gmail.com>
- * Released under the MIT license
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
  */
 
 /**
-@class moxie/runtime/html5/image/MegaPixel
-@private
-*/
-define("moxie/runtime/html5/image/MegaPixel", [], function() {
+ * Resizes image/canvas using canvas
+ */
+define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
 
-	/**
-	 * Rendering image element (with resizing) into the canvas element
-	 */
-	function renderImageToCanvas(img, canvas, options) {
-		var iw = img.naturalWidth, ih = img.naturalHeight;
-		var width = options.width, height = options.height;
-		var x = options.x || 0, y = options.y || 0;
-		var ctx = canvas.getContext('2d');
-		if (detectSubsampling(img)) {
-			iw /= 2;
-			ih /= 2;
-		}
-		var d = 1024; // size of tiling canvas
-		var tmpCanvas = document.createElement('canvas');
-		tmpCanvas.width = tmpCanvas.height = d;
-		var tmpCtx = tmpCanvas.getContext('2d');
-		var vertSquashRatio = detectVerticalSquash(img, iw, ih);
-		var sy = 0;
-		while (sy < ih) {
-			var sh = sy + d > ih ? ih - sy : d;
-			var sx = 0;
-			while (sx < iw) {
-				var sw = sx + d > iw ? iw - sx : d;
-				tmpCtx.clearRect(0, 0, d, d);
-				tmpCtx.drawImage(img, -sx, -sy);
-				var dx = (sx * width / iw + x) << 0;
-				var dw = Math.ceil(sw * width / iw);
-				var dy = (sy * height / ih / vertSquashRatio + y) << 0;
-				var dh = Math.ceil(sh * height / ih / vertSquashRatio);
-				ctx.drawImage(tmpCanvas, 0, 0, sw, sh, dx, dy, dw, dh);
-				sx += d;
-			}
-			sy += d;
-		}
-		tmpCanvas = tmpCtx = null;
-	}
+    function scale(image, ratio) {
+        var sW = image.width;
+        var dW = Math.floor(sW * ratio);
+        var scaleCapped = false;
 
-	/**
-	 * Detect subsampling in loaded image.
-	 * In iOS, larger images than 2M pixels may be subsampled in rendering.
-	 */
-	function detectSubsampling(img) {
-		var iw = img.naturalWidth, ih = img.naturalHeight;
-		if (iw * ih > 1024 * 1024) { // subsampling may happen over megapixel image
-			var canvas = document.createElement('canvas');
-			canvas.width = canvas.height = 1;
-			var ctx = canvas.getContext('2d');
-			ctx.drawImage(img, -iw + 1, 0);
-			// subsampled image becomes half smaller in rendering size.
-			// check alpha channel value to confirm image is covering edge pixel or not.
-			// if alpha value is 0 image is not covering, hence subsampled.
-			return ctx.getImageData(0, 0, 1, 1).data[3] === 0;
-		} else {
-			return false;
-		}
-	}
+        if (ratio < 0.5 || ratio > 2) {
+            ratio = ratio < 0.5 ? 0.5 : 2;
+            scaleCapped = true;
+        }
+
+        var tCanvas = _scale(image, ratio);
+
+        if (scaleCapped) {
+            return scale(tCanvas, dW / tCanvas.width);
+        } else {
+            return tCanvas;
+        }
+    }
 
 
-	/**
-	 * Detecting vertical squash in loaded image.
-	 * Fixes a bug which squash image vertically while drawing into canvas for some images.
-	 */
-	function detectVerticalSquash(img, iw, ih) {
-		var canvas = document.createElement('canvas');
-		canvas.width = 1;
-		canvas.height = ih;
-		var ctx = canvas.getContext('2d');
-		ctx.drawImage(img, 0, 0);
-		var data = ctx.getImageData(0, 0, 1, ih).data;
-		// search image edge pixel position in case it is squashed vertically.
-		var sy = 0;
-		var ey = ih;
-		var py = ih;
-		while (py > sy) {
-			var alpha = data[(py - 1) * 4 + 3];
-			if (alpha === 0) {
-				ey = py;
-			} else {
-			sy = py;
-			}
-			py = (ey + sy) >> 1;
-		}
-		canvas = null;
-		var ratio = (py / ih);
-		return (ratio === 0) ? 1 : ratio;
-	}
+    function _scale(image, ratio) {
+        var sW = image.width;
+        var sH = image.height;
+        var dW = Math.floor(sW * ratio);
+        var dH = Math.floor(sH * ratio);
 
-	return {
-		isSubsampled: detectSubsampling,
-		renderTo: renderImageToCanvas
-	};
+        var canvas = document.createElement('canvas');
+        canvas.width = dW;
+        canvas.height = dH;
+        canvas.getContext("2d").drawImage(image, 0, 0, sW, sH, 0, 0, dW, dH);
+
+        image = null; // just in case
+        return canvas;
+    }
+
+    return {
+        scale: scale
+    };
+
+});
+
+// Included from: src/javascript/runtime/html5/image/ResizerWebGL.js
+
+/**
+ * ResizerWebGL.js
+ *
+ * Released under LGPL License.
+ * Copyright (c) 1999-2015 Ephox Corp. All rights reserved
+ *
+ * License: http://www.tinymce.com/license
+ * Contributing: http://www.tinymce.com/contributing
+ */
+
+/**
+ * Resizes image/canvas using Webgl
+ */
+define("moxie/runtime/html5/image/ResizerWebGL", [], function() {
+
+    function scale(image, ratio) {
+        var dW = Math.floor(image.width * ratio);
+        var dH = Math.floor(image.height * ratio);
+        var canvas = document.createElement('canvas');
+        canvas.width = dW;
+        canvas.height = dH;
+
+        _drawImage(canvas, image, ratio, ratio);
+        image = null; // just in case
+
+        return canvas;
+    }
+
+    var shaders = {
+        bilinear: {
+            VERTEX_SHADER: '\
+                attribute vec2 a_dest_xy;\
+                \
+                uniform vec2 u_wh;\
+                uniform vec2 u_ratio;\
+                \
+                varying vec2 a_xy;\
+                varying vec2 b_xy;\
+                varying vec2 c_xy;\
+                varying vec2 d_xy;\
+                \
+                varying float xx0;\
+                varying float x1x;\
+                varying float yy0;\
+                varying float y1y;\
+                \
+                void main() {\
+                    vec2 xy = a_dest_xy / u_ratio - 1.0;\
+                    float x = xy.x;\
+                    float y = xy.y;\
+                    float offset = 0.5;\
+                    \
+                    float x0 = x - offset;\
+                    float x1 = x + offset;\
+                    float y0 = y - offset;\
+                    float y1 = y + offset;\
+                    \
+                    a_xy = vec2(x0, y0) / u_wh;\
+                    b_xy = vec2(x1, y0) / u_wh;\
+                    c_xy = vec2(x1, y1) / u_wh;\
+                    d_xy = vec2(x0, y1) / u_wh;\
+                    \
+                    xx0 = (x - x0) / (x1 - x0);\
+                    x1x = (x1 - x) / (x1 - x0);\
+                    yy0 = (y - y0) / (y1 - y0);\
+                    y1y = (y1 - y) / (y1 - y0);\
+                    \
+                    gl_Position = vec4(((xy / u_wh) * 2.0 - 1.0) * vec2(1, -1), 0, 1);\
+                }\
+            ',
+
+            FRAGMENT_SHADER: '\
+                precision mediump float;\
+                \
+                uniform sampler2D u_image;\
+                \
+                varying vec2 a_xy;\
+                varying vec2 b_xy;\
+                varying vec2 c_xy;\
+                varying vec2 d_xy;\
+                \
+                varying float xx0;\
+                varying float x1x;\
+                varying float yy0;\
+                varying float y1y;\
+                \
+                void main() {\
+                    vec4 a = texture2D(u_image, a_xy);\
+                    vec4 b = texture2D(u_image, b_xy);\
+                    vec4 c = texture2D(u_image, c_xy);\
+                    vec4 d = texture2D(u_image, d_xy);\
+                    \
+                    vec4 ab = b * xx0 + a * x1x;\
+                    vec4 dc = c * xx0 + d * x1x;\
+                    vec4 abdc = dc * yy0 + ab * y1y;\
+                    \
+                    gl_FragColor = abdc;\
+                }\
+            '
+        }
+    };
+
+
+    function _drawImage(canvas, image, wRatio, hRatio) {
+        var gl = _get3dContext(canvas);
+        if (!gl) {
+            throw "Your environment doesn't support WebGL.";
+        }
+
+        // we need a gap around the edges to avoid a black frame
+        wRatio = canvas.width / (image.width + 2);
+        hRatio = canvas.height / (image.height + 2);
+
+        var program = _createProgram(gl);
+        gl.useProgram(program);
+
+        _loadFloatBuffer(gl, program, "a_dest_xy", [
+            0, 0,
+            canvas.width, 0,
+            0, canvas.height,
+            0, canvas.height,
+            canvas.width, 0,
+            canvas.width, canvas.height
+        ]);
+
+        // load the texture
+        var texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        // without this we won't be able to process images of arbitrary dimensions
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+
+        var uResolution = gl.getUniformLocation(program, "u_wh");
+        gl.uniform2f(uResolution, image.width, image.height);
+
+        var uRatio = gl.getUniformLocation(program, "u_ratio");
+        gl.uniform2f(uRatio, wRatio, hRatio);
+
+
+        // lets draw...
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+
+    function _get3dContext(canvas) {
+        var gl = null;
+        try {
+            gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        }
+        catch(e) {}
+
+        if (!gl) { // it seems that sometimes it doesn't throw exception, but still fails to get context
+            gl = null;
+        }
+        return gl;
+    }
+
+
+    function _loadFloatBuffer(gl, program, attrName, bufferData) {
+        var attr = gl.getAttribLocation(program, attrName);
+        var buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bufferData), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(attr);
+        gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0);
+    }
+
+
+    function _createProgram(gl) {
+        var program = gl.createProgram();
+
+        for (var type in shaders.bilinear) {
+            gl.attachShader(program, _loadShader(gl, shaders.bilinear[type], type));
+        }
+
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            var err = gl.getProgramInfoLog(program);
+            gl.deleteProgram(program);
+            throw "Cannot create a program: " + err;
+        }
+        return program;
+    }
+
+
+    function _loadShader(gl, source, type) {
+        var shader = gl.createShader(gl[type]);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            var err = gl.getShaderInfoLog(shader);
+            gl.deleteShader(shader);
+            throw "Cannot compile a " + type + " shader: " + err;
+        }
+        return shader;
+    }
+
+
+    return {
+        scale: scale
+    };
+
 });
 
 // Included from: src/javascript/runtime/html5/image/Image.js
@@ -8772,10 +9153,11 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/file/Blob",
 	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
-	"moxie/runtime/html5/image/MegaPixel",
+	"moxie/runtime/html5/image/ResizerCanvas",
+	"moxie/runtime/html5/image/ResizerWebGL",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, MegaPixel, Mime, Env) {
+], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, ResizerCanvas, ResizerWebGL, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -8835,40 +9217,71 @@ define("moxie/runtime/html5/image/Image", [
 					type: _blob.type || Mime.getFileMime(_blob.name),
 					size: _binStr && _binStr.length || _blob.size || 0,
 					name: _blob.name || '',
-					meta: _imgInfo && _imgInfo.meta || this.meta || {}
+					meta: null
 				};
 
-				// store thumbnail data as blob
-				if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
-					info.meta.thumb.data = new Blob(null, {
-						type: 'image/jpeg',
-						data: info.meta.thumb.data
-					});
+				if (_preserveHeaders) {
+					info.meta = _imgInfo && _imgInfo.meta || this.meta || {};
+
+					// store thumbnail data as blob
+					if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
+						info.meta.thumb.data = new Blob(null, {
+							type: 'image/jpeg',
+							data: info.meta.thumb.data
+						});
+					}
 				}
 
 				return info;
 			},
 
-			downsize: function() {
-				_downsize.apply(this, arguments);
+
+			resize: function(rect, ratio, options) {
+				var canvas = document.createElement('canvas');
+				canvas.width = rect.width;
+				canvas.height = rect.height;
+
+				canvas.getContext("2d").drawImage(_getImg(), rect.x, rect.y, rect.width, rect.height, 0, 0, canvas.width, canvas.height);
+
+				_canvas = ResizerCanvas.scale(canvas, ratio);
+
+				_preserveHeaders = options.preserveHeaders;
+
+				// rotate if required, according to orientation tag
+				if (!_preserveHeaders) {
+					var orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+					_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
+				}
+
+				this.width = _canvas.width;
+				this.height = _canvas.height;
+
+				_modified = true;
+
+				this.trigger('Resize');
 			},
 
 			getAsCanvas: function() {
-				if (_canvas) {
-					_canvas.id = this.uid + '_canvas';
+				if (!_canvas) {
+					_canvas = _getCanvas();
 				}
+				_canvas.id = this.uid + '_canvas';
 				return _canvas;
 			},
 
 			getAsBlob: function(type, quality) {
 				if (type !== this.type) {
-					// if different mime type requested prepare image for conversion
-					_downsize.call(this, this.width, this.height, false);
+					_modified = true; // reconsider the state
+					return new File(null, {
+						name: _blob.name || '',
+						type: type,
+						data: me.getAsDataURL(type, quality)
+					});
 				}
 				return new File(null, {
 					name: _blob.name || '',
 					type: type,
-					data: me.getAsBinaryString.call(this, type, quality)
+					data: me.getAsBinaryString(type, quality)
 				});
 			},
 
@@ -8879,6 +9292,9 @@ define("moxie/runtime/html5/image/Image", [
 				if (!_modified) {
 					return _img.src;
 				}
+
+				// make sure we have a canvas to work with
+				_getCanvas();
 
 				if ('image/jpeg' !== type) {
 					return _canvas.toDataURL('image/png');
@@ -8911,6 +9327,9 @@ define("moxie/runtime/html5/image/Image", [
 					if (!quality) {
 						quality = 90;
 					}
+
+					// make sure we have a canvas to work with
+					_getCanvas();
 
 					try {
 						// older Geckos used to result in an exception on quality argument
@@ -8964,6 +9383,19 @@ define("moxie/runtime/html5/image/Image", [
 		}
 
 
+		function _getCanvas() {
+			var canvas = _getImg();
+			if (canvas.nodeName.toLowerCase() == 'canvas') {
+				return canvas;
+			}
+			_canvas = document.createElement('canvas');
+			_canvas.width = canvas.width;
+			_canvas.height = canvas.height;
+			_canvas.getContext("2d").drawImage(canvas, 0, 0);
+			return _canvas;
+		}
+
+
 		function _toBinary(str) {
 			return Encode.atob(str.substring(str.indexOf('base64,') + 7));
 		}
@@ -9008,119 +9440,15 @@ define("moxie/runtime/html5/image/Image", [
 			}
 		}
 
-		function _downsize(width, height, crop, preserveHeaders) {
-			var self = this
-			, scale
-			, mathFn
-			, x = 0
-			, y = 0
-			, img
-			, destWidth
-			, destHeight
-			, orientation
-			;
-
-			_preserveHeaders = preserveHeaders; // we will need to check this on export (see getAsBinaryString())
-
-			// take into account orientation tag
-			orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
-
-			if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
-				// swap dimensions
-				var tmp = width;
-				width = height;
-				height = tmp;
-			}
-
-			img = _getImg();
-
-			// unify dimensions
-			if (!crop) {
-				scale = Math.min(width/img.width, height/img.height);
-			} else {
-				// one of the dimensions may exceed the actual image dimensions - we need to take the smallest value
-				width = Math.min(width, img.width);
-				height = Math.min(height, img.height);
-
-				scale = Math.max(width/img.width, height/img.height);
-			}
-		
-			// we only downsize here
-			if (scale > 1 && !crop && preserveHeaders) {
-				this.trigger('Resize');
-				return;
-			}
-
-			// prepare canvas if necessary
-			if (!_canvas) {
-				_canvas = document.createElement("canvas");
-			}
-
-			// calculate dimensions of proportionally resized image
-			destWidth = Math.round(img.width * scale);	
-			destHeight = Math.round(img.height * scale);
-
-			// scale image and canvas
-			if (crop) {
-				_canvas.width = width;
-				_canvas.height = height;
-
-				// if dimensions of the resulting image still larger than canvas, center it
-				if (destWidth > width) {
-					x = Math.round((destWidth - width) / 2);
-				}
-
-				if (destHeight > height) {
-					y = Math.round((destHeight - height) / 2);
-				}
-			} else {
-				_canvas.width = destWidth;
-				_canvas.height = destHeight;
-			}
-
-			// rotate if required, according to orientation tag
-			if (!_preserveHeaders) {
-				_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
-			}
-
-			_drawToCanvas.call(this, img, _canvas, -x, -y, destWidth, destHeight);
-
-			this.width = _canvas.width;
-			this.height = _canvas.height;
-
-			_modified = true;
-			self.trigger('Resize');
-		}
-
-
-		function _drawToCanvas(img, canvas, x, y, w, h) {
-			if (Env.OS === 'iOS') { 
-				// avoid squish bug in iOS6
-				MegaPixel.renderTo(img, canvas, { width: w, height: h, x: x, y: y });
-			} else {
-				var ctx = canvas.getContext('2d');
-				ctx.drawImage(img, x, y, w, h);
-			}
-		}
-
-
 		/**
 		* Transform canvas coordination according to specified frame size and orientation
 		* Orientation value is from EXIF tag
 		* @author Shinichi Tomita <shinichi.tomita@gmail.com>
 		*/
 		function _rotateToOrientaion(width, height, orientation) {
-			switch (orientation) {
-				case 5:
-				case 6:
-				case 7:
-				case 8:
-					_canvas.width = height;
-					_canvas.height = width;
-					break;
-				default:
-					_canvas.width = width;
-					_canvas.height = height;
+			if (Basic.inArray(orientation, [5,6,7,8]) > -1) {
+				_canvas.width = height;
+				_canvas.height = width;
 			}
 
 			/**
@@ -9302,7 +9630,7 @@ define("moxie/runtime/flash/Runtime", [
 			access_image_binary: function(value) {
 				return value && I.mode === 'browser';
 			},
-			display_media: Runtime.capTrue,
+			display_media: Runtime.capTest(defined('moxie/image/Image')),
 			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
 			report_upload_progress: function() {
@@ -9368,6 +9696,9 @@ define("moxie/runtime/flash/Runtime", [
 				return value ? 'browser' : 'client';
 			},
 			send_custom_headers: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			slice_blob: function(value) {
 				return value ? 'browser' : 'client';
 			},
 			stream_upload: function(value) {
@@ -9515,55 +9846,6 @@ define("moxie/runtime/flash/file/FileInput", [
 	return (extensions.FileInput = FileInput);
 });
 
-// Included from: src/javascript/runtime/flash/file/Blob.js
-
-/**
- * Blob.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/**
-@class moxie/runtime/flash/file/Blob
-@private
-*/
-define("moxie/runtime/flash/file/Blob", [
-	"moxie/runtime/flash/Runtime",
-	"moxie/file/Blob"
-], function(extensions, Blob) {
-
-	var FlashBlob = {
-		slice: function(blob, start, end, type) {
-			var self = this.getRuntime();
-
-			if (start < 0) {
-				start = Math.max(blob.size + start, 0);
-			} else if (start > 0) {
-				start = Math.min(start, blob.size);
-			}
-
-			if (end < 0) {
-				end = Math.max(blob.size + end, 0);
-			} else if (end > 0) {
-				end = Math.min(end, blob.size);
-			}
-
-			blob = self.shimExec.call(this, 'Blob', 'slice', start, end, type || '');
-
-			if (blob) {
-				blob = new Blob(self.uid, blob);
-			}
-			return blob;
-		}
-	};
-
-	return (extensions.Blob = FlashBlob);
-});
-
 // Included from: src/javascript/runtime/flash/file/FileReader.js
 
 /**
@@ -9675,6 +9957,42 @@ define("moxie/runtime/flash/file/FileReaderSync", [
 	return (extensions.FileReaderSync = FileReaderSync);
 });
 
+// Included from: src/javascript/runtime/flash/runtime/Transporter.js
+
+/**
+ * Transporter.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/**
+@class moxie/runtime/flash/runtime/Transporter
+@private
+*/
+define("moxie/runtime/flash/runtime/Transporter", [
+	"moxie/runtime/flash/Runtime",
+	"moxie/file/Blob"
+], function(extensions, Blob) {
+
+	var Transporter = {
+		getAsBlob: function(type) {
+			var self = this.getRuntime()
+			, blob = self.shimExec.call(this, 'Transporter', 'getAsBlob', type)
+			;
+			if (blob) {
+				return new Blob(self.uid, blob);
+			}
+			return null;
+		}
+	};
+
+	return (extensions.Transporter = Transporter);
+});
+
 // Included from: src/javascript/runtime/flash/xhr/XMLHttpRequest.js
 
 /**
@@ -9697,9 +10015,11 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	"moxie/file/Blob",
 	"moxie/file/File",
 	"moxie/file/FileReaderSync",
+	"moxie/runtime/flash/file/FileReaderSync",
 	"moxie/xhr/FormData",
-	"moxie/runtime/Transporter"
-], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter) {
+	"moxie/runtime/Transporter",
+	"moxie/runtime/flash/runtime/Transporter"
+], function(extensions, Basic, Blob, File, FileReaderSync, FileReaderSyncFlash, FormData, Transporter, TransporterFlash) {
 	
 	var XMLHttpRequest = {
 
@@ -9822,42 +10142,6 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	};
 
 	return (extensions.XMLHttpRequest = XMLHttpRequest);
-});
-
-// Included from: src/javascript/runtime/flash/runtime/Transporter.js
-
-/**
- * Transporter.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/**
-@class moxie/runtime/flash/runtime/Transporter
-@private
-*/
-define("moxie/runtime/flash/runtime/Transporter", [
-	"moxie/runtime/flash/Runtime",
-	"moxie/file/Blob"
-], function(extensions, Blob) {
-
-	var Transporter = {
-		getAsBlob: function(type) {
-			var self = this.getRuntime()
-			, blob = self.shimExec.call(this, 'Transporter', 'getAsBlob', type)
-			;
-			if (blob) {
-				return new Blob(self.uid, blob);
-			}
-			return null;
-		}
-	};
-
-	return (extensions.Transporter = Transporter);
 });
 
 // Included from: src/javascript/runtime/flash/image/Image.js
@@ -10047,7 +10331,7 @@ define("moxie/runtime/silverlight/Runtime", [
 		Runtime.call(this, options, type, {
 			access_binary: Runtime.capTrue,
 			access_image_binary: Runtime.capTrue,
-			display_media: Runtime.capTrue,
+			display_media: Runtime.capTest(defined('moxie/image/Image')),
 			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
 			report_upload_progress: Runtime.capTrue,
@@ -10213,30 +10497,6 @@ define("moxie/runtime/silverlight/file/FileInput", [
 	return (extensions.FileInput = FileInput);
 });
 
-// Included from: src/javascript/runtime/silverlight/file/Blob.js
-
-/**
- * Blob.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/**
-@class moxie/runtime/silverlight/file/Blob
-@private
-*/
-define("moxie/runtime/silverlight/file/Blob", [
-	"moxie/runtime/silverlight/Runtime",
-	"moxie/core/utils/Basic",
-	"moxie/runtime/flash/file/Blob"
-], function(extensions, Basic, Blob) {
-	return (extensions.Blob = Basic.extend({}, Blob));
-});
-
 // Included from: src/javascript/runtime/silverlight/file/FileDrop.js
 
 /**
@@ -10345,30 +10605,6 @@ define("moxie/runtime/silverlight/file/FileReaderSync", [
 	return (extensions.FileReaderSync = Basic.extend({}, FileReaderSync));
 });
 
-// Included from: src/javascript/runtime/silverlight/xhr/XMLHttpRequest.js
-
-/**
- * XMLHttpRequest.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/**
-@class moxie/runtime/silverlight/xhr/XMLHttpRequest
-@private
-*/
-define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
-	"moxie/runtime/silverlight/Runtime",
-	"moxie/core/utils/Basic",
-	"moxie/runtime/flash/xhr/XMLHttpRequest"
-], function(extensions, Basic, XMLHttpRequest) {
-	return (extensions.XMLHttpRequest = Basic.extend({}, XMLHttpRequest));
-});
-
 // Included from: src/javascript/runtime/silverlight/runtime/Transporter.js
 
 /**
@@ -10391,6 +10627,32 @@ define("moxie/runtime/silverlight/runtime/Transporter", [
 	"moxie/runtime/flash/runtime/Transporter"
 ], function(extensions, Basic, Transporter) {
 	return (extensions.Transporter = Basic.extend({}, Transporter));
+});
+
+// Included from: src/javascript/runtime/silverlight/xhr/XMLHttpRequest.js
+
+/**
+ * XMLHttpRequest.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/**
+@class moxie/runtime/silverlight/xhr/XMLHttpRequest
+@private
+*/
+define("moxie/runtime/silverlight/xhr/XMLHttpRequest", [
+	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
+	"moxie/runtime/flash/xhr/XMLHttpRequest",
+	"moxie/runtime/silverlight/file/FileReaderSync",
+	"moxie/runtime/silverlight/runtime/Transporter"
+], function(extensions, Basic, XMLHttpRequest, FileReaderSyncSilverlight, TransporterSilverlight) {
+	return (extensions.XMLHttpRequest = Basic.extend({}, XMLHttpRequest));
 });
 
 // Included from: src/javascript/runtime/silverlight/image/Image.js
@@ -10463,6 +10725,10 @@ define("moxie/runtime/silverlight/image/Image", [
 			info.name = rawInfo.name;
 
 			return info;
+		},
+
+		resize: function(rect, ratio, opts) {
+			this.getRuntime().shimExec.call(this, 'Image', 'resize', rect.x, rect.y, rect.width, rect.height, ratio, opts.preserveHeaders, opts.resample);
 		}
 	}));
 });
@@ -10505,7 +10771,10 @@ define("moxie/runtime/html4/Runtime", [
 		Runtime.call(this, options, type, {
 			access_binary: Test(window.FileReader || window.File && File.getAsDataURL),
 			access_image_binary: false,
-			display_media: Test(extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb'))),
+			display_media: Test(
+				(Env.can('create_canvas') || Env.can('use_data_uri_over32kb')) && 
+				defined('moxie/image/Image')
+			),
 			do_cors: false,
 			drag_and_drop: false,
 			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
@@ -10604,7 +10873,7 @@ define("moxie/runtime/html4/file/FileInput", [
 ], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 	
 	function FileInput() {
-		var _uid, _mimes = [], _options;
+		var _uid, _mimes = [], _options, _browseBtnZIndex; // save original z-index;
 
 		function addInput() {
 			var comp = this, I = comp.getRuntime(), shimContainer, browseButton, currForm, form, input, uid;
@@ -10735,17 +11004,20 @@ define("moxie/runtime/html4/file/FileInput", [
 					var browseButton, zIndex, top;
 
 					browseButton = Dom.get(options.browse_button);
+					_browseBtnZIndex = Dom.getStyle(browseButton, 'z-index') || 'auto';
 
 					// Route click event to the input[type=file] element for browsers that support such behavior
 					if (I.can('summon_file_dialog')) {
 						if (Dom.getStyle(browseButton, 'position') === 'static') {
 							browseButton.style.position = 'relative';
-						}
+						}						
 
-						zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 1;
+						comp.bind('Refresh', function() {
+							zIndex = parseInt(_browseBtnZIndex, 10) || 1;
 
-						browseButton.style.zIndex = zIndex;
-						shimContainer.style.zIndex = zIndex - 1;
+							Dom.get(_options.browse_button).style.zIndex = zIndex;
+							this.getRuntime().getShimContainer().style.zIndex = zIndex - 1;
+						});
 					}
 
 					/* Since we have to place input[type=file] on top of the browse_button for some browsers,
@@ -10795,19 +11067,27 @@ define("moxie/runtime/html4/file/FileInput", [
 				var I = this.getRuntime()
 				, shim = I.getShim()
 				, shimContainer = I.getShimContainer()
+				, container = _options && Dom.get(_options.container)
+				, browseButton = _options && Dom.get(_options.browse_button)
 				;
 				
-				Events.removeAllEvents(shimContainer, this.uid);
-				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
-				Events.removeAllEvents(_options && Dom.get(_options.browse_button), this.uid);
+				if (container) {
+					Events.removeAllEvents(container, this.uid);
+				}
+				
+				if (browseButton) {
+					Events.removeAllEvents(browseButton, this.uid);
+					browseButton.style.zIndex = _browseBtnZIndex; // reset to original value
+				}
 				
 				if (shimContainer) {
+					Events.removeAllEvents(shimContainer, this.uid);
 					shimContainer.innerHTML = '';
 				}
 
 				shim.removeInstance(this.uid);
 
-				_uid = _mimes = _options = shimContainer = shim = null;
+				_uid = _mimes = _options = shimContainer = container = browseButton = shim = null;
 			}
 		});
 	}
@@ -11110,7 +11390,7 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/utils/Env","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/FileInput","moxie/core/utils/Encode","moxie/file/Blob","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events"]);
+expose(["moxie/core/utils/Basic","moxie/core/utils/Env","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/FileInput","moxie/core/utils/Encode","moxie/file/Blob","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events","moxie/runtime/html5/image/ResizerCanvas","moxie/runtime/html5/image/ResizerWebGL"]);
 })(this);
 /**
  * o.js
