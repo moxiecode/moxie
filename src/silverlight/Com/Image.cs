@@ -46,6 +46,8 @@ namespace Moxiecode.Com
 		private WriteableBitmap _bm;
 		private Format _img = null;
 
+		private Dictionary<string, object> _options;
+
 		private bool _preserveHeaders = true;
 
 
@@ -155,127 +157,48 @@ namespace Moxiecode.Com
 		}
 
 
-		public void downsize(object width, object height, object crop, object preserveHeaders)
+		public void resize(object x, object y, object width, object height, object ratio, object preserveHeaders, object resample)
 		{
-			_preserveHeaders = (bool)preserveHeaders;
+			try
+			{
+				WriteableBitmap bm = _bm.Crop(Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(width), Convert.ToInt32(height));
 
-			int orientation = 1;
-			if (meta.ContainsKey("tiff") && ((Dictionary<string, object>)meta["tiff"]).ContainsKey("Orientation")) {
-				orientation = Convert.ToInt32(((Dictionary<string, object>)meta["tiff"])["Orientation"]);
-			}
+				int destW = Convert.ToInt32(Math.Round(bm.PixelWidth * (double)ratio));
+				int destH = Convert.ToInt32(Math.Round(bm.PixelHeight * (double)ratio));
 
-			// swap dimensions
-			bool requiresSwapping = new List<int> { 5, 6, 7, 8 }.Contains(orientation);
-			if (requiresSwapping) {
-				object mem = width;
-				width = height;
-				height = mem;
-			}
+				_bm = bm.Resize(
+					destW,
+					destH,
+					(string)resample == "bilinear" 
+						? WriteableBitmapExtension.Interpolation.Bilinear
+						: WriteableBitmapExtension.Interpolation.NearestNeighbor
+				);
 
-			int w = Convert.ToInt32(width);
-			int h = Convert.ToInt32(height);
-			
-			double scale;
-			if (!(bool)crop) {
-				// retain proportions
-				scale = Math.Min((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
-			} else {
-				w = Math.Min(w, _bm.PixelWidth);
-				h = Math.Min(h, _bm.PixelHeight);
+				_preserveHeaders = (bool)preserveHeaders;
 
-				// without explicit cast to double, result is implicitly cast back to int (wtf?)
-				scale = Math.Max((double)w / (double)_bm.PixelWidth, (double)h / (double)_bm.PixelHeight);
-			}
-
-			try {
-				if (scale > 1 && !(bool)crop && _preserveHeaders) {
-					Resize(this, null);
-					return;
-				} else {
-					int imgWidth = (int)Math.Round(_bm.PixelWidth * scale);
-					int imgHeight = (int)Math.Round(_bm.PixelHeight * scale);
-
-					TransformGroup tg = new TransformGroup();
-					tg.Children.Add(new ScaleTransform()
-					{
-						ScaleX = scale,
-						ScaleY = scale
-					});
-
-					// center crop if required
-					if ((bool)crop) {
-						if (imgWidth > w) {
-							tg.Children.Add(new TranslateTransform() { X = -Math.Round((double)(imgWidth - w) / 2) });
-						}
-
-						if (imgHeight > h) {
-							tg.Children.Add(new TranslateTransform() { Y = -Math.Round((double)(imgHeight - h) / 2) });
-						}
-					} else {
-						w = imgWidth;
-						h = imgHeight;
-					}
-
-					/* Alternative resize route - better quality, but slower and no crop
-	
-					FluxJpeg.Core.Image jpegImage = new FluxJpeg.Core.Image(new ColorModel
-					{
-						colorspace = ColorSpace.RGB
-					}, _bm.ToRaster());
-
-					ImageResizer resizer = new ImageResizer(jpegImage);
-					FluxJpeg.Core.Image resizedImage = resizer.Resize(w, FluxJpeg.Core.Filtering.ResamplingFilters.LowpassAntiAlias);
-
-
-					using (MemoryStream imageStream = new MemoryStream())
-					{
-						JpegEncoder jpegEncoder = new JpegEncoder(resizedImage, 90, imageStream);
-						jpegEncoder.Encode();
-						BitmapImage bitmapImage = new BitmapImage();
-						bitmapImage.SetSource(imageStream);
-						_bm = new WriteableBitmap(bitmapImage);
-					}
-
-					this.width = resizedImage.Width;
-					this.height = resizedImage.Height;*/
-
-					WriteableBitmap bm = null;
-
-					if (type == JPEG.MIME) {
-						if (!_preserveHeaders) {
-							_rotateToOrientation(tg, orientation, w, h);
-							if (requiresSwapping) {
-								bm = new WriteableBitmap(h, w);
-							}
-						} else if (_img != null) {
-							// insert new values into exif headers
-							((JPEG)_img).updateDimensions(w, h);
-							// update image info
-							meta = ((JPEG)_img).metaInfo();
-						}
-					}
-
-					// if not initialized by now, do it the usuall way
-					if (bm == null) {
-						bm = new WriteableBitmap(w, h);
-					}
-					
-					System.Windows.Controls.Image image = new System.Windows.Controls.Image() {
-						Source = _bm,
-						Stretch = Stretch.None
-					};
-					
-					bm.Render(image, tg);
-					bm.Invalidate();
-				
-					_bm = bm;
-
-					this.width = _bm.PixelWidth;
-					this.height = _bm.PixelHeight;
-
-					Resize(this, null);
-					return;
+				int orientation = 1;
+				if (meta.ContainsKey("tiff") && ((Dictionary<string, object>)meta["tiff"]).ContainsKey("Orientation"))
+				{
+					orientation = Convert.ToInt32(((Dictionary<string, object>)meta["tiff"])["Orientation"]);
 				}
+
+
+				if (type == JPEG.MIME) {
+					if (!_preserveHeaders) {
+						_bm = _rotateToOrientation(orientation);
+					} else if (_img != null) {
+						// insert new values into exif headers
+						((JPEG)_img).updateDimensions(destW, destH);
+						// update image info
+						meta = ((JPEG)_img).metaInfo();
+					}
+				}
+
+				this.width = _bm.PixelWidth;
+				this.height = _bm.PixelHeight;
+
+				Resize(this, null);
+				return;
 			}
 			catch 
 			{
@@ -363,91 +286,34 @@ namespace Moxiecode.Com
 			return blob.ToObject();
 		}
 
-		private void _rotateToOrientation(TransformGroup tg, int orientation, int width, int height)
+
+		private WriteableBitmap _rotateToOrientation(int orientation)
 		{
 			switch (orientation)
 			{
 				case 2:
 					// horizontal flip
-					tg.Children.Add(new ScaleTransform()
-					{
-						ScaleX = -1,
-						ScaleY = 1
-					});
-					tg.Children.Add(new TranslateTransform() { 
-						X = width,
- 						Y = 0
-					});
-					break;
+					return _bm.Flip(WriteableBitmapExtension.FlipMode.Horizontal);
 				case 3:
 					// 180 rotate left
-					tg.Children.Add(new RotateTransform() { 
-						Angle = 180
-					});
-					tg.Children.Add(new TranslateTransform()
-					{
-						X = width,
-						Y = height
-					});
-					break;
+					return _bm.Rotate(180);
 				case 4:
 					// vertical flip
-					tg.Children.Add(new ScaleTransform()
-					{
-						ScaleX = 1,
-						ScaleY = -1
-					});
-					tg.Children.Add(new TranslateTransform() { 
-						X = 0,
- 						Y = height
-					});
-					break;
+					return _bm.Flip(WriteableBitmapExtension.FlipMode.Vertical);
 				case 5:
 					// vertical flip + 90 rotate right
-					tg.Children.Add(new ScaleTransform() {
-						ScaleX = 1,
-						ScaleY = -1
-					});
-					tg.Children.Add(new RotateTransform() { 
-						Angle = 90
-					});
-					break;
+					return _bm.Flip(WriteableBitmapExtension.FlipMode.Vertical).Rotate(90);
 				case 6:
 					// 90 rotate right
-					tg.Children.Add(new RotateTransform() { 
-						Angle = 90
-					});
-					tg.Children.Add(new TranslateTransform() { 
-						X = height,
- 						Y = 0
-					});
-					break;
+					return _bm.Rotate(90);
 				case 7:
 					// horizontal flip + 90 rotate right
-					tg.Children.Add(new ScaleTransform()
-					{
-						ScaleX = -1,
-						ScaleY = 1
-					});
-					tg.Children.Add(new RotateTransform() { 
-						Angle = 90
-					});
-					tg.Children.Add(new TranslateTransform() { 
-						X = height,
- 						Y = width
-					});
-					break;
+					return _bm.Flip(WriteableBitmapExtension.FlipMode.Horizontal).Rotate(90);
 				case 8:
 					// 90 rotate left
-					tg.Children.Add(new RotateTransform() {
-						Angle = -90
-					});
-					tg.Children.Add(new TranslateTransform()
-					{
-						X = 0,
-						Y = width
-					});
-					break;
+					return _bm.Rotate(270);
+				default:
+					return _bm;
 			}
 		}
 
