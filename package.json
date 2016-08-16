@@ -17,7 +17,7 @@
         "url": "https://github.com/moxiecode/moxie/issues"
     },
     "licenses": [{
-        "type": "GPLv2",
+        "type": "AGPLv3",
         "url": "https://github.com/moxiecode/plupload/blob/master/license.txt"
     }, {
         "type": "Single Website",
