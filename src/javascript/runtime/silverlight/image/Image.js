@@ -66,6 +66,10 @@ define("moxie/runtime/silverlight/image/Image", [
 			info.name = rawInfo.name;
 
 			return info;
+		},
+
+		resize: function(rect, ratio, opts) {
+			this.getRuntime().shimExec.call(this, 'Image', 'resize', rect.x, rect.y, rect.width, rect.height, ratio, opts.preserveHeaders, opts.resample);
 		}
 	}));
 });
