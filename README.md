@@ -163,14 +163,14 @@ react to them instantly, but we constantly bear them in my mind as we extend the
 We are open to suggestions and code revisions, however there are some rules and limitations that you might 
 want to consider first.
 
-* Code that you contribute will automatically be licensed under the GPL, but will not be limited to GPL.
+* Code that you contribute will automatically be licensed under the AGPLv3, but will not be limited to AGPLv3.
 * Although all contributors will get the credit for their work, copyright notices will be changed to [Ephox](http://www.ephox.com/).
 * Third party code will be reviewed, tested and possibly modified before being released.
 
-These basic rules help us earn a living and ensure that code remains Open Source and compatible with GPL license. All contributions will be added to the changelog and appear in every release and on the site. 
+These basic rules help us earn a living and ensure that code remains Open Source and compatible with AGPLv3 license. All contributions will be added to the changelog and appear in every release and on the site. 
 
 <a name="license" />
 ### License
 
 Copyright 2016, [Ephox](http://www.ephox.com/)  
-Released under [GPLv2 License](https://github.com/moxiecode/moxie/blob/master/license.txt).
+Released under [AGPLv3 License](https://github.com/moxiecode/moxie/blob/master/license.txt).
