@@ -121,11 +121,13 @@
     <Compile Include="MXI\BinaryReader.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MXI\Image\BitmapContext.cs" />
+    <Compile Include="MXI\Image\BitmapFactory.cs" />
+    <Compile Include="MXI\Image\WriteableBitmapExtension.cs" />
     <Compile Include="MXI\Image\ExifParser.cs" />
     <Compile Include="MXI\Image\Format.cs" />
     <Compile Include="MXI\Image\JPEG.cs" />
     <Compile Include="MXI\Image\PNG.cs" />
-    <Compile Include="MXI\Image\WriteableBitmapExtension.cs" />
     <Compile Include="FJCore\DCT.cs" />
     <Compile Include="FJCore\DecodedJpeg.cs" />
     <Compile Include="FJCore\Decoder\HuffmanTable.cs" />
@@ -197,10 +199,4 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <PropertyGroup>
-    <PostBuildEvent Condition=" '$(OutputDir)' != '' ">copy /Y $(XapFilename) ..\..\$(OutputDir)$(XapFilename)</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>copy /Y $(XapFilename) ..\..\$(OutputDir)$(XapFilename)</PostBuildEvent>
-  </PropertyGroup>
 </Project>
