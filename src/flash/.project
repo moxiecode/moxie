@@ -21,6 +21,16 @@
 			<location>/Users/jagga/Sites/mxi/plupload/www/plupload/src/moxie/bin/flash</location>
 		</link>
 		<link>
+			<name>bin-release</name>
+			<type>2</type>
+			<location>/Users/jagga/Sites/mxi/plupload/public/plupload/js</location>
+		</link>
+		<link>
+			<name>bin-release1</name>
+			<type>2</type>
+			<location>/Users/jagga/Sites/mxi/plupload/public/plupload/src/moxie/bin/flash</location>
+		</link>
+		<link>
 			<name>bin-release2</name>
 			<type>2</type>
 			<location>/Users/jagga/Sites/mxi/plupload/www/plupload/js</location>
