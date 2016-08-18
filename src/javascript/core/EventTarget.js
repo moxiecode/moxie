@@ -106,9 +106,19 @@ define('moxie/core/EventTarget', [
 		@param {Function} [fn] Handler to unregister
 		*/
 		removeEventListener: function(type, fn) {
+			var self = this, list, i;
+
 			type = type.toLowerCase();
 
-			var list = eventpool[this.uid] && eventpool[this.uid][type], i;
+			if (/\s/.test(type)) {
+				// multiple event types were passed for one handler
+				Basic.each(type.split(/\s+/), function(type) {
+					self.removeEventListener(type, fn);
+				});
+				return;
+			}
+
+			list = eventpool[this.uid] && eventpool[this.uid][type];
 
 			if (list) {
 				if (fn) {
