@@ -22,11 +22,12 @@ package com
 			"MouseUp": MouseEvent.MOUSE_UP
 		}; 
 						
-		protected var _options:Object = {};
+		protected var _options:Object = {
+			multiple: false,
+			accept: null
+		};
 		
 		protected var _disabled:Boolean = false;
-		
-		protected var _filters:Array = null;
 		
 		protected var _picker:*;
 		
@@ -39,26 +40,9 @@ package com
 				return;	
 			}
 			Moxie.stageOccupied = true; // occupies runtime's stage
-						
-			_options = Utils.extend({
-				name: 'Filedata',
-				multiple: false,
-				accept: null
-			}, options);
-						
-			
-			if (_options.accept is Array) {				
-				_filters = [];
-				
-				for (var i:int = 0; i < _options.accept.length; i++) {
-					_filters.push(new FileFilter(
-						_options.accept[i].title,
-						'*.' + _options.accept[i].extensions.replace(/,/g, ";*."),
-						_options.accept.mac_types
-					));
-				}
-			}	
-						
+					
+			setOptions(options);
+									
 			_button = new Sprite;
 						
 			_button.graphics.beginFill(0x000000, 0); // Fill with transparent color
@@ -74,6 +58,24 @@ package com
 			_button.addEventListener(MouseEvent.MOUSE_UP, onEvent);
 			
 			addChild(_button);
+		}
+		
+		
+		private function setOptions(options:Object = null) : void {
+			if (options !== null) {
+				for (var key:String in options) {
+					setOption(key, options[key]);
+				}
+			}
+		}
+		
+		
+		public function setOption(name:String, value:*) : void {
+			if (name == 'accept') {
+				_options.accept = generateFilters(value);
+			} else if (_options.hasOwnProperty(name)) {
+				_options[name] = value;
+			}
 		}
 		
 		
@@ -108,7 +110,7 @@ package com
 			
 			_picker.addEventListener(Event.CANCEL, onDialogEvent);
 			_picker.addEventListener(Event.SELECT, onDialogEvent);
-			_picker.browse(_filters);
+			_picker.browse(_options.accept);
 		}
 		
 		
@@ -120,6 +122,22 @@ package com
 				files.push(file.toObject());
 			}
 			return files;
+		}
+		
+		
+		private function generateFilters(value:*) : Array {
+			var filters:Array = [];
+			
+			if (value is Array) {								
+				for (var i:int = 0; i < value.length; i++) {
+					filters.push(new FileFilter(
+						value[i].title,
+						'*.' + value[i].extensions.replace(/,/g, ";*."),
+						value.mac_types
+					));
+				}
+			}
+			return filters;
 		}
 	
 		
@@ -151,8 +169,6 @@ package com
 					dispatchEvent(new FileInputEvent(FileInputEvent.SELECT));
 					break;
 			}
-			
-			
 		}
 	}
 }

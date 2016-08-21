@@ -148,6 +148,41 @@ define("moxie/runtime/html5/file/FileInput", [
 			},
 
 
+			setOption: function(name, value) {
+				var I = this.getRuntime();
+				var input = Dom.get(I.uid);
+
+				switch (name) {
+					case 'accept':
+						if (value) {
+							var mimes = value.mimes || Mime.extList2mimes(value, I.can('filter_by_extension'));
+							input.setAttribute('accept', mimes.join(','));
+						} else {
+							input.removeAttribute('accept');
+						}
+						break;
+
+					case 'directory':
+						if (value && I.can('select_folder')) {
+							input.setAttribute('directory', '');
+							input.setAttribute('webkitdirectory', '');
+						} else {
+							input.removeAttribute('directory');
+							input.removeAttribute('webkitdirectory');
+						}
+						break;
+
+					case 'multiple':
+						if (value && I.can('select_multiple')) {
+							input.setAttribute('multiple', '');
+						} else {
+							input.removeAttribute('multiple');
+						}
+
+				}
+			},
+
+
 			disable: function(state) {
 				var I = this.getRuntime(), input;
 

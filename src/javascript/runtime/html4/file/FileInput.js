@@ -203,6 +203,21 @@ define("moxie/runtime/html4/file/FileInput", [
 				});
 			},
 
+			setOption: function(name, value) {
+				var I = this.getRuntime();
+				var input;
+
+				if (name == 'accept') {
+					_mimes = value.mimes || Mime.extList2mimes(value, I.can('filter_by_extension'));
+				}
+
+				// update current input
+				input = Dom.get(_uid)
+				if (input) {
+					input.setAttribute('accept', _mimes.join(','));
+				}
+			},
+
 
 			disable: function(state) {
 				var input;

@@ -270,6 +270,51 @@ define('moxie/file/FileInput', [
 				}));
 			},
 
+
+			/**
+			 * Get current option value by its name
+			 *
+			 * @method getOption
+			 * @param name
+			 * @return {Mixed}
+			 */
+			getOption: function(name) {
+				return options[name];
+			},
+
+
+			/**
+			 * Sets a new value for the option specified by name
+			 *
+			 * @method setOption
+			 * @param name
+			 * @param value
+			 */
+			setOption: function(name, value) {
+				if (!options.hasOwnProperty(name)) {
+					return;
+				}
+
+				var oldValue = options[name];
+
+				switch (name) {
+					case 'accept':
+						if (typeof(value) === 'string') {
+							value = Mime.mimes2extList(value);
+						}
+						break;
+
+					case 'container':
+					case 'required_caps':
+						throw new x.FileException(x.FileException.NO_MODIFICATION_ALLOWED_ERR);
+				}
+
+				options[name] = value;
+				this.exec('FileInput', 'setOption', name, value);
+
+				this.trigger('OptionChanged', name, value, oldValue);
+			},
+
 			/**
 			Disables file-picker element, so that it doesn't react to mouse clicks.
 

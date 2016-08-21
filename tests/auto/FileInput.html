@@ -162,6 +162,60 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 });
 
 
+o.each("html5,html4".split(','), function(runtime) {
+	test("Change type of accepted files via: setOption('accept', '...'): " + runtime, function (assert) {
+
+		$('<a id="browse_button" href="javascript:;">Browse...</a>')
+				.appendTo(this.DOM);
+
+		var fi = new o.FileInput(o.extend({}, this.runtimeOptions, {
+			accept: 'image/jpeg', // JPEGs only
+			runtime_order: runtime,
+			browse_button: 'browse_button'
+		}));
+
+		fi.onready = function() {
+			start();
+			var $input = $('.moxie-shim input[type="file"]');
+
+			// see if we can retrieve current setting
+			assert.deepEqual(fi.getOption('accept'), [{
+					"extensions": "jpg,jpeg,jpe",
+					"title": "Files"
+				}],
+				"accept can properly retrieved with getOption('accept')"
+			);
+
+
+			assert.equal($input.attr('accept'), 'image/jpeg',
+				"accept attribute of input[type='file'] should now be image/jpeg"
+			);
+
+
+			fi.setOption('accept', 'image/png'); // now accept only PNGs
+
+			assert.deepEqual(fi.getOption('accept'), [{
+					"extensions": "png",
+					"title": "Files"
+				}],
+				"Modify file input to accept only PNGs instead of JPEGs"
+			);
+
+			assert.equal($input.attr('accept'), 'image/png',
+				"accept attribute of input[type='file'] should now be image/png"
+			);
+		};
+
+
+		fi.bind("Error RuntimeError", function() {
+			assert.ok(true, "Runtime not supported.");
+			start();
+		});
+
+		stop();
+		fi.init();
+	});
+});
 
 </script>
 </head>
