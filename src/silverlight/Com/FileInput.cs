@@ -43,12 +43,12 @@ namespace Moxiecode.Com
 			this.VerticalAlignment = VerticalAlignment.Stretch;
 		}
 
-		public void init(object accept, object name, object multiple)
+		public void init(object accept, object multiple)
 		{
-			this._init((string)accept, (string)name, (bool)multiple);
+			this._init((string)accept, (bool)multiple);
 		}
 
-		private void _init(string accept, string name, bool multiple)
+		private void _init(string accept, bool multiple)
 		{
 			_multiple = multiple;
 			_accept = accept;
@@ -65,6 +65,20 @@ namespace Moxiecode.Com
 					this._openDialog();
 				}
 			};
+		}
+
+		public void setOption(object name, object value)
+		{
+			switch ((string)name)
+			{
+				case "multiple":
+					_multiple = (bool)value;
+					return;
+
+				case "accept":
+					_accept = (string)value;
+					return;
+			}
 		}
 
 
