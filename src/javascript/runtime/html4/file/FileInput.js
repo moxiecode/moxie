@@ -30,7 +30,7 @@ define("moxie/runtime/html4/file/FileInput", [
 
 			uid = Basic.guid('uid_');
 
-			shimContainer = I.getShimContainer(); // we get new ref everytime to avoid memory leaks in IE
+			shimContainer = I.getShimContainer(); // we get new ref every time to avoid memory leaks in IE
 
 			if (_uid) { // move previous form out of the view
 				currForm = Dom.get(_uid + '_form');
@@ -58,7 +58,6 @@ define("moxie/runtime/html4/file/FileInput", [
 			input = document.createElement('input');
 			input.setAttribute('id', uid);
 			input.setAttribute('type', 'file');
-			input.setAttribute('name', _options.name || 'Filedata');
 			input.setAttribute('accept', _mimes.join(','));
 
 			Basic.extend(input.style, {

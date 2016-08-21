@@ -31,7 +31,6 @@ define('moxie/file/FileInput', [
 	@param {Object|String|DOMElement} options If options is string or node, argument is considered as _browse\_button_.
 		@param {String|DOMElement} options.browse_button DOM Element to turn into file picker.
 		@param {Array} [options.accept] Array of mime types to accept. By default accepts all.
-		@param {String} [options.file='file'] Name of the file field (not the filename).
 		@param {Boolean} [options.multiple=false] Enable selection of multiple files.
 		@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
 		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
@@ -128,8 +127,7 @@ define('moxie/file/FileInput', [
 			Env.log("Instantiating FileInput...");	
 		}
 
-		var self = this,
-			container, browseButton, defaults;
+		var container, browseButton, defaults;
 
 		// if flat argument passed it should be browse_button id
 		if (Basic.inArray(Basic.typeOf(options), ['string', 'node']) !== -1) {
@@ -149,7 +147,6 @@ define('moxie/file/FileInput', [
 				title: I18n.translate('All Files'),
 				extensions: '*'
 			}],
-			name: 'file',
 			multiple: false,
 			required_caps: false,
 			container: browseButton.parentNode || document.body
@@ -180,9 +177,9 @@ define('moxie/file/FileInput', [
 
 		container = browseButton = null; // IE
 						
-		RuntimeClient.call(self);
+		RuntimeClient.call(this);
 		
-		Basic.extend(self, {
+		Basic.extend(this, {
 			/**
 			Unique id of the component
 
@@ -227,6 +224,8 @@ define('moxie/file/FileInput', [
 			@method init
 			*/
 			init: function() {
+				var self = this;
+
 				self.bind('RuntimeInit', function(e, runtime) {
 					self.ruid = runtime.uid;
 					self.shimid = runtime.shimid;
@@ -280,7 +279,7 @@ define('moxie/file/FileInput', [
 			disable: function(state) {
 				var runtime = this.getRuntime();
 				if (runtime) {
-					runtime.exec.call(this, 'FileInput', 'disable', Basic.typeOf(state) === 'undefined' ? true : state);
+					this.exec('FileInput', 'disable', Basic.typeOf(state) === 'undefined' ? true : state);
 				}
 			},
 
@@ -291,7 +290,7 @@ define('moxie/file/FileInput', [
 			@method refresh
 			*/
 			refresh: function() {
-				self.trigger("Refresh");
+				this.trigger("Refresh");
 			},
 
 

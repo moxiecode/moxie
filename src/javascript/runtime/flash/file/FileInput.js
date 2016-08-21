@@ -31,7 +31,6 @@ define("moxie/runtime/flash/file/FileInput", [
 			}, 999);
 
 			this.getRuntime().shimExec.call(this, 'FileInput', 'init', {
-				name: options.name,
 				accept: options.accept,
 				multiple: options.multiple
 			});
