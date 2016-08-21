@@ -1,7 +1,5 @@
 # mOxie
 
-[![Build Status](https://travis-ci.org/moxiecode/moxie.svg?branch=master)](https://travis-ci.org/moxiecode/moxie)
-
 mOxie is combined name for XHR2 and File API pollyfills that we've extracted from [Plupload](https://github.com/moxiecode/plupload) in order to make it more flexible and give it opportunity for further growth. But now that pollyfills are separate, they can be used independently.
 
 XHR2 and File API pollyfills are multi-runtime, which means that they will fallback to Flash and SilverLight (additionally there's Java runtime in production) or even "good old" HTML4, when there are no HTML5 capabilities found in current browser. 
