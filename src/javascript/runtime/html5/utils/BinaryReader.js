@@ -24,7 +24,6 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 			UTF16StringReader.apply(this, arguments);
 		}
 	}
-	 
 
 	Basic.extend(BinaryReader.prototype, {
 		
