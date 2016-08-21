@@ -17,18 +17,19 @@ define("moxie/runtime/silverlight/file/FileInput", [
 	"moxie/file/File",
 	"moxie/core/utils/Basic"
 ], function(extensions, File, Basic) {
+
+	function toFilters(accept) {
+		var filter = '';
+		for (var i = 0; i < accept.length; i++) {
+			filter += (filter !== '' ? '|' : '') + accept[i].title + " | *." + accept[i].extensions.replace(/,/g, ';*.');
+		}
+		return filter;
+	}
+
 	
 	var FileInput = {
 		init: function(options) {
 			var comp = this, I = this.getRuntime();
-
-			function toFilters(accept) {
-				var filter = '';
-				for (var i = 0; i < accept.length; i++) {
-					filter += (filter !== '' ? '|' : '') + accept[i].title + " | *." + accept[i].extensions.replace(/,/g, ';*.');
-				}
-				return filter;
-			}
 
 			this.bind("Change", function() {
 				var files = I.shimExec.call(comp, 'FileInput', 'getFiles');
@@ -38,8 +39,15 @@ define("moxie/runtime/silverlight/file/FileInput", [
 				});
 			}, 999);
 			
-			this.getRuntime().shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
+			I.shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.multiple);
 			this.trigger('ready');
+		},
+
+		setOption: function(name, value) {
+			if (name == 'accept') {
+				value = toFilters(value);
+			}
+			this.getRuntime().shimExec.call(this, 'FileInput', 'setOption', name, value);
 		}
 	};
 

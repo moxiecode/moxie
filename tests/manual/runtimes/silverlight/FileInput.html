@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Flash: FileInput</title>
+<title>Silverlight: FileInput</title>
 
 <!-- qunit -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -30,9 +30,9 @@ test("Change type of accepted files via: setOption('accept', '...'): ", function
 
 	var fi = new o.FileInput({
 		accept: 'image/jpeg',
-		runtime_order: 'flash',
+		runtime_order: 'silverlight',
 		browse_button: 'browse_button',
-		swf_url: "../../../../bin/flash/Moxie.swf"
+		xap_url: "../../../../bin/silverlight/Moxie.xap"
 	});
 
 	fi.onready = function() {
