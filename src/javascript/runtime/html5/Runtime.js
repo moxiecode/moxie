@@ -72,7 +72,10 @@ define("moxie/runtime/html5/Runtime", [
 					return Env.can('use_fileinput') && window.File;
 				},
 				select_folder: function() {
-					return I.can('select_file') && Env.browser === 'Chrome' && Env.verComp(Env.version, 21, '>=');
+					return I.can('select_file') && (
+						Env.browser === 'Chrome' && Env.verComp(Env.version, 21, '>=') ||
+						Env.browser === 'Firefox' && Env.verComp(Env.version, 42, '>=') // https://developer.mozilla.org/en-US/Firefox/Releases/42
+					);
 				},
 				select_multiple: function() {
 					// it is buggy on Safari Windows and iOS
