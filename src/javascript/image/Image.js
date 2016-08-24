@@ -208,7 +208,7 @@ define("moxie/image/Image", [
 					height: self.height
 				};
 
-				options = Basic.extend({
+				options = Basic.extendIf({
 					width: self.width,
 					height: self.height,
 					type: self.type || 'image/jpeg',
