@@ -50,7 +50,7 @@ task("mkjs", [], function () {
 
 	var modules = [].slice.call(arguments);
 	if (!modules.length) {
-		modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest", "image/Image"];
+		modules = ["file/Blob", "file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest", "image/Image"];
 	}
 
 	var options = {

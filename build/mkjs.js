@@ -20,7 +20,7 @@ function getAvailbleRuntimes(baseDir) {
 
 
 function getExtensionPaths(options) {
-	var modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest"];
+	var modules = ["file/Blob", "file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest"];
 	var extensions = [];
 
 	if (options.imageSupport) {
