@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.5
+ * v1.5-beta.2
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2016-08-16
+ * Date: 2016-08-24
  */
 /**
  * Compiled inline version. (Library mode)
@@ -563,6 +563,190 @@ define('moxie/core/utils/Basic', [], function() {
 		sprintf: sprintf,
 		parseSizeStr: parseSizeStr,
 		delay: delay
+	};
+});
+
+// Included from: src/javascript/core/utils/Encode.js
+
+/**
+ * Encode.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+define('moxie/core/utils/Encode', [], function() {
+
+	/**
+	@class moxie/core/utils/Encode
+	*/
+
+	/**
+	Encode string with UTF-8
+
+	@method utf8_encode
+	@for Utils
+	@static
+	@param {String} str String to encode
+	@return {String} UTF-8 encoded string
+	*/
+	var utf8_encode = function(str) {
+		return unescape(encodeURIComponent(str));
+	};
+	
+	/**
+	Decode UTF-8 encoded string
+
+	@method utf8_decode
+	@static
+	@param {String} str String to decode
+	@return {String} Decoded string
+	*/
+	var utf8_decode = function(str_data) {
+		return decodeURIComponent(escape(str_data));
+	};
+	
+	/**
+	Decode Base64 encoded string (uses browser's default method if available),
+	from: https://raw.github.com/kvz/phpjs/master/functions/url/base64_decode.js
+
+	@method atob
+	@static
+	@param {String} data String to decode
+	@return {String} Decoded string
+	*/
+	var atob = function(data, utf8) {
+		if (typeof(window.atob) === 'function') {
+			return utf8 ? utf8_decode(window.atob(data)) : window.atob(data);
+		}
+
+		// http://kevin.vanzonneveld.net
+		// +   original by: Tyler Akins (http://rumkin.com)
+		// +   improved by: Thunder.m
+		// +      input by: Aman Gupta
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   bugfixed by: Onno Marsman
+		// +   bugfixed by: Pellentesque Malesuada
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +      input by: Brett Zamir (http://brett-zamir.me)
+		// +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// *     example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
+		// *     returns 1: 'Kevin van Zonneveld'
+		// mozilla has this native
+		// - but breaks in 2.0.0.12!
+		//if (typeof this.window.atob == 'function') {
+		//    return atob(data);
+		//}
+		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+			ac = 0,
+			dec = "",
+			tmp_arr = [];
+
+		if (!data) {
+			return data;
+		}
+
+		data += '';
+
+		do { // unpack four hexets into three octets using index points in b64
+			h1 = b64.indexOf(data.charAt(i++));
+			h2 = b64.indexOf(data.charAt(i++));
+			h3 = b64.indexOf(data.charAt(i++));
+			h4 = b64.indexOf(data.charAt(i++));
+
+			bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
+
+			o1 = bits >> 16 & 0xff;
+			o2 = bits >> 8 & 0xff;
+			o3 = bits & 0xff;
+
+			if (h3 == 64) {
+				tmp_arr[ac++] = String.fromCharCode(o1);
+			} else if (h4 == 64) {
+				tmp_arr[ac++] = String.fromCharCode(o1, o2);
+			} else {
+				tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
+			}
+		} while (i < data.length);
+
+		dec = tmp_arr.join('');
+
+		return utf8 ? utf8_decode(dec) : dec;
+	};
+	
+	/**
+	Base64 encode string (uses browser's default method if available),
+	from: https://raw.github.com/kvz/phpjs/master/functions/url/base64_encode.js
+
+	@method btoa
+	@static
+	@param {String} data String to encode
+	@return {String} Base64 encoded string
+	*/
+	var btoa = function(data, utf8) {
+		if (utf8) {
+			data = utf8_encode(data);
+		}
+
+		if (typeof(window.btoa) === 'function') {
+			return window.btoa(data);
+		}
+
+		// http://kevin.vanzonneveld.net
+		// +   original by: Tyler Akins (http://rumkin.com)
+		// +   improved by: Bayron Guevara
+		// +   improved by: Thunder.m
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   bugfixed by: Pellentesque Malesuada
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   improved by: Rafał Kukawski (http://kukawski.pl)
+		// *     example 1: base64_encode('Kevin van Zonneveld');
+		// *     returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
+		// mozilla has this native
+		// - but breaks in 2.0.0.12!
+		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+			ac = 0,
+			enc = "",
+			tmp_arr = [];
+
+		if (!data) {
+			return data;
+		}
+
+		do { // pack three octets into four hexets
+			o1 = data.charCodeAt(i++);
+			o2 = data.charCodeAt(i++);
+			o3 = data.charCodeAt(i++);
+
+			bits = o1 << 16 | o2 << 8 | o3;
+
+			h1 = bits >> 18 & 0x3f;
+			h2 = bits >> 12 & 0x3f;
+			h3 = bits >> 6 & 0x3f;
+			h4 = bits & 0x3f;
+
+			// use hexets to index into b64, and append result to encoded string
+			tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+		} while (i < data.length);
+
+		enc = tmp_arr.join('');
+
+		var r = data.length % 3;
+
+		return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+	};
+
+
+	return {
+		utf8_encode: utf8_encode,
+		utf8_decode: utf8_decode,
+		atob: atob,
+		btoa: btoa
 	};
 });
 
@@ -1273,10 +1457,10 @@ define("moxie/core/utils/Env", [
 	return Env;
 });
 
-// Included from: src/javascript/core/I18n.js
+// Included from: src/javascript/core/Exceptions.js
 
 /**
- * I18n.js
+ * Exceptions.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -1285,255 +1469,156 @@ define("moxie/core/utils/Env", [
  * Contributing: http://www.plupload.com/contributing
  */
 
-define("moxie/core/I18n", [
-	"moxie/core/utils/Basic"
+define('moxie/core/Exceptions', [
+	'moxie/core/utils/Basic'
 ], function(Basic) {
-	var i18n = {};
+	
+	function _findKey(obj, value) {
+		var key;
+		for (key in obj) {
+			if (obj[key] === value) {
+				return key;
+			}
+		}
+		return null;
+	}
 
 	/**
-	@class moxie/core/I18n
+	@class moxie/core/Exception
 	*/
 	return {
-		/**
-		 * Extends the language pack object with new items.
-		 *
-		 * @param {Object} pack Language pack items to add.
-		 * @return {Object} Extended language pack object.
-		 */
-		addI18n: function(pack) {
-			return Basic.extend(i18n, pack);
-		},
+		RuntimeError: (function() {
+			var namecodes = {
+				NOT_INIT_ERR: 1,
+				EXCEPTION_ERR: 3,
+				NOT_SUPPORTED_ERR: 9,
+				JS_ERR: 4
+			};
 
-		/**
-		 * Translates the specified string by checking for the english string in the language pack lookup.
-		 *
-		 * @param {String} str String to look for.
-		 * @return {String} Translated string or the input string if it wasn't found.
-		 */
-		translate: function(str) {
-			return i18n[str] || str;
-		},
-
-		/**
-		 * Shortcut for translate function
-		 *
-		 * @param {String} str String to look for.
-		 * @return {String} Translated string or the input string if it wasn't found.
-		 */
-		_: function(str) {
-			return this.translate(str);
-		},
-
-		/**
-		 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
-		 *
-		 * @param {String} str String with tokens
-		 * @return {String} String with replaced tokens
-		 */
-		sprintf: function(str) {
-			var args = [].slice.call(arguments, 1);
-
-			return str.replace(/%[a-z]/g, function() {
-				var value = args.shift();
-				return Basic.typeOf(value) !== 'undefined' ? value : '';
+			function RuntimeError(code, message) {
+				this.code = code;
+				this.name = _findKey(namecodes, code);
+				this.message = this.name + (message || ": RuntimeError " + this.code);
+			}
+			
+			Basic.extend(RuntimeError, namecodes);
+			RuntimeError.prototype = Error.prototype;
+			return RuntimeError;
+		}()),
+		
+		OperationNotAllowedException: (function() {
+			
+			function OperationNotAllowedException(code) {
+				this.code = code;
+				this.name = 'OperationNotAllowedException';
+			}
+			
+			Basic.extend(OperationNotAllowedException, {
+				NOT_ALLOWED_ERR: 1
 			});
-		}
+			
+			OperationNotAllowedException.prototype = Error.prototype;
+			
+			return OperationNotAllowedException;
+		}()),
+
+		ImageError: (function() {
+			var namecodes = {
+				WRONG_FORMAT: 1,
+				MAX_RESOLUTION_ERR: 2,
+				INVALID_META_ERR: 3
+			};
+
+			function ImageError(code) {
+				this.code = code;
+				this.name = _findKey(namecodes, code);
+				this.message = this.name + ": ImageError " + this.code;
+			}
+			
+			Basic.extend(ImageError, namecodes);
+			ImageError.prototype = Error.prototype;
+
+			return ImageError;
+		}()),
+
+		FileException: (function() {
+			var namecodes = {
+				NOT_FOUND_ERR: 1,
+				SECURITY_ERR: 2,
+				ABORT_ERR: 3,
+				NOT_READABLE_ERR: 4,
+				ENCODING_ERR: 5,
+				NO_MODIFICATION_ALLOWED_ERR: 6,
+				INVALID_STATE_ERR: 7,
+				SYNTAX_ERR: 8
+			};
+
+			function FileException(code) {
+				this.code = code;
+				this.name = _findKey(namecodes, code);
+				this.message = this.name + ": FileException " + this.code;
+			}
+			
+			Basic.extend(FileException, namecodes);
+			FileException.prototype = Error.prototype;
+			return FileException;
+		}()),
+		
+		DOMException: (function() {
+			var namecodes = {
+				INDEX_SIZE_ERR: 1,
+				DOMSTRING_SIZE_ERR: 2,
+				HIERARCHY_REQUEST_ERR: 3,
+				WRONG_DOCUMENT_ERR: 4,
+				INVALID_CHARACTER_ERR: 5,
+				NO_DATA_ALLOWED_ERR: 6,
+				NO_MODIFICATION_ALLOWED_ERR: 7,
+				NOT_FOUND_ERR: 8,
+				NOT_SUPPORTED_ERR: 9,
+				INUSE_ATTRIBUTE_ERR: 10,
+				INVALID_STATE_ERR: 11,
+				SYNTAX_ERR: 12,
+				INVALID_MODIFICATION_ERR: 13,
+				NAMESPACE_ERR: 14,
+				INVALID_ACCESS_ERR: 15,
+				VALIDATION_ERR: 16,
+				TYPE_MISMATCH_ERR: 17,
+				SECURITY_ERR: 18,
+				NETWORK_ERR: 19,
+				ABORT_ERR: 20,
+				URL_MISMATCH_ERR: 21,
+				QUOTA_EXCEEDED_ERR: 22,
+				TIMEOUT_ERR: 23,
+				INVALID_NODE_TYPE_ERR: 24,
+				DATA_CLONE_ERR: 25
+			};
+
+			function DOMException(code) {
+				this.code = code;
+				this.name = _findKey(namecodes, code);
+				this.message = this.name + ": DOMException " + this.code;
+			}
+			
+			Basic.extend(DOMException, namecodes);
+			DOMException.prototype = Error.prototype;
+			return DOMException;
+		}()),
+		
+		EventException: (function() {
+			function EventException(code) {
+				this.code = code;
+				this.name = 'EventException';
+			}
+			
+			Basic.extend(EventException, {
+				UNSPECIFIED_EVENT_TYPE_ERR: 0
+			});
+			
+			EventException.prototype = Error.prototype;
+			
+			return EventException;
+		}())
 	};
-});
-
-// Included from: src/javascript/core/utils/Mime.js
-
-/**
- * Mime.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-define("moxie/core/utils/Mime", [
-	"moxie/core/utils/Basic",
-	"moxie/core/I18n"
-], function(Basic, I18n) {
-	
-	var mimeData = "" +
-		"application/msword,doc dot," +
-		"application/pdf,pdf," +
-		"application/pgp-signature,pgp," +
-		"application/postscript,ps ai eps," +
-		"application/rtf,rtf," +
-		"application/vnd.ms-excel,xls xlb," +
-		"application/vnd.ms-powerpoint,ppt pps pot," +
-		"application/zip,zip," +
-		"application/x-shockwave-flash,swf swfl," +
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx," +
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.template,dotx," +
-		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,xlsx," +
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx," +
-		"application/vnd.openxmlformats-officedocument.presentationml.template,potx," +
-		"application/vnd.openxmlformats-officedocument.presentationml.slideshow,ppsx," +
-		"application/x-javascript,js," +
-		"application/json,json," +
-		"audio/mpeg,mp3 mpga mpega mp2," +
-		"audio/x-wav,wav," +
-		"audio/x-m4a,m4a," +
-		"audio/ogg,oga ogg," +
-		"audio/aiff,aiff aif," +
-		"audio/flac,flac," +
-		"audio/aac,aac," +
-		"audio/ac3,ac3," +
-		"audio/x-ms-wma,wma," +
-		"image/bmp,bmp," +
-		"image/gif,gif," +
-		"image/jpeg,jpg jpeg jpe," +
-		"image/photoshop,psd," +
-		"image/png,png," +
-		"image/svg+xml,svg svgz," +
-		"image/tiff,tiff tif," +
-		"text/plain,asc txt text diff log," +
-		"text/html,htm html xhtml," +
-		"text/css,css," +
-		"text/csv,csv," +
-		"text/rtf,rtf," +
-		"video/mpeg,mpeg mpg mpe m2v," +
-		"video/quicktime,qt mov," +
-		"video/mp4,mp4," +
-		"video/x-m4v,m4v," +
-		"video/x-flv,flv," +
-		"video/x-ms-wmv,wmv," +
-		"video/avi,avi," +
-		"video/webm,webm," +
-		"video/3gpp,3gpp 3gp," +
-		"video/3gpp2,3g2," +
-		"video/vnd.rn-realvideo,rv," +
-		"video/ogg,ogv," + 
-		"video/x-matroska,mkv," +
-		"application/vnd.oasis.opendocument.formula-template,otf," +
-		"application/octet-stream,exe";
-	
-	
-	var Mime = {
-
-		mimes: {},
-
-		extensions: {},
-
-		// Parses the default mime types string into a mimes and extensions lookup maps
-		addMimeType: function (mimeData) {
-			var items = mimeData.split(/,/), i, ii, ext;
-			
-			for (i = 0; i < items.length; i += 2) {
-				ext = items[i + 1].split(/ /);
-
-				// extension to mime lookup
-				for (ii = 0; ii < ext.length; ii++) {
-					this.mimes[ext[ii]] = items[i];
-				}
-				// mime to extension lookup
-				this.extensions[items[i]] = ext;
-			}
-		},
-
-
-		extList2mimes: function (filters, addMissingExtensions) {
-			var self = this, ext, i, ii, type, mimes = [];
-			
-			// convert extensions to mime types list
-			for (i = 0; i < filters.length; i++) {
-				ext = filters[i].extensions.split(/\s*,\s*/);
-
-				for (ii = 0; ii < ext.length; ii++) {
-					
-					// if there's an asterisk in the list, then accept attribute is not required
-					if (ext[ii] === '*') {
-						return [];
-					}
-
-					type = self.mimes[ext[ii]];
-					if (type && Basic.inArray(type, mimes) === -1) {
-						mimes.push(type);
-					}
-
-					// future browsers should filter by extension, finally
-					if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
-						mimes.push('.' + ext[ii]);
-					} else if (!type) {
-						// if we have no type in our map, then accept all
-						return [];
-					}
-				}
-			}
-			return mimes;
-		},
-
-
-		mimes2exts: function(mimes) {
-			var self = this, exts = [];
-			
-			Basic.each(mimes, function(mime) {
-				if (mime === '*') {
-					exts = [];
-					return false;
-				}
-
-				// check if this thing looks like mime type
-				var m = mime.match(/^(\w+)\/(\*|\w+)$/);
-				if (m) {
-					if (m[2] === '*') { 
-						// wildcard mime type detected
-						Basic.each(self.extensions, function(arr, mime) {
-							if ((new RegExp('^' + m[1] + '/')).test(mime)) {
-								[].push.apply(exts, self.extensions[mime]);
-							}
-						});
-					} else if (self.extensions[mime]) {
-						[].push.apply(exts, self.extensions[mime]);
-					}
-				}
-			});
-			return exts;
-		},
-
-
-		mimes2extList: function(mimes) {
-			var accept = [], exts = [];
-
-			if (Basic.typeOf(mimes) === 'string') {
-				mimes = Basic.trim(mimes).split(/\s*,\s*/);
-			}
-
-			exts = this.mimes2exts(mimes);
-			
-			accept.push({
-				title: I18n.translate('Files'),
-				extensions: exts.length ? exts.join(',') : '*'
-			});
-			
-			// save original mimes string
-			accept.mimes = mimes;
-
-			return accept;
-		},
-
-
-		getFileExtension: function(fileName) {
-			var matches = fileName && fileName.match(/\.([^.]+)$/);
-			if (matches) {
-				return matches[1].toLowerCase();
-			}
-			return '';
-		},
-
-		getFileMime: function(fileName) {
-			return this.mimes[this.getFileExtension(fileName)] || '';
-		}
-	};
-
-	Mime.addMimeType(mimeData);
-
-	return Mime;
 });
 
 // Included from: src/javascript/core/utils/Dom.js
@@ -1719,170 +1804,6 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	};
 });
 
-// Included from: src/javascript/core/Exceptions.js
-
-/**
- * Exceptions.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-define('moxie/core/Exceptions', [
-	'moxie/core/utils/Basic'
-], function(Basic) {
-	
-	function _findKey(obj, value) {
-		var key;
-		for (key in obj) {
-			if (obj[key] === value) {
-				return key;
-			}
-		}
-		return null;
-	}
-
-	/**
-	@class moxie/core/Exception
-	*/
-	return {
-		RuntimeError: (function() {
-			var namecodes = {
-				NOT_INIT_ERR: 1,
-				EXCEPTION_ERR: 3,
-				NOT_SUPPORTED_ERR: 9,
-				JS_ERR: 4
-			};
-
-			function RuntimeError(code, message) {
-				this.code = code;
-				this.name = _findKey(namecodes, code);
-				this.message = this.name + (message || ": RuntimeError " + this.code);
-			}
-			
-			Basic.extend(RuntimeError, namecodes);
-			RuntimeError.prototype = Error.prototype;
-			return RuntimeError;
-		}()),
-		
-		OperationNotAllowedException: (function() {
-			
-			function OperationNotAllowedException(code) {
-				this.code = code;
-				this.name = 'OperationNotAllowedException';
-			}
-			
-			Basic.extend(OperationNotAllowedException, {
-				NOT_ALLOWED_ERR: 1
-			});
-			
-			OperationNotAllowedException.prototype = Error.prototype;
-			
-			return OperationNotAllowedException;
-		}()),
-
-		ImageError: (function() {
-			var namecodes = {
-				WRONG_FORMAT: 1,
-				MAX_RESOLUTION_ERR: 2,
-				INVALID_META_ERR: 3
-			};
-
-			function ImageError(code) {
-				this.code = code;
-				this.name = _findKey(namecodes, code);
-				this.message = this.name + ": ImageError " + this.code;
-			}
-			
-			Basic.extend(ImageError, namecodes);
-			ImageError.prototype = Error.prototype;
-
-			return ImageError;
-		}()),
-
-		FileException: (function() {
-			var namecodes = {
-				NOT_FOUND_ERR: 1,
-				SECURITY_ERR: 2,
-				ABORT_ERR: 3,
-				NOT_READABLE_ERR: 4,
-				ENCODING_ERR: 5,
-				NO_MODIFICATION_ALLOWED_ERR: 6,
-				INVALID_STATE_ERR: 7,
-				SYNTAX_ERR: 8
-			};
-
-			function FileException(code) {
-				this.code = code;
-				this.name = _findKey(namecodes, code);
-				this.message = this.name + ": FileException " + this.code;
-			}
-			
-			Basic.extend(FileException, namecodes);
-			FileException.prototype = Error.prototype;
-			return FileException;
-		}()),
-		
-		DOMException: (function() {
-			var namecodes = {
-				INDEX_SIZE_ERR: 1,
-				DOMSTRING_SIZE_ERR: 2,
-				HIERARCHY_REQUEST_ERR: 3,
-				WRONG_DOCUMENT_ERR: 4,
-				INVALID_CHARACTER_ERR: 5,
-				NO_DATA_ALLOWED_ERR: 6,
-				NO_MODIFICATION_ALLOWED_ERR: 7,
-				NOT_FOUND_ERR: 8,
-				NOT_SUPPORTED_ERR: 9,
-				INUSE_ATTRIBUTE_ERR: 10,
-				INVALID_STATE_ERR: 11,
-				SYNTAX_ERR: 12,
-				INVALID_MODIFICATION_ERR: 13,
-				NAMESPACE_ERR: 14,
-				INVALID_ACCESS_ERR: 15,
-				VALIDATION_ERR: 16,
-				TYPE_MISMATCH_ERR: 17,
-				SECURITY_ERR: 18,
-				NETWORK_ERR: 19,
-				ABORT_ERR: 20,
-				URL_MISMATCH_ERR: 21,
-				QUOTA_EXCEEDED_ERR: 22,
-				TIMEOUT_ERR: 23,
-				INVALID_NODE_TYPE_ERR: 24,
-				DATA_CLONE_ERR: 25
-			};
-
-			function DOMException(code) {
-				this.code = code;
-				this.name = _findKey(namecodes, code);
-				this.message = this.name + ": DOMException " + this.code;
-			}
-			
-			Basic.extend(DOMException, namecodes);
-			DOMException.prototype = Error.prototype;
-			return DOMException;
-		}()),
-		
-		EventException: (function() {
-			function EventException(code) {
-				this.code = code;
-				this.name = 'EventException';
-			}
-			
-			Basic.extend(EventException, {
-				UNSPECIFIED_EVENT_TYPE_ERR: 0
-			});
-			
-			EventException.prototype = Error.prototype;
-			
-			return EventException;
-		}())
-	};
-});
-
 // Included from: src/javascript/core/EventTarget.js
 
 /**
@@ -1993,9 +1914,19 @@ define('moxie/core/EventTarget', [
 		@param {Function} [fn] Handler to unregister
 		*/
 		removeEventListener: function(type, fn) {
+			var self = this, list, i;
+
 			type = type.toLowerCase();
 
-			var list = eventpool[this.uid] && eventpool[this.uid][type], i;
+			if (/\s/.test(type)) {
+				// multiple event types were passed for one handler
+				Basic.each(type.split(/\s+/), function(type) {
+					self.removeEventListener(type, fn);
+				});
+				return;
+			}
+
+			list = eventpool[this.uid] && eventpool[this.uid][type];
 
 			if (list) {
 				if (fn) {
@@ -3006,521 +2937,6 @@ define('moxie/runtime/RuntimeClient', [
 
 });
 
-// Included from: src/javascript/file/FileInput.js
-
-/**
- * FileInput.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-define('moxie/file/FileInput', [
-	'moxie/core/utils/Basic',
-	'moxie/core/utils/Env',
-	'moxie/core/utils/Mime',
-	'moxie/core/utils/Dom',
-	'moxie/core/Exceptions',
-	'moxie/core/EventTarget',
-	'moxie/core/I18n',
-	'moxie/runtime/Runtime',
-	'moxie/runtime/RuntimeClient'
-], function(Basic, Env, Mime, Dom, x, EventTarget, I18n, Runtime, RuntimeClient) {
-	/**
-	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
-	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
-	with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
-
-	@class moxie/file/FileInput
-	@constructor
-	@extends EventTarget
-	@uses RuntimeClient
-	@param {Object|String|DOMElement} options If options is string or node, argument is considered as _browse\_button_.
-		@param {String|DOMElement} options.browse_button DOM Element to turn into file picker.
-		@param {Array} [options.accept] Array of mime types to accept. By default accepts all.
-		@param {String} [options.file='file'] Name of the file field (not the filename).
-		@param {Boolean} [options.multiple=false] Enable selection of multiple files.
-		@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
-		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
-		for _browse\_button_.
-		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
-
-	@example
-		<div id="container">
-			<a id="file-picker" href="javascript:;">Browse...</a>
-		</div>
-
-		<script>
-			var fileInput = new mOxie.FileInput({
-				browse_button: 'file-picker', // or document.getElementById('file-picker')
-				container: 'container',
-				accept: [
-					{title: "Image files", extensions: "jpg,gif,png"} // accept only images
-				],
-				multiple: true // allow multiple file selection
-			});
-
-			fileInput.onchange = function(e) {
-				// do something to files array
-				console.info(e.target.files); // or this.files or fileInput.files
-			};
-
-			fileInput.init(); // initialize
-		</script>
-	*/
-	var dispatches = [
-		/**
-		Dispatched when runtime is connected and file-picker is ready to be used.
-
-		@event ready
-		@param {Object} event
-		*/
-		'ready',
-
-		/**
-		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked. 
-		Check [corresponding documentation entry](#method_refresh) for more info.
-
-		@event refresh
-		@param {Object} event
-		*/
-
-		/**
-		Dispatched when selection of files in the dialog is complete.
-
-		@event change
-		@param {Object} event
-		*/
-		'change',
-
-		'cancel', // TODO: might be useful
-
-		/**
-		Dispatched when mouse cursor enters file-picker area. Can be used to style element
-		accordingly.
-
-		@event mouseenter
-		@param {Object} event
-		*/
-		'mouseenter',
-
-		/**
-		Dispatched when mouse cursor leaves file-picker area. Can be used to style element
-		accordingly.
-
-		@event mouseleave
-		@param {Object} event
-		*/
-		'mouseleave',
-
-		/**
-		Dispatched when functional mouse button is pressed on top of file-picker area.
-
-		@event mousedown
-		@param {Object} event
-		*/
-		'mousedown',
-
-		/**
-		Dispatched when functional mouse button is released on top of file-picker area.
-
-		@event mouseup
-		@param {Object} event
-		*/
-		'mouseup'
-	];
-
-	function FileInput(options) {
-		if (MXI_DEBUG) {
-			Env.log("Instantiating FileInput...");	
-		}
-
-		var self = this,
-			container, browseButton, defaults;
-
-		// if flat argument passed it should be browse_button id
-		if (Basic.inArray(Basic.typeOf(options), ['string', 'node']) !== -1) {
-			options = { browse_button : options };
-		}
-
-		// this will help us to find proper default container
-		browseButton = Dom.get(options.browse_button);
-		if (!browseButton) {
-			// browse button is required
-			throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
-		}
-
-		// figure out the options
-		defaults = {
-			accept: [{
-				title: I18n.translate('All Files'),
-				extensions: '*'
-			}],
-			name: 'file',
-			multiple: false,
-			required_caps: false,
-			container: browseButton.parentNode || document.body
-		};
-		
-		options = Basic.extend({}, defaults, options);
-
-		// convert to object representation
-		if (typeof(options.required_caps) === 'string') {
-			options.required_caps = Runtime.parseCaps(options.required_caps);
-		}
-					
-		// normalize accept option (could be list of mime types or array of title/extensions pairs)
-		if (typeof(options.accept) === 'string') {
-			options.accept = Mime.mimes2extList(options.accept);
-		}
-
-		container = Dom.get(options.container);
-		// make sure we have container
-		if (!container) {
-			container = document.body;
-		}
-
-		// make container relative, if it's not
-		if (Dom.getStyle(container, 'position') === 'static') {
-			container.style.position = 'relative';
-		}
-
-		container = browseButton = null; // IE
-						
-		RuntimeClient.call(self);
-		
-		Basic.extend(self, {
-			/**
-			Unique id of the component
-
-			@property uid
-			@protected
-			@readOnly
-			@type {String}
-			@default UID
-			*/
-			uid: Basic.guid('uid_'),
-			
-			/**
-			Unique id of the connected runtime, if any.
-
-			@property ruid
-			@protected
-			@type {String}
-			*/
-			ruid: null,
-
-			/**
-			Unique id of the runtime container. Useful to get hold of it for various manipulations.
-
-			@property shimid
-			@protected
-			@type {String}
-			*/
-			shimid: null,
-			
-			/**
-			Array of selected mOxie.File objects
-
-			@property files
-			@type {Array}
-			@default null
-			*/
-			files: null,
-
-			/**
-			Initializes the file-picker, connects it to runtime and dispatches event ready when done.
-
-			@method init
-			*/
-			init: function() {
-				self.bind('RuntimeInit', function(e, runtime) {
-					self.ruid = runtime.uid;
-					self.shimid = runtime.shimid;
-
-					self.bind("Ready", function() {
-						self.trigger("Refresh");
-					}, 999);
-
-					// re-position and resize shim container
-					self.bind('Refresh', function() {
-						var pos, size, browseButton, shimContainer, zIndex;
-						
-						browseButton = Dom.get(options.browse_button);
-						shimContainer = Dom.get(runtime.shimid); // do not use runtime.getShimContainer(), since it will create container if it doesn't exist
-
-						if (browseButton) {
-							pos = Dom.getPos(browseButton, Dom.get(options.container));
-							size = Dom.getSize(browseButton);
-							zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 0;
-
-							if (shimContainer) {
-								Basic.extend(shimContainer.style, {
-									top: pos.y + 'px',
-									left: pos.x + 'px',
-									width: size.w + 'px',
-									height: size.h + 'px',
-									zIndex: zIndex + 1
-								});
-							}
-						}
-						shimContainer = browseButton = null;
-					});
-					
-					runtime.exec.call(self, 'FileInput', 'init', options);
-				});
-
-				// runtime needs: options.required_features, options.runtime_order and options.container
-				self.connectRuntime(Basic.extend({}, options, {
-					required_caps: {
-						select_file: true
-					}
-				}));
-			},
-
-			/**
-			Disables file-picker element, so that it doesn't react to mouse clicks.
-
-			@method disable
-			@param {Boolean} [state=true] Disable component if - true, enable if - false
-			*/
-			disable: function(state) {
-				var runtime = this.getRuntime();
-				if (runtime) {
-					runtime.exec.call(this, 'FileInput', 'disable', Basic.typeOf(state) === 'undefined' ? true : state);
-				}
-			},
-
-
-			/**
-			Reposition and resize dialog trigger to match the position and size of browse_button element.
-
-			@method refresh
-			*/
-			refresh: function() {
-				self.trigger("Refresh");
-			},
-
-
-			/**
-			Destroy component.
-
-			@method destroy
-			*/
-			destroy: function() {
-				var runtime = this.getRuntime();
-				if (runtime) {
-					runtime.exec.call(this, 'FileInput', 'destroy');
-					this.disconnectRuntime();
-				}
-
-				if (Basic.typeOf(this.files) === 'array') {
-					// no sense in leaving associated files behind
-					Basic.each(this.files, function(file) {
-						file.destroy();
-					});
-				} 
-				this.files = null;
-
-				this.unbindAll();
-			}
-		});
-
-		this.handleEventProps(dispatches);
-	}
-
-	FileInput.prototype = EventTarget.instance;
-
-	return FileInput;
-});
-
-// Included from: src/javascript/core/utils/Encode.js
-
-/**
- * Encode.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-define('moxie/core/utils/Encode', [], function() {
-
-	/**
-	@class moxie/core/utils/Encode
-	*/
-
-	/**
-	Encode string with UTF-8
-
-	@method utf8_encode
-	@for Utils
-	@static
-	@param {String} str String to encode
-	@return {String} UTF-8 encoded string
-	*/
-	var utf8_encode = function(str) {
-		return unescape(encodeURIComponent(str));
-	};
-	
-	/**
-	Decode UTF-8 encoded string
-
-	@method utf8_decode
-	@static
-	@param {String} str String to decode
-	@return {String} Decoded string
-	*/
-	var utf8_decode = function(str_data) {
-		return decodeURIComponent(escape(str_data));
-	};
-	
-	/**
-	Decode Base64 encoded string (uses browser's default method if available),
-	from: https://raw.github.com/kvz/phpjs/master/functions/url/base64_decode.js
-
-	@method atob
-	@static
-	@param {String} data String to decode
-	@return {String} Decoded string
-	*/
-	var atob = function(data, utf8) {
-		if (typeof(window.atob) === 'function') {
-			return utf8 ? utf8_decode(window.atob(data)) : window.atob(data);
-		}
-
-		// http://kevin.vanzonneveld.net
-		// +   original by: Tyler Akins (http://rumkin.com)
-		// +   improved by: Thunder.m
-		// +      input by: Aman Gupta
-		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-		// +   bugfixed by: Onno Marsman
-		// +   bugfixed by: Pellentesque Malesuada
-		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-		// +      input by: Brett Zamir (http://brett-zamir.me)
-		// +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-		// *     example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
-		// *     returns 1: 'Kevin van Zonneveld'
-		// mozilla has this native
-		// - but breaks in 2.0.0.12!
-		//if (typeof this.window.atob == 'function') {
-		//    return atob(data);
-		//}
-		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-		var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-			ac = 0,
-			dec = "",
-			tmp_arr = [];
-
-		if (!data) {
-			return data;
-		}
-
-		data += '';
-
-		do { // unpack four hexets into three octets using index points in b64
-			h1 = b64.indexOf(data.charAt(i++));
-			h2 = b64.indexOf(data.charAt(i++));
-			h3 = b64.indexOf(data.charAt(i++));
-			h4 = b64.indexOf(data.charAt(i++));
-
-			bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
-
-			o1 = bits >> 16 & 0xff;
-			o2 = bits >> 8 & 0xff;
-			o3 = bits & 0xff;
-
-			if (h3 == 64) {
-				tmp_arr[ac++] = String.fromCharCode(o1);
-			} else if (h4 == 64) {
-				tmp_arr[ac++] = String.fromCharCode(o1, o2);
-			} else {
-				tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
-			}
-		} while (i < data.length);
-
-		dec = tmp_arr.join('');
-
-		return utf8 ? utf8_decode(dec) : dec;
-	};
-	
-	/**
-	Base64 encode string (uses browser's default method if available),
-	from: https://raw.github.com/kvz/phpjs/master/functions/url/base64_encode.js
-
-	@method btoa
-	@static
-	@param {String} data String to encode
-	@return {String} Base64 encoded string
-	*/
-	var btoa = function(data, utf8) {
-		if (utf8) {
-			data = utf8_encode(data);
-		}
-
-		if (typeof(window.btoa) === 'function') {
-			return window.btoa(data);
-		}
-
-		// http://kevin.vanzonneveld.net
-		// +   original by: Tyler Akins (http://rumkin.com)
-		// +   improved by: Bayron Guevara
-		// +   improved by: Thunder.m
-		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-		// +   bugfixed by: Pellentesque Malesuada
-		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-		// +   improved by: Rafał Kukawski (http://kukawski.pl)
-		// *     example 1: base64_encode('Kevin van Zonneveld');
-		// *     returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
-		// mozilla has this native
-		// - but breaks in 2.0.0.12!
-		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-		var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-			ac = 0,
-			enc = "",
-			tmp_arr = [];
-
-		if (!data) {
-			return data;
-		}
-
-		do { // pack three octets into four hexets
-			o1 = data.charCodeAt(i++);
-			o2 = data.charCodeAt(i++);
-			o3 = data.charCodeAt(i++);
-
-			bits = o1 << 16 | o2 << 8 | o3;
-
-			h1 = bits >> 18 & 0x3f;
-			h2 = bits >> 12 & 0x3f;
-			h3 = bits >> 6 & 0x3f;
-			h4 = bits & 0x3f;
-
-			// use hexets to index into b64, and append result to encoded string
-			tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
-		} while (i < data.length);
-
-		enc = tmp_arr.join('');
-
-		var r = data.length % 3;
-
-		return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
-	};
-
-
-	return {
-		utf8_encode: utf8_encode,
-		utf8_decode: utf8_decode,
-		atob: atob,
-		btoa: btoa
-	};
-});
-
 // Included from: src/javascript/file/Blob.js
 
 /**
@@ -3697,6 +3113,644 @@ define('moxie/file/Blob', [
 	}
 	
 	return Blob;
+});
+
+// Included from: src/javascript/core/I18n.js
+
+/**
+ * I18n.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+define("moxie/core/I18n", [
+	"moxie/core/utils/Basic"
+], function(Basic) {
+	var i18n = {};
+
+	/**
+	@class moxie/core/I18n
+	*/
+	return {
+		/**
+		 * Extends the language pack object with new items.
+		 *
+		 * @param {Object} pack Language pack items to add.
+		 * @return {Object} Extended language pack object.
+		 */
+		addI18n: function(pack) {
+			return Basic.extend(i18n, pack);
+		},
+
+		/**
+		 * Translates the specified string by checking for the english string in the language pack lookup.
+		 *
+		 * @param {String} str String to look for.
+		 * @return {String} Translated string or the input string if it wasn't found.
+		 */
+		translate: function(str) {
+			return i18n[str] || str;
+		},
+
+		/**
+		 * Shortcut for translate function
+		 *
+		 * @param {String} str String to look for.
+		 * @return {String} Translated string or the input string if it wasn't found.
+		 */
+		_: function(str) {
+			return this.translate(str);
+		},
+
+		/**
+		 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
+		 *
+		 * @param {String} str String with tokens
+		 * @return {String} String with replaced tokens
+		 */
+		sprintf: function(str) {
+			var args = [].slice.call(arguments, 1);
+
+			return str.replace(/%[a-z]/g, function() {
+				var value = args.shift();
+				return Basic.typeOf(value) !== 'undefined' ? value : '';
+			});
+		}
+	};
+});
+
+// Included from: src/javascript/core/utils/Mime.js
+
+/**
+ * Mime.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+define("moxie/core/utils/Mime", [
+	"moxie/core/utils/Basic",
+	"moxie/core/I18n"
+], function(Basic, I18n) {
+	
+	var mimeData = "" +
+		"application/msword,doc dot," +
+		"application/pdf,pdf," +
+		"application/pgp-signature,pgp," +
+		"application/postscript,ps ai eps," +
+		"application/rtf,rtf," +
+		"application/vnd.ms-excel,xls xlb," +
+		"application/vnd.ms-powerpoint,ppt pps pot," +
+		"application/zip,zip," +
+		"application/x-shockwave-flash,swf swfl," +
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx," +
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.template,dotx," +
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,xlsx," +
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx," +
+		"application/vnd.openxmlformats-officedocument.presentationml.template,potx," +
+		"application/vnd.openxmlformats-officedocument.presentationml.slideshow,ppsx," +
+		"application/x-javascript,js," +
+		"application/json,json," +
+		"audio/mpeg,mp3 mpga mpega mp2," +
+		"audio/x-wav,wav," +
+		"audio/x-m4a,m4a," +
+		"audio/ogg,oga ogg," +
+		"audio/aiff,aiff aif," +
+		"audio/flac,flac," +
+		"audio/aac,aac," +
+		"audio/ac3,ac3," +
+		"audio/x-ms-wma,wma," +
+		"image/bmp,bmp," +
+		"image/gif,gif," +
+		"image/jpeg,jpg jpeg jpe," +
+		"image/photoshop,psd," +
+		"image/png,png," +
+		"image/svg+xml,svg svgz," +
+		"image/tiff,tiff tif," +
+		"text/plain,asc txt text diff log," +
+		"text/html,htm html xhtml," +
+		"text/css,css," +
+		"text/csv,csv," +
+		"text/rtf,rtf," +
+		"video/mpeg,mpeg mpg mpe m2v," +
+		"video/quicktime,qt mov," +
+		"video/mp4,mp4," +
+		"video/x-m4v,m4v," +
+		"video/x-flv,flv," +
+		"video/x-ms-wmv,wmv," +
+		"video/avi,avi," +
+		"video/webm,webm," +
+		"video/3gpp,3gpp 3gp," +
+		"video/3gpp2,3g2," +
+		"video/vnd.rn-realvideo,rv," +
+		"video/ogg,ogv," + 
+		"video/x-matroska,mkv," +
+		"application/vnd.oasis.opendocument.formula-template,otf," +
+		"application/octet-stream,exe";
+	
+	
+	var Mime = {
+
+		mimes: {},
+
+		extensions: {},
+
+		// Parses the default mime types string into a mimes and extensions lookup maps
+		addMimeType: function (mimeData) {
+			var items = mimeData.split(/,/), i, ii, ext;
+			
+			for (i = 0; i < items.length; i += 2) {
+				ext = items[i + 1].split(/ /);
+
+				// extension to mime lookup
+				for (ii = 0; ii < ext.length; ii++) {
+					this.mimes[ext[ii]] = items[i];
+				}
+				// mime to extension lookup
+				this.extensions[items[i]] = ext;
+			}
+		},
+
+
+		extList2mimes: function (filters, addMissingExtensions) {
+			var self = this, ext, i, ii, type, mimes = [];
+			
+			// convert extensions to mime types list
+			for (i = 0; i < filters.length; i++) {
+				ext = filters[i].extensions.split(/\s*,\s*/);
+
+				for (ii = 0; ii < ext.length; ii++) {
+					
+					// if there's an asterisk in the list, then accept attribute is not required
+					if (ext[ii] === '*') {
+						return [];
+					}
+
+					type = self.mimes[ext[ii]];
+					if (type && Basic.inArray(type, mimes) === -1) {
+						mimes.push(type);
+					}
+
+					// future browsers should filter by extension, finally
+					if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
+						mimes.push('.' + ext[ii]);
+					} else if (!type) {
+						// if we have no type in our map, then accept all
+						return [];
+					}
+				}
+			}
+			return mimes;
+		},
+
+
+		mimes2exts: function(mimes) {
+			var self = this, exts = [];
+			
+			Basic.each(mimes, function(mime) {
+				if (mime === '*') {
+					exts = [];
+					return false;
+				}
+
+				// check if this thing looks like mime type
+				var m = mime.match(/^(\w+)\/(\*|\w+)$/);
+				if (m) {
+					if (m[2] === '*') { 
+						// wildcard mime type detected
+						Basic.each(self.extensions, function(arr, mime) {
+							if ((new RegExp('^' + m[1] + '/')).test(mime)) {
+								[].push.apply(exts, self.extensions[mime]);
+							}
+						});
+					} else if (self.extensions[mime]) {
+						[].push.apply(exts, self.extensions[mime]);
+					}
+				}
+			});
+			return exts;
+		},
+
+
+		mimes2extList: function(mimes) {
+			var accept = [], exts = [];
+
+			if (Basic.typeOf(mimes) === 'string') {
+				mimes = Basic.trim(mimes).split(/\s*,\s*/);
+			}
+
+			exts = this.mimes2exts(mimes);
+			
+			accept.push({
+				title: I18n.translate('Files'),
+				extensions: exts.length ? exts.join(',') : '*'
+			});
+			
+			// save original mimes string
+			accept.mimes = mimes;
+
+			return accept;
+		},
+
+
+		getFileExtension: function(fileName) {
+			var matches = fileName && fileName.match(/\.([^.]+)$/);
+			if (matches) {
+				return matches[1].toLowerCase();
+			}
+			return '';
+		},
+
+		getFileMime: function(fileName) {
+			return this.mimes[this.getFileExtension(fileName)] || '';
+		}
+	};
+
+	Mime.addMimeType(mimeData);
+
+	return Mime;
+});
+
+// Included from: src/javascript/file/FileInput.js
+
+/**
+ * FileInput.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+define('moxie/file/FileInput', [
+	'moxie/core/utils/Basic',
+	'moxie/core/utils/Env',
+	'moxie/core/utils/Mime',
+	'moxie/core/utils/Dom',
+	'moxie/core/Exceptions',
+	'moxie/core/EventTarget',
+	'moxie/core/I18n',
+	'moxie/runtime/Runtime',
+	'moxie/runtime/RuntimeClient'
+], function(Basic, Env, Mime, Dom, x, EventTarget, I18n, Runtime, RuntimeClient) {
+	/**
+	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
+	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
+	with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
+
+	@class moxie/file/FileInput
+	@constructor
+	@extends EventTarget
+	@uses RuntimeClient
+	@param {Object|String|DOMElement} options If options is string or node, argument is considered as _browse\_button_.
+		@param {String|DOMElement} options.browse_button DOM Element to turn into file picker.
+		@param {Array} [options.accept] Array of mime types to accept. By default accepts all.
+		@param {Boolean} [options.multiple=false] Enable selection of multiple files.
+		@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
+		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
+		for _browse\_button_.
+		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
+
+	@example
+		<div id="container">
+			<a id="file-picker" href="javascript:;">Browse...</a>
+		</div>
+
+		<script>
+			var fileInput = new mOxie.FileInput({
+				browse_button: 'file-picker', // or document.getElementById('file-picker')
+				container: 'container',
+				accept: [
+					{title: "Image files", extensions: "jpg,gif,png"} // accept only images
+				],
+				multiple: true // allow multiple file selection
+			});
+
+			fileInput.onchange = function(e) {
+				// do something to files array
+				console.info(e.target.files); // or this.files or fileInput.files
+			};
+
+			fileInput.init(); // initialize
+		</script>
+	*/
+	var dispatches = [
+		/**
+		Dispatched when runtime is connected and file-picker is ready to be used.
+
+		@event ready
+		@param {Object} event
+		*/
+		'ready',
+
+		/**
+		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked. 
+		Check [corresponding documentation entry](#method_refresh) for more info.
+
+		@event refresh
+		@param {Object} event
+		*/
+
+		/**
+		Dispatched when selection of files in the dialog is complete.
+
+		@event change
+		@param {Object} event
+		*/
+		'change',
+
+		'cancel', // TODO: might be useful
+
+		/**
+		Dispatched when mouse cursor enters file-picker area. Can be used to style element
+		accordingly.
+
+		@event mouseenter
+		@param {Object} event
+		*/
+		'mouseenter',
+
+		/**
+		Dispatched when mouse cursor leaves file-picker area. Can be used to style element
+		accordingly.
+
+		@event mouseleave
+		@param {Object} event
+		*/
+		'mouseleave',
+
+		/**
+		Dispatched when functional mouse button is pressed on top of file-picker area.
+
+		@event mousedown
+		@param {Object} event
+		*/
+		'mousedown',
+
+		/**
+		Dispatched when functional mouse button is released on top of file-picker area.
+
+		@event mouseup
+		@param {Object} event
+		*/
+		'mouseup'
+	];
+
+	function FileInput(options) {
+		if (MXI_DEBUG) {
+			Env.log("Instantiating FileInput...");	
+		}
+
+		var container, browseButton, defaults;
+
+		// if flat argument passed it should be browse_button id
+		if (Basic.inArray(Basic.typeOf(options), ['string', 'node']) !== -1) {
+			options = { browse_button : options };
+		}
+
+		// this will help us to find proper default container
+		browseButton = Dom.get(options.browse_button);
+		if (!browseButton) {
+			// browse button is required
+			throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
+		}
+
+		// figure out the options
+		defaults = {
+			accept: [{
+				title: I18n.translate('All Files'),
+				extensions: '*'
+			}],
+			multiple: false,
+			required_caps: false,
+			container: browseButton.parentNode || document.body
+		};
+		
+		options = Basic.extend({}, defaults, options);
+
+		// convert to object representation
+		if (typeof(options.required_caps) === 'string') {
+			options.required_caps = Runtime.parseCaps(options.required_caps);
+		}
+					
+		// normalize accept option (could be list of mime types or array of title/extensions pairs)
+		if (typeof(options.accept) === 'string') {
+			options.accept = Mime.mimes2extList(options.accept);
+		}
+
+		container = Dom.get(options.container);
+		// make sure we have container
+		if (!container) {
+			container = document.body;
+		}
+
+		// make container relative, if it's not
+		if (Dom.getStyle(container, 'position') === 'static') {
+			container.style.position = 'relative';
+		}
+
+		container = browseButton = null; // IE
+						
+		RuntimeClient.call(this);
+		
+		Basic.extend(this, {
+			/**
+			Unique id of the component
+
+			@property uid
+			@protected
+			@readOnly
+			@type {String}
+			@default UID
+			*/
+			uid: Basic.guid('uid_'),
+			
+			/**
+			Unique id of the connected runtime, if any.
+
+			@property ruid
+			@protected
+			@type {String}
+			*/
+			ruid: null,
+
+			/**
+			Unique id of the runtime container. Useful to get hold of it for various manipulations.
+
+			@property shimid
+			@protected
+			@type {String}
+			*/
+			shimid: null,
+			
+			/**
+			Array of selected mOxie.File objects
+
+			@property files
+			@type {Array}
+			@default null
+			*/
+			files: null,
+
+			/**
+			Initializes the file-picker, connects it to runtime and dispatches event ready when done.
+
+			@method init
+			*/
+			init: function() {
+				var self = this;
+
+				self.bind('RuntimeInit', function(e, runtime) {
+					self.ruid = runtime.uid;
+					self.shimid = runtime.shimid;
+
+					self.bind("Ready", function() {
+						self.trigger("Refresh");
+					}, 999);
+
+					// re-position and resize shim container
+					self.bind('Refresh', function() {
+						var pos, size, browseButton, shimContainer, zIndex;
+						
+						browseButton = Dom.get(options.browse_button);
+						shimContainer = Dom.get(runtime.shimid); // do not use runtime.getShimContainer(), since it will create container if it doesn't exist
+
+						if (browseButton) {
+							pos = Dom.getPos(browseButton, Dom.get(options.container));
+							size = Dom.getSize(browseButton);
+							zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 0;
+
+							if (shimContainer) {
+								Basic.extend(shimContainer.style, {
+									top: pos.y + 'px',
+									left: pos.x + 'px',
+									width: size.w + 'px',
+									height: size.h + 'px',
+									zIndex: zIndex + 1
+								});
+							}
+						}
+						shimContainer = browseButton = null;
+					});
+					
+					runtime.exec.call(self, 'FileInput', 'init', options);
+				});
+
+				// runtime needs: options.required_features, options.runtime_order and options.container
+				self.connectRuntime(Basic.extend({}, options, {
+					required_caps: {
+						select_file: true
+					}
+				}));
+			},
+
+
+			/**
+			 * Get current option value by its name
+			 *
+			 * @method getOption
+			 * @param name
+			 * @return {Mixed}
+			 */
+			getOption: function(name) {
+				return options[name];
+			},
+
+
+			/**
+			 * Sets a new value for the option specified by name
+			 *
+			 * @method setOption
+			 * @param name
+			 * @param value
+			 */
+			setOption: function(name, value) {
+				if (!options.hasOwnProperty(name)) {
+					return;
+				}
+
+				var oldValue = options[name];
+
+				switch (name) {
+					case 'accept':
+						if (typeof(value) === 'string') {
+							value = Mime.mimes2extList(value);
+						}
+						break;
+
+					case 'container':
+					case 'required_caps':
+						throw new x.FileException(x.FileException.NO_MODIFICATION_ALLOWED_ERR);
+				}
+
+				options[name] = value;
+				this.exec('FileInput', 'setOption', name, value);
+
+				this.trigger('OptionChanged', name, value, oldValue);
+			},
+
+			/**
+			Disables file-picker element, so that it doesn't react to mouse clicks.
+
+			@method disable
+			@param {Boolean} [state=true] Disable component if - true, enable if - false
+			*/
+			disable: function(state) {
+				var runtime = this.getRuntime();
+				if (runtime) {
+					this.exec('FileInput', 'disable', Basic.typeOf(state) === 'undefined' ? true : state);
+				}
+			},
+
+
+			/**
+			Reposition and resize dialog trigger to match the position and size of browse_button element.
+
+			@method refresh
+			*/
+			refresh: function() {
+				this.trigger("Refresh");
+			},
+
+
+			/**
+			Destroy component.
+
+			@method destroy
+			*/
+			destroy: function() {
+				var runtime = this.getRuntime();
+				if (runtime) {
+					runtime.exec.call(this, 'FileInput', 'destroy');
+					this.disconnectRuntime();
+				}
+
+				if (Basic.typeOf(this.files) === 'array') {
+					// no sense in leaving associated files behind
+					Basic.each(this.files, function(file) {
+						file.destroy();
+					});
+				} 
+				this.files = null;
+
+				this.unbindAll();
+			}
+		});
+
+		this.handleEventProps(dispatches);
+	}
+
+	FileInput.prototype = EventTarget.instance;
+
+	return FileInput;
 });
 
 // Included from: src/javascript/file/File.js
@@ -5921,7 +5975,7 @@ define("moxie/image/Image", [
 					height: self.height
 				};
 
-				options = Basic.extend({
+				options = Basic.extendIf({
 					width: self.width,
 					height: self.height,
 					type: self.type || 'image/jpeg',
@@ -6528,7 +6582,10 @@ define("moxie/runtime/html5/Runtime", [
 					return Env.can('use_fileinput') && window.File;
 				},
 				select_folder: function() {
-					return I.can('select_file') && Env.browser === 'Chrome' && Env.verComp(Env.version, 21, '>=');
+					return I.can('select_file') && (
+						Env.browser === 'Chrome' && Env.verComp(Env.version, 21, '>=') ||
+						Env.browser === 'Firefox' && Env.verComp(Env.version, 42, '>=') // https://developer.mozilla.org/en-US/Firefox/Releases/42
+					);
 				},
 				select_multiple: function() {
 					// it is buggy on Safari Windows and iOS
@@ -6550,7 +6607,7 @@ define("moxie/runtime/html5/Runtime", [
 						(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '>=')) ||
 						(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '>=')) ||
 						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) ||
-						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
+						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari', 'Edge'])
 					);
 				},
 				upload_filesize: True,
@@ -6582,6 +6639,55 @@ define("moxie/runtime/html5/Runtime", [
 	Runtime.addConstructor(type, Html5Runtime);
 
 	return extensions;
+});
+
+// Included from: src/javascript/runtime/html5/file/Blob.js
+
+/**
+ * Blob.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/**
+@class moxie/runtime/html5/file/Blob
+@private
+*/
+define("moxie/runtime/html5/file/Blob", [
+	"moxie/runtime/html5/Runtime",
+	"moxie/file/Blob"
+], function(extensions, Blob) {
+
+	function HTML5Blob() {
+		function w3cBlobSlice(blob, start, end) {
+			var blobSlice;
+
+			if (window.File.prototype.slice) {
+				try {
+					blob.slice();	// depricated version will throw WRONG_ARGUMENTS_ERR exception
+					return blob.slice(start, end);
+				} catch (e) {
+					// depricated slice method
+					return blob.slice(start, end - start);
+				}
+			// slice method got prefixed: https://bugzilla.mozilla.org/show_bug.cgi?id=649672
+			} else if ((blobSlice = window.File.prototype.webkitSlice || window.File.prototype.mozSlice)) {
+				return blobSlice.call(blob, start, end);
+			} else {
+				return null; // or throw some exception
+			}
+		}
+
+		this.slice = function() {
+			return new Blob(this.getRuntime().uid, w3cBlobSlice.apply(this, arguments));
+		};
+	}
+
+	return (extensions.Blob = HTML5Blob);
 });
 
 // Included from: src/javascript/core/utils/Events.js
@@ -6906,6 +7012,41 @@ define("moxie/runtime/html5/file/FileInput", [
 				});
 
 				shimContainer = null;
+			},
+
+
+			setOption: function(name, value) {
+				var I = this.getRuntime();
+				var input = Dom.get(I.uid);
+
+				switch (name) {
+					case 'accept':
+						if (value) {
+							var mimes = value.mimes || Mime.extList2mimes(value, I.can('filter_by_extension'));
+							input.setAttribute('accept', mimes.join(','));
+						} else {
+							input.removeAttribute('accept');
+						}
+						break;
+
+					case 'directory':
+						if (value && I.can('select_folder')) {
+							input.setAttribute('directory', '');
+							input.setAttribute('webkitdirectory', '');
+						} else {
+							input.removeAttribute('directory');
+							input.removeAttribute('webkitdirectory');
+						}
+						break;
+
+					case 'multiple':
+						if (value && I.can('select_multiple')) {
+							input.setAttribute('multiple', '');
+						} else {
+							input.removeAttribute('multiple');
+						}
+
+				}
 			},
 
 
@@ -7635,7 +7776,6 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 			UTF16StringReader.apply(this, arguments);
 		}
 	}
-	 
 
 	Basic.extend(BinaryReader.prototype, {
 		
@@ -9509,6 +9649,12 @@ define("moxie/runtime/html5/image/Image", [
 				_imgInfo.purge();
 				_imgInfo = null;
 			}
+
+			// Memory issue for IE/Edge. They Keep a reference to image (because of the onload event) and the object not been collected by GC.
+			if (_img) {
+				_img.src = '';
+			}
+
 			_binStr = _img = _canvas = _blob = null;
 			_modified = false;
 		}
@@ -9799,6 +9945,55 @@ define("moxie/runtime/flash/Runtime", [
 	return extensions;
 });
 
+// Included from: src/javascript/runtime/flash/file/Blob.js
+
+/**
+ * Blob.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/**
+@class moxie/runtime/flash/file/Blob
+@private
+*/
+define("moxie/runtime/flash/file/Blob", [
+	"moxie/runtime/flash/Runtime",
+	"moxie/file/Blob"
+], function(extensions, Blob) {
+
+	var FlashBlob = {
+		slice: function(blob, start, end, type) {
+			var self = this.getRuntime();
+
+			if (start < 0) {
+				start = Math.max(blob.size + start, 0);
+			} else if (start > 0) {
+				start = Math.min(start, blob.size);
+			}
+
+			if (end < 0) {
+				end = Math.max(blob.size + end, 0);
+			} else if (end > 0) {
+				end = Math.min(end, blob.size);
+			}
+
+			blob = self.shimExec.call(this, 'Blob', 'slice', start, end, type || '');
+
+			if (blob) {
+				blob = new Blob(self.uid, blob);
+			}
+			return blob;
+		}
+	};
+
+	return (extensions.Blob = FlashBlob);
+});
+
 // Included from: src/javascript/runtime/flash/file/FileInput.js
 
 /**
@@ -9834,7 +10029,6 @@ define("moxie/runtime/flash/file/FileInput", [
 			}, 999);
 
 			this.getRuntime().shimExec.call(this, 'FileInput', 'init', {
-				name: options.name,
 				accept: options.accept,
 				multiple: options.multiple
 			});
@@ -10447,6 +10641,30 @@ define("moxie/runtime/silverlight/Runtime", [
 	return extensions;
 });
 
+// Included from: src/javascript/runtime/silverlight/file/Blob.js
+
+/**
+ * Blob.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+/**
+@class moxie/runtime/silverlight/file/Blob
+@private
+*/
+define("moxie/runtime/silverlight/file/Blob", [
+	"moxie/runtime/silverlight/Runtime",
+	"moxie/core/utils/Basic",
+	"moxie/runtime/flash/file/Blob"
+], function(extensions, Basic, Blob) {
+	return (extensions.Blob = Basic.extend({}, Blob));
+});
+
 // Included from: src/javascript/runtime/silverlight/file/FileInput.js
 
 /**
@@ -10468,18 +10686,19 @@ define("moxie/runtime/silverlight/file/FileInput", [
 	"moxie/file/File",
 	"moxie/core/utils/Basic"
 ], function(extensions, File, Basic) {
+
+	function toFilters(accept) {
+		var filter = '';
+		for (var i = 0; i < accept.length; i++) {
+			filter += (filter !== '' ? '|' : '') + accept[i].title + " | *." + accept[i].extensions.replace(/,/g, ';*.');
+		}
+		return filter;
+	}
+
 	
 	var FileInput = {
 		init: function(options) {
 			var comp = this, I = this.getRuntime();
-
-			function toFilters(accept) {
-				var filter = '';
-				for (var i = 0; i < accept.length; i++) {
-					filter += (filter !== '' ? '|' : '') + accept[i].title + " | *." + accept[i].extensions.replace(/,/g, ';*.');
-				}
-				return filter;
-			}
 
 			this.bind("Change", function() {
 				var files = I.shimExec.call(comp, 'FileInput', 'getFiles');
@@ -10489,8 +10708,15 @@ define("moxie/runtime/silverlight/file/FileInput", [
 				});
 			}, 999);
 			
-			this.getRuntime().shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.name, options.multiple);
+			I.shimExec.call(this, 'FileInput', 'init', toFilters(options.accept), options.multiple);
 			this.trigger('ready');
+		},
+
+		setOption: function(name, value) {
+			if (name == 'accept') {
+				value = toFilters(value);
+			}
+			this.getRuntime().shimExec.call(this, 'FileInput', 'setOption', name, value);
 		}
 	};
 
@@ -10880,7 +11106,7 @@ define("moxie/runtime/html4/file/FileInput", [
 
 			uid = Basic.guid('uid_');
 
-			shimContainer = I.getShimContainer(); // we get new ref everytime to avoid memory leaks in IE
+			shimContainer = I.getShimContainer(); // we get new ref every time to avoid memory leaks in IE
 
 			if (_uid) { // move previous form out of the view
 				currForm = Dom.get(_uid + '_form');
@@ -10908,7 +11134,6 @@ define("moxie/runtime/html4/file/FileInput", [
 			input = document.createElement('input');
 			input.setAttribute('id', uid);
 			input.setAttribute('type', 'file');
-			input.setAttribute('name', _options.name || 'Filedata');
 			input.setAttribute('accept', _mimes.join(','));
 
 			Basic.extend(input.style, {
@@ -11052,6 +11277,21 @@ define("moxie/runtime/html4/file/FileInput", [
 					type: 'ready',
 					async: true
 				});
+			},
+
+			setOption: function(name, value) {
+				var I = this.getRuntime();
+				var input;
+
+				if (name == 'accept') {
+					_mimes = value.mimes || Mime.extList2mimes(value, I.can('filter_by_extension'));
+				}
+
+				// update current input
+				input = Dom.get(_uid)
+				if (input) {
+					input.setAttribute('accept', _mimes.join(','));
+				}
 			},
 
 
@@ -11390,7 +11630,7 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/utils/Env","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/FileInput","moxie/core/utils/Encode","moxie/file/Blob","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events","moxie/runtime/html5/image/ResizerCanvas","moxie/runtime/html5/image/ResizerWebGL"]);
+expose(["moxie/core/utils/Basic","moxie/core/utils/Encode","moxie/core/utils/Env","moxie/core/Exceptions","moxie/core/utils/Dom","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/core/I18n","moxie/core/utils/Mime","moxie/file/FileInput","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events","moxie/runtime/html5/image/ResizerCanvas","moxie/runtime/html5/image/ResizerWebGL"]);
 })(this);
 /**
  * o.js
