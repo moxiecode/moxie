@@ -340,12 +340,6 @@ define("moxie/image/Image", [
 
 			@method downsize
 			@deprecated use resize()
-			@param {Object} opts
-				@param {Number} opts.width Resulting width
-				@param {Number} [opts.height=width] Resulting height (optional, if not supplied will default to width)
-				@param {Boolean} [opts.crop=false] Whether to crop the image to exact dimensions
-				@param {Boolean} [opts.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
-				@param {String} [opts.resample=false] Resampling algorithm to use for resizing
 			*/
 			downsize: function(opts) {
 				var defaults = {
