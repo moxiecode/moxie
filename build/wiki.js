@@ -21,19 +21,19 @@ var source = {
 		'{{#if property}}',
 			'* [Properties](#properties)\n',
 			'{{#each property}}',
-			'	* [{{name}}](#{{name}}-property) {{#if static}}`static`{{/if}}\n',
+			'	* [{{name}}](#{{name}}-property) {{#if static}}`static`{{/if}} {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n',
 			'{{/each}}',
 		'{{/if}}',
 		'{{#if method}}',
 			'* [Methods](#methods)\n',
 			'{{#each method}}',
-			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-method{{formatAnchorSuffix params}}) {{#if static}}`static`{{/if}}\n',
+			'	* [{{name}}({{{formatSignature params}}})](#{{name}}-method{{formatAnchorSuffix params}}) {{#if static}}`static`{{/if}} {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n',
 			'{{/each}}',
 		'{{/if}}',
 		'{{#if event}}',
 			'* [Events](#events)\n',
 			'{{#each event}}',
-			'	* [{{name}}](#{{name}}-event)\n',
+			'	* [{{name}}](#{{name}}-event) {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n',
 			'{{/each}}',
 		'{{/if}}\n',
 
@@ -45,7 +45,8 @@ var source = {
 
 			'{{#each property}}',
 				'<a name="{{name}}-property" />\n',
-				'### [{{name}}]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
+				'### [{{name}}]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n',
+				'##### {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n\n',
 
 				'{{{description}}}\n\n',
 
@@ -64,7 +65,9 @@ var source = {
 
 			'{{#each method}}',
 				'<a name="{{name}}-method{{formatAnchorSuffix params}}" />\n',
-				'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
+				'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n',
+				'##### {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n\n',
+
 				'{{> body}}',
 			'{{/each}}\n',
 		'{{/if}}',
@@ -74,7 +77,9 @@ var source = {
 			'## Events\n',
 			'{{#each event}}',
 				'<a name="{{name}}-event" />\n',
-				'### {{name}}\n\n',
+				'### {{name}}\n',
+				'##### {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n\n',
+
 				'{{> body}}',
 			'{{/each}}\n',
 		'{{/if}}',
@@ -128,6 +133,8 @@ var source = {
 
 
 function generatePages(githubRepo, dir, YUIDocDir) {
+	var privateClasses = {};
+
 	if (!fs.existsSync(dir) || !fs.existsSync(YUIDocDir + "/data.json")) {
 		process.exit(1);
 	}	
@@ -155,19 +162,21 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 		});
 	};
 
+
+	util.each(data.classes, function(item, className) {
+		if (item.access && item.access != 'public') {
+			privateClasses[className] = item;
+			delete data.classes[className];
+		}
+	});
+
 	// prepare class items...
 	util.each(data.classitems, function(item) {
 		if (!data.classes[item.class]) { // class striped off as not required
-			return true; 
-		}
-
-		// bypass private and protected
-		if (data.classes[item.class].access && data.classes[item.class].access != 'public') {
-			delete data.classes[item.class];
 			return true;
 		}
 
-		if (item.access && item.access != 'public') {
+		if (item.access && item.access != 'public' || privateClasses[item.class]) {
 			return true;
 		}
 
@@ -280,7 +289,7 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 
 	// generate pages
 	util.each(data.classes, function(item, className) {
-		fs.writeFileSync(apiDir + "/" + className + ".md", source.page({
+		fs.writeFileSync(apiDir + "/" + className.replace(/\//, '.') + ".md", source.page({
 			class: className,
 			property: item.classitems.property,
 			method: item.classitems.method,
