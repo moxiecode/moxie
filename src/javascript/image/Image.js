@@ -208,7 +208,7 @@ define("moxie/image/Image", [
 					height: self.height
 				};
 
-				options = Basic.extendIf({
+				var opts = Basic.extendIf({
 					width: self.width,
 					height: self.height,
 					type: self.type || 'image/jpeg',
@@ -234,34 +234,34 @@ define("moxie/image/Image", [
 					orientation = (self.meta && self.meta.tiff && self.meta.tiff.Orientation) || 1;
 
 					if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
-						var tmp = options.width;
-						options.width = options.height;
-						options.height = tmp;
+						var tmp = opts.width;
+						opts.width = opts.height;
+						opts.height = tmp;
 					}
 
-					if (options.crop) {
-						scale = Math.max(options.width/self.width, options.height/self.height);
+					if (opts.crop) {
+						scale = Math.max(opts.width/self.width, opts.height/self.height);
 
 						if (options.fit) {
 							// first scale it up or down to fit the original image
-							srcRect.width = Math.min(Math.ceil(options.width/scale), self.width);
-							srcRect.height = Math.min(Math.ceil(options.height/scale), self.height);
+							srcRect.width = Math.min(Math.ceil(opts.width/scale), self.width);
+							srcRect.height = Math.min(Math.ceil(opts.height/scale), self.height);
 							
 							// recalculate the scale for adapted dimensions
-							scale = options.width/srcRect.width; 
+							scale = opts.width/srcRect.width;
 						} else {
-							srcRect.width = Math.min(options.width, self.width);
-							srcRect.height = Math.min(options.height, self.height);
+							srcRect.width = Math.min(opts.width, self.width);
+							srcRect.height = Math.min(opts.height, self.height);
 
 							// now we do not need to scale it any further
 							scale = 1; 
 						}
 
-						if (typeof(options.crop) === 'boolean') {
-							options.crop = 'cc';
+						if (typeof(opts.crop) === 'boolean') {
+							opts.crop = 'cc';
 						}
 
-						switch (options.crop.toLowerCase()) {
+						switch (opts.crop.toLowerCase().replace(/_/, '-')) {
 							case 'rb':
 							case 'right-bottom':
 								srcRect.x = self.width - srcRect.width;
@@ -319,16 +319,16 @@ define("moxie/image/Image", [
 							default:
 								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
 								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
-						}						
+						}
 
 						// original image might be smaller than requested crop, so - avoid negative values
 						srcRect.x = Math.max(srcRect.x, 0);
 						srcRect.y = Math.max(srcRect.y, 0);
 					} else {
-						scale = Math.min(options.width/self.width, options.height/self.height);
+						scale = Math.min(opts.width/self.width, opts.height/self.height);
 					}
 
-					this.exec('Image', 'resize', srcRect, scale, options);
+					this.exec('Image', 'resize', srcRect, scale, opts);
 				} catch(ex) {
 					// for now simply trigger error event
 					self.trigger('error', ex.code);
@@ -341,7 +341,7 @@ define("moxie/image/Image", [
 			@method downsize
 			@deprecated use resize()
 			*/
-			downsize: function(opts) {
+			downsize: function(options) {
 				var defaults = {
 					width: this.width,
 					height: this.height,
@@ -350,10 +350,10 @@ define("moxie/image/Image", [
 					crop: false,
 					preserveHeaders: true,
 					resample: 'default'
-				};
+				}, opts;
 
-				if (typeof(opts) === 'object') {
-					opts = Basic.extend(defaults, opts);
+				if (typeof(options) === 'object') {
+					opts = Basic.extend(defaults, options);
 				} else {
 					// for backward compatibility
 					opts = Basic.extend(defaults, {
@@ -441,24 +441,24 @@ define("moxie/image/Image", [
 
 			@method embed
 			@param {DOMElement} el DOM element to insert the image object into
-			@param {Object} [opts]
-				@param {Number} [opts.width] The width of an embed (defaults to the image width)
-				@param {Number} [opts.height] The height of an embed (defaults to the image height)
-				@param {String} [type="image/jpeg"] Mime type
-				@param {Number} [quality=90] Quality of an embed, if mime type is image/jpeg
-				@param {Boolean} [crop=false] Whether to crop an embed to the specified dimensions
+			@param {Object} [options]
+				@param {Number} [options.width] The width of an embed (defaults to the image width)
+				@param {Number} [options.height] The height of an embed (defaults to the image height)
+				@param {String} [options.type="image/jpeg"] Mime type
+				@param {Number} [options.quality=90] Quality of an embed, if mime type is image/jpeg
+				@param {Boolean} [options.crop=false] Whether to crop an embed to the specified dimensions
 			*/
-			embed: function(el, opts) {
+			embed: function(el, options) {
 				var self = this
 				, runtime // this has to be outside of all the closures to contain proper runtime
 				;
 
-				opts = Basic.extend({
+				var opts = Basic.extend({
 					width: this.width,
 					height: this.height,
 					type: this.type || 'image/jpeg',
 					quality: 90
-				}, opts || {});
+				}, options);
 				
 
 				function render(type, quality) {
