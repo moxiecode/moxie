@@ -73,6 +73,7 @@ define('moxie/runtime/RuntimeClient', [
 						// jailbreak ...
 						setTimeout(function() {
 							runtime.clients++;
+							comp.ruid = runtime.uid;
 							// this will be triggered on component
 							comp.trigger('RuntimeInit', runtime);
 						}, 1);
@@ -119,6 +120,7 @@ define('moxie/runtime/RuntimeClient', [
 				if (ruid) {
 					runtime = Runtime.getRuntime(ruid);
 					if (runtime) {
+						comp.ruid = ruid;
 						runtime.clients++;
 						return runtime;
 					} else {
