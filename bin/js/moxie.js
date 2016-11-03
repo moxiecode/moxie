@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.5-beta.2
+ * v1.5
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2016-08-24
+ * Date: 2016-11-03
  */
 /**
  * Compiled inline version. (Library mode)
@@ -2819,6 +2819,7 @@ define('moxie/runtime/RuntimeClient', [
 						// jailbreak ...
 						setTimeout(function() {
 							runtime.clients++;
+							comp.ruid = runtime.uid;
 							// this will be triggered on component
 							comp.trigger('RuntimeInit', runtime);
 						}, 1);
@@ -2865,6 +2866,7 @@ define('moxie/runtime/RuntimeClient', [
 				if (ruid) {
 					runtime = Runtime.getRuntime(ruid);
 					if (runtime) {
+						comp.ruid = ruid;
 						runtime.clients++;
 						return runtime;
 					} else {
@@ -5975,7 +5977,7 @@ define("moxie/image/Image", [
 					height: self.height
 				};
 
-				options = Basic.extendIf({
+				var opts = Basic.extendIf({
 					width: self.width,
 					height: self.height,
 					type: self.type || 'image/jpeg',
@@ -6001,34 +6003,34 @@ define("moxie/image/Image", [
 					orientation = (self.meta && self.meta.tiff && self.meta.tiff.Orientation) || 1;
 
 					if (Basic.inArray(orientation, [5,6,7,8]) !== -1) { // values that require 90 degree rotation
-						var tmp = options.width;
-						options.width = options.height;
-						options.height = tmp;
+						var tmp = opts.width;
+						opts.width = opts.height;
+						opts.height = tmp;
 					}
 
-					if (options.crop) {
-						scale = Math.max(options.width/self.width, options.height/self.height);
+					if (opts.crop) {
+						scale = Math.max(opts.width/self.width, opts.height/self.height);
 
 						if (options.fit) {
 							// first scale it up or down to fit the original image
-							srcRect.width = Math.min(Math.ceil(options.width/scale), self.width);
-							srcRect.height = Math.min(Math.ceil(options.height/scale), self.height);
+							srcRect.width = Math.min(Math.ceil(opts.width/scale), self.width);
+							srcRect.height = Math.min(Math.ceil(opts.height/scale), self.height);
 							
 							// recalculate the scale for adapted dimensions
-							scale = options.width/srcRect.width; 
+							scale = opts.width/srcRect.width;
 						} else {
-							srcRect.width = Math.min(options.width, self.width);
-							srcRect.height = Math.min(options.height, self.height);
+							srcRect.width = Math.min(opts.width, self.width);
+							srcRect.height = Math.min(opts.height, self.height);
 
 							// now we do not need to scale it any further
 							scale = 1; 
 						}
 
-						if (typeof(options.crop) === 'boolean') {
-							options.crop = 'cc';
+						if (typeof(opts.crop) === 'boolean') {
+							opts.crop = 'cc';
 						}
 
-						switch (options.crop.toLowerCase()) {
+						switch (opts.crop.toLowerCase().replace(/_/, '-')) {
 							case 'rb':
 							case 'right-bottom':
 								srcRect.x = self.width - srcRect.width;
@@ -6086,16 +6088,16 @@ define("moxie/image/Image", [
 							default:
 								srcRect.x = Math.floor((self.width - srcRect.width) / 2);
 								srcRect.y = Math.floor((self.height - srcRect.height) / 2);
-						}						
+						}
 
 						// original image might be smaller than requested crop, so - avoid negative values
 						srcRect.x = Math.max(srcRect.x, 0);
 						srcRect.y = Math.max(srcRect.y, 0);
 					} else {
-						scale = Math.min(options.width/self.width, options.height/self.height);
+						scale = Math.min(opts.width/self.width, opts.height/self.height);
 					}
 
-					this.exec('Image', 'resize', srcRect, scale, options);
+					this.exec('Image', 'resize', srcRect, scale, opts);
 				} catch(ex) {
 					// for now simply trigger error event
 					self.trigger('error', ex.code);
@@ -6107,14 +6109,8 @@ define("moxie/image/Image", [
 
 			@method downsize
 			@deprecated use resize()
-			@param {Object} opts
-				@param {Number} opts.width Resulting width
-				@param {Number} [opts.height=width] Resulting height (optional, if not supplied will default to width)
-				@param {Boolean} [opts.crop=false] Whether to crop the image to exact dimensions
-				@param {Boolean} [opts.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
-				@param {String} [opts.resample=false] Resampling algorithm to use for resizing
 			*/
-			downsize: function(opts) {
+			downsize: function(options) {
 				var defaults = {
 					width: this.width,
 					height: this.height,
@@ -6123,10 +6119,10 @@ define("moxie/image/Image", [
 					crop: false,
 					preserveHeaders: true,
 					resample: 'default'
-				};
+				}, opts;
 
-				if (typeof(opts) === 'object') {
-					opts = Basic.extend(defaults, opts);
+				if (typeof(options) === 'object') {
+					opts = Basic.extend(defaults, options);
 				} else {
 					// for backward compatibility
 					opts = Basic.extend(defaults, {
@@ -6214,24 +6210,24 @@ define("moxie/image/Image", [
 
 			@method embed
 			@param {DOMElement} el DOM element to insert the image object into
-			@param {Object} [opts]
-				@param {Number} [opts.width] The width of an embed (defaults to the image width)
-				@param {Number} [opts.height] The height of an embed (defaults to the image height)
-				@param {String} [type="image/jpeg"] Mime type
-				@param {Number} [quality=90] Quality of an embed, if mime type is image/jpeg
-				@param {Boolean} [crop=false] Whether to crop an embed to the specified dimensions
+			@param {Object} [options]
+				@param {Number} [options.width] The width of an embed (defaults to the image width)
+				@param {Number} [options.height] The height of an embed (defaults to the image height)
+				@param {String} [options.type="image/jpeg"] Mime type
+				@param {Number} [options.quality=90] Quality of an embed, if mime type is image/jpeg
+				@param {Boolean} [options.crop=false] Whether to crop an embed to the specified dimensions
 			*/
-			embed: function(el, opts) {
+			embed: function(el, options) {
 				var self = this
 				, runtime // this has to be outside of all the closures to contain proper runtime
 				;
 
-				opts = Basic.extend({
+				var opts = Basic.extend({
 					width: this.width,
 					height: this.height,
 					type: this.type || 'image/jpeg',
 					quality: 90
-				}, opts || {});
+				}, options);
 				
 
 				function render(type, quality) {
@@ -9056,219 +9052,6 @@ define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
 
 });
 
-// Included from: src/javascript/runtime/html5/image/ResizerWebGL.js
-
-/**
- * ResizerWebGL.js
- *
- * Released under LGPL License.
- * Copyright (c) 1999-2015 Ephox Corp. All rights reserved
- *
- * License: http://www.tinymce.com/license
- * Contributing: http://www.tinymce.com/contributing
- */
-
-/**
- * Resizes image/canvas using Webgl
- */
-define("moxie/runtime/html5/image/ResizerWebGL", [], function() {
-
-    function scale(image, ratio) {
-        var dW = Math.floor(image.width * ratio);
-        var dH = Math.floor(image.height * ratio);
-        var canvas = document.createElement('canvas');
-        canvas.width = dW;
-        canvas.height = dH;
-
-        _drawImage(canvas, image, ratio, ratio);
-        image = null; // just in case
-
-        return canvas;
-    }
-
-    var shaders = {
-        bilinear: {
-            VERTEX_SHADER: '\
-                attribute vec2 a_dest_xy;\
-                \
-                uniform vec2 u_wh;\
-                uniform vec2 u_ratio;\
-                \
-                varying vec2 a_xy;\
-                varying vec2 b_xy;\
-                varying vec2 c_xy;\
-                varying vec2 d_xy;\
-                \
-                varying float xx0;\
-                varying float x1x;\
-                varying float yy0;\
-                varying float y1y;\
-                \
-                void main() {\
-                    vec2 xy = a_dest_xy / u_ratio - 1.0;\
-                    float x = xy.x;\
-                    float y = xy.y;\
-                    float offset = 0.5;\
-                    \
-                    float x0 = x - offset;\
-                    float x1 = x + offset;\
-                    float y0 = y - offset;\
-                    float y1 = y + offset;\
-                    \
-                    a_xy = vec2(x0, y0) / u_wh;\
-                    b_xy = vec2(x1, y0) / u_wh;\
-                    c_xy = vec2(x1, y1) / u_wh;\
-                    d_xy = vec2(x0, y1) / u_wh;\
-                    \
-                    xx0 = (x - x0) / (x1 - x0);\
-                    x1x = (x1 - x) / (x1 - x0);\
-                    yy0 = (y - y0) / (y1 - y0);\
-                    y1y = (y1 - y) / (y1 - y0);\
-                    \
-                    gl_Position = vec4(((xy / u_wh) * 2.0 - 1.0) * vec2(1, -1), 0, 1);\
-                }\
-            ',
-
-            FRAGMENT_SHADER: '\
-                precision mediump float;\
-                \
-                uniform sampler2D u_image;\
-                \
-                varying vec2 a_xy;\
-                varying vec2 b_xy;\
-                varying vec2 c_xy;\
-                varying vec2 d_xy;\
-                \
-                varying float xx0;\
-                varying float x1x;\
-                varying float yy0;\
-                varying float y1y;\
-                \
-                void main() {\
-                    vec4 a = texture2D(u_image, a_xy);\
-                    vec4 b = texture2D(u_image, b_xy);\
-                    vec4 c = texture2D(u_image, c_xy);\
-                    vec4 d = texture2D(u_image, d_xy);\
-                    \
-                    vec4 ab = b * xx0 + a * x1x;\
-                    vec4 dc = c * xx0 + d * x1x;\
-                    vec4 abdc = dc * yy0 + ab * y1y;\
-                    \
-                    gl_FragColor = abdc;\
-                }\
-            '
-        }
-    };
-
-
-    function _drawImage(canvas, image, wRatio, hRatio) {
-        var gl = _get3dContext(canvas);
-        if (!gl) {
-            throw "Your environment doesn't support WebGL.";
-        }
-
-        // we need a gap around the edges to avoid a black frame
-        wRatio = canvas.width / (image.width + 2);
-        hRatio = canvas.height / (image.height + 2);
-
-        var program = _createProgram(gl);
-        gl.useProgram(program);
-
-        _loadFloatBuffer(gl, program, "a_dest_xy", [
-            0, 0,
-            canvas.width, 0,
-            0, canvas.height,
-            0, canvas.height,
-            canvas.width, 0,
-            canvas.width, canvas.height
-        ]);
-
-        // load the texture
-        var texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
-        // without this we won't be able to process images of arbitrary dimensions
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-
-
-        var uResolution = gl.getUniformLocation(program, "u_wh");
-        gl.uniform2f(uResolution, image.width, image.height);
-
-        var uRatio = gl.getUniformLocation(program, "u_ratio");
-        gl.uniform2f(uRatio, wRatio, hRatio);
-
-
-        // lets draw...
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-    }
-
-
-    function _get3dContext(canvas) {
-        var gl = null;
-        try {
-            gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-        }
-        catch(e) {}
-
-        if (!gl) { // it seems that sometimes it doesn't throw exception, but still fails to get context
-            gl = null;
-        }
-        return gl;
-    }
-
-
-    function _loadFloatBuffer(gl, program, attrName, bufferData) {
-        var attr = gl.getAttribLocation(program, attrName);
-        var buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bufferData), gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(attr);
-        gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0);
-    }
-
-
-    function _createProgram(gl) {
-        var program = gl.createProgram();
-
-        for (var type in shaders.bilinear) {
-            gl.attachShader(program, _loadShader(gl, shaders.bilinear[type], type));
-        }
-
-        gl.linkProgram(program);
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            var err = gl.getProgramInfoLog(program);
-            gl.deleteProgram(program);
-            throw "Cannot create a program: " + err;
-        }
-        return program;
-    }
-
-
-    function _loadShader(gl, source, type) {
-        var shader = gl.createShader(gl[type]);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            var err = gl.getShaderInfoLog(shader);
-            gl.deleteShader(shader);
-            throw "Cannot compile a " + type + " shader: " + err;
-        }
-        return shader;
-    }
-
-
-    return {
-        scale: scale
-    };
-
-});
-
 // Included from: src/javascript/runtime/html5/image/Image.js
 
 /**
@@ -9294,10 +9077,9 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/runtime/html5/image/ResizerCanvas",
-	"moxie/runtime/html5/image/ResizerWebGL",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, ResizerCanvas, ResizerWebGL, Mime, Env) {
+], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, ResizerCanvas, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -11630,7 +11412,7 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/utils/Encode","moxie/core/utils/Env","moxie/core/Exceptions","moxie/core/utils/Dom","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/core/I18n","moxie/core/utils/Mime","moxie/file/FileInput","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events","moxie/runtime/html5/image/ResizerCanvas","moxie/runtime/html5/image/ResizerWebGL"]);
+expose(["moxie/core/utils/Basic","moxie/core/utils/Encode","moxie/core/utils/Env","moxie/core/Exceptions","moxie/core/utils/Dom","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/core/I18n","moxie/core/utils/Mime","moxie/file/FileInput","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events","moxie/runtime/html5/image/ResizerCanvas"]);
 })(this);
 /**
  * o.js

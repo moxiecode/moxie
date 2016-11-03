@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.5-beta.2
+ * v1.5
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2016-08-24
+ * Date: 2016-11-03
  */
 /**
  * Inline development version. Only to be used while developing since it uses document.write to load scripts.
@@ -124,7 +124,7 @@
 	exports.defined = defined;
 	exports.require = require;
 
-	expose(["moxie/core/utils/Basic","moxie/core/utils/Encode","moxie/core/utils/Env","moxie/core/Exceptions","moxie/core/utils/Dom","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/core/I18n","moxie/core/utils/Mime","moxie/file/FileInput","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/runtime/html5/Runtime","moxie/runtime/html5/file/Blob","moxie/core/utils/Events","moxie/runtime/html5/file/FileInput","moxie/runtime/html5/file/FileDrop","moxie/runtime/html5/file/FileReader","moxie/runtime/html5/xhr/XMLHttpRequest","moxie/runtime/html5/utils/BinaryReader","moxie/runtime/html5/image/JPEGHeaders","moxie/runtime/html5/image/ExifParser","moxie/runtime/html5/image/JPEG","moxie/runtime/html5/image/PNG","moxie/runtime/html5/image/ImageInfo","moxie/runtime/html5/image/ResizerCanvas","moxie/runtime/html5/image/ResizerWebGL","moxie/runtime/html5/image/Image","moxie/runtime/flash/Runtime","moxie/runtime/flash/file/Blob","moxie/runtime/flash/file/FileInput","moxie/runtime/flash/file/FileReader","moxie/runtime/flash/file/FileReaderSync","moxie/runtime/flash/runtime/Transporter","moxie/runtime/flash/xhr/XMLHttpRequest","moxie/runtime/flash/image/Image","moxie/runtime/silverlight/Runtime","moxie/runtime/silverlight/file/Blob","moxie/runtime/silverlight/file/FileInput","moxie/runtime/silverlight/file/FileDrop","moxie/runtime/silverlight/file/FileReader","moxie/runtime/silverlight/file/FileReaderSync","moxie/runtime/silverlight/runtime/Transporter","moxie/runtime/silverlight/xhr/XMLHttpRequest","moxie/runtime/silverlight/image/Image","moxie/runtime/html4/Runtime","moxie/runtime/html4/file/FileInput","moxie/runtime/html4/file/FileReader","moxie/runtime/html4/xhr/XMLHttpRequest","moxie/runtime/html4/image/Image"]);
+	expose(["moxie/core/utils/Basic","moxie/core/utils/Encode","moxie/core/utils/Env","moxie/core/Exceptions","moxie/core/utils/Dom","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/core/I18n","moxie/core/utils/Mime","moxie/file/FileInput","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/runtime/html5/Runtime","moxie/runtime/html5/file/Blob","moxie/core/utils/Events","moxie/runtime/html5/file/FileInput","moxie/runtime/html5/file/FileDrop","moxie/runtime/html5/file/FileReader","moxie/runtime/html5/xhr/XMLHttpRequest","moxie/runtime/html5/utils/BinaryReader","moxie/runtime/html5/image/JPEGHeaders","moxie/runtime/html5/image/ExifParser","moxie/runtime/html5/image/JPEG","moxie/runtime/html5/image/PNG","moxie/runtime/html5/image/ImageInfo","moxie/runtime/html5/image/ResizerCanvas","moxie/runtime/html5/image/Image","moxie/runtime/flash/Runtime","moxie/runtime/flash/file/Blob","moxie/runtime/flash/file/FileInput","moxie/runtime/flash/file/FileReader","moxie/runtime/flash/file/FileReaderSync","moxie/runtime/flash/runtime/Transporter","moxie/runtime/flash/xhr/XMLHttpRequest","moxie/runtime/flash/image/Image","moxie/runtime/silverlight/Runtime","moxie/runtime/silverlight/file/Blob","moxie/runtime/silverlight/file/FileInput","moxie/runtime/silverlight/file/FileDrop","moxie/runtime/silverlight/file/FileReader","moxie/runtime/silverlight/file/FileReaderSync","moxie/runtime/silverlight/runtime/Transporter","moxie/runtime/silverlight/xhr/XMLHttpRequest","moxie/runtime/silverlight/image/Image","moxie/runtime/html4/Runtime","moxie/runtime/html4/file/FileInput","moxie/runtime/html4/file/FileReader","moxie/runtime/html4/xhr/XMLHttpRequest","moxie/runtime/html4/image/Image"]);
 
 	load('../../src/javascript/core/utils/Basic.js');
 	load('../../src/javascript/core/utils/Encode.js');
@@ -162,7 +162,6 @@
 	load('../../src/javascript/runtime/html5/image/PNG.js');
 	load('../../src/javascript/runtime/html5/image/ImageInfo.js');
 	load('../../src/javascript/runtime/html5/image/ResizerCanvas.js');
-	load('../../src/javascript/runtime/html5/image/ResizerWebGL.js');
 	load('../../src/javascript/runtime/html5/image/Image.js');
 	load('../../src/javascript/runtime/flash/Runtime.js');
 	load('../../src/javascript/runtime/flash/file/Blob.js');
@@ -190,7 +189,7 @@
 	writeScripts();
 })(this);
 
-// $hash: fddd1815f1108bcfccdc0c967c0ac51b
+// $hash: 94d7d555dd04c7b07a1a9152b4819f4c
 
 (function() {
 	var baseDir = '';
