@@ -1,5 +1,4 @@
 var fs = require('fs');
-var sys = require('sys');
 var path = require('path');
 
 var utils = require('./build/utils');
@@ -47,41 +46,45 @@ desc("Compile JS");
 task("mkjs", [], function () {
 	var amdlc = require('amdlc');
 	var baseDir = "src/javascript", targetDir = "bin/js";
+	var uglifyOptions = {
+		unused: false,
+		global_defs: {
+			MXI_DEBUG: false
+		}
+	};
+
+	var options = {
+		from: [],
+		compress: uglifyOptions,
+		baseDir: baseDir,
+		rootNS: "moxie",
+		expose: "public",
+		verbose: true,
+		outputSource: targetDir + "/moxie.js",
+		outputMinified: false,
+		outputDev: false,
+		outputCoverage: false
+	};
 
 	var modules = [].slice.call(arguments);
 	if (!modules.length) {
 		modules = ["file/Blob", "file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest", "image/Image"];
 	}
 
-	var options = {
-		from: modules.map(function(module) { return module + '.js'; }),
-		compress: {
-			unused: false,
-			global_defs: {
-				MXI_DEBUG: false
-			}
-		},
-		baseDir: baseDir,
-		rootNS: "moxie",
-		expose: "public",
-		verbose: true,
-		outputSource: targetDir + "/moxie.js",
-		outputMinified: targetDir + "/moxie.min.js",
-		outputDev: false,
-		outputCoverage: false
-	};
-
-	// we need to strip off the baseDir, since amdlc will be prepending its own anyway
+	// get paths to runtime extensions
 	var extPaths = mkjs.getExtensionPaths4(modules, {
 		runtimes: process.env.runtimes,
 		baseDir: baseDir
-	}).map(function(item) {
+	});
+
+	// we need to strip off the baseDir, since amdlc will be prepending its own anyway
+	extPaths = extPaths.map(function(item) {
 		var re = new RegExp('^'+baseDir+'\\/', 'i');
 		return item.replace(re, '');
 	});
 
 	// include corresponding runtime extensions
-	[].push.apply(options.from, extPaths);
+	options.from = modules.map(function(mod) { return mod + '.js'; }).concat(extPaths);
 
 	// start fresh
 	if (fs.existsSync(targetDir)) {
@@ -102,7 +105,16 @@ task("mkjs", [], function () {
 		outputCoverage: targetDir + "/moxie.cov.js"
 	}));
 
+	var sourceCode = fs.readFileSync(targetDir + '/moxie.js').toString();
+	if (process.env.umd != 'no' && process.env.compat != 'yes') {
+		fs.writeFileSync(targetDir + '/moxie.js', mkjs.addUMD("moxie", sourceCode));
+	}
 
+	// compile minified version
+	tools.uglify(targetDir + "/moxie.js", targetDir + "/moxie.min.js", uglifyOptions);
+	console.info("Writing minified version output to: " + targetDir + "/moxie.min.js");
+
+	// inject version and copyright info
 	var info = require('./package.json');
 	info.copyright = copyright;
 	tools.addReleaseDetailsTo(targetDir, info);
@@ -113,7 +125,7 @@ task("mkjs", [], function () {
 	mkjs.addDebug(targetDir + "/moxie.cov.js");
 
 	// add compatibility
-	if (process.env.compat !== 'no') {
+	if (process.env.compat == 'yes') {
 		mkjs.addCompat({
 			baseDir: baseDir,
 			targetDir: targetDir
@@ -255,7 +267,7 @@ task("test", [], function() {
 	var baseDir = 'tests/auto';
 	var suite = eval('(' + fs.readFileSync(baseDir + '/tests.js').toString() + ')');
 	var tests = suite.tests.map(function(test) {  return baseDir + '/' + test.url; });
-	
+
 	var config = {
 		  hub: "http://localhost:9000"
 		, farm: 'saucelabs'

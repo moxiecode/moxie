@@ -17,9 +17,10 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 	var code = "";
 
 	options = utils.extend({
-		mangle       : true,
-		toplevel     : false,
-		no_functions : false
+		mangle: true,
+		unused: false,
+		toplevel: false,
+		no_functions: false
 	}, options);
 
 	// Combine JS files
@@ -200,9 +201,9 @@ exports.zip = function (include, zipFile, cb) {
 				if (fs.statSync(file).isFile()) {
 					zip.addFile(file, file);
 				}
-			});		
-			zip.saveAs(zipFile, cb);	
-		});	
+			});
+			zip.saveAs(zipFile, cb);
+		});
 }
 
 exports.copySync = function(from, to) {
@@ -210,14 +211,14 @@ exports.copySync = function(from, to) {
 
 	function copyFile(srcFile, destFile) {
 		var BUF_LENGTH, buff, bytesRead, fdr, fdw, pos;
-		
+
 		BUF_LENGTH = 64 * 1024;
 		buff = new Buffer(BUF_LENGTH);
 		fdr = fs.openSync(srcFile, 'r');
 		fdw = fs.openSync(destFile, 'w');
 		bytesRead = 1;
 		pos = 0;
-		
+
 		while (bytesRead > 0) {
 			bytesRead = fs.readSync(fdr, buff, 0, BUF_LENGTH, pos);
 			fs.writeSync(fdw, buff, 0, bytesRead);
@@ -241,7 +242,7 @@ exports.copySync = function(from, to) {
 			copySync(from, to)
 		});*/
 		console.info("Error: " + from + " is directory");
-	} 
+	}
 }
 
 
@@ -268,7 +269,7 @@ exports.addReleaseDetailsTo = function (destPath, info) {
 	function isTextFile(filePath) {
 		return /\.(js|txt)$/.filePath;
 	}
-	
+
 	var stat = fs.statSync(destPath);
 
 	if (stat.isFile()) {

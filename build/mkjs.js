@@ -91,7 +91,7 @@ var addCompat = function(options) {
 	['dev', 'cov'].forEach(function(suffix) {
 		var fileName = "moxie." + suffix + ".js";
 		if (fs.existsSync(options.targetDir + "/" + fileName)) {
-			fs.appendFileSync(options.targetDir + "/" + fileName, 
+			fs.appendFileSync(options.targetDir + "/" + fileName,
 				"\n\n(function() {\n" +
 				"	var baseDir = '';\n" +
 				"	var scripts = document.getElementsByTagName('script');\n" +
@@ -117,12 +117,34 @@ var addDebug = function(srcPath, enable) {
 	}
 };
 
+var addUMD = function(ns, iife) {
+	var wrap = '\
+;(function (ctx, factory) {\n\
+	var API = {};\
+	factory.call(API);\n\
+	if (typeof define === "function" && define.amd) {\n\
+		define("@@ns@@", [], API.@@ns@@);\n\
+	} else if(typeof module === "object" && module.exports) {\n\
+		module.exports = API.@@ns@@;\n\
+	} else {\n\
+		ctx.@@ns@@ = API.@@ns@@;\n\
+	}\n\
+}(this || window, function() {\n\
+	@@iife@@\n\
+}));\n';
+
+	return wrap
+		.replace(/\@\@ns\@\@/g, ns)
+		.replace(/\@\@iife\@\@/, iife);
+};
+
 
 module.exports = {
 	getExtensionPaths: getExtensionPaths,
 	getExtensionPaths4: getExtensionPaths4,
 	addCompat: addCompat,
-	addDebug: addDebug
+	addDebug: addDebug,
+	addUMD: addUMD
 };
 
 
