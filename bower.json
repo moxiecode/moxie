@@ -1,7 +1,8 @@
 {
 	"name": "moxie",
-	"version": "1.5",
+	"version": "1.5.1",
 	"main": [
+		"./bin/js/moxie.js",
 		"./bin/js/moxie.min.js",
 		"./bin/flash/Moxie.swf",
 		"./bin/flash/Moxie.min.swf",
