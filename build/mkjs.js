@@ -139,22 +139,22 @@ var addUMD = function(ns, iife, deps) {
 	\n\
 	if (typeof define === "function" && define.amd) {\n\
 		define("__ns__", [__deps_quoted__], extract);\n\
-	} else if(typeof module === "object" && module.exports) {\n\
+	} else if (typeof module === "object" && module.exports) {\n\
 		module.exports = extract(__deps_require__);\n\
 	} else {\n\
 		global.__ns__ = extract(__deps_global__);\n\
 	}\n\
 }(this || window, function(__deps__) {\n\
-    __iife__\n\
+__iife__\n\
 }));\
 ';
 
 	var depsQuoted = depsGlobal = depsRequire = depsPlain = '';
 
 	if (deps && deps.length) {
-		depsQuoted = "'" + deps.join("', '") + "'";
+		depsQuoted = "'./" + deps.join("', './") + "'";
 		depsGlobal = "global." + deps.join(", global.");
-		depsRequire = "require('" + deps.join("'), ") + "')";
+		depsRequire = "require('./" + deps.join("'), require('./") + "')";
 		depsPlain = deps.join(', ');
 	}
 
