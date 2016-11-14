@@ -47,7 +47,8 @@ task("mkjs", [], function () {
 	var amdlc = require('amdlc');
 	var baseDir = "src/javascript", targetDir = "bin/js";
 	var uglifyOptions = {
-		unused: false,
+		unused: true,
+		dead_code: true,
 		global_defs: {
 			MXI_DEBUG: false
 		}

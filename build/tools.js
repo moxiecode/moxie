@@ -12,15 +12,12 @@ color.green = '\033[32m';
 
 
 exports.uglify = function (sourceFiles, outputFile, options) {
-	var jsp = require("uglify-js").parser;
-	var pro = require("uglify-js").uglify;
+	var uglifyJS = require("uglify-js");
 	var code = "";
 
 	options = utils.extend({
-		mangle: true,
-		unused: false,
-		toplevel: false,
-		no_functions: false
+		unused: true,
+		dead_code: true
 	}, options);
 
 	// Combine JS files
@@ -35,16 +32,14 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 		code += fs.readFileSync(sourceFiles).toString();
 	}
 
-
 	// Compress
-	var ast = jsp.parse(code);
-
-	ast = pro.ast_mangle(ast, options);
-	ast = pro.ast_squeeze(ast);
-	code = ";" + pro.gen_code(ast) + ';'; // make sure it doesn't cause conflict if combined with another code
+	result = uglifyJS.minify(code, {
+		fromString: true,
+		compress: options
+	});
 
 	if (outputFile) {
-		fs.writeFileSync(outputFile, code);
+		fs.writeFileSync(outputFile, result.code);
 	}
 	return code;
 };
