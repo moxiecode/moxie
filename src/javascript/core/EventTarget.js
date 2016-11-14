@@ -23,7 +23,7 @@ define('moxie/core/EventTarget', [
 	@class moxie/core/EventTarget
 	@constructor EventTarget
 	*/
-	function EventTarget() {				
+	function EventTarget() {
 		/**
 		Unique id of the event dispatcher, usually overriden by children
 
@@ -35,7 +35,7 @@ define('moxie/core/EventTarget', [
 
 
 	Basic.extend(EventTarget.prototype, {
-					
+
 		/**
 		Can be called from within a child  in order to acquire uniqie id in automated manner
 
@@ -63,9 +63,9 @@ define('moxie/core/EventTarget', [
 			if (!this.hasOwnProperty('uid')) {
 				this.uid = Basic.guid('uid_');
 			}
-			
+
 			type = Basic.trim(type);
-			
+
 			if (/\s/.test(type)) {
 				// multiple event types were passed for one handler
 				Basic.each(type.split(/\s+/), function(type) {
@@ -73,19 +73,19 @@ define('moxie/core/EventTarget', [
 				});
 				return;
 			}
-			
+
 			type = type.toLowerCase();
 			priority = parseInt(priority, 10) || 0;
-			
+
 			list = eventpool[this.uid] && eventpool[this.uid][type] || [];
 			list.push({fn : fn, priority : priority, scope : scope || this});
-			
+
 			if (!eventpool[this.uid]) {
 				eventpool[this.uid] = {};
 			}
 			eventpool[this.uid][type] = list;
 		},
-		
+
 		/**
 		Check if any handlers were registered to the specified event
 
@@ -94,10 +94,12 @@ define('moxie/core/EventTarget', [
 		@return {Mixed} Returns a handler if it was found and false, if - not
 		*/
 		hasEventListener: function(type) {
-			var list = type ? eventpool[this.uid] && eventpool[this.uid][type] : eventpool[this.uid];
+			var list;
+			type = type.toLowerCase();
+			list = type ? eventpool[this.uid] && eventpool[this.uid][type] : eventpool[this.uid];
 			return list ? list : false;
 		},
-		
+
 		/**
 		Unregister the handler from the event, or if former was not specified - unregister all handlers
 
@@ -135,7 +137,7 @@ define('moxie/core/EventTarget', [
 				// delete event list if it has become empty
 				if (!list.length) {
 					delete eventpool[this.uid][type];
-					
+
 					// and object specific entry in a hash if it has no more listeners attached
 					if (Basic.isEmptyObj(eventpool[this.uid])) {
 						delete eventpool[this.uid];
@@ -143,7 +145,7 @@ define('moxie/core/EventTarget', [
 				}
 			}
 		},
-		
+
 		/**
 		Remove all event handlers from the object
 
@@ -154,7 +156,7 @@ define('moxie/core/EventTarget', [
 				delete eventpool[this.uid];
 			}
 		},
-		
+
 		/**
 		Dispatch the event
 
@@ -165,7 +167,7 @@ define('moxie/core/EventTarget', [
 		*/
 		dispatchEvent: function(type) {
 			var uid, list, args, tmpEvt, evt = {}, result = true, undef;
-			
+
 			if (Basic.typeOf(type) !== 'string') {
 				// we can't use original object directly (because of Silverlight)
 				tmpEvt = type;
@@ -182,7 +184,7 @@ define('moxie/core/EventTarget', [
 					throw new x.EventException(x.EventException.UNSPECIFIED_EVENT_TYPE_ERR);
 				}
 			}
-			
+
 			// check if event is meant to be dispatched on an object having specific uid
 			if (type.indexOf('::') !== -1) {
 				(function(arr) {
@@ -192,24 +194,24 @@ define('moxie/core/EventTarget', [
 			} else {
 				uid = this.uid;
 			}
-			
+
 			type = type.toLowerCase();
-							
+
 			list = eventpool[uid] && eventpool[uid][type];
 
 			if (list) {
 				// sort event list by prority
 				list.sort(function(a, b) { return b.priority - a.priority; });
-				
+
 				args = [].slice.call(arguments);
-				
+
 				// first argument will be pseudo-event object
 				args.shift();
 				evt.type = type;
 				args.unshift(evt);
 
 				if (MXI_DEBUG && Env.debug.events) {
-					Env.log("Event '%s' fired on %u", evt.type, uid);	
+					Env.log("Event '%s' fired on %u", evt.type, uid);
 				}
 
 				// Dispatch event to all listeners
@@ -256,7 +258,7 @@ define('moxie/core/EventTarget', [
 				return fn.apply(this, arguments);
 			}, priority, scope);
 		},
-		
+
 		/**
 		Alias for addEventListener
 
@@ -266,7 +268,7 @@ define('moxie/core/EventTarget', [
 		bind: function() {
 			this.addEventListener.apply(this, arguments);
 		},
-		
+
 		/**
 		Alias for removeEventListener
 
@@ -276,7 +278,7 @@ define('moxie/core/EventTarget', [
 		unbind: function() {
 			this.removeEventListener.apply(this, arguments);
 		},
-		
+
 		/**
 		Alias for removeAllEventListeners
 
@@ -286,7 +288,7 @@ define('moxie/core/EventTarget', [
 		unbindAll: function() {
 			this.removeAllEventListeners.apply(this, arguments);
 		},
-		
+
 		/**
 		Alias for dispatchEvent
 
@@ -296,7 +298,7 @@ define('moxie/core/EventTarget', [
 		trigger: function() {
 			return this.dispatchEvent.apply(this, arguments);
 		},
-		
+
 
 		/**
 		Handle properties of on[event] type.
@@ -318,15 +320,15 @@ define('moxie/core/EventTarget', [
 			Basic.each(dispatches, function(prop) {
 				prop = 'on' + prop.toLowerCase(prop);
 				if (Basic.typeOf(self[prop]) === 'undefined') {
-					self[prop] = null; 
+					self[prop] = null;
 				}
 			});
 		}
-		
+
 	});
 
 
-	EventTarget.instance = new EventTarget(); 
+	EventTarget.instance = new EventTarget();
 
 	return EventTarget;
 });
