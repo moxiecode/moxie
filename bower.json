@@ -1,6 +1,5 @@
 {
 	"name": "moxie",
-	"version": "1.5.1",
 	"main": [
 		"./bin/js/moxie.js",
 		"./bin/js/moxie.min.js",
