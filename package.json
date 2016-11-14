@@ -1,5 +1,5 @@
 {
-    "name": "moxie",
+    "name": "mOxie",
     "description": "Custom implementations of the XHR2 and File API.",
     "version": "1.5.1",
     "releaseDate": "2016-11-14",
@@ -29,7 +29,6 @@
         "type": "Custom Licensing",
         "url": "http://www.moxiecode.com/contact.php"
     }],
-    "private": true,
     "engines": {
         "node": ">=0.8.0"
     },
