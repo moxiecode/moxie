@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.5
+ * v1.5.1
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,8 +9,23 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2016-11-03
+ * Date: 2016-11-14
  */
+;(function (global, factory) {
+	var extract = function() {
+		var ctx = {};
+		factory.apply(ctx, arguments);
+		return ctx.moxie;
+	};
+	
+	if (typeof define === "function" && define.amd) {
+		define("moxie", [], extract);
+	} else if (typeof module === "object" && module.exports) {
+		module.exports = extract();
+	} else {
+		global.moxie = extract();
+	}
+}(this || window, function() {
 /**
  * Compiled inline version. (Library mode)
  */
@@ -11414,53 +11429,4 @@ define("moxie/runtime/html4/image/Image", [
 
 expose(["moxie/core/utils/Basic","moxie/core/utils/Encode","moxie/core/utils/Env","moxie/core/Exceptions","moxie/core/utils/Dom","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/core/I18n","moxie/core/utils/Mime","moxie/file/FileInput","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events","moxie/runtime/html5/image/ResizerCanvas"]);
 })(this);
-/**
- * o.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/*global moxie:true */
-
-/**
-Globally exposed namespace with the most frequently used public classes and handy methods.
-
-@class o
-@static
-@private
-*/
-(function(exports) {
-	"use strict";
-
-	var o = {}, inArray = exports.moxie.core.utils.Basic.inArray;
-
-	// directly add some public classes
-	// (we do it dynamically here, since for custom builds we cannot know beforehand what modules were included)
-	(function addAlias(ns) {
-		var name, itemType;
-		for (name in ns) {
-			itemType = typeof(ns[name]);
-			if (itemType === 'object' && !~inArray(name, ['Exceptions', 'Env', 'Mime'])) {
-				addAlias(ns[name]);
-			} else if (itemType === 'function') {
-				o[name] = ns[name];
-			}
-		}
-	})(exports.moxie);
-
-	// add some manually
-	o.Env = exports.moxie.core.utils.Env;
-	o.Mime = exports.moxie.core.utils.Mime;
-	o.Exceptions = exports.moxie.core.Exceptions;
-
-	// expose globally
-	exports.mOxie = o;
-	if (!exports.o) {
-		exports.o = o;
-	}
-	return o;
-})(this);
+}));
