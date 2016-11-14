@@ -1,8 +1,8 @@
 {
     "name": "moxie",
     "description": "Custom implementations of the XHR2 and File API.",
-    "version": "1.5.0",
-    "releaseDate": "2016-11-03",
+    "version": "1.5.1",
+    "releaseDate": "2016-11-14",
     "author": "Ephox",
     "contributors": [{
         "name": "Davit Barbakadze",
