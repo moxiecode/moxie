@@ -117,25 +117,54 @@ var addDebug = function(srcPath, enable) {
 	}
 };
 
-var addUMD = function(ns, iife) {
-	var wrap = '\
-;(function (ctx, factory) {\n\
-	var API = {};\
-	factory.call(API);\n\
-	if (typeof define === "function" && define.amd) {\n\
-		define("@@ns@@", [], API.@@ns@@);\n\
-	} else if(typeof module === "object" && module.exports) {\n\
-		module.exports = API.@@ns@@;\n\
-	} else {\n\
-		ctx.@@ns@@ = API.@@ns@@;\n\
-	}\n\
-}(this || window, function() {\n\
-	@@iife@@\n\
-}));\n';
+// String.prototype.replace() does something weird on strings with fancy regexps,
+// hence this artifical version
+var replace = function(from, to, text, all) {
+	var pos = text.indexOf(from);
+	if (pos == -1) {
+		return text;
+	}
+	text = text.substring(0, pos) + to + text.substring(pos + from.length);
+	return !all ? text : replace.call(null, from, to, text, all);
+};
 
-	return wrap
-		.replace(/\@\@ns\@\@/g, ns)
-		.replace(/\@\@iife\@\@/, iife);
+var addUMD = function(ns, iife, deps) {
+	var wrap = '\
+;(function (global, factory) {\n\
+	var extract = function() {\n\
+		var ctx = {};\n\
+		factory.apply(ctx, arguments);\n\
+		return ctx.__ns__;\n\
+	};\n\
+	\n\
+	if (typeof define === "function" && define.amd) {\n\
+		define("__ns__", [__deps_quoted__], extract);\n\
+	} else if(typeof module === "object" && module.exports) {\n\
+		module.exports = extract(__deps_require__);\n\
+	} else {\n\
+		global.__ns__ = extract(__deps_global__);\n\
+	}\n\
+}(this || window, function(__deps__) {\n\
+    __iife__\n\
+}));\
+';
+
+	var depsQuoted = depsGlobal = depsRequire = depsPlain = '';
+
+	if (deps && deps.length) {
+		depsQuoted = "'" + deps.join("', '") + "'";
+		depsGlobal = "global." + deps.join(", global.");
+		depsRequire = "require('" + deps.join("'), ") + "')";
+		depsPlain = deps.join(', ');
+	}
+
+	wrap = replace('__ns__', ns, wrap, true);
+	wrap = replace('__deps__', depsPlain, wrap, true);
+	wrap = replace('__deps_quoted__', depsQuoted, wrap, true);
+	wrap = replace('__deps_global__', depsGlobal, wrap, true);
+	wrap = replace('__deps_require__', depsRequire, wrap, true);
+	wrap = replace('__iife__', iife, wrap);
+	return wrap;
 };
 
 
