@@ -1,12 +1,7 @@
 {
 	"name": "moxie",
 	"main": [
-		"./bin/js/moxie.js",
-		"./bin/js/moxie.min.js",
-		"./bin/flash/Moxie.swf",
-		"./bin/flash/Moxie.min.swf",
-		"./bin/silverlight/Moxie.xap",
-		"./bin/silverlight/Moxie.min.xap"
+		"./bin/js/moxie.min.js"
 	],
 	"ignore": [
 		"tests/",
