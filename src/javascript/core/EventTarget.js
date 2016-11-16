@@ -90,13 +90,17 @@ define('moxie/core/EventTarget', [
 		Check if any handlers were registered to the specified event
 
 		@method hasEventListener
-		@param {String} type Type or basically a name of the event to check
+		@param {String} [type] Type or basically a name of the event to check
 		@return {Mixed} Returns a handler if it was found and false, if - not
 		*/
 		hasEventListener: function(type) {
 			var list;
-			type = type.toLowerCase();
-			list = type ? eventpool[this.uid] && eventpool[this.uid][type] : eventpool[this.uid];
+			if (type) {
+				type = type.toLowerCase();
+				list = eventpool[this.uid] && eventpool[this.uid][type];
+			} else {
+				list = eventpool[this.uid];
+			}
 			return list ? list : false;
 		},
 
