@@ -84,7 +84,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	function XMLHttpRequestUpload() {
 		this.uid = Basic.guid('uid_');
 	}
-	
+
 	XMLHttpRequestUpload.prototype = EventTarget.instance;
 
 	/**
@@ -111,10 +111,10 @@ define("moxie/xhr/XMLHttpRequest", [
 		'loadend'
 
 		// readystatechange (for historical reasons)
-	]; 
-	
+	];
+
 	var NATIVE = 1, RUNTIME = 2;
-					
+
 	function XMLHttpRequest() {
 		var self = this,
 			// this (together with _p() @see below) is here to gracefully upgrade to setter/getter syntax where possible
@@ -180,7 +180,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				/**
 				Returns the response type. Can be set to change the response type. Values are:
 				the empty string (default), "arraybuffer", "blob", "document", "json", and "text".
-				
+
 				@property responseType
 				@type String
 				*/
@@ -188,7 +188,7 @@ define("moxie/xhr/XMLHttpRequest", [
 
 				/**
 				Returns the document response entity body.
-				
+
 				Throws an "InvalidStateError" exception if responseType is not the empty string or "document".
 
 				@property responseXML
@@ -198,7 +198,7 @@ define("moxie/xhr/XMLHttpRequest", [
 
 				/**
 				Returns the text response entity body.
-				
+
 				Throws an "InvalidStateError" exception if responseType is not the empty string or "text".
 
 				@property responseText
@@ -209,7 +209,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				/**
 				Returns the response entity body (http://www.w3.org/TR/XMLHttpRequest/#response-entity-body).
 				Can become: ArrayBuffer, Blob, Document, JSON, Text
-				
+
 				@property response
 				@type Mixed
 				*/
@@ -246,7 +246,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_responseHeadersBag
 			;
 
-		
+
 		Basic.extend(this, props, {
 			/**
 			Unique id of the component
@@ -255,7 +255,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			@type String
 			*/
 			uid: Basic.guid('uid_'),
-			
+
 			/**
 			Target for Upload events
 
@@ -263,7 +263,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			@type XMLHttpRequestUpload
 			*/
 			upload: new XMLHttpRequestUpload(),
-			
+
 
 			/**
 			Sets the request method, request URL, synchronous flag, request username, and request password.
@@ -291,12 +291,12 @@ define("moxie/xhr/XMLHttpRequest", [
 			*/
 			open: function(method, url, async, user, password) {
 				var urlp;
-				
+
 				// first two arguments are required
 				if (!method || !url) {
 					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
 				}
-				
+
 				// 2 - check if any code point in method is higher than U+00FF or after deflating method it does not match the method
 				if (/[\u0100-\uffff]/.test(method) || Encode.utf8_encode(method) !== method) {
 					throw new x.DOMException(x.DOMException.SYNTAX_ERR);
@@ -306,8 +306,8 @@ define("moxie/xhr/XMLHttpRequest", [
 				if (!!~Basic.inArray(method.toUpperCase(), ['CONNECT', 'DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'TRACE', 'TRACK'])) {
 					_method = method.toUpperCase();
 				}
-				
-				
+
+
 				// 4 - allowing these methods poses a security risk
 				if (!!~Basic.inArray(_method, ['CONNECT', 'TRACE', 'TRACK'])) {
 					throw new x.DOMException(x.DOMException.SECURITY_ERR);
@@ -315,15 +315,15 @@ define("moxie/xhr/XMLHttpRequest", [
 
 				// 5
 				url = Encode.utf8_encode(url);
-				
+
 				// 6 - Resolve url relative to the XMLHttpRequest base URL. If the algorithm returns an error, throw a "SyntaxError".
 				urlp = Url.parseUrl(url);
 
 				_same_origin_flag = Url.hasSameOrigin(urlp);
-																
+
 				// 7 - manually build up absolute url
 				_url = Url.resolveUrl(url);
-		
+
 				// 9-10, 12-13
 				if ((user || password) && !_same_origin_flag) {
 					throw new x.DOMException(x.DOMException.INVALID_ACCESS_ERR);
@@ -331,16 +331,16 @@ define("moxie/xhr/XMLHttpRequest", [
 
 				_user = user || urlp.user;
 				_password = password || urlp.pass;
-				
+
 				// 11
 				_async = async || true;
-				
+
 				if (_async === false && (_p('timeout') || _p('withCredentials') || _p('responseType') !== "")) {
 					throw new x.DOMException(x.DOMException.INVALID_ACCESS_ERR);
 				}
-				
+
 				// 14 - terminate abort()
-				
+
 				// 15 - terminate send()
 
 				// 18
@@ -351,11 +351,11 @@ define("moxie/xhr/XMLHttpRequest", [
 
 				// 19
 				_p('readyState', XMLHttpRequest.OPENED);
-				
+
 				// 20
 				this.dispatchEvent('readystatechange');
 			},
-			
+
 			/**
 			Appends an header to the list of author request headers, or if header is already
 			in the list of author request headers, combines its value with value.
@@ -363,7 +363,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			Throws an "InvalidStateError" exception if the state is not OPENED or if the send() flag is set.
 			Throws a "SyntaxError" exception if header is not a valid HTTP header field name or if value
 			is not a valid HTTP header field value.
-			
+
 			@method setRequestHeader
 			@param {String} header
 			@param {String|Number} value
@@ -392,7 +392,7 @@ define("moxie/xhr/XMLHttpRequest", [
 						"user-agent",
 						"via"
 					];
-				
+
 				// 1-2
 				if (_p('readyState') !== XMLHttpRequest.OPENED || _send_flag) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
@@ -410,7 +410,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				}*/
 
 				header = Basic.trim(header).toLowerCase();
-				
+
 				// setting of proxy-* and sec-* headers is prohibited by spec
 				if (!!~Basic.inArray(header, uaHeaders) || /^(proxy\-|sec\-)/.test(header)) {
 					return false;
@@ -419,7 +419,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				// camelize
 				// browsers lowercase header names (at least for custom ones)
 				// header = header.replace(/\b\w/g, function($1) { return $1.toUpperCase(); });
-				
+
 				if (!_headers[header]) {
 					_headers[header] = value;
 				} else {
@@ -427,6 +427,18 @@ define("moxie/xhr/XMLHttpRequest", [
 					_headers[header] += ', ' + value;
 				}
 				return true;
+			},
+
+			/**
+			 * Test if the specified header is already set on this request.
+			 * Returns a header value or boolean false if it's not yet set.
+			 *
+			 * @method hasRequestHeader
+			 * @param {String} header Name of the header to test
+			 * @return {Boolean|String}
+			 */
+			hasRequestHeader: function(header) {
+				return header && _headers[header.toLowerCase()] || false;
 			},
 
 			/**
@@ -440,7 +452,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			},
 
 			/**
-			Returns the header field value from the response of which the field name matches header, 
+			Returns the header field value from the response of which the field name matches header,
 			unless the field name is Set-Cookie or Set-Cookie2.
 
 			@method getResponseHeader
@@ -475,7 +487,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				}
 				return null;
 			},
-			
+
 			/**
 			Sets the Content-Type header for the response to mime.
 			Throws an "InvalidStateError" exception if the state is LOADING or DONE.
@@ -486,7 +498,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			*/
 			overrideMimeType: function(mime) {
 				var matches, charset;
-			
+
 				// 1
 				if (!!~Basic.inArray(_p('readyState'), [XMLHttpRequest.LOADING, XMLHttpRequest.DONE])) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
@@ -510,7 +522,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				_finalMime = mime;
 				_finalCharset = charset;
 			},
-			
+
 			/**
 			Initiates the request. The optional argument provides the request entity body.
 			The argument is ignored if request method is GET or HEAD.
@@ -521,7 +533,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			@param {Blob|Document|String|FormData} [data] Request entity body
 			@param {Object} [options] Set of requirements and pre-requisities for runtime initialization
 			*/
-			send: function(data, options) {					
+			send: function(data, options) {
 				if (Basic.typeOf(options) === 'string') {
 					_options = { ruid: options };
 				} else if (!options) {
@@ -529,19 +541,19 @@ define("moxie/xhr/XMLHttpRequest", [
 				} else {
 					_options = options;
 				}
-															
+
 				// 1-2
 				if (this.readyState !== XMLHttpRequest.OPENED || _send_flag) {
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
-				
-				// 3					
+
+				// 3
 				// sending Blob
 				if (data instanceof Blob) {
 					_options.ruid = data.ruid;
 					_mimeType = data.type || 'application/octet-stream';
 				}
-				
+
 				// FormData
 				else if (data instanceof FormData) {
 					if (data.hasBlob()) {
@@ -550,12 +562,12 @@ define("moxie/xhr/XMLHttpRequest", [
 						_mimeType = blob.type || 'application/octet-stream';
 					}
 				}
-				
+
 				// DOMString
 				else if (typeof data === 'string') {
 					_encoding = 'UTF-8';
 					_mimeType = 'text/plain;charset=UTF-8';
-					
+
 					// data should be converted to Unicode and encoded as UTF-8
 					data = Encode.utf8_encode(data);
 				}
@@ -586,10 +598,10 @@ define("moxie/xhr/XMLHttpRequest", [
 				// 8.5 - Return the send() method call, but continue running the steps in this algorithm.
 				_doXHR.call(this, data);
 			},
-			
+
 			/**
 			Cancels any network activity.
-			
+
 			@method abort
 			*/
 			abort: function() {
@@ -796,18 +808,18 @@ define("moxie/xhr/XMLHttpRequest", [
 				}
 			}
 		}
-		
+
 		/*
 		function _toASCII(str, AllowUnassigned, UseSTD3ASCIIRules) {
 			// TODO: http://tools.ietf.org/html/rfc3490#section-4.1
 			return str.toLowerCase();
 		}
 		*/
-		
-		
+
+
 		function _doXHR(data) {
 			var self = this;
-			
+
 			_start_time = new Date().getTime();
 
 			_xhr = new RuntimeTarget();
@@ -827,12 +839,12 @@ define("moxie/xhr/XMLHttpRequest", [
 					self.dispatchEvent('readystatechange');
 
 					self.dispatchEvent(e);
-					
+
 					if (_upload_events_flag) {
 						self.upload.dispatchEvent(e);
 					}
 				});
-				
+
 				_xhr.bind('Progress', function(e) {
 					if (_p('readyState') !== XMLHttpRequest.LOADING) {
 						_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
@@ -840,7 +852,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					}
 					self.dispatchEvent(e);
 				});
-				
+
 				_xhr.bind('UploadProgress', function(e) {
 					if (_upload_events_flag) {
 						self.upload.dispatchEvent({
@@ -851,12 +863,12 @@ define("moxie/xhr/XMLHttpRequest", [
 						});
 					}
 				});
-				
+
 				_xhr.bind('Load', function(e) {
 					_p('readyState', XMLHttpRequest.DONE);
 					_p('status', Number(runtime.exec.call(_xhr, 'XMLHttpRequest', 'getStatus') || 0));
 					_p('statusText', httpCode[_p('status')] || "");
-					
+
 					_p('response', runtime.exec.call(_xhr, 'XMLHttpRequest', 'getResponse', _p('responseType')));
 
 					if (!!~Basic.inArray(_p('responseType'), ['text', ''])) {
@@ -868,7 +880,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					_responseHeaders = runtime.exec.call(_xhr, 'XMLHttpRequest', 'getAllResponseHeaders');
 
 					self.dispatchEvent('readystatechange');
-					
+
 					if (_p('status') > 0) { // status 0 usually means that server is unreachable
 						if (_upload_events_flag) {
 							self.upload.dispatchEvent(e);
@@ -885,7 +897,7 @@ define("moxie/xhr/XMLHttpRequest", [
 					self.dispatchEvent(e);
 					loadEnd();
 				});
-				
+
 				_xhr.bind('Error', function(e) {
 					_error_flag = true;
 					_p('readyState', XMLHttpRequest.DONE);
@@ -930,7 +942,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			if (!_same_origin_flag) {
 				_options.required_caps.do_cors = true;
 			}
-			
+
 
 			if (_options.ruid) { // we do not need to wait if we can connect directly
 				exec(_xhr.connectRuntime(_options));
@@ -944,8 +956,8 @@ define("moxie/xhr/XMLHttpRequest", [
 				_xhr.connectRuntime(_options);
 			}
 		}
-	
-		
+
+
 		function _reset() {
 			_p('responseText', "");
 			_p('responseXML', null);
@@ -961,7 +973,7 @@ define("moxie/xhr/XMLHttpRequest", [
 	XMLHttpRequest.HEADERS_RECEIVED = 2;
 	XMLHttpRequest.LOADING = 3;
 	XMLHttpRequest.DONE = 4;
-	
+
 	XMLHttpRequest.prototype = EventTarget.instance;
 
 	return XMLHttpRequest;

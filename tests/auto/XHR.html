@@ -19,7 +19,7 @@ module("XMLHttpRequest", {
 			allowed = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'];
 
 		function getRandom(min, max) {
-			return Math.floor(Math.random() * (max - min + 1)) + min; 
+			return Math.floor(Math.random() * (max - min + 1)) + min;
 		}
 
 		o.extend(this, {
@@ -30,7 +30,7 @@ module("XMLHttpRequest", {
 			DOM: jQuery('#qunit-fixture'),
 
 			prohibited: prohibited,
-			
+
 			allowed: allowed,
 
 			methods: prohibited.concat(allowed),
@@ -50,20 +50,20 @@ module("XMLHttpRequest", {
 				function origin(url) {
 					return [url.scheme, url.host, url.port].join('/');
 				}
-					
+
 				if (typeof url === 'string') {
 					url = _parseUrl(url);
 				}
-					
+
 				return origin(_parseUrl()) === origin(url);
 			},
 
 			getsetSupported: function() {
 				return Object.defineProperty || Object.prototype.__defineGetter__;
-			}	
+			}
 
 		});
-		
+
 	},
 
 	teardown: function() {
@@ -75,7 +75,7 @@ test('open()', function() {
 	var url = "XMLHttpRequest/sample.html",
 		xhr = new o.XMLHttpRequest,
 		x = o.Exceptions, i,
-		method, err, 
+		method, err,
 		fired = false,
 		fireStarter = function(e) {
 			fired = true;
@@ -83,16 +83,16 @@ test('open()', function() {
 
 	try {
 		xhr.open();
-	} catch (ex) { 
-		err = new x.DOMException(ex.code); 
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
 	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if method not specified");
 	err = null;
 
 	try {
 		xhr.open('get');
-	} catch (ex) { 
-		err = new x.DOMException(ex.code); 
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
 	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if url not specified");
 	err = null;
@@ -100,16 +100,16 @@ test('open()', function() {
 
 	try {
 		xhr.open('INVĀLID', url); // Ā - \u0100
-	} catch (ex) { 
-		err = new x.DOMException(ex.code); 
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
 	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if any code point in method is higher than U+00FF");
 	err = null;
 
 	try {
 		xhr.open('INVÀLID', url); // À - \u00C0
-	} catch (ex) { 
-		err = new x.DOMException(ex.code); 
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
 	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if after deflating method does not match itself");
 	err = null;
@@ -118,11 +118,11 @@ test('open()', function() {
 	for (i = 0; i < this.prohibited.length; i++) {
 		try {
 			xhr.open(this.prohibited[i], url);
-		} catch (ex) { 
+		} catch (ex) {
 			if (!QUnit.equiv(new x.DOMException(ex.code), new x.DOMException(x.DOMException.SECURITY_ERR))) {
 				break;
 			}
-		}		
+		}
 	}
 	equal(i, this.prohibited.length, "Throws DOMException.SECURITY_ERR if method is one of the following ['CONNECT', 'TRACE', 'TRACK'])");
 
@@ -130,9 +130,9 @@ test('open()', function() {
 	for (i = 0; i < this.allowed.length; i++) {
 		try {
 			xhr.open(this.allowed[i], url);
-		} catch (ex) { 
+		} catch (ex) {
 			break;
-		}		
+		}
 	}
 	equal(i, this.allowed.length, "open() successfully called for allowed methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'] (can be called multiple times, but only last one matters)");
 
@@ -141,8 +141,8 @@ test('open()', function() {
 
 	try {
 		xhr.open('GET', url);
-	} catch (ex) { 
-		err = new x.DOMException(ex.code); 
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
 	}
 	equal(xhr.readyState, o.XMLHttpRequest.OPENED, "XHR state switched to OPENED");
 	deepEqual(fired, true, "readystatechange has fired");
@@ -155,53 +155,53 @@ test('open()', function() {
 
 
 test('setRequestHeader()', function() {
-	
+
 	//expect(6);
 
 	var xhr = new o.XMLHttpRequest,
-		x = o.Exceptions, i, err, 
+		x = o.Exceptions, i, err,
 		url = "XMLHttpRequest/sample.html",
-		uaHeaders = [ // these headers are controlled by the user agent 
-			"accept-charset", 
-			"accept-encoding", 
-			"access-control-request-headers", 
-			"access-control-request-method", 
-			"connection", 
-			"content-length", 
-			"cookie", 
-			"cookie2", 
-			"content-transfer-encoding", 
-			"date", 
-			"expect", 
-			"host", 
-			"keep-alive", 
-			"origin", 
-			"referer", 
-			"te", 
-			"trailer", 
-			"transfer-encoding", 
-			"upgrade", 
-			"user-agent", 
+		uaHeaders = [ // these headers are controlled by the user agent
+			"accept-charset",
+			"accept-encoding",
+			"access-control-request-headers",
+			"access-control-request-method",
+			"connection",
+			"content-length",
+			"cookie",
+			"cookie2",
+			"content-transfer-encoding",
+			"date",
+			"expect",
+			"host",
+			"keep-alive",
+			"origin",
+			"referer",
+			"te",
+			"trailer",
+			"transfer-encoding",
+			"upgrade",
+			"user-agent",
 			"via"
 		];
 
 	// 1
 	try {
 		xhr.setRequestHeader('X-Test', 'test');
-	} catch (ex) { 
-		err = new x.DOMException(ex.code); 
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
 	}
 	deepEqual(err, new x.DOMException(x.DOMException.INVALID_STATE_ERR), "Throws DOMException.INVALID_STATE_ERR if readyState of xhr is not XMLHttpRequest.OPENED");
 	err = null;
 
-	
+
 	xhr.open('get', url);
 
 	// 2
 	try {
 		xhr.setRequestHeader('X-Invālid', 'invalid'); // ā - \u0101
-	} catch (ex) { 
-		err = new x.DOMException(ex.code); 
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
 	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if any code point in header field name is higher than U+00FF");
 	err = null;
@@ -209,8 +209,8 @@ test('setRequestHeader()', function() {
 	// 3
 	try {
 		xhr.setRequestHeader('X-Invàlid', 'invalid'); // à - \u00E0
-	} catch (ex) { 
-		err = new x.DOMException(ex.code); 
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
 	}
 	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if after deflating header field name does not match itself");
 	err = null;
@@ -221,7 +221,7 @@ test('setRequestHeader()', function() {
 	for (i = 0; i < uaHeaders.length; i++) {
 		if (xhr.setRequestHeader(uaHeaders[i], 'valid value')) {
 			break;
-		}	
+		}
 	}
 	equal(i, uaHeaders.length, "None of the headers specified on step #5 of W3C XMLHttpRequest (http://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#the-setrequestheader()-method) accepted");
 
@@ -238,15 +238,32 @@ test('setRequestHeader()', function() {
 		equal(headers['x-test'], "one, two", "Request headers sent successfully");
 	};
 
-	xhr.send(null, o.extend({}, this.runtimeOptions, { 
+	xhr.send(null, o.extend({}, this.runtimeOptions, {
 		required_caps: {
 			send_custom_headers: true
 		}
 	}));
 });
 
+test('hasRequestHeader()', function() {
+	var xhr = new o.XMLHttpRequest;
+
+	xhr.open('get', 'XMLHttpRequest/headers.php');
+
+	xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+	equal(xhr.hasRequestHeader('content-type'), 'application/octet-stream',
+		"Request header found by case-insensitive lookup.");
+
+	deepEqual(xhr.hasRequestHeader('Content-Disposition'), false,
+		"Looking up non-existent header results in boolean false.");
+
+	xhr.destroy();
+});
+
+
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
-	
+
 	test("test events: " + runtime, function() {
 		var self = this, xhr;
 		var events = {
@@ -298,8 +315,8 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		xhr.bind('RuntimeError', function() {
 			start();
 			ok(true, "Runtime not supported.");
-		});	
-		
+		});
+
 		xhr.open('POST', 'XMLHttpRequest/json.php');
 		xhr.responseType = 'json';
 
@@ -359,8 +376,8 @@ test("test events: native", function() {
 	xhr.bind('RuntimeError', function() {
 		start();
 		ok(true, "Runtime not supported.");
-	});	
-	
+	});
+
 	xhr.open('GET', 'XMLHttpRequest/json.php');
 
 	stop();
@@ -410,8 +427,8 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 		xhr.onload = function() {
 			start();
-			
-			var 
+
+			var
 			  blob = xhr.response
 			, type = 'html5'
 			, img = new o.Image
@@ -447,7 +464,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 		});
 
 		stop();
-		xhr.send(null, o.extend({}, this.runtimeOptions, { 
+		xhr.send(null, o.extend({}, this.runtimeOptions, {
 			runtime_order: runtime
 		}));
 	});
@@ -456,7 +473,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 // send() - send Blob / get Text
 o.each("html5,flash,silverlight".split(','), function(runtime) {
 	test('send() - send Blob / get Text: ' + runtime, function() {
-		var 
+		var
 		  x = this.x
 		, xhr = new this.XHR
 		, blob
@@ -472,7 +489,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 		file = new o.File(null, {
 			name: fileName,
 			type: 'image/jpeg',
-			data: binStr	
+			data: binStr
 		});
 
 
@@ -494,7 +511,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 		stop();
 		startTime = (new Date).getTime();
-		xhr.send(file, o.extend({}, this.runtimeOptions, { 
+		xhr.send(file, o.extend({}, this.runtimeOptions, {
 			runtime_order: runtime,
 			required_caps: {
 				send_binary_string: true
@@ -508,7 +525,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	test('send() - get JSON: ' + runtime, function() {
 		// expect(2);
 
-		var 
+		var
 		  x = this.x
 		, xhr = new this.XHR
 		, startTime
@@ -535,10 +552,10 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			start();
 			ok(true, "Runtime not supported.");
 		});
-			
+
 		startTime = (new Date).getTime();
-		xhr.send(null, o.extend({}, this.runtimeOptions, { 
-			runtime_order: runtime 
+		xhr.send(null, o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime
 		}));
 	});
 });
@@ -546,7 +563,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 	test('send() - send FormData: ' + runtime, function() {
-		var 
+		var
 		  x = this.x
 		, xhr = new this.XHR
 		, fd = new o.FormData
@@ -567,7 +584,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 		xhr.onload = function(e) {
 			start();
 			endTime = (new Date).getTime();
-			
+
 			if (xhr.response) {
 				deepEqual(xhr.response, {
 					OK: 1,
@@ -577,15 +594,15 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 				}, "FormData constructed out of primitive values, successfully sent (in: " + (endTime - startTime) + " ms)");
 			}
 		};
-			
+
 		xhr.bind('RuntimeError', function() {
 			start();
 			ok(true, "Runtime not supported.");
 		});
-			
+
 		startTime = (new Date).getTime();
-		xhr.send(fd, o.extend({}, this.runtimeOptions, { 
-			runtime_order: runtime 
+		xhr.send(fd, o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime
 		}));
 	});
 });
@@ -595,7 +612,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 	test('send() - send FormData (with Blob): ' + runtime, function() {
 		//expect(4);
 
-		var 
+		var
 		  x = this.x
 		, xhr = new this.XHR
 		, fd = new o.FormData
@@ -624,7 +641,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 			name: fileName,
 			type: 'image/jpeg',
 			size: binStr.length,
-			data: binStr	
+			data: binStr
 		});
 
 
@@ -663,7 +680,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 			endTime = (new Date).getTime();
 
 			ok(xhr.response, "Response received");
-			
+
 			if (xhr.response) {
 				deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
 
@@ -683,18 +700,18 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 			} else {
 				ok(!events.progress, "Progress event didn't fire");
 			}
-			
+
 			ok(true, "LoadEnd fired");
 		};
-			
+
 		xhr.bind('RuntimeError', function() {
 			start();
 			ok(true, "Runtime not supported.");
 		});
-			
+
 		startTime = (new Date).getTime();
-		xhr.send(fd, o.extend({}, this.runtimeOptions, { 
-			runtime_order: runtime 
+		xhr.send(fd, o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime
 		}));
 	});
 });
@@ -758,7 +775,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			timeout: 0,
 			//error: 0,
 			abort: 0
-			
+
 		};
 
 		o.each(events, function(times, e) {
@@ -808,7 +825,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 			name: fileName,
 			type: 'image/jpeg',
 			size: binStr.length,
-			data: binStr	
+			data: binStr
 		});
 
 
@@ -831,7 +848,7 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 		function uploadNextChunk() {
 			var blob = file.slice(offset, offset + chunkSize);
 			var xhr = new o.XMLHttpRequest();
-			
+
 			var fd = new o.FormData();
 			fd.append("name", fileName);
 			fd.append("offset", offset);
@@ -863,20 +880,20 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 				ok(true, "Runtime not supported.");
 			});
 
-			xhr.send(fd, o.extend({}, self.runtimeOptions, { 
+			xhr.send(fd, o.extend({}, self.runtimeOptions, {
 				runtime_order: runtime,
 				required_caps: {
 					send_browser_cookies: true
-				} 
+				}
 			}));
 		}
 
 		stop();
 		// start session
 		var xhrNative = _getNativeXHR();
-		
+
 		xhrNative.open('get', 'XMLHttpRequest/session.php?start=1&name=' + fileName);
-		
+
 		xhrNative.onreadystatechange = function() {
 			if (this.readyState == 4) {
 				uploadNextChunk();
@@ -893,16 +910,16 @@ o.each("html5,flash,silverlight".split(','), function(runtime) {
 
 // test different server response codes
 o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
-	
+
 	test('test response http status codes: ' + runtime, function() {
 		var self = this;
 		var statuses = {
 			200: 200,
-			404: 404, 
-			302: 200, 
+			404: 404,
+			302: 200,
 			301: 200,
 			503: 503
-		};	
+		};
 		var queue = [];
 
 		o.each(statuses, function(response, status) {
@@ -924,11 +941,11 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 					cb(true); // throw error and stop the series for the current runtiem
 				});
 
-				xhr.send(null, o.extend({}, self.runtimeOptions, { 
+				xhr.send(null, o.extend({}, self.runtimeOptions, {
 					required_caps: {
 						return_status_code: 403
 					},
-					runtime_order: runtime 
+					runtime_order: runtime
 				}));
 			});
 		});
