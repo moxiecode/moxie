@@ -38,7 +38,7 @@ define('moxie/core/utils/Basic', [], function() {
 		// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
 		return ({}).toString.call(o).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
 	}
-		
+
 	/**
 	Extends the specified object with another object(s).
 
@@ -49,7 +49,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@return {Object} Same as target, the extended object.
 	*/
 	function extend() {
-		return merge(false, arguments);
+		return merge(false, false, arguments);
 	}
 
 
@@ -63,24 +63,51 @@ define('moxie/core/utils/Basic', [], function() {
 	@return {Object} Same as target, the extended object.
 	*/
 	function extendIf() {
-		return merge(true, arguments);
+		return merge(true, false, arguments);
 	}
 
 
+	function extendImmutable() {
+		return merge(false, true, arguments);
+	}
 
-	function merge(strict, args) {
+
+	function extendImmutableIf() {
+		return merge(true, true, arguments);
+	}
+
+
+	function shallowCopy(obj) {
+		switch (typeOf(obj)) {
+			case 'array':
+				return Array.prototype.slice.call(obj);
+
+			case 'object':
+				return extend({}, obj);
+		}
+		return obj;
+	}
+
+
+	function merge(strict, immutable, args) {
 		var undef;
 		var target = args[0];
 
 		each(args, function(arg, i) {
 			if (i > 0) {
 				each(arg, function(value, key) {
+					var isComplex = inArray(typeOf(value), ['array', 'object']) !== -1;
+
 					if (value === undef || strict && target[key] === undef) {
 						return true;
 					}
 
-					if (typeOf(target[key]) === typeOf(value) && inArray(typeOf(value), ['array', 'object']) !== -1) {
-						merge(strict, [target[key], value]);
+					if (isComplex && immutable) {
+						value = shallowCopy(value);
+					}
+
+					if (typeOf(target[key]) === typeOf(value) && isComplex) {
+						merge(strict, immutable, [target[key], value]);
 					} else {
 						target[key] = value;
 					}
@@ -94,7 +121,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 	/**
 	A way to inherit one `class` from another in a consisstent way (more or less)
-	
+
 	@method inherit
 	@static
 	@since >1.4.1
@@ -122,7 +149,7 @@ define('moxie/core/utils/Basic', [], function() {
 		return child;
 	}
 
-		
+
 	/**
 	Executes the callback function for each item in array/object. If you return false in the
 	callback it will break the loop.
@@ -164,7 +191,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 	/**
 	Checks if object is empty.
-	
+
 	@method isEmptyObj
 	@static
 	@param {Object} o Object to check.
@@ -221,7 +248,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 	/**
 	Recieve an array of functions (usually async) to call in parallel, each  function
-	receives a callback as first argument that it should call, when it completes. After 
+	receives a callback as first argument that it should call, when it completes. After
 	everything is complete, main callback is called. Passing truthy value to the
 	callback as a first argument will interrupt the process and invoke main callback
 	immediately.
@@ -239,7 +266,7 @@ define('moxie/core/utils/Basic', [], function() {
 				if (error) {
 					return cb(error);
 				}
-				
+
 				var args = [].slice.call(arguments);
 				args.shift(); // strip error - undefined or not
 
@@ -249,15 +276,15 @@ define('moxie/core/utils/Basic', [], function() {
 				if (count === num) {
 					cbArgs.unshift(null);
 					cb.apply(this, cbArgs);
-				} 
+				}
 			});
 		});
 	}
-	
-	
+
+
 	/**
 	Find an element in array and return it's index if present, otherwise return -1.
-	
+
 	@method inArray
 	@static
 	@param {Mixed} needle Element to find
@@ -269,7 +296,7 @@ define('moxie/core/utils/Basic', [], function() {
 			if (Array.prototype.indexOf) {
 				return Array.prototype.indexOf.call(array, needle);
 			}
-		
+
 			for (var i = 0, length = array.length; i < length; i++) {
 				if (array[i] === needle) {
 					return i;
@@ -303,7 +330,7 @@ define('moxie/core/utils/Basic', [], function() {
 		for (var i in needles) {
 			if (inArray(needles[i], array) === -1) {
 				diff.push(needles[i]);
-			}	
+			}
 		}
 		return diff.length ? diff : false;
 	}
@@ -327,11 +354,11 @@ define('moxie/core/utils/Basic', [], function() {
 		});
 		return result.length ? result : null;
 	}
-	
-	
+
+
 	/**
 	Forces anything into an array.
-	
+
 	@method toArray
 	@static
 	@param {Object} obj Object with length field.
@@ -346,14 +373,14 @@ define('moxie/core/utils/Basic', [], function() {
 
 		return arr;
 	}
-	
-			
+
+
 	/**
 	Generates an unique ID. The only way a user would be able to get the same ID is if the two persons
-	at the same exact millisecond manage to get the same 5 random numbers between 0-65535; it also uses 
-	a counter so each ID is guaranteed to be unique for the given page. It is more probable for the earth 
+	at the same exact millisecond manage to get the same 5 random numbers between 0-65535; it also uses
+	a counter so each ID is guaranteed to be unique for the given page. It is more probable for the earth
 	to be hit with an asteroid.
-	
+
 	@method guid
 	@static
 	@param {String} prefix to prepend (by default 'o' will be prepended).
@@ -362,22 +389,22 @@ define('moxie/core/utils/Basic', [], function() {
 	*/
 	var guid = (function() {
 		var counter = 0;
-		
+
 		return function(prefix) {
 			var guid = new Date().getTime().toString(32), i;
 
 			for (i = 0; i < 5; i++) {
 				guid += Math.floor(Math.random() * 65535).toString(32);
 			}
-			
+
 			return (prefix || 'o_') + guid + (counter++).toString(32);
 		};
 	}());
-	
+
 
 	/**
 	Trims white spaces around the string
-	
+
 	@method trim
 	@static
 	@param {String} str
@@ -393,7 +420,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 	/**
 	Parses the specified size string into a byte value. For example 10kb becomes 10240.
-	
+
 	@method parseSizeStr
 	@static
 	@param {String/Number} size String to parse or number to just pass through.
@@ -403,7 +430,7 @@ define('moxie/core/utils/Basic', [], function() {
 		if (typeof(size) !== 'string') {
 			return size;
 		}
-		
+
 		var muls = {
 				t: 1099511627776,
 				g: 1073741824,
@@ -415,7 +442,7 @@ define('moxie/core/utils/Basic', [], function() {
 		size = /^([0-9\.]+)([tmgk]?)$/.exec(size.toLowerCase().replace(/[^0-9\.tmkg]/g, ''));
 		mul = size[2];
 		size = +size[1];
-		
+
 		if (muls.hasOwnProperty(mul)) {
 			size *= muls[mul];
 		}
@@ -437,22 +464,24 @@ define('moxie/core/utils/Basic', [], function() {
 			return typeOf(value) !== 'undefined' ? value : '';
 		});
 	}
-	
-	
-	
+
+
+
 	function delay(cb, timeout) {
 		var self = this;
 		setTimeout(function() {
 			cb.call(self);
 		}, timeout || 1);
 	}
-	
+
 
 	return {
 		guid: guid,
 		typeOf: typeOf,
 		extend: extend,
 		extendIf: extendIf,
+		extendImmutable: extendImmutable,
+		extendImmutableIf: extendImmutableIf,
 		inherit: inherit,
 		each: each,
 		isEmptyObj: isEmptyObj,
