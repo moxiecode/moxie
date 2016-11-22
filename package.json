@@ -8,6 +8,7 @@
         "name": "Davit Barbakadze",
         "email": "davit.barbakadze@ephox.com"
     }],
+    "main": "./bin/js/moxie.min",
     "homepage": "https://github.com/moxiecode/moxie/",
     "repository": {
         "type": "git",
