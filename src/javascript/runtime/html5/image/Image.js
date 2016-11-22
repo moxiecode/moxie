@@ -24,7 +24,7 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
 ], function(extensions, Basic, x, Encode, Blob, File, ImageInfo, ResizerCanvas, Mime, Env) {
-	
+
 	function HTML5Image() {
 		var me = this
 		, _img, _imgInfo, _canvas, _binStr, _blob
@@ -116,7 +116,7 @@ define("moxie/runtime/html5/image/Image", [
 				// rotate if required, according to orientation tag
 				if (!_preserveHeaders) {
 					var orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
-					_rotateToOrientaion(_canvas.width, _canvas.height, orientation);
+					_canvas = _rotateToOrientaion(_canvas, orientation);
 				}
 
 				this.width = _canvas.width;
@@ -311,10 +311,19 @@ define("moxie/runtime/html5/image/Image", [
 		* Orientation value is from EXIF tag
 		* @author Shinichi Tomita <shinichi.tomita@gmail.com>
 		*/
-		function _rotateToOrientaion(width, height, orientation) {
+		function _rotateToOrientaion(img, orientation) {
+			var RADIANS = Math.PI/180;
+			var canvas = document.createElement('canvas');
+			var ctx = canvas.getContext('2d');
+			var width = img.width;
+			var height = img.height;
+
 			if (Basic.inArray(orientation, [5,6,7,8]) > -1) {
-				_canvas.width = height;
-				_canvas.height = width;
+				canvas.width = height;
+				canvas.height = width;
+			} else {
+				canvas.width = width;
+				canvas.height = height;
 			}
 
 			/**
@@ -327,8 +336,6 @@ define("moxie/runtime/html5/image/Image", [
 			7 = The 0th row is the visual right-hand side of the image, and the 0th column is the visual bottom.
 			8 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
 			*/
-
-			var ctx = _canvas.getContext('2d');
 			switch (orientation) {
 				case 2:
 					// horizontal flip
@@ -338,7 +345,7 @@ define("moxie/runtime/html5/image/Image", [
 				case 3:
 					// 180 rotate left
 					ctx.translate(width, height);
-					ctx.rotate(Math.PI);
+					ctx.rotate(180 * RADIANS);
 					break;
 				case 4:
 					// vertical flip
@@ -347,26 +354,29 @@ define("moxie/runtime/html5/image/Image", [
 					break;
 				case 5:
 					// vertical flip + 90 rotate right
-					ctx.rotate(0.5 * Math.PI);
+					ctx.rotate(90 * RADIANS);
 					ctx.scale(1, -1);
 					break;
 				case 6:
 					// 90 rotate right
-					ctx.rotate(0.5 * Math.PI);
+					ctx.rotate(90 * RADIANS);
 					ctx.translate(0, -height);
 					break;
 				case 7:
 					// horizontal flip + 90 rotate right
-					ctx.rotate(0.5 * Math.PI);
+					ctx.rotate(90 * RADIANS);
 					ctx.translate(width, -height);
 					ctx.scale(-1, 1);
 					break;
 				case 8:
 					// 90 rotate left
-					ctx.rotate(-0.5 * Math.PI);
+					ctx.rotate(-90 * RADIANS);
 					ctx.translate(-width, 0);
 					break;
 			}
+
+			ctx.drawImage(img, 0, 0, width, height);
+			return canvas;
 		}
 
 
