@@ -79,7 +79,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 			rt.disconnectRuntime();
 			assert.ok(true, "Initiate deconstruction.");
 			assert.equal(runtimeObj.clients, 0, "Runtime has no clients.");
-			assert.ok(!rt.hasEventListener('RuntimeInit'), "Event listeners unbined.");
+			assert.ok(!runtimeObj.hasEventListener('RuntimeInit'), "Event listeners unbined.");
 			assert.ok(!$('#qunit-fixture').find('.moxie-shim').length, "Runtime automatically deconstructed, HTML structure removed.");
 		});
 
