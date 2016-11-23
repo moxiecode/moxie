@@ -386,11 +386,6 @@ define("moxie/runtime/html5/image/Image", [
 				_imgInfo = null;
 			}
 
-			// Memory issue for IE/Edge. They Keep a reference to image (because of the onload event) and the object not been collected by GC.
-			if (_img) {
-				_img.src = '';
-			}
-
 			_binStr = _img = _canvas = _blob = null;
 			_modified = false;
 		}
