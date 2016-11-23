@@ -97,7 +97,7 @@ define("moxie/core/utils/Mime", [
 			
 			// convert extensions to mime types list
 			for (i = 0; i < filters.length; i++) {
-				ext = filters[i].extensions.split(/\s*,\s*/);
+				ext = filters[i].extensions.toLowerCase().split(/\s*,\s*/);
 
 				for (ii = 0; ii < ext.length; ii++) {
 					
@@ -128,6 +128,8 @@ define("moxie/core/utils/Mime", [
 			var self = this, exts = [];
 			
 			Basic.each(mimes, function(mime) {
+				mime = mime.toLowerCase();
+
 				if (mime === '*') {
 					exts = [];
 					return false;
