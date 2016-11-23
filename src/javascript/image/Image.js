@@ -584,27 +584,33 @@ define("moxie/image/Image", [
 		this.handleEventProps(dispatches);
 
 		this.bind('Load Resize', function() {
-			_updateInfo.call(this);
+			return _updateInfo.call(this); // if operation fails (e.g. image is neither PNG nor JPEG) cancel all pending events
 		}, 999);
 
 
 		function _updateInfo(info) {
-			if (!info) {
-				info = this.exec('Image', 'getInfo');
-			}
+			try {
+				if (!info) {
+					info = this.exec('Image', 'getInfo');
+				}
 
-			this.size = info.size;
-			this.width = info.width;
-			this.height = info.height;
-			this.type = info.type;
-			this.meta = info.meta;
+				this.size = info.size;
+				this.width = info.width;
+				this.height = info.height;
+				this.type = info.type;
+				this.meta = info.meta;
 
-			// update file name, only if empty
-			if (this.name === '') {
-				this.name = info.name;
+				// update file name, only if empty
+				if (this.name === '') {
+					this.name = info.name;
+				}
+				return true;
+			} catch(ex) {
+				this.trigger('error', ex.code);
+				return false;
 			}
 		}
-		
+
 
 		function _load(src) {
 			var srcType = Basic.typeOf(src);
