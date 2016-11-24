@@ -107,13 +107,12 @@ define("moxie/core/utils/Mime", [
 					}
 
 					type = self.mimes[ext[ii]];
-					if (type && Basic.inArray(type, mimes) === -1) {
-						mimes.push(type);
-					}
 
 					// future browsers should filter by extension, finally
 					if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
 						mimes.push('.' + ext[ii]);
+					} else if (type && Basic.inArray(type, mimes) === -1) {
+						mimes.push(type);
 					} else if (!type) {
 						// if we have no type in our map, then accept all
 						return [];
