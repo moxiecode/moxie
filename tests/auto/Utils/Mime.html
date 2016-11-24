@@ -40,7 +40,7 @@ test("extList2mimes()", function() {
 
 	mimes = o.Mime.extList2mimes(fileFilters, true);
 	mimes.sort(); // sort to the predictable order
-	deepEqual(mimes, [".7z", ".gif", ".rar", ".zip", "application/zip", "image/gif"], 
+	deepEqual(mimes, [".7z", ".gif", ".rar", ".zip"],
 		"If second optional argument is truthy (env potentially supports extensions in accept attribute), add extensions to the list.");
 
 	fileFilters.push({ title: "Invalid extensions", extensions: "#ash" });
