@@ -28,4 +28,6 @@ build/ export-ignore
 bin/js/moxie.dev.js export-ignore
 Jakefile.js export-ignore
 package.json export-ignore
+composer.json export-ignore
+bower.json export-ignore
 .* export-ignore
