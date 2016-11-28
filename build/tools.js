@@ -274,4 +274,29 @@ exports.addReleaseDetailsTo = function (destPath, info) {
 			self.addReleaseDetailsTo(path.join(destPath, fileName), info);
 		});
 	}
-}
+};
+
+
+exports.downloadFile = function (url, destPath, cb) {
+    var protocol = /^https:/.test(url) ? require('https') : require('http');
+    var file = fs.createWriteStream(destPath);
+    var request = protocol.get(url, function(response) {
+        response.pipe(file);
+        file.on('finish', function() {
+            file.close(cb);
+        });
+    }).on('error', function(err) { // Handle errors
+        fs.unlink(destPath);
+        if (cb) {
+            cb(err.message);
+        }
+    });
+};
+
+
+exports.startFresh = function (targetPath) {
+    if (fs.existsSync(targetPath)) {
+        jake.rmRf(targetPath);
+    }
+    jake.mkdirP(targetPath);
+};

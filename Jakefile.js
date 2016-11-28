@@ -293,3 +293,25 @@ task("test", [], function() {
 }, true);
 
 
+desc("Publish NuGet package from last tag.");
+task('mknuget', [], function(apiKey) {
+	var mknuget = require('./build/mknuget');
+	var info = require('./package.json');
+	var endPoint = 'https://staging.nuget.org/api/v2/package';
+
+	if (!apiKey) {
+		console.info("Error: Provide NuGet ApiKey: jake mknuget[apiKey]");
+		process.exit(1);
+	}
+
+	mknuget.publish(info, endPoint, apiKey, function(err) {
+		if (err) {
+			console.info(err);
+			process.exit(1);
+		}
+		console.info("NuGet package has been published.");
+		complete();
+	});
+}, true);
+
+
