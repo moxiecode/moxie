@@ -5,7 +5,12 @@
     "XHR2",
     "XMLHttpRequest2",
     "HTML5",
-    "FileAPI"
+    "Flash",
+    "Silverlight",
+    "FileInput",
+    "FileReader",
+    "Image",
+    "ImageResizer"
   ],
   "version": "1.5.2",
   "releaseDate": "2016-11-23",
