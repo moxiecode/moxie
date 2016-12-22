@@ -27,10 +27,10 @@ define('moxie/core/utils/Url', [], function() {
 			https: 443
 		}
 		, uri = {}
-		, regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@\/]*):?([^:@\/]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/
+		, regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@\/]*):?([^:@\/]*))?@)?(\[[\da-fA-F:]+\]|[^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/
 		, m = regex.exec(url || '')
 		;
-					
+
 		while (i--) {
 			if (m[i]) {
 				uri[key[i]] = m[i];
@@ -65,8 +65,8 @@ define('moxie/core/utils/Url', [], function() {
 
 		if (!uri.port) {
 			uri.port = ports[uri.scheme] || 80;
-		} 
-		
+		}
+
 		uri.port = parseInt(uri.port, 10);
 
 		if (!uri.path) {
@@ -108,11 +108,11 @@ define('moxie/core/utils/Url', [], function() {
 		function origin(url) {
 			return [url.scheme, url.host, url.port].join('/');
 		}
-			
+
 		if (typeof url === 'string') {
 			url = parseUrl(url);
-		}	
-		
+		}
+
 		return origin(parseUrl()) === origin(url);
 	};
 
