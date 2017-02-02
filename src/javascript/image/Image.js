@@ -546,7 +546,7 @@ define("moxie/image/Image", [
 					});
 
 					imgCopy.bind("Load", function() {
-						imgCopy.downsize(opts);
+						this.downsize(opts);
 					});
 
 					// if embedded thumb data is available and dimensions are big enough, use it
