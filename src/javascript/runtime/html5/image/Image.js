@@ -77,6 +77,7 @@ define("moxie/runtime/html5/image/Image", [
 					_imgInfo = new ImageInfo(_binStr);
 				}
 
+				// this stuff below is definitely having fun with itself
 				info = {
 					width: _getImg().width || 0,
 					height: _getImg().height || 0,
@@ -89,7 +90,7 @@ define("moxie/runtime/html5/image/Image", [
 				if (_preserveHeaders) {
 					info.meta = _imgInfo && _imgInfo.meta || this.meta || {};
 
-					// store thumbnail data as blob
+					// if data was taken from ImageInfo it will be a binary string, so we convert it to blob
 					if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
 						info.meta.thumb.data = new Blob(null, {
 							type: 'image/jpeg',

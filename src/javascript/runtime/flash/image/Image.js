@@ -50,7 +50,7 @@ define("moxie/runtime/flash/image/Image", [
 			, info = self.shimExec.call(this, 'Image', 'getInfo')
 			;
 
-			if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
+			if (info.meta && info.meta.thumb && info.meta.thumb.data && !(self.meta.thumb.data instanceof Blob)) {
 				info.meta.thumb.data = new Blob(self.uid, info.meta.thumb.data);
 			}
 			return info;

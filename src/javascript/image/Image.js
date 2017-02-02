@@ -573,7 +573,10 @@ define("moxie/image/Image", [
 					this.getRuntime().exec.call(this, 'Image', 'destroy');
 					this.disconnectRuntime();
 				}
-				_updateMeta.call(this, null);
+				if (this.meta && this.meta.thumb) {
+					// thumb is blob, make sure we destroy it first
+					this.meta.thumb.data.destroy();
+				}
 				this.unbindAll();
 			}
 		});
@@ -587,15 +590,6 @@ define("moxie/image/Image", [
 		}, 999);
 
 
-		function _updateMeta(data) {
-			if (this.meta && this.meta.thumb) {
-				// thumb is blob, make sure we destroy it first
-				this.meta.thumb.data.destroy();
-			}
-			this.meta = data;
-		}
-
-
 		function _updateInfo(info) {
 			try {
 				if (!info) {
@@ -606,13 +600,12 @@ define("moxie/image/Image", [
 				this.width = info.width;
 				this.height = info.height;
 				this.type = info.type;
+				this.meta = info.meta;
 
 				// update file name, only if empty
 				if (this.name === '') {
 					this.name = info.name;
 				}
-
-				_updateMeta.call(this, info.meta);
 
 				return true;
 			} catch(ex) {
