@@ -34,7 +34,7 @@ define("moxie/runtime/html5/image/Image", [
 
 		Basic.extend(this, {
 			loadFromBlob: function(blob) {
-				var comp = this, I = comp.getRuntime()
+				var I = this.getRuntime()
 				, asBinary = arguments.length > 1 ? arguments[1] : true
 				;
 
@@ -53,7 +53,7 @@ define("moxie/runtime/html5/image/Image", [
 						if (asBinary) {
 							_binStr = _toBinary(dataUrl);
 						}
-						_preload.call(comp, dataUrl);
+						_preload.call(this, dataUrl);
 					});
 				}
 			},
@@ -295,14 +295,14 @@ define("moxie/runtime/html5/image/Image", [
 			if (window.FileReader) {
 				fr = new FileReader();
 				fr.onload = function() {
-					callback(this.result);
+					callback.call(comp, this.result);
 				};
 				fr.onerror = function() {
 					comp.trigger('error', x.ImageError.WRONG_FORMAT);
 				};
 				fr.readAsDataURL(file);
 			} else {
-				return callback(file.getAsDataURL());
+				return callback.call(this, file.getAsDataURL());
 			}
 		}
 
