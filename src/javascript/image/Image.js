@@ -383,9 +383,7 @@ define("moxie/image/Image", [
 				if (!Env.can('create_canvas')) {
 					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 				}
-
-				var runtime = this.connectRuntime(this.ruid);
-				return runtime.exec.call(this, 'Image', 'getAsCanvas');
+				return this.exec('Image', 'getAsCanvas');
 			},
 
 			/**
