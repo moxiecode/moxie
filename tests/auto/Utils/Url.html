@@ -140,6 +140,16 @@ QUnit.test("parseUrl()", function(assert) {
 				port: 8080,
 				path: "/vm-mgmt-ui/js"
 			}
+		], [ // plupload #1097
+			"//example.com/test/#/item",
+			{
+				scheme: "https",
+				host: "www.example.com",
+				port: 443,
+				path: "/test/",
+				fragment: '/item'
+			},
+			"https://example.com"
 		]
 	];
 
