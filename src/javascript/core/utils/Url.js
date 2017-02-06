@@ -37,7 +37,7 @@ define('moxie/core/utils/Url', [
 
 		switch (Basic.typeOf(currentUrl)) {
 			case 'undefined':
-				currentUrl = document.location.href;
+				currentUrl = parseUrl(document.location.href, false);
 				break;
 
 			case 'string':
