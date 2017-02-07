@@ -166,9 +166,6 @@ define("moxie/core/utils/Mime", [
 				title: I18n.translate('Files'),
 				extensions: exts.length ? exts.join(',') : '*'
 			});
-			
-			// save original mimes string
-			accept.mimes = mimes;
 
 			return accept;
 		},
