@@ -253,6 +253,7 @@ exports.addReleaseDetailsTo = function (destPath, info) {
 
 		contents = contents.replace(/@@([^@]+)@@/g, function($0, $1) {
 			switch ($1) {
+				case "year": return (new Date()).getFullYear();
 				case "version": return info.version;
 				case "releasedate": return info.releaseDate;
 			}
