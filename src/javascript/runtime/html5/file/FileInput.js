@@ -32,7 +32,7 @@ define("moxie/runtime/html5/file/FileInput", [
 				_options = options;
 
 				// figure out accept string
-				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
+				mimes = Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
 
 				shimContainer = I.getShimContainer();
 

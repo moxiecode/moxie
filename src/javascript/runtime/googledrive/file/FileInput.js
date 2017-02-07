@@ -99,7 +99,7 @@ define("moxie/runtime/googledrive/file/FileInput", [
 				_options = options;
 
 				// figure out accept string
-				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
+				mimes = Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
 
 				gapi.load('picker', {
 					callback: function() {
