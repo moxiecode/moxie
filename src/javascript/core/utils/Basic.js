@@ -159,7 +159,7 @@ define('moxie/core/utils/Basic', [], function() {
 		child.prototype = new ctor();
 
 		// keep a way to reference parent methods
-		child.__parent__ = parent.prototype;
+		child.super = parent.prototype;
 		return child;
 	}
 
