@@ -77,6 +77,20 @@ define('moxie/core/utils/Basic', [], function() {
 	}
 
 
+	function clone(value) {
+		switch (typeOf(value)) {
+			case 'array':
+				return merge(false, true, [[], value]);
+
+			case 'object':
+				return merge(false, true, [{}, value]);
+
+			default:
+				return value;
+		}
+	}
+
+
 	function shallowCopy(obj) {
 		switch (typeOf(obj)) {
 			case 'array':
@@ -482,6 +496,7 @@ define('moxie/core/utils/Basic', [], function() {
 		extendIf: extendIf,
 		extendImmutable: extendImmutable,
 		extendImmutableIf: extendImmutableIf,
+		clone: clone,
 		inherit: inherit,
 		each: each,
 		isEmptyObj: isEmptyObj,
