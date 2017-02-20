@@ -154,6 +154,15 @@ define('moxie/core/utils/Basic', [], function() {
 		// give child `class` a place to define its own methods
 		function ctor() {
 			this.constructor = child;
+
+			if (MXI_DEBUG) {
+				var getCtorName = function(fn) {
+					var m = fn.toString().match(/^function\s([^\(\s]+)/);
+					return m ? m[1] : false;
+				};
+
+				this.ctorName = getCtorName(child);
+			}
 		}
 		ctor.prototype = parent.prototype;
 		child.prototype = new ctor();
