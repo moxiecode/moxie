@@ -473,9 +473,25 @@ define('moxie/core/utils/Basic', [], function() {
 	function sprintf(str) {
 		var args = [].slice.call(arguments, 1);
 
-		return str.replace(/%[a-z]/g, function() {
+		return str.replace(/%([a-z])/g, function($0, $1) {
 			var value = args.shift();
-			return typeOf(value) !== 'undefined' ? value : '';
+
+			switch ($1) {
+				case 's':
+					return value + '';
+
+				case 'd':
+					return parseInt(value, 10);
+
+				case 'f':
+					return parseFloat(value);
+
+				case 'c':
+					return '';
+
+				default:
+					return value;
+			}
 		});
 	}
 
