@@ -11,7 +11,7 @@
 define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
-	
+
 	/**
 	 * UAParser.js v0.7.7
 	 * Lightweight JavaScript-based User-Agent string parser
@@ -214,7 +214,7 @@ define("moxie/core/utils/Env", [
 	    var regexes = {
 
 	        browser : [[
-	        
+
 	            // Presto based
 	            /(opera\smini)\/([\w\.-]+)/i,                                       // Opera Mini
 	            /(opera\s[mobiletab]+).+version\/([\w\.-]+)/i,                      // Opera Mobi/Tablet
@@ -603,7 +603,7 @@ define("moxie/core/utils/Env", [
 					du.onload = function() {
 						caps.use_data_uri = (du.width === 1 && du.height === 1);
 					};
-					
+
 					setTimeout(function() {
 						du.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
 					}, 1);
@@ -644,14 +644,14 @@ define("moxie/core/utils/Env", [
 		can: can,
 
 		uaParser: UAParser,
-		
+
 		browser: uaResult.browser.name,
 		version: uaResult.browser.version,
 		os: uaResult.os.name, // everybody intuitively types it in a lowercase for some reason
 		osVersion: uaResult.os.version,
 
 		verComp: version_compare,
-		
+
 		swf_url: "../flash/Moxie.swf",
 		xap_url: "../silverlight/Moxie.xap",
 		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
@@ -668,20 +668,14 @@ define("moxie/core/utils/Env", [
 		};
 
 		Env.log = function() {
-			
+
 			function logObj(data) {
 				// TODO: this should recursively print out the object in a pretty way
 				console.appendChild(document.createTextNode(data + "\n"));
 			}
 
-			var data = arguments[0];
-
-			if (Basic.typeOf(data) === 'string') {
-				data = Basic.sprintf.apply(this, arguments);
-			}
-
 			if (window && window.console && window.console.log) {
-				window.console.log(data);
+				window.console.log.apply(window.console, arguments);
 			} else if (document) {
 				var console = document.getElementById('moxie-console');
 				if (!console) {
@@ -691,11 +685,15 @@ define("moxie/core/utils/Env", [
 					document.body.appendChild(console);
 				}
 
-				if (Basic.inArray(Basic.typeOf(data), ['object', 'array']) !== -1) {
+				var data = arguments[0];
+				if (Basic.typeOf(data) === 'string') {
+					data = Basic.sprintf.apply(this, arguments);
+				} else if (Basic.inArray(Basic.typeOf(data), ['object', 'array']) !== -1) {
 					logObj(data);
-				} else {
-					console.appendChild(document.createTextNode(data + "\n"));
+					return;
 				}
+
+				console.appendChild(document.createTextNode(data + "\n"));
 			}
 		};
 	}

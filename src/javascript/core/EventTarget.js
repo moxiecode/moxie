@@ -215,7 +215,7 @@ define('moxie/core/EventTarget', [
 				args.unshift(evt);
 
 				if (MXI_DEBUG && Env.debug.events) {
-					Env.log("Event '%s' fired on %u", evt.type, uid);
+					Env.log("%cEvent '%s' fired on %s", 'color: #999;', evt.type, (this.ctorName ? this.ctorName + '::' : '') + uid);
 				}
 
 				// Dispatch event to all listeners
