@@ -189,6 +189,20 @@ define('moxie/core/utils/Basic', [], function() {
 	}
 
 
+	function clone(value) {
+		switch (typeOf(value)) {
+			case 'array':
+				return merge(false, true, [[], value]);
+
+			case 'object':
+				return merge(false, true, [{}, value]);
+
+			default:
+				return value;
+		}
+	}
+
+
 	function shallowCopy(obj) {
 		switch (typeOf(obj)) {
 			case 'array':
@@ -252,12 +266,21 @@ define('moxie/core/utils/Basic', [], function() {
 		// give child `class` a place to define its own methods
 		function ctor() {
 			this.constructor = child;
+
+			if (MXI_DEBUG) {
+				var getCtorName = function(fn) {
+					var m = fn.toString().match(/^function\s([^\(\s]+)/);
+					return m ? m[1] : false;
+				};
+
+				this.ctorName = getCtorName(child);
+			}
 		}
 		ctor.prototype = parent.prototype;
 		child.prototype = new ctor();
 
 		// keep a way to reference parent methods
-		child.__parent__ = parent.prototype;
+		child.super = parent.prototype;
 		return child;
 	}
 
@@ -571,9 +594,25 @@ define('moxie/core/utils/Basic', [], function() {
 	function sprintf(str) {
 		var args = [].slice.call(arguments, 1);
 
-		return str.replace(/%[a-z]/g, function() {
+		return str.replace(/%([a-z])/g, function($0, $1) {
 			var value = args.shift();
-			return typeOf(value) !== 'undefined' ? value : '';
+
+			switch ($1) {
+				case 's':
+					return value + '';
+
+				case 'd':
+					return parseInt(value, 10);
+
+				case 'f':
+					return parseFloat(value);
+
+				case 'c':
+					return '';
+
+				default:
+					return value;
+			}
 		});
 	}
 
@@ -594,6 +633,7 @@ define('moxie/core/utils/Basic', [], function() {
 		extendIf: extendIf,
 		extendImmutable: extendImmutable,
 		extendImmutableIf: extendImmutableIf,
+		clone: clone,
 		inherit: inherit,
 		each: each,
 		isEmptyObj: isEmptyObj,
@@ -809,7 +849,7 @@ define('moxie/core/utils/Encode', [], function() {
 define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
-	
+
 	/**
 	 * UAParser.js v0.7.7
 	 * Lightweight JavaScript-based User-Agent string parser
@@ -1012,7 +1052,7 @@ define("moxie/core/utils/Env", [
 	    var regexes = {
 
 	        browser : [[
-	        
+
 	            // Presto based
 	            /(opera\smini)\/([\w\.-]+)/i,                                       // Opera Mini
 	            /(opera\s[mobiletab]+).+version\/([\w\.-]+)/i,                      // Opera Mobi/Tablet
@@ -1401,7 +1441,7 @@ define("moxie/core/utils/Env", [
 					du.onload = function() {
 						caps.use_data_uri = (du.width === 1 && du.height === 1);
 					};
-					
+
 					setTimeout(function() {
 						du.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
 					}, 1);
@@ -1442,14 +1482,14 @@ define("moxie/core/utils/Env", [
 		can: can,
 
 		uaParser: UAParser,
-		
+
 		browser: uaResult.browser.name,
 		version: uaResult.browser.version,
 		os: uaResult.os.name, // everybody intuitively types it in a lowercase for some reason
 		osVersion: uaResult.os.version,
 
 		verComp: version_compare,
-		
+
 		swf_url: "../flash/Moxie.swf",
 		xap_url: "../silverlight/Moxie.xap",
 		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
@@ -1466,20 +1506,14 @@ define("moxie/core/utils/Env", [
 		};
 
 		Env.log = function() {
-			
+
 			function logObj(data) {
 				// TODO: this should recursively print out the object in a pretty way
 				console.appendChild(document.createTextNode(data + "\n"));
 			}
 
-			var data = arguments[0];
-
-			if (Basic.typeOf(data) === 'string') {
-				data = Basic.sprintf.apply(this, arguments);
-			}
-
 			if (window && window.console && window.console.log) {
-				window.console.log(data);
+				window.console.log.apply(window.console, arguments);
 			} else if (document) {
 				var console = document.getElementById('moxie-console');
 				if (!console) {
@@ -1489,11 +1523,15 @@ define("moxie/core/utils/Env", [
 					document.body.appendChild(console);
 				}
 
-				if (Basic.inArray(Basic.typeOf(data), ['object', 'array']) !== -1) {
+				var data = arguments[0];
+				if (Basic.typeOf(data) === 'string') {
+					data = Basic.sprintf.apply(this, arguments);
+				} else if (Basic.inArray(Basic.typeOf(data), ['object', 'array']) !== -1) {
 					logObj(data);
-				} else {
-					console.appendChild(document.createTextNode(data + "\n"));
+					return;
 				}
+
+				console.appendChild(document.createTextNode(data + "\n"));
 			}
 		};
 	}
@@ -2067,7 +2105,7 @@ define('moxie/core/EventTarget', [
 				args.unshift(evt);
 
 				if (MXI_DEBUG && Env.debug.events) {
-					Env.log("Event '%s' fired on %u", evt.type, uid);
+					Env.log("%cEvent '%s' fired on %s", 'color: #999;', evt.type, (this.ctorName ? this.ctorName + '::' : '') + uid);
 				}
 
 				// Dispatch event to all listeners
@@ -3405,9 +3443,6 @@ define("moxie/core/utils/Mime", [
 				title: I18n.translate('Files'),
 				extensions: exts.length ? exts.join(',') : '*'
 			});
-			
-			// save original mimes string
-			accept.mimes = mimes;
 
 			return accept;
 		},
@@ -4354,7 +4389,9 @@ define('moxie/file/FileReader', [
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('moxie/core/utils/Url', [], function() {
+define('moxie/core/utils/Url', [
+	'moxie/core/utils/Basic'
+], function(Basic) {
 	/**
 	Parse url into separate components and fill in absent parts with parts from current url,
 	based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
@@ -4375,7 +4412,19 @@ define('moxie/core/utils/Url', [], function() {
 		, uri = {}
 		, regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@\/]*):?([^:@\/]*))?@)?(\[[\da-fA-F:]+\]|[^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/
 		, m = regex.exec(url || '')
+		, isRelative
+		, isSchemeLess = /^\/\/\w/.test(url)
 		;
+
+		switch (Basic.typeOf(currentUrl)) {
+			case 'undefined':
+				currentUrl = parseUrl(document.location.href, false);
+				break;
+
+			case 'string':
+				currentUrl = parseUrl(currentUrl, false);
+				break;
+		}
 
 		while (i--) {
 			if (m[i]) {
@@ -4383,14 +4432,14 @@ define('moxie/core/utils/Url', [], function() {
 			}
 		}
 
-		// when url is relative, we set the origin and the path ourselves
-		if (!uri.scheme) {
-			// come up with defaults
-			if (!currentUrl || typeof(currentUrl) === 'string') {
-				currentUrl = parseUrl(currentUrl || document.location.href);
-			}
+		isRelative = !isSchemeLess && !uri.scheme;
 
+		if (isSchemeLess || isRelative) {
 			uri.scheme = currentUrl.scheme;
+		}
+
+		// when url is relative, we set the origin and the path ourselves
+		if (isRelative) {
 			uri.host = currentUrl.host;
 			uri.port = currentUrl.port;
 
@@ -6967,7 +7016,7 @@ define("moxie/runtime/html5/file/FileInput", [
 				_options = options;
 
 				// figure out accept string
-				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
+				mimes = Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
 
 				shimContainer = I.getShimContainer();
 
@@ -11081,7 +11130,7 @@ define("moxie/runtime/html4/file/FileInput", [
 
 				// figure out accept string
 				_options = options;
-				_mimes = options.accept.mimes || Mime.extList2mimes(options.accept, I.can('filter_by_extension'));
+				_mimes = Mime.extList2mimes(options.accept, I.can('filter_by_extension'));
 
 				shimContainer = I.getShimContainer();
 
