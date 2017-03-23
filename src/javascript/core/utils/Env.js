@@ -294,9 +294,9 @@ define("moxie/core/utils/Env", [
 	            /(swiftfox)/i,                                                      // Swiftfox
 	            /(icedragon|iceweasel|camino|chimera|fennec|maemo\sbrowser|minimo|conkeror)[\/\s]?([\w\.\+]+)/i,
 	                                                                                // IceDragon/Iceweasel/Camino/Chimera/Fennec/Maemo/Minimo/Conkeror
-	            /(firefox|seamonkey|k-meleon|icecat|iceape|firebird|phoenix)\/([\w\.-]+)/i,
+	            /(firefox|seamonkey|k-meleon|icecat|iceape|firebird|phoenix)\/((\d+)?[\w\.-]+)/i,
 	                                                                                // Firefox/SeaMonkey/K-Meleon/IceCat/IceApe/Firebird/Phoenix
-	            /(mozilla)\/([\w\.]+).+rv\:.+gecko\/\d+/i,                          // Mozilla
+	            /(mozilla)\/((\d+)?[\w\.]+).+rv\:.+gecko\/\d+/i,                          // Mozilla
 
 	            // Other
 	            /(polaris|lynx|dillo|icab|doris|amaya|w3m|netsurf)[\/\s]?([\w\.]+)/i,
@@ -305,7 +305,7 @@ define("moxie/core/utils/Env", [
 	            /(gobrowser)\/?([\w\.]+)*/i,                                        // GoBrowser
 	            /(ice\s?browser)\/v?([\w\._]+)/i,                                   // ICE Browser
 	            /(mosaic)[\/\s]([\w\.]+)/i                                          // Mosaic
-	            ], [NAME, VERSION]
+	            ], [NAME, VERSION, MAJOR]
 	        ],
 
 	        engine : [[
