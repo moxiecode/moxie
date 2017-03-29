@@ -23,7 +23,7 @@ define("moxie/runtime/googledrive/file/FileInput", [
 ], function(extensions, File, Basic, Dom, Events, Mime, Env) {
 
 	function FileInput() {
-		var _picker, _options, _disabled = false;
+		var _picker, _options, _files, _disabled = false;
 
 		function createPicker(cb) {
 			var comp = this
