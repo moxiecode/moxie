@@ -161,7 +161,7 @@ namespace Moxiecode.Com
 			return dict;
 		}
 
-		public void destroy()
+		public void destroy(object obj = null)
 		{
 			foreach (BufferRegion source in _sources) {
 				source.destroy();
