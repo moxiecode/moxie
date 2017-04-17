@@ -346,7 +346,6 @@ define("moxie/image/Image", [
 					width: this.width,
 					height: this.height,
 					type: this.type || 'image/jpeg',
-					quality: 90,
 					crop: false,
 					preserveHeaders: true,
 					resample: 'default'
