@@ -549,85 +549,89 @@ define("moxie/core/utils/Env", [
 
 	var can = (function() {
 		var caps = {
-				define_property: (function() {
-					/* // currently too much extra code required, not exactly worth it
-					try { // as of IE8, getters/setters are supported only on DOM elements
-						var obj = {};
-						if (Object.defineProperty) {
-							Object.defineProperty(obj, 'prop', {
-								enumerable: true,
-								configurable: true
-							});
-							return true;
-						}
-					} catch(ex) {}
+			access_global_ns: function () {
+				return !!window.moxie;
+			},
 
-					if (Object.prototype.__defineGetter__ && Object.prototype.__defineSetter__) {
+			define_property: (function() {
+				/* // currently too much extra code required, not exactly worth it
+				try { // as of IE8, getters/setters are supported only on DOM elements
+					var obj = {};
+					if (Object.defineProperty) {
+						Object.defineProperty(obj, 'prop', {
+							enumerable: true,
+							configurable: true
+						});
 						return true;
-					}*/
-					return false;
-				}()),
-
-				create_canvas: (function() {
-					// On the S60 and BB Storm, getContext exists, but always returns undefined
-					// so we actually have to call getContext() to verify
-					// github.com/Modernizr/Modernizr/issues/issue/97/
-					var el = document.createElement('canvas');
-					return !!(el.getContext && el.getContext('2d'));
-				}()),
-
-				return_response_type: function(responseType) {
-					try {
-						if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
-							return true;
-						} else if (window.XMLHttpRequest) {
-							var xhr = new XMLHttpRequest();
-							xhr.open('get', '/'); // otherwise Gecko throws an exception
-							if ('responseType' in xhr) {
-								xhr.responseType = responseType;
-								// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
-								if (xhr.responseType !== responseType) {
-									return false;
-								}
-								return true;
-							}
-						}
-					} catch (ex) {}
-					return false;
-				},
-
-				// ideas for this heavily come from Modernizr (http://modernizr.com/)
-				use_data_uri: (function() {
-					var du = new Image();
-
-					du.onload = function() {
-						caps.use_data_uri = (du.width === 1 && du.height === 1);
-					};
-
-					setTimeout(function() {
-						du.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
-					}, 1);
-					return false;
-				}()),
-
-				use_data_uri_over32kb: function() { // IE8
-					return caps.use_data_uri && (Env.browser !== 'IE' || Env.version >= 9);
-				},
-
-				use_data_uri_of: function(bytes) {
-					return (caps.use_data_uri && bytes < 33000 || caps.use_data_uri_over32kb());
-				},
-
-				use_fileinput: function() {
-					if (navigator.userAgent.match(/(Android (1.0|1.1|1.5|1.6|2.0|2.1))|(Windows Phone (OS 7|8.0))|(XBLWP)|(ZuneWP)|(w(eb)?OSBrowser)|(webOS)|(Kindle\/(1.0|2.0|2.5|3.0))/)) {
-						return false;
 					}
+				} catch(ex) {}
 
-					var el = document.createElement('input');
-					el.setAttribute('type', 'file');
-					return !el.disabled;
+				if (Object.prototype.__defineGetter__ && Object.prototype.__defineSetter__) {
+					return true;
+				}*/
+				return false;
+			}()),
+
+			create_canvas: (function() {
+				// On the S60 and BB Storm, getContext exists, but always returns undefined
+				// so we actually have to call getContext() to verify
+				// github.com/Modernizr/Modernizr/issues/issue/97/
+				var el = document.createElement('canvas');
+				return !!(el.getContext && el.getContext('2d'));
+			}()),
+
+			return_response_type: function(responseType) {
+				try {
+					if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
+						return true;
+					} else if (window.XMLHttpRequest) {
+						var xhr = new XMLHttpRequest();
+						xhr.open('get', '/'); // otherwise Gecko throws an exception
+						if ('responseType' in xhr) {
+							xhr.responseType = responseType;
+							// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
+							if (xhr.responseType !== responseType) {
+								return false;
+							}
+							return true;
+						}
+					}
+				} catch (ex) {}
+				return false;
+			},
+
+			// ideas for this heavily come from Modernizr (http://modernizr.com/)
+			use_data_uri: (function() {
+				var du = new Image();
+
+				du.onload = function() {
+					caps.use_data_uri = (du.width === 1 && du.height === 1);
+				};
+
+				setTimeout(function() {
+					du.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
+				}, 1);
+				return false;
+			}()),
+
+			use_data_uri_over32kb: function() { // IE8
+				return caps.use_data_uri && (Env.browser !== 'IE' || Env.version >= 9);
+			},
+
+			use_data_uri_of: function(bytes) {
+				return (caps.use_data_uri && bytes < 33000 || caps.use_data_uri_over32kb());
+			},
+
+			use_fileinput: function() {
+				if (navigator.userAgent.match(/(Android (1.0|1.1|1.5|1.6|2.0|2.1))|(Windows Phone (OS 7|8.0))|(XBLWP)|(ZuneWP)|(w(eb)?OSBrowser)|(webOS)|(Kindle\/(1.0|2.0|2.5|3.0))/)) {
+					return false;
 				}
-			};
+
+				var el = document.createElement('input');
+				el.setAttribute('type', 'file');
+				return !el.disabled;
+			}
+		};
 
 		return function(cap) {
 			var args = [].slice.call(arguments);

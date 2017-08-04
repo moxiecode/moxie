@@ -557,6 +557,29 @@ define('moxie/runtime/Runtime', [
 			}
 		}
 		return defaultMode; 
+
+
+	/**
+	 * Third party shims (Flash and Silverlight) require global event target against which they
+	 * will fire their events. However when moxie is not loaded to global namespace, default
+	 * event target is not accessible and we have to create artificial ones.
+	 *
+	 * @method getGlobalEventTarget
+	 * @static
+	 * @return {String} Name of the global event target
+	 */
+	Runtime.getGlobalEventTarget = function() {
+		if (/^moxie\./.test(Env.global_event_dispatcher) && !Env.can('access_global_ns')) {
+			var uniqueCallbackName = Basic.guid('moxie_event_target_');
+
+			window[uniqueCallbackName] = function(e, data) {
+				EventTarget.instance.dispatchEvent(e, data);
+			};
+
+			Env.global_event_dispatcher = uniqueCallbackName;
+		}
+
+		return Env.global_event_dispatcher;
 	};
 
 
