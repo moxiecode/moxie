@@ -102,7 +102,7 @@ function pack(info, cb) {
         }
 
         // name of the file doesn't matter, NuGet creates its own, apparently out of the package id and version
-        createPackage(info, path.join(outputDir, "package.zip"), files, function() {
+        createPackage(info, path.join(outputDir, "package.nupkg"), files, function() {
             jake.rmRf(tmpDir);
             cb.apply(null, arguments);
         });
