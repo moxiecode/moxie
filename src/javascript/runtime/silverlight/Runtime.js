@@ -85,9 +85,6 @@ define("moxie/runtime/silverlight/Runtime", [
 
 	/**
 	Constructor for the Silverlight Runtime
-
-	@class SilverlightRuntime
-	@extends Runtime
 	*/
 	function SilverlightRuntime(options) {
 		var I = this, initTimer;

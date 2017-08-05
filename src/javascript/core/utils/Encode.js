@@ -8,17 +8,18 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('moxie/core/utils/Encode', [], function() {
+/**
+@class moxie/core/utils/Encode
+@public
+@static
+*/
 
-	/**
-	@class moxie/core/utils/Encode
-	*/
+define('moxie/core/utils/Encode', [], function() {
 
 	/**
 	Encode string with UTF-8
 
 	@method utf8_encode
-	@for Utils
 	@static
 	@param {String} str String to encode
 	@return {String} UTF-8 encoded string

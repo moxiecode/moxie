@@ -8,6 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Extra
+@private
+@static
+*/
+
 define("moxie/core/utils/Extra", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Env"

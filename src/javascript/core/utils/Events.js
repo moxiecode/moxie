@@ -8,6 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Events
+@public
+@static
+*/
+
 define('moxie/core/utils/Events', [
 	'moxie/core/utils/Basic'
 ], function(Basic) {
@@ -27,7 +33,6 @@ define('moxie/core/utils/Events', [
 	in objects internal Plupload registry (@see removeEvent).
 	
 	@method addEvent
-	@for Utils
 	@static
 	@param {Object} obj DOM element like object to add handler to.
 	@param {String} name Name to add event listener to.

@@ -8,6 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Mime
+@public
+@static
+*/
+
 define("moxie/core/utils/Mime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/I18n"
@@ -71,11 +77,36 @@ define("moxie/core/utils/Mime", [
 	
 	var Mime = {
 
+		/**
+		 * Map of mimes to extensions
+		 *
+		 * @property mimes
+		 * @type {Object}
+		 */
 		mimes: {},
 
+		/**
+		 * Map of extensions to mimes
+		 *
+		 * @property extensions
+		 * @type {Object}
+		 */
 		extensions: {},
 
-		// Parses the default mime types string into a mimes and extensions lookup maps
+		/**
+		 * Parses mimeData string into a mimes and extensions lookup maps. String should have the
+		 * following format:
+		 *
+		 * application/msword,doc dot,application/pdf,pdf, ...
+		 *
+		 * so mime-type followed by comma and followed by space-separated list of associated extensions,
+		 * then comma again and then another mime-type, etc.
+		 *
+		 * If invoked externally will replace override internal lookup maps with user-provided data.
+		 *
+		 * @method addMimeType
+		 * @param {String} mimeData
+		 */
 		addMimeType: function (mimeData) {
 			var items = mimeData.split(/,/), i, ii, ext;
 			
@@ -170,7 +201,13 @@ define("moxie/core/utils/Mime", [
 			return accept;
 		},
 
-
+		/**
+		 * Extract extension from the given filename
+		 *
+		 * @method getFileExtension
+		 * @param {String} fileName
+		 * @return {String} File extension
+		 */
 		getFileExtension: function(fileName) {
 			var matches = fileName && fileName.match(/\.([^.]+)$/);
 			if (matches) {
@@ -179,6 +216,14 @@ define("moxie/core/utils/Mime", [
 			return '';
 		},
 
+		/**
+		 * Get file mime-type from it's filename - will try to match the extension
+		 * against internal mime-type lookup map
+		 *
+		 * @method getFileMime
+		 * @param {String} fileName
+		 * @return File mime-type if found or an empty string if not
+		 */
 		getFileMime: function(fileName) {
 			return this.mimes[this.getFileExtension(fileName)] || '';
 		}

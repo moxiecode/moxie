@@ -93,9 +93,6 @@ define("moxie/runtime/flash/Runtime", [
 
 	/**
 	Constructor for the Flash Runtime
-
-	@class FlashRuntime
-	@extends Runtime
 	*/
 	function FlashRuntime(options) {
 		var I = this, initTimer;

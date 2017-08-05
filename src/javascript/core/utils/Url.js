@@ -8,6 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Url
+@public
+@static
+*/
+
 define('moxie/core/utils/Url', [
 	'moxie/core/utils/Basic'
 ], function(Basic) {
@@ -16,7 +22,6 @@ define('moxie/core/utils/Url', [
 	based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
 
 	@method parseUrl
-	@for Utils
 	@static
 	@param {String} url Url to parse (defaults to empty string if undefined)
 	@return {Object} Hash containing extracted uri components
@@ -115,6 +120,7 @@ define('moxie/core/utils/Url', [
 	Check if specified url has the same origin as the current document
 
 	@method hasSameOrigin
+	@static
 	@param {String|Object} url
 	@return {Boolean}
 	*/

@@ -17,6 +17,7 @@ define("moxie/runtime/Transporter", [
 
 	/**
 	@class moxie/runtime/Transporter
+	@private
 	@constructor
 	*/
 	function Transporter() {
