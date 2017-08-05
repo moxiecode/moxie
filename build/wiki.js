@@ -10,14 +10,19 @@ var source = {
 	toc: Handlebars.compile([
 		'### Table of Contents\n',
 		'{{#each classes}}',
-			'* [[{{.}}|{{.}}]]\n',
+			'* [[{{convertSlashesToDots .}}|{{convertSlashesToDots .}}]]\n',
 		'{{/each}}',
 	''].join('')),
 
 	page: Handlebars.compile([
 		'_**Important!** This page is auto-generated from the comments in the source files. All changes will be overwritten! If you are looking to contribute, modify the comment in the corresponding source file instead._\n\n',
+
+		'### Module: _{{normalizedClassName}}_\n\n',
+
 		'### Table of Contents\n',
-		'* [Constructor](#Constructor-method)\n',
+		'{{#if notStatic}}',
+			'* [Constructor](#Constructor-method)\n',
+		'{{/if}}',
 		'{{#if property}}',
 			'* [Properties](#properties)\n',
 			'{{#each property}}',
@@ -40,11 +45,11 @@ var source = {
 		'{{{formatConstructor .}}}',
 
 		'{{#if property}}',
-			'<a name="properties" />\n',
 			'## Properties\n\n',
 
 			'{{#each property}}',
-				'<a name="{{name}}-property" />\n',
+				'<a name="{{name}}-property" />\n\n',
+
 				'### [{{name}}]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n',
 				'##### {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n\n',
 
@@ -60,11 +65,11 @@ var source = {
 		'{{/if}}',
 
 		'{{#if method}}',
-			'<a name="methods" />\n',
 			'## Methods\n\n',
 
 			'{{#each method}}',
-				'<a name="{{name}}-method{{formatAnchorSuffix params}}" />\n',
+				'<a name="{{name}}-method{{formatAnchorSuffix params}}" />\n\n',
+
 				'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n',
 				'##### {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n\n',
 
@@ -73,10 +78,10 @@ var source = {
 		'{{/if}}',
 
 		'{{#if event}}',
-			'<a name="events" />\n',
 			'## Events\n',
 			'{{#each event}}',
-				'<a name="{{name}}-event" />\n',
+				'<a name="{{name}}-event" />\n\n',
+
 				'### {{name}}\n',
 				'##### {{#if deprecated}}*(deprecated{{#if deprecationMessage}}: {{deprecationMessage}}{{/if}})*{{/if}}\n\n',
 
@@ -87,8 +92,9 @@ var source = {
 
 	constructor: Handlebars.compile([
 		'## Constructor\n',
-		'<a name="Constructor-method" />\n',
-		'### [{{name}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
+		'<a name="Constructor-method" />\n\n',
+
+		'### [{{shortName}}({{{formatSignature params}}})]({{srcUrl}} "Defined at: {{file}}:{{line}}") {{#if static}}`static`{{/if}}\n\n',
 		'{{> body}}',
 	''].join('')),
 
@@ -137,7 +143,7 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 
 	if (!fs.existsSync(dir) || !fs.existsSync(YUIDocDir + "/data.json")) {
 		process.exit(1);
-	}	
+	}
 
 	// clear previous versions
 	var apiDir = dir + "/API";
@@ -151,8 +157,8 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 
 	// parse the data and generate the pages
 	var srcUrl = "/" + githubRepo.replace(/^[\s\S]+?github\.com[:\/]([\s\S]+?)\.wiki[\s\S]+$/, '$1') + "/blob/master/";
-	
-	var defineArgIndentation = function(args, level) {			
+
+	var defineArgIndentation = function(args, level) {
 		level = level || 0;
 		util.each(args, function(arg) {
 			arg.level = level;
@@ -199,7 +205,7 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 		if (typeof data.classes[item.class].level == 'undefined' && data.classes[item.class].params) {
 			defineArgIndentation(data.classes[item.class].params);
 		}
-		
+
 		if (['method', 'event'].indexOf(item.itemtype) !== -1 && item.params) {
 			defineArgIndentation(item.params);
 		}
@@ -217,6 +223,7 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 		}
 
 		fn.srcUrl = srcUrl + fn.file + '#L' + fn.line;
+		fn.shortName = fn.name.replace(/^.*?([^\/]+)$/, '$1');
 		return source.constructor(fn);
 	});
 
@@ -267,13 +274,22 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 	});
 
 
+	Handlebars.registerHelper('convertSlashesToDots', function(str) {
+		return str.replace(/\//g, '.');
+	});
+
+	Handlebars.registerHelper('convertSlashesToDashes', function(str) {
+		return str.replace(/\//g, '-');
+	});
+
+
 	Handlebars.registerHelper('indent', function(level) {
 		var indent = '';
 		while (level--) {
 			indent += '\t';
 		}
 		return indent;
-	}); 
+	});
 
 
 	// define partials
@@ -289,8 +305,10 @@ function generatePages(githubRepo, dir, YUIDocDir) {
 
 	// generate pages
 	util.each(data.classes, function(item, className) {
-		fs.writeFileSync(apiDir + "/" + className.replace(/\//, '.') + ".md", source.page({
+		fs.writeFileSync(apiDir + "/" + className.replace(/\//g, '.') + ".md", source.page({
 			class: className,
+			normalizedClassName: className.replace(/\//g, '.'),
+			notStatic: item.static !== 1,
 			property: item.classitems.property,
 			method: item.classitems.method,
 			event: item.classitems.event
@@ -303,8 +321,14 @@ module.exports = function(githubRepo, dir, YUIDocDir) {
 	var self = this, args = [].slice.call(arguments);
 	// make sure we have the repo
 	if (!fs.existsSync(dir)) {
-		exec("git clone " + githubRepo + " ./" + dir, function() {
-			generatePages.apply(self, args);
+		var cmd = "git clone " + githubRepo + " ./" + dir;
+		console.info(cmd);
+		exec(cmd, function(err, stdout, stderr) {
+			if (!err) {
+				generatePages.apply(self, args);
+			} else {
+				console.error(stderr);
+			}
 		});
 	} else {
 		generatePages.apply(self, args);
