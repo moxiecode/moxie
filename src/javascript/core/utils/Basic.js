@@ -13,13 +13,13 @@
 @public
 @static
 */
+
 define('moxie/core/utils/Basic', [], function() {
 	/**
 	Gets the true type of the built-in object (better version of typeof).
 	@author Angus Croll (http://javascriptweblog.wordpress.com/)
 
 	@method typeOf
-	@for Utils
 	@static
 	@param {Object} o Object to check.
 	@return {String} Object [[Class]]

@@ -557,6 +557,7 @@ define('moxie/runtime/Runtime', [
 			}
 		}
 		return defaultMode; 
+	};
 
 
 	/**

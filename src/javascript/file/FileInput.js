@@ -33,7 +33,7 @@ define('moxie/file/FileInput', [
 		@param {Array} [options.accept] Array of mime types to accept. By default accepts all.
 		@param {Boolean} [options.multiple=false] Enable selection of multiple files.
 		@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
-		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
+		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode
 		for _browse\_button_.
 		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
 
@@ -43,7 +43,7 @@ define('moxie/file/FileInput', [
 		</div>
 
 		<script>
-			var fileInput = new mOxie.FileInput({
+			var fileInput = new moxie.file.FileInput({
 				browse_button: 'file-picker', // or document.getElementById('file-picker')
 				container: 'container',
 				accept: [
@@ -70,7 +70,7 @@ define('moxie/file/FileInput', [
 		'ready',
 
 		/**
-		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked. 
+		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked.
 		Check [corresponding documentation entry](#method_refresh) for more info.
 
 		@event refresh
@@ -124,7 +124,7 @@ define('moxie/file/FileInput', [
 
 	function FileInput(options) {
 		if (MXI_DEBUG) {
-			Env.log("Instantiating FileInput...");	
+			Env.log("Instantiating FileInput...");
 		}
 
 		var container, browseButton, defaults;
@@ -151,14 +151,14 @@ define('moxie/file/FileInput', [
 			required_caps: false,
 			container: browseButton.parentNode || document.body
 		};
-		
+
 		options = Basic.extend({}, defaults, options);
 
 		// convert to object representation
 		if (typeof(options.required_caps) === 'string') {
 			options.required_caps = Runtime.parseCaps(options.required_caps);
 		}
-					
+
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
 			options.accept = Mime.mimes2extList(options.accept);
@@ -176,9 +176,9 @@ define('moxie/file/FileInput', [
 		}
 
 		container = browseButton = null; // IE
-						
+
 		RuntimeClient.call(this);
-		
+
 		Basic.extend(this, {
 			/**
 			Unique id of the component
@@ -190,7 +190,7 @@ define('moxie/file/FileInput', [
 			@default UID
 			*/
 			uid: Basic.guid('uid_'),
-			
+
 			/**
 			Unique id of the connected runtime, if any.
 
@@ -208,9 +208,9 @@ define('moxie/file/FileInput', [
 			@type {String}
 			*/
 			shimid: null,
-			
+
 			/**
-			Array of selected mOxie.File objects
+			Array of selected moxie.file.File objects
 
 			@property files
 			@type {Array}
@@ -237,7 +237,7 @@ define('moxie/file/FileInput', [
 					// re-position and resize shim container
 					self.bind('Refresh', function() {
 						var pos, size, browseButton, shimContainer, zIndex;
-						
+
 						browseButton = Dom.get(options.browse_button);
 						shimContainer = Dom.get(runtime.shimid); // do not use runtime.getShimContainer(), since it will create container if it doesn't exist
 
@@ -258,7 +258,7 @@ define('moxie/file/FileInput', [
 						}
 						shimContainer = browseButton = null;
 					});
-					
+
 					runtime.exec.call(self, 'FileInput', 'init', options);
 				});
 
@@ -356,7 +356,7 @@ define('moxie/file/FileInput', [
 					Basic.each(this.files, function(file) {
 						file.destroy();
 					});
-				} 
+				}
 				this.files = null;
 
 				this.unbindAll();

@@ -32,10 +32,10 @@ define('moxie/file/FileDrop', [
 		<div id="filelist"></div>
 
 		<script type="text/javascript">
-			var fileDrop = new mOxie.FileDrop('drop_zone'), fileList = mOxie.get('filelist');
+			var fileDrop = new moxie.file.FileDrop('drop_zone'), fileList = moxie.utils.Dom.get('filelist');
 
 			fileDrop.ondrop = function() {
-				mOxie.each(this.files, function(file) {
+				moxie.utils.Basic.each(this.files, function(file) {
 					fileList.innerHTML += '<div>' + file.name + '</div>';
 				});
 			};

@@ -45,7 +45,7 @@ define("moxie/image/Image", [
 
 		/**
 		Dispatched when resize operation is complete.
-		
+
 		@event resize
 		@param {Object} event
 		*/
@@ -137,7 +137,7 @@ define("moxie/image/Image", [
 			meta: {},
 
 			/**
-			Alias for load method, that takes another mOxie.Image object as a source (see load).
+			Alias for load method, that takes another moxie.image.Image object as a source (see load).
 
 			@method clone
 			@param {Image} src Source for the image
@@ -148,19 +148,20 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Loads image from various sources. Currently the source for new image can be: mOxie.Image, mOxie.Blob/mOxie.File, 
-			native Blob/File, dataUrl or URL. Depending on the type of the source, arguments - differ. When source is URL, 
-			Image will be downloaded from remote destination and loaded in memory.
+			Loads image from various sources. Currently the source for new image can be: moxie.image.Image,
+			moxie.file.Blob/moxie.file.File, native Blob/File, dataUrl or URL. Depending on the type of the
+			source, arguments - differ. When source is URL, Image will be downloaded from remote destination
+			and loaded in memory.
 
 			@example
-				var img = new mOxie.Image();
+				var img = new moxie.image.Image();
 				img.onload = function() {
 					var blob = img.getAsBlob();
-					
-					var formData = new mOxie.FormData();
+
+					var formData = new moxie.xhr.FormData();
 					formData.append('file', blob);
 
-					var xhr = new mOxie.XMLHttpRequest();
+					var xhr = new moxie.xhr.XMLHttpRequest();
 					xhr.onload = function() {
 						// upload complete
 					};
@@ -168,7 +169,7 @@ define("moxie/image/Image", [
 					xhr.send(formData);
 				};
 				img.load("http://www.moxiecode.com/images/mox-logo.jpg"); // notice file extension (.jpg)
-			
+
 
 			@method load
 			@param {Image|Blob|File|String} src Source for the image
@@ -180,7 +181,7 @@ define("moxie/image/Image", [
 
 
 			/**
-			Resizes the image to fit the specified width/height. If crop is specified, image will also be 
+			Resizes the image to fit the specified width/height. If crop is specified, image will also be
 			cropped to the exact dimensions.
 
 			@method resize
@@ -246,7 +247,7 @@ define("moxie/image/Image", [
 							// first scale it up or down to fit the original image
 							srcRect.width = Math.min(Math.ceil(opts.width/scale), self.width);
 							srcRect.height = Math.min(Math.ceil(opts.height/scale), self.height);
-							
+
 							// recalculate the scale for adapted dimensions
 							scale = opts.width/srcRect.width;
 						} else {
@@ -254,7 +255,7 @@ define("moxie/image/Image", [
 							srcRect.height = Math.min(opts.height, self.height);
 
 							// now we do not need to scale it any further
-							scale = 1; 
+							scale = 1;
 						}
 
 						if (typeof(opts.crop) === 'boolean') {
@@ -369,7 +370,7 @@ define("moxie/image/Image", [
 
 			/**
 			Alias for downsize(width, height, true). (see downsize)
-			
+
 			@method crop
 			@param {Number} width Resulting width
 			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
@@ -387,7 +388,7 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Retrieves image in it's current state as mOxie.Blob object. Cannot be run on empty or image in progress (throws
+			Retrieves image in it's current state as moxie.file.Blob object. Cannot be run on empty or image in progress (throws
 			DOMException.INVALID_STATE_ERR).
 
 			@method getAsBlob
@@ -433,8 +434,8 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Embeds a visual representation of the image into the specified node. Depending on the runtime, 
-			it might be a canvas, an img node or a thrid party shim object (Flash or SilverLight - very rare, 
+			Embeds a visual representation of the image into the specified node. Depending on the runtime,
+			it might be a canvas, an img node or a thrid party shim object (Flash or SilverLight - very rare,
 			can be used in legacy browsers that do not have canvas or proper dataURI support).
 
 			@method embed
@@ -457,7 +458,7 @@ define("moxie/image/Image", [
 					type: this.type || 'image/jpeg',
 					quality: 90
 				}, options);
-				
+
 
 				function render(type, quality) {
 					var img = this;
@@ -533,7 +534,7 @@ define("moxie/image/Image", [
 					if (!this.size) { // only preloaded image objects can be used as source
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
-					
+
 					// high-resolution images cannot be consistently handled across the runtimes
 					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
 						//throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
@@ -564,7 +565,8 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Properly destroys the image and frees resources in use. If any. Recommended way to dispose mOxie.Image object.
+			Properly destroys the image and frees resources in use. If any. Recommended way to dispose
+			moxie.image.Image object.
 
 			@method destroy
 			*/
@@ -735,7 +737,7 @@ define("moxie/image/Image", [
 
 	// virtual world will crash on you if image has a resolution higher than this:
 	Image.MAX_RESIZE_WIDTH = 8192;
-	Image.MAX_RESIZE_HEIGHT = 8192; 
+	Image.MAX_RESIZE_HEIGHT = 8192;
 
 	Image.prototype = EventTarget.instance;
 
