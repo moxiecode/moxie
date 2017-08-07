@@ -231,7 +231,7 @@ define("moxie/runtime/flash/Runtime", [
 
 				html += 'width="100%" height="100%" style="outline:0">'  +
 					'<param name="movie" value="' + options.swf_url + '" />' +
-					'<param name="flashvars" value="uid=' + escape(this.uid) + '&target=' + Runtime.getGlobalEventDispatcher() + '" />' +
+					'<param name="flashvars" value="uid=' + escape(this.uid) + '&target=' + Runtime.getGlobalEventTarget() + '" />' +
 					'<param name="wmode" value="transparent" />' +
 					'<param name="allowscriptaccess" value="always" />' +
 				'</object>';

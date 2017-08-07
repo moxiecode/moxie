@@ -179,7 +179,7 @@ define("moxie/runtime/silverlight/Runtime", [
 					'<param name="background" value="Transparent"/>' +
 					'<param name="windowless" value="true"/>' +
 					'<param name="enablehtmlaccess" value="true"/>' +
-					'<param name="initParams" value="uid=' + this.uid + ',target=' + Runtime.getGlobalEventDispatcher() + '"/>' +
+					'<param name="initParams" value="uid=' + this.uid + ',target=' + Runtime.getGlobalEventTarget() + '"/>' +
 				'</object>';
 
 				// Init is dispatched by the shim
