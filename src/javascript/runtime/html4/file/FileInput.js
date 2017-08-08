@@ -92,12 +92,6 @@ define("moxie/runtime/html4/file/FileInput", [
 
 				if (this.files) { // check if browser is fresh enough
 					file = this.files[0];
-
-					// ignore empty files (IE10 for example hangs if you try to send them via XHR)
-					if (file.size === 0) {
-						form.parentNode.removeChild(form);
-						return;
-					}
 				} else {
 					file = {
 						name: this.value
