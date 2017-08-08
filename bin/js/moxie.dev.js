@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.5.3
+ * v1.5.4
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2017-02-02
+ * Date: 2017-08-08
  */
 /**
  * Inline development version. Only to be used while developing since it uses document.write to load scripts.
@@ -189,4 +189,4 @@
 	writeScripts();
 })(this);
 
-// $hash: 0799b892a4e7d0279a35670494b2765e
+// $hash: cd410e2c8fc5a873641bf0549fe4c954

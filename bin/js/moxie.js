@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.5.3
+ * v1.5.4
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2017-02-02
+ * Date: 2017-08-08
  */
 ;(function (global, factory) {
 	var extract = function() {
@@ -125,13 +125,13 @@
 @public
 @static
 */
+
 define('moxie/core/utils/Basic', [], function() {
 	/**
 	Gets the true type of the built-in object (better version of typeof).
 	@author Angus Croll (http://javascriptweblog.wordpress.com/)
 
 	@method typeOf
-	@for Utils
 	@static
 	@param {Object} o Object to check.
 	@return {String} Object [[Class]]
@@ -662,17 +662,18 @@ define('moxie/core/utils/Basic', [], function() {
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('moxie/core/utils/Encode', [], function() {
+/**
+@class moxie/core/utils/Encode
+@public
+@static
+*/
 
-	/**
-	@class moxie/core/utils/Encode
-	*/
+define('moxie/core/utils/Encode', [], function() {
 
 	/**
 	Encode string with UTF-8
 
 	@method utf8_encode
-	@for Utils
 	@static
 	@param {String} str String to encode
 	@return {String} UTF-8 encoded string
@@ -845,6 +846,12 @@ define('moxie/core/utils/Encode', [], function() {
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  */
+
+/**
+@class moxie/core/utils/Env
+@public
+@static
+*/
 
 define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
@@ -1387,85 +1394,89 @@ define("moxie/core/utils/Env", [
 
 	var can = (function() {
 		var caps = {
-				define_property: (function() {
-					/* // currently too much extra code required, not exactly worth it
-					try { // as of IE8, getters/setters are supported only on DOM elements
-						var obj = {};
-						if (Object.defineProperty) {
-							Object.defineProperty(obj, 'prop', {
-								enumerable: true,
-								configurable: true
-							});
-							return true;
-						}
-					} catch(ex) {}
+			access_global_ns: function () {
+				return !!window.moxie;
+			},
 
-					if (Object.prototype.__defineGetter__ && Object.prototype.__defineSetter__) {
+			define_property: (function() {
+				/* // currently too much extra code required, not exactly worth it
+				try { // as of IE8, getters/setters are supported only on DOM elements
+					var obj = {};
+					if (Object.defineProperty) {
+						Object.defineProperty(obj, 'prop', {
+							enumerable: true,
+							configurable: true
+						});
 						return true;
-					}*/
-					return false;
-				}()),
-
-				create_canvas: (function() {
-					// On the S60 and BB Storm, getContext exists, but always returns undefined
-					// so we actually have to call getContext() to verify
-					// github.com/Modernizr/Modernizr/issues/issue/97/
-					var el = document.createElement('canvas');
-					return !!(el.getContext && el.getContext('2d'));
-				}()),
-
-				return_response_type: function(responseType) {
-					try {
-						if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
-							return true;
-						} else if (window.XMLHttpRequest) {
-							var xhr = new XMLHttpRequest();
-							xhr.open('get', '/'); // otherwise Gecko throws an exception
-							if ('responseType' in xhr) {
-								xhr.responseType = responseType;
-								// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
-								if (xhr.responseType !== responseType) {
-									return false;
-								}
-								return true;
-							}
-						}
-					} catch (ex) {}
-					return false;
-				},
-
-				// ideas for this heavily come from Modernizr (http://modernizr.com/)
-				use_data_uri: (function() {
-					var du = new Image();
-
-					du.onload = function() {
-						caps.use_data_uri = (du.width === 1 && du.height === 1);
-					};
-
-					setTimeout(function() {
-						du.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
-					}, 1);
-					return false;
-				}()),
-
-				use_data_uri_over32kb: function() { // IE8
-					return caps.use_data_uri && (Env.browser !== 'IE' || Env.version >= 9);
-				},
-
-				use_data_uri_of: function(bytes) {
-					return (caps.use_data_uri && bytes < 33000 || caps.use_data_uri_over32kb());
-				},
-
-				use_fileinput: function() {
-					if (navigator.userAgent.match(/(Android (1.0|1.1|1.5|1.6|2.0|2.1))|(Windows Phone (OS 7|8.0))|(XBLWP)|(ZuneWP)|(w(eb)?OSBrowser)|(webOS)|(Kindle\/(1.0|2.0|2.5|3.0))/)) {
-						return false;
 					}
+				} catch(ex) {}
 
-					var el = document.createElement('input');
-					el.setAttribute('type', 'file');
-					return !el.disabled;
+				if (Object.prototype.__defineGetter__ && Object.prototype.__defineSetter__) {
+					return true;
+				}*/
+				return false;
+			}()),
+
+			create_canvas: (function() {
+				// On the S60 and BB Storm, getContext exists, but always returns undefined
+				// so we actually have to call getContext() to verify
+				// github.com/Modernizr/Modernizr/issues/issue/97/
+				var el = document.createElement('canvas');
+				return !!(el.getContext && el.getContext('2d'));
+			}()),
+
+			return_response_type: function(responseType) {
+				try {
+					if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
+						return true;
+					} else if (window.XMLHttpRequest) {
+						var xhr = new XMLHttpRequest();
+						xhr.open('get', '/'); // otherwise Gecko throws an exception
+						if ('responseType' in xhr) {
+							xhr.responseType = responseType;
+							// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
+							if (xhr.responseType !== responseType) {
+								return false;
+							}
+							return true;
+						}
+					}
+				} catch (ex) {}
+				return false;
+			},
+
+			// ideas for this heavily come from Modernizr (http://modernizr.com/)
+			use_data_uri: (function() {
+				var du = new Image();
+
+				du.onload = function() {
+					caps.use_data_uri = (du.width === 1 && du.height === 1);
+				};
+
+				setTimeout(function() {
+					du.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
+				}, 1);
+				return false;
+			}()),
+
+			use_data_uri_over32kb: function() { // IE8
+				return caps.use_data_uri && (Env.browser !== 'IE' || Env.version >= 9);
+			},
+
+			use_data_uri_of: function(bytes) {
+				return (caps.use_data_uri && bytes < 33000 || caps.use_data_uri_over32kb());
+			},
+
+			use_fileinput: function() {
+				if (navigator.userAgent.match(/(Android (1.0|1.1|1.5|1.6|2.0|2.1))|(Windows Phone (OS 7|8.0))|(XBLWP)|(ZuneWP)|(w(eb)?OSBrowser)|(webOS)|(Kindle\/(1.0|2.0|2.5|3.0))/)) {
+					return false;
 				}
-			};
+
+				var el = document.createElement('input');
+				el.setAttribute('type', 'file');
+				return !el.disabled;
+			}
+		};
 
 		return function(cap) {
 			var args = [].slice.call(arguments);
@@ -1715,13 +1726,18 @@ define('moxie/core/Exceptions', [
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Dom
+@public
+@static
+*/
+
 define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 
 	/**
 	Get DOM Element by it's id.
 
 	@method get
-	@for Utils
 	@param {String} id Identifier of the DOM Element
 	@return {DOMElement}
 	*/
@@ -2769,7 +2785,7 @@ define('moxie/runtime/Runtime', [
 						// if cap requires conflicting mode - runtime cannot fulfill required caps
 
 						if (MXI_DEBUG && Env.debug.runtime) {
-							Env.log("\t\t%c: %v (conflicting mode requested: %s)", cap, value, capMode);	
+							Env.log("\t\t%s: %s (conflicting mode requested: %s)", cap, value, capMode);
 						}
 
 						return (mode = false);
@@ -2777,7 +2793,7 @@ define('moxie/runtime/Runtime', [
 				}
 
 				if (MXI_DEBUG && Env.debug.runtime) {
-					Env.log("\t\t%c: %v (compatible modes: %s)", cap, value, mode);	
+					Env.log("\t\t%s: %s (compatible modes: %s)", cap, value, mode);
 				}
 			});
 
@@ -2788,6 +2804,30 @@ define('moxie/runtime/Runtime', [
 			}
 		}
 		return defaultMode; 
+	};
+
+
+	/**
+	 * Third party shims (Flash and Silverlight) require global event target against which they
+	 * will fire their events. However when moxie is not loaded to global namespace, default
+	 * event target is not accessible and we have to create artificial ones.
+	 *
+	 * @method getGlobalEventTarget
+	 * @static
+	 * @return {String} Name of the global event target
+	 */
+	Runtime.getGlobalEventTarget = function() {
+		if (/^moxie\./.test(Env.global_event_dispatcher) && !Env.can('access_global_ns')) {
+			var uniqueCallbackName = Basic.guid('moxie_event_target_');
+
+			window[uniqueCallbackName] = function(e, data) {
+				EventTarget.instance.dispatchEvent(e, data);
+			};
+
+			Env.global_event_dispatcher = uniqueCallbackName;
+		}
+
+		return Env.global_event_dispatcher;
 	};
 
 
@@ -3285,6 +3325,12 @@ define("moxie/core/I18n", [
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Mime
+@public
+@static
+*/
+
 define("moxie/core/utils/Mime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/I18n"
@@ -3348,11 +3394,36 @@ define("moxie/core/utils/Mime", [
 	
 	var Mime = {
 
+		/**
+		 * Map of mimes to extensions
+		 *
+		 * @property mimes
+		 * @type {Object}
+		 */
 		mimes: {},
 
+		/**
+		 * Map of extensions to mimes
+		 *
+		 * @property extensions
+		 * @type {Object}
+		 */
 		extensions: {},
 
-		// Parses the default mime types string into a mimes and extensions lookup maps
+		/**
+		 * Parses mimeData string into a mimes and extensions lookup maps. String should have the
+		 * following format:
+		 *
+		 * application/msword,doc dot,application/pdf,pdf, ...
+		 *
+		 * so mime-type followed by comma and followed by space-separated list of associated extensions,
+		 * then comma again and then another mime-type, etc.
+		 *
+		 * If invoked externally will replace override internal lookup maps with user-provided data.
+		 *
+		 * @method addMimeType
+		 * @param {String} mimeData
+		 */
 		addMimeType: function (mimeData) {
 			var items = mimeData.split(/,/), i, ii, ext;
 			
@@ -3447,7 +3518,13 @@ define("moxie/core/utils/Mime", [
 			return accept;
 		},
 
-
+		/**
+		 * Extract extension from the given filename
+		 *
+		 * @method getFileExtension
+		 * @param {String} fileName
+		 * @return {String} File extension
+		 */
 		getFileExtension: function(fileName) {
 			var matches = fileName && fileName.match(/\.([^.]+)$/);
 			if (matches) {
@@ -3456,6 +3533,14 @@ define("moxie/core/utils/Mime", [
 			return '';
 		},
 
+		/**
+		 * Get file mime-type from it's filename - will try to match the extension
+		 * against internal mime-type lookup map
+		 *
+		 * @method getFileMime
+		 * @param {String} fileName
+		 * @return File mime-type if found or an empty string if not
+		 */
 		getFileMime: function(fileName) {
 			return this.mimes[this.getFileExtension(fileName)] || '';
 		}
@@ -3503,7 +3588,7 @@ define('moxie/file/FileInput', [
 		@param {Array} [options.accept] Array of mime types to accept. By default accepts all.
 		@param {Boolean} [options.multiple=false] Enable selection of multiple files.
 		@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
-		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
+		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode
 		for _browse\_button_.
 		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
 
@@ -3513,7 +3598,7 @@ define('moxie/file/FileInput', [
 		</div>
 
 		<script>
-			var fileInput = new mOxie.FileInput({
+			var fileInput = new moxie.file.FileInput({
 				browse_button: 'file-picker', // or document.getElementById('file-picker')
 				container: 'container',
 				accept: [
@@ -3540,7 +3625,7 @@ define('moxie/file/FileInput', [
 		'ready',
 
 		/**
-		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked. 
+		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked.
 		Check [corresponding documentation entry](#method_refresh) for more info.
 
 		@event refresh
@@ -3594,7 +3679,7 @@ define('moxie/file/FileInput', [
 
 	function FileInput(options) {
 		if (MXI_DEBUG) {
-			Env.log("Instantiating FileInput...");	
+			Env.log("Instantiating FileInput...");
 		}
 
 		var container, browseButton, defaults;
@@ -3621,14 +3706,14 @@ define('moxie/file/FileInput', [
 			required_caps: false,
 			container: browseButton.parentNode || document.body
 		};
-		
+
 		options = Basic.extend({}, defaults, options);
 
 		// convert to object representation
 		if (typeof(options.required_caps) === 'string') {
 			options.required_caps = Runtime.parseCaps(options.required_caps);
 		}
-					
+
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
 			options.accept = Mime.mimes2extList(options.accept);
@@ -3646,9 +3731,9 @@ define('moxie/file/FileInput', [
 		}
 
 		container = browseButton = null; // IE
-						
+
 		RuntimeClient.call(this);
-		
+
 		Basic.extend(this, {
 			/**
 			Unique id of the component
@@ -3660,7 +3745,7 @@ define('moxie/file/FileInput', [
 			@default UID
 			*/
 			uid: Basic.guid('uid_'),
-			
+
 			/**
 			Unique id of the connected runtime, if any.
 
@@ -3678,9 +3763,9 @@ define('moxie/file/FileInput', [
 			@type {String}
 			*/
 			shimid: null,
-			
+
 			/**
-			Array of selected mOxie.File objects
+			Array of selected moxie.file.File objects
 
 			@property files
 			@type {Array}
@@ -3707,7 +3792,7 @@ define('moxie/file/FileInput', [
 					// re-position and resize shim container
 					self.bind('Refresh', function() {
 						var pos, size, browseButton, shimContainer, zIndex;
-						
+
 						browseButton = Dom.get(options.browse_button);
 						shimContainer = Dom.get(runtime.shimid); // do not use runtime.getShimContainer(), since it will create container if it doesn't exist
 
@@ -3728,7 +3813,7 @@ define('moxie/file/FileInput', [
 						}
 						shimContainer = browseButton = null;
 					});
-					
+
 					runtime.exec.call(self, 'FileInput', 'init', options);
 				});
 
@@ -3826,7 +3911,7 @@ define('moxie/file/FileInput', [
 					Basic.each(this.files, function(file) {
 						file.destroy();
 					});
-				} 
+				}
 				this.files = null;
 
 				this.unbindAll();
@@ -3962,10 +4047,10 @@ define('moxie/file/FileDrop', [
 		<div id="filelist"></div>
 
 		<script type="text/javascript">
-			var fileDrop = new mOxie.FileDrop('drop_zone'), fileList = mOxie.get('filelist');
+			var fileDrop = new moxie.file.FileDrop('drop_zone'), fileList = moxie.utils.Dom.get('filelist');
 
 			fileDrop.ondrop = function() {
-				mOxie.each(this.files, function(file) {
+				moxie.utils.Basic.each(this.files, function(file) {
 					fileList.innerHTML += '<div>' + file.name + '</div>';
 				});
 			};
@@ -4389,6 +4474,12 @@ define('moxie/file/FileReader', [
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Url
+@public
+@static
+*/
+
 define('moxie/core/utils/Url', [
 	'moxie/core/utils/Basic'
 ], function(Basic) {
@@ -4397,7 +4488,6 @@ define('moxie/core/utils/Url', [
 	based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
 
 	@method parseUrl
-	@for Utils
 	@static
 	@param {String} url Url to parse (defaults to empty string if undefined)
 	@return {Object} Hash containing extracted uri components
@@ -4496,6 +4586,7 @@ define('moxie/core/utils/Url', [
 	Check if specified url has the same origin as the current document
 
 	@method hasSameOrigin
+	@static
 	@param {String|Object} url
 	@return {Boolean}
 	*/
@@ -5756,6 +5847,7 @@ define("moxie/runtime/Transporter", [
 
 	/**
 	@class moxie/runtime/Transporter
+	@private
 	@constructor
 	*/
 	function Transporter() {
@@ -5926,7 +6018,7 @@ define("moxie/image/Image", [
 
 		/**
 		Dispatched when resize operation is complete.
-		
+
 		@event resize
 		@param {Object} event
 		*/
@@ -6018,7 +6110,7 @@ define("moxie/image/Image", [
 			meta: {},
 
 			/**
-			Alias for load method, that takes another mOxie.Image object as a source (see load).
+			Alias for load method, that takes another moxie.image.Image object as a source (see load).
 
 			@method clone
 			@param {Image} src Source for the image
@@ -6029,19 +6121,20 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Loads image from various sources. Currently the source for new image can be: mOxie.Image, mOxie.Blob/mOxie.File, 
-			native Blob/File, dataUrl or URL. Depending on the type of the source, arguments - differ. When source is URL, 
-			Image will be downloaded from remote destination and loaded in memory.
+			Loads image from various sources. Currently the source for new image can be: moxie.image.Image,
+			moxie.file.Blob/moxie.file.File, native Blob/File, dataUrl or URL. Depending on the type of the
+			source, arguments - differ. When source is URL, Image will be downloaded from remote destination
+			and loaded in memory.
 
 			@example
-				var img = new mOxie.Image();
+				var img = new moxie.image.Image();
 				img.onload = function() {
 					var blob = img.getAsBlob();
-					
-					var formData = new mOxie.FormData();
+
+					var formData = new moxie.xhr.FormData();
 					formData.append('file', blob);
 
-					var xhr = new mOxie.XMLHttpRequest();
+					var xhr = new moxie.xhr.XMLHttpRequest();
 					xhr.onload = function() {
 						// upload complete
 					};
@@ -6049,7 +6142,7 @@ define("moxie/image/Image", [
 					xhr.send(formData);
 				};
 				img.load("http://www.moxiecode.com/images/mox-logo.jpg"); // notice file extension (.jpg)
-			
+
 
 			@method load
 			@param {Image|Blob|File|String} src Source for the image
@@ -6061,7 +6154,7 @@ define("moxie/image/Image", [
 
 
 			/**
-			Resizes the image to fit the specified width/height. If crop is specified, image will also be 
+			Resizes the image to fit the specified width/height. If crop is specified, image will also be
 			cropped to the exact dimensions.
 
 			@method resize
@@ -6127,7 +6220,7 @@ define("moxie/image/Image", [
 							// first scale it up or down to fit the original image
 							srcRect.width = Math.min(Math.ceil(opts.width/scale), self.width);
 							srcRect.height = Math.min(Math.ceil(opts.height/scale), self.height);
-							
+
 							// recalculate the scale for adapted dimensions
 							scale = opts.width/srcRect.width;
 						} else {
@@ -6135,7 +6228,7 @@ define("moxie/image/Image", [
 							srcRect.height = Math.min(opts.height, self.height);
 
 							// now we do not need to scale it any further
-							scale = 1; 
+							scale = 1;
 						}
 
 						if (typeof(opts.crop) === 'boolean') {
@@ -6250,7 +6343,7 @@ define("moxie/image/Image", [
 
 			/**
 			Alias for downsize(width, height, true). (see downsize)
-			
+
 			@method crop
 			@param {Number} width Resulting width
 			@param {Number} [height=width] Resulting height (optional, if not supplied will default to width)
@@ -6268,7 +6361,7 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Retrieves image in it's current state as mOxie.Blob object. Cannot be run on empty or image in progress (throws
+			Retrieves image in it's current state as moxie.file.Blob object. Cannot be run on empty or image in progress (throws
 			DOMException.INVALID_STATE_ERR).
 
 			@method getAsBlob
@@ -6314,8 +6407,8 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Embeds a visual representation of the image into the specified node. Depending on the runtime, 
-			it might be a canvas, an img node or a thrid party shim object (Flash or SilverLight - very rare, 
+			Embeds a visual representation of the image into the specified node. Depending on the runtime,
+			it might be a canvas, an img node or a thrid party shim object (Flash or SilverLight - very rare,
 			can be used in legacy browsers that do not have canvas or proper dataURI support).
 
 			@method embed
@@ -6338,7 +6431,7 @@ define("moxie/image/Image", [
 					type: this.type || 'image/jpeg',
 					quality: 90
 				}, options);
-				
+
 
 				function render(type, quality) {
 					var img = this;
@@ -6414,7 +6507,7 @@ define("moxie/image/Image", [
 					if (!this.size) { // only preloaded image objects can be used as source
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
-					
+
 					// high-resolution images cannot be consistently handled across the runtimes
 					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
 						//throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
@@ -6445,7 +6538,8 @@ define("moxie/image/Image", [
 			},
 
 			/**
-			Properly destroys the image and frees resources in use. If any. Recommended way to dispose mOxie.Image object.
+			Properly destroys the image and frees resources in use. If any. Recommended way to dispose
+			moxie.image.Image object.
 
 			@method destroy
 			*/
@@ -6616,7 +6710,7 @@ define("moxie/image/Image", [
 
 	// virtual world will crash on you if image has a resolution higher than this:
 	Image.MAX_RESIZE_WIDTH = 8192;
-	Image.MAX_RESIZE_HEIGHT = 8192; 
+	Image.MAX_RESIZE_HEIGHT = 8192;
 
 	Image.prototype = EventTarget.instance;
 
@@ -6819,6 +6913,12 @@ define("moxie/runtime/html5/file/Blob", [
  * Contributing: http://www.plupload.com/contributing
  */
 
+/**
+@class moxie/core/utils/Events
+@public
+@static
+*/
+
 define('moxie/core/utils/Events', [
 	'moxie/core/utils/Basic'
 ], function(Basic) {
@@ -6838,7 +6938,6 @@ define('moxie/core/utils/Events', [
 	in objects internal Plupload registry (@see removeEvent).
 	
 	@method addEvent
-	@for Utils
 	@static
 	@param {Object} obj DOM element like object to add handler to.
 	@param {String} name Name to add event listener to.
@@ -8992,8 +9091,16 @@ define("moxie/runtime/html5/image/PNG", [
  */
 
 /**
+Optional image investigation tool for HTML5 runtime. Provides the following features:
+- ability to distinguish image type (JPEG or PNG) by signature
+- ability to extract image width/height directly from it's internals, without preloading in memory (fast)
+- ability to extract APP headers from JPEGs (Exif, GPS, etc)
+- ability to replace width/height tags in extracted JPEG headers
+- ability to restore APP headers, that were for example stripped during image manipulation
+
 @class moxie/runtime/html5/image/ImageInfo
 @private
+@param {String} data Image source as binary string
 */
 define("moxie/runtime/html5/image/ImageInfo", [
 	"moxie/core/utils/Basic",
@@ -9001,18 +9108,7 @@ define("moxie/runtime/html5/image/ImageInfo", [
 	"moxie/runtime/html5/image/JPEG",
 	"moxie/runtime/html5/image/PNG"
 ], function(Basic, x, JPEG, PNG) {
-	/**
-	Optional image investigation tool for HTML5 runtime. Provides the following features:
-	- ability to distinguish image type (JPEG or PNG) by signature
-	- ability to extract image width/height directly from it's internals, without preloading in memory (fast)
-	- ability to extract APP headers from JPEGs (Exif, GPS, etc)
-	- ability to replace width/height tags in extracted JPEG headers
-	- ability to restore APP headers, that were for example stripped during image manipulation
 
-	@class ImageInfo
-	@constructor
-	@param {String} data Image source as binary string
-	*/
 	return function(data) {
 		var _cs = [JPEG, PNG], _img;
 
@@ -9669,9 +9765,6 @@ define("moxie/runtime/flash/Runtime", [
 
 	/**
 	Constructor for the Flash Runtime
-
-	@class FlashRuntime
-	@extends Runtime
 	*/
 	function FlashRuntime(options) {
 		var I = this, initTimer;
@@ -9810,7 +9903,7 @@ define("moxie/runtime/flash/Runtime", [
 
 				html += 'width="100%" height="100%" style="outline:0">'  +
 					'<param name="movie" value="' + options.swf_url + '" />' +
-					'<param name="flashvars" value="uid=' + escape(this.uid) + '&target=' + Env.global_event_dispatcher + '" />' +
+					'<param name="flashvars" value="uid=' + escape(this.uid) + '&target=' + Runtime.getGlobalEventTarget() + '" />' +
 					'<param name="wmode" value="transparent" />' +
 					'<param name="allowscriptaccess" value="always" />' +
 				'</object>';
@@ -10422,9 +10515,6 @@ define("moxie/runtime/silverlight/Runtime", [
 
 	/**
 	Constructor for the Silverlight Runtime
-
-	@class SilverlightRuntime
-	@extends Runtime
 	*/
 	function SilverlightRuntime(options) {
 		var I = this, initTimer;
@@ -10519,7 +10609,7 @@ define("moxie/runtime/silverlight/Runtime", [
 					'<param name="background" value="Transparent"/>' +
 					'<param name="windowless" value="true"/>' +
 					'<param name="enablehtmlaccess" value="true"/>' +
-					'<param name="initParams" value="uid=' + this.uid + ',target=' + Env.global_event_dispatcher + '"/>' +
+					'<param name="initParams" value="uid=' + this.uid + ',target=' + Runtime.getGlobalEventTarget() + '"/>' +
 				'</object>';
 
 				// Init is dispatched by the shim
@@ -11077,12 +11167,6 @@ define("moxie/runtime/html4/file/FileInput", [
 
 				if (this.files) { // check if browser is fresh enough
 					file = this.files[0];
-
-					// ignore empty files (IE10 for example hangs if you try to send them via XHR)
-					if (file.size === 0) {
-						form.parentNode.removeChild(form);
-						return;
-					}
 				} else {
 					file = {
 						name: this.value
@@ -11539,6 +11623,6 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/utils/Encode","moxie/core/utils/Env","moxie/core/Exceptions","moxie/core/utils/Dom","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/core/I18n","moxie/core/utils/Mime","moxie/file/FileInput","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events","moxie/runtime/html5/image/ResizerCanvas"]);
+expose(["moxie/core/utils/Basic","moxie/core/utils/Encode","moxie/core/utils/Env","moxie/core/Exceptions","moxie/core/utils/Dom","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/core/I18n","moxie/core/utils/Mime","moxie/file/FileInput","moxie/file/File","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/image/Image","moxie/core/utils/Events","moxie/runtime/html5/image/ResizerCanvas"]);
 })(this);
 }));
