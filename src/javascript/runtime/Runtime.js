@@ -538,7 +538,7 @@ define('moxie/runtime/Runtime', [
 						// if cap requires conflicting mode - runtime cannot fulfill required caps
 
 						if (MXI_DEBUG && Env.debug.runtime) {
-							Env.log("\t\t%c: %v (conflicting mode requested: %s)", cap, value, capMode);	
+							Env.log("\t\t%s: %s (conflicting mode requested: %s)", cap, value, capMode);
 						}
 
 						return (mode = false);
@@ -546,7 +546,7 @@ define('moxie/runtime/Runtime', [
 				}
 
 				if (MXI_DEBUG && Env.debug.runtime) {
-					Env.log("\t\t%c: %v (compatible modes: %s)", cap, value, mode);	
+					Env.log("\t\t%s: %s (compatible modes: %s)", cap, value, mode);
 				}
 			});
 
