@@ -15,7 +15,7 @@ define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
 
     function scale(image, ratio) {
         var sW = image.width;
-        var dW = Math.floor(sW * ratio);
+        var dW = Math.round(sW * ratio);
         var scaleCapped = false;
 
         if (ratio < 0.5 || ratio > 2) {
@@ -36,8 +36,8 @@ define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
     function _scale(image, ratio) {
         var sW = image.width;
         var sH = image.height;
-        var dW = Math.floor(sW * ratio);
-        var dH = Math.floor(sH * ratio);
+        var dW = Math.round(sW * ratio);
+        var dH = Math.round(sH * ratio);
 
         var canvas = document.createElement('canvas');
         canvas.width = dW;
