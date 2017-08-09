@@ -578,13 +578,15 @@ define("moxie/core/utils/Env", [
 				return false;
 			}()),
 
-			create_canvas: (function() {
+			create_canvas: function() {
 				// On the S60 and BB Storm, getContext exists, but always returns undefined
 				// so we actually have to call getContext() to verify
 				// github.com/Modernizr/Modernizr/issues/issue/97/
 				var el = document.createElement('canvas');
-				return !!(el.getContext && el.getContext('2d'));
-			}()),
+				var isSupported = !!(el.getContext && el.getContext('2d'));
+				caps.create_canvas = isSupported;
+				return isSupported;
+			},
 
 			return_response_type: function(responseType) {
 				try {
@@ -635,7 +637,7 @@ define("moxie/core/utils/Env", [
 
 				var el = document.createElement('input');
 				el.setAttribute('type', 'file');
-				return !el.disabled;
+				return caps.use_fileinput = !el.disabled;
 			},
 
 			use_webgl: function() {
