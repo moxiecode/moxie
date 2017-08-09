@@ -13,12 +13,12 @@
  */
 define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
 
-    function scale(image, ratio) {
+    function scale(image, ratio, resample) {
         var sW = image.width;
         var dW = Math.round(sW * ratio);
         var scaleCapped = false;
 
-        if (ratio < 0.5 || ratio > 2) {
+        if (resample !== 'nearest' && (ratio < 0.5 || ratio > 2)) {
             ratio = ratio < 0.5 ? 0.5 : 2;
             scaleCapped = true;
         }
@@ -26,7 +26,7 @@ define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
         var tCanvas = _scale(image, ratio);
 
         if (scaleCapped) {
-            return scale(tCanvas, dW / tCanvas.width);
+            return scale(tCanvas, dW / tCanvas.width, resample);
         } else {
             return tCanvas;
         }
