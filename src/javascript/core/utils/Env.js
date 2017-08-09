@@ -636,6 +636,24 @@ define("moxie/core/utils/Env", [
 				var el = document.createElement('input');
 				el.setAttribute('type', 'file');
 				return !el.disabled;
+			},
+
+			use_webgl: function() {
+				var canvas = document.createElement('canvas');
+				var gl = null, isSupported;
+				try {
+					gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+				}
+				catch(e) {}
+
+				if (!gl) { // it seems that sometimes it doesn't throw exception, but still fails to get context
+					gl = null;
+				}
+
+				isSupported = !!gl;
+				caps.use_webgl = isSupported; // save result of our check
+				canvas = undefined;
+				return isSupported;
 			}
 		};
 
