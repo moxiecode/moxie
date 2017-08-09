@@ -152,11 +152,14 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 								_xhr.onreadystatechange = function() {};
 
 								// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
-								if (_xhr.status === 0) {
-									target.trigger('error');
-								} else {
-									target.trigger('load');
-								}							
+								try {
+									if (_xhr.status >= 200 && _xhr.status < 400) {
+										target.trigger('load');
+										break;
+									}
+								} catch(ex) {}
+
+								target.trigger('error');
 								break;
 						}
 					};
