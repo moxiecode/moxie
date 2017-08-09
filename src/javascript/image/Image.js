@@ -464,7 +464,8 @@ define("moxie/image/Image", [
 					height: this.height,
 					type: this.type || 'image/jpeg',
 					quality: 90,
-					fit: true
+					fit: true,
+					resample: 'nearest'
 				}, options);
 
 
