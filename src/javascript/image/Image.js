@@ -192,7 +192,7 @@ define("moxie/image/Image", [
 				@param {String} [options.type='image/jpeg'] MIME type of the resulting image
 				@param {Number} [options.quality=90] In the case of JPEG, controls the quality of resulting image
 				@param {Boolean} [options.crop='cc'] If not falsy, image will be cropped, by default from center
-				@param {Boolean} [options.fit=true] In case of crop whether to upscale the image to fit the exact dimensions
+				@param {Boolean} [options.fit=true] Whether to upscale the image to fit the exact dimensions
 				@param {Boolean} [options.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 				@param {String} [options.resample='default'] Resampling algorithm to use during resize
 				@param {Boolean} [options.multipass=true] Whether to scale the image in steps (results in better quality)
@@ -327,6 +327,11 @@ define("moxie/image/Image", [
 						srcRect.y = Math.max(srcRect.y, 0);
 					} else {
 						scale = Math.min(opts.width/self.width, opts.height/self.height);
+
+						// do not upscale if we were asked to not fit it
+						if (scale > 1 && !opts.fit) {
+							scale = 1;
+						}
 					}
 
 					this.exec('Image', 'resize', srcRect, scale, opts);
@@ -349,6 +354,7 @@ define("moxie/image/Image", [
 					type: this.type || 'image/jpeg',
 					quality: 90,
 					crop: false,
+					fit: false,
 					preserveHeaders: true,
 					resample: 'default'
 				}, opts;
@@ -446,6 +452,7 @@ define("moxie/image/Image", [
 				@param {String} [options.type="image/jpeg"] Mime type
 				@param {Number} [options.quality=90] Quality of an embed, if mime type is image/jpeg
 				@param {Boolean} [options.crop=false] Whether to crop an embed to the specified dimensions
+				@param {Boolean} [options.fit=true] By default thumbs will be up- or downscaled as necessary to fit the dimensions
 			*/
 			embed: function(el, options) {
 				var self = this
@@ -456,7 +463,8 @@ define("moxie/image/Image", [
 					width: this.width,
 					height: this.height,
 					type: this.type || 'image/jpeg',
-					quality: 90
+					quality: 90,
+					fit: true
 				}, options);
 
 
