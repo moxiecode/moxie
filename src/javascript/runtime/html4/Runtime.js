@@ -74,11 +74,10 @@ define("moxie/runtime/html4/Runtime", [
 				return I.can('select_file');
 			},
 			summon_file_dialog: function() { // yeah... some dirty sniffing here...
-				return I.can('select_file') && (
-					(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '>=')) ||
-					(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '>=')) ||
-					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) ||
-					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
+				return I.can('select_file') && !(
+					(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '<')) ||
+					(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '<')) ||
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<'))
 				);
 			},
 			upload_filesize: True,
