@@ -25,8 +25,8 @@ define("moxie/core/utils/Mime", [
 		"application/pgp-signature,pgp," +
 		"application/postscript,ps ai eps," +
 		"application/rtf,rtf," +
-		"application/vnd.ms-excel,xls xlb," +
-		"application/vnd.ms-powerpoint,ppt pps pot," +
+		"application/vnd.ms-excel,xls xlb xlt xla," +
+		"application/vnd.ms-powerpoint,ppt pps pot ppa," +
 		"application/zip,zip," +
 		"application/x-shockwave-flash,swf swfl," +
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx," +
