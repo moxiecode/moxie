@@ -65,6 +65,7 @@ define("moxie/runtime/html5/file/FileReader", [
 
 			destroy: function() {
 				_fr = null;
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 

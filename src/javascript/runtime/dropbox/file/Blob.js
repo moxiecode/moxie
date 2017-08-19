@@ -27,6 +27,10 @@ define("moxie/runtime/dropbox/file/Blob", [
 				range: [start, end]
 			});
 		};
+
+		this.destroy = function() {
+			this.getRuntime().getShim().removeInstance(this.uid);
+		};
 	}
 
 	return (extensions.Blob = DropboxBlob);

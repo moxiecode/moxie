@@ -270,6 +270,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 			destroy: function() {
 				self = _filename = null;
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 

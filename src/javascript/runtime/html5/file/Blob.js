@@ -40,6 +40,10 @@ define("moxie/runtime/html5/file/Blob", [
 		this.slice = function() {
 			return new Blob(this.getRuntime().uid, w3cBlobSlice.apply(this, arguments));
 		};
+
+		this.destroy = function() {
+			this.getRuntime().getShim().removeInstance(this.uid);
+		};
 	}
 
 	return (extensions.Blob = HTML5Blob);

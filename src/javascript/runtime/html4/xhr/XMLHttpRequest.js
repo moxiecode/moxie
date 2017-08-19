@@ -238,6 +238,10 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 					// target.dispatchEvent('readystatechange');
 					target.dispatchEvent('abort');
 				});
+			},
+
+			destroy: function() {
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 	}

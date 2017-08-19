@@ -89,6 +89,7 @@ define("moxie/runtime/googledrive/file/FileReader", [
 
 			destroy: function() {
 				self = _xhr = _fr = null;
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 

@@ -95,6 +95,10 @@ define("moxie/runtime/googledrive/xhr/XMLHttpRequest", [
 					fr.readAsBinaryString(file);
 				}
 
+			},
+
+			destroy: function() {
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 	}
