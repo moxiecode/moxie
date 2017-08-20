@@ -98,8 +98,10 @@ define("moxie/runtime/html5/file/FileInput", [
 					comp.trigger('mouseup');
 				}, comp.uid);
 
+				// it shouldn't be possible to tab into the hidden element
+				(I.can('summon_file_dialog') ? input : browseButton).setAttribute('tabindex', -1);
 
-				input.onchange = function onChange(e) { // there should be only one handler for this
+				input.onchange = function onChange() { // there should be only one handler for this
 					comp.files = [];
 
 					Basic.each(this.files, function(file) {

@@ -36,6 +36,8 @@ define("moxie/runtime/html4/file/FileInput", [
 				currForm = Dom.get(_uid + '_form');
 				if (currForm) {
 					Basic.extend(currForm.style, { top: '100%' });
+					// it shouldn't be possible to tab into the hidden element
+					currForm.firstChild.setAttribute('tabindex', -1);
 				}
 			}
 
@@ -59,6 +61,10 @@ define("moxie/runtime/html4/file/FileInput", [
 			input.setAttribute('id', uid);
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', _mimes.join(','));
+
+			if (I.can('summon_file_dialog')) {
+				input.setAttribute('tabindex', -1);
+			}
 
 			Basic.extend(input.style, {
 				fontSize: '999px',
@@ -161,6 +167,9 @@ define("moxie/runtime/html4/file/FileInput", [
 							Dom.get(_options.browse_button).style.zIndex = zIndex;
 							this.getRuntime().getShimContainer().style.zIndex = zIndex - 1;
 						});
+					} else {
+						// it shouldn't be possible to tab into the hidden element
+						browseButton.setAttribute('tabindex', -1);
 					}
 
 					/* Since we have to place input[type=file] on top of the browse_button for some browsers,

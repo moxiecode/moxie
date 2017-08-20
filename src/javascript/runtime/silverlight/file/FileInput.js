@@ -15,8 +15,9 @@
 define("moxie/runtime/silverlight/file/FileInput", [
 	"moxie/runtime/silverlight/Runtime",
 	"moxie/file/File",
+	"moxie/core/utils/Dom",
 	"moxie/core/utils/Basic"
-], function(extensions, File, Basic) {
+], function(extensions, File, Dom, Basic) {
 
 	function toFilters(accept) {
 		var filter = '';
@@ -30,6 +31,12 @@ define("moxie/runtime/silverlight/file/FileInput", [
 	var FileInput = {
 		init: function(options) {
 			var comp = this, I = this.getRuntime();
+			var browseButton = Dom.get(options.browse_button);
+
+			if (browseButton) {
+				browseButton.setAttribute('tabindex', -1);
+				browseButton = null;
+			}
 
 			this.bind("Change", function() {
 				var files = I.shimExec.call(comp, 'FileInput', 'getFiles');

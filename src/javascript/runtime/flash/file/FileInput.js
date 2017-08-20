@@ -15,12 +15,19 @@
 define("moxie/runtime/flash/file/FileInput", [
 	"moxie/runtime/flash/Runtime",
 	"moxie/file/File",
+	"moxie/core/utils/Dom",
 	"moxie/core/utils/Basic"
-], function(extensions, File, Basic) {
-	
-	var FileInput = {		
+], function(extensions, File, Dom, Basic) {
+
+	var FileInput = {
 		init: function(options) {
 			var comp = this, I = this.getRuntime();
+			var browseButton = Dom.get(options.browse_button);
+
+			if (browseButton) {
+				browseButton.setAttribute('tabindex', -1);
+				browseButton = null;
+			}
 
 			this.bind("Change", function() {
 				var files = I.shimExec.call(comp, 'FileInput', 'getFiles');
