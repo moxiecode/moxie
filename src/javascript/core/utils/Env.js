@@ -608,6 +608,11 @@ define("moxie/core/utils/Env", [
 				return false;
 			},
 
+			use_blob_uri: (function() {
+				var URL = window.URL;
+				return URL && 'createObjectURL' in URL && 'revokeObjectURL' in URL;
+			}()),
+
 			// ideas for this heavily come from Modernizr (http://modernizr.com/)
 			use_data_uri: (function() {
 				var du = new Image();
