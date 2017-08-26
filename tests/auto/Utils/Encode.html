@@ -22,14 +22,6 @@ module("Basic", {
 
 // #111
 test("unicode in btoa()", function(assert) {
-	
-	try {
-		o.btoa('你好，世界');
-		assert.ok(false, "DOMException is thrown when running btoa on multi-byte string.");
-	} catch (ex) {
-		assert.ok(true, "DOMException is thrown when running btoa on multi-byte string.");
-	}
-
 	assert.equal(o.btoa('你好，世界', true), "5L2g5aW977yM5LiW55WM", 
 		"Multi-byte string properly encoded with second argument set to true.");
 });
