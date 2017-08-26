@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.5.4
+ * v1.5.5
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2017-08-08
+ * Date: 2017-08-26
  */
 ;(function (global, factory) {
 	var extract = function() {
@@ -1417,13 +1417,15 @@ define("moxie/core/utils/Env", [
 				return false;
 			}()),
 
-			create_canvas: (function() {
+			create_canvas: function() {
 				// On the S60 and BB Storm, getContext exists, but always returns undefined
 				// so we actually have to call getContext() to verify
 				// github.com/Modernizr/Modernizr/issues/issue/97/
 				var el = document.createElement('canvas');
-				return !!(el.getContext && el.getContext('2d'));
-			}()),
+				var isSupported = !!(el.getContext && el.getContext('2d'));
+				caps.create_canvas = isSupported;
+				return isSupported;
+			},
 
 			return_response_type: function(responseType) {
 				try {
@@ -1444,6 +1446,11 @@ define("moxie/core/utils/Env", [
 				} catch (ex) {}
 				return false;
 			},
+
+			use_blob_uri: (function() {
+				var URL = window.URL;
+				return URL && 'createObjectURL' in URL && 'revokeObjectURL' in URL;
+			}()),
 
 			// ideas for this heavily come from Modernizr (http://modernizr.com/)
 			use_data_uri: (function() {
@@ -1474,7 +1481,25 @@ define("moxie/core/utils/Env", [
 
 				var el = document.createElement('input');
 				el.setAttribute('type', 'file');
-				return !el.disabled;
+				return caps.use_fileinput = !el.disabled;
+			},
+
+			use_webgl: function() {
+				var canvas = document.createElement('canvas');
+				var gl = null, isSupported;
+				try {
+					gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+				}
+				catch(e) {}
+
+				if (!gl) { // it seems that sometimes it doesn't throw exception, but still fails to get context
+					gl = null;
+				}
+
+				isSupported = !!gl;
+				caps.use_webgl = isSupported; // save result of our check
+				canvas = undefined;
+				return isSupported;
 			}
 		};
 
@@ -3342,8 +3367,8 @@ define("moxie/core/utils/Mime", [
 		"application/pgp-signature,pgp," +
 		"application/postscript,ps ai eps," +
 		"application/rtf,rtf," +
-		"application/vnd.ms-excel,xls xlb," +
-		"application/vnd.ms-powerpoint,ppt pps pot," +
+		"application/vnd.ms-excel,xls xlb xlt xla," +
+		"application/vnd.ms-powerpoint,ppt pps pot ppa," +
 		"application/zip,zip," +
 		"application/x-shockwave-flash,swf swfl," +
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.document,docx," +
@@ -6165,7 +6190,7 @@ define("moxie/image/Image", [
 				@param {String} [options.type='image/jpeg'] MIME type of the resulting image
 				@param {Number} [options.quality=90] In the case of JPEG, controls the quality of resulting image
 				@param {Boolean} [options.crop='cc'] If not falsy, image will be cropped, by default from center
-				@param {Boolean} [options.fit=true] In case of crop whether to upscale the image to fit the exact dimensions
+				@param {Boolean} [options.fit=true] Whether to upscale the image to fit the exact dimensions
 				@param {Boolean} [options.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 				@param {String} [options.resample='default'] Resampling algorithm to use during resize
 				@param {Boolean} [options.multipass=true] Whether to scale the image in steps (results in better quality)
@@ -6300,6 +6325,11 @@ define("moxie/image/Image", [
 						srcRect.y = Math.max(srcRect.y, 0);
 					} else {
 						scale = Math.min(opts.width/self.width, opts.height/self.height);
+
+						// do not upscale if we were asked to not fit it
+						if (scale > 1 && !opts.fit) {
+							scale = 1;
+						}
 					}
 
 					this.exec('Image', 'resize', srcRect, scale, opts);
@@ -6322,6 +6352,7 @@ define("moxie/image/Image", [
 					type: this.type || 'image/jpeg',
 					quality: 90,
 					crop: false,
+					fit: false,
 					preserveHeaders: true,
 					resample: 'default'
 				}, opts;
@@ -6419,6 +6450,7 @@ define("moxie/image/Image", [
 				@param {String} [options.type="image/jpeg"] Mime type
 				@param {Number} [options.quality=90] Quality of an embed, if mime type is image/jpeg
 				@param {Boolean} [options.crop=false] Whether to crop an embed to the specified dimensions
+				@param {Boolean} [options.fit=true] By default thumbs will be up- or downscaled as necessary to fit the dimensions
 			*/
 			embed: function(el, options) {
 				var self = this
@@ -6429,7 +6461,9 @@ define("moxie/image/Image", [
 					width: this.width,
 					height: this.height,
 					type: this.type || 'image/jpeg',
-					quality: 90
+					quality: 90,
+					fit: true,
+					resample: 'nearest'
 				}, options);
 
 
@@ -6454,7 +6488,7 @@ define("moxie/image/Image", [
 					}
 
 					if (Env.can('use_data_uri_of', dataUrl.length)) {
-						el.innerHTML = '<img src="' + dataUrl + '" width="' + img.width + '" height="' + img.height + '" />';
+						el.innerHTML = '<img src="' + dataUrl + '" width="' + img.width + '" height="' + img.height + '" alt="" />';
 						img.destroy();
 						self.trigger('embedded');
 					} else {
@@ -6814,11 +6848,10 @@ define("moxie/runtime/html5/Runtime", [
 					return I.can('slice_blob') && I.can('send_multipart');
 				},
 				summon_file_dialog: function() { // yeah... some dirty sniffing here...
-					return I.can('select_file') && (
-						(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '>=')) ||
-						(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '>=')) ||
-						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) ||
-						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari', 'Edge'])
+					return I.can('select_file') && !(
+						(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '<')) ||
+						(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '<')) ||
+						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<'))
 					);
 				},
 				upload_filesize: True,
@@ -6895,6 +6928,10 @@ define("moxie/runtime/html5/file/Blob", [
 
 		this.slice = function() {
 			return new Blob(this.getRuntime().uid, w3cBlobSlice.apply(this, arguments));
+		};
+
+		this.destroy = function() {
+			this.getRuntime().getShim().removeInstance(this.uid);
 		};
 	}
 
@@ -7181,8 +7218,10 @@ define("moxie/runtime/html5/file/FileInput", [
 					comp.trigger('mouseup');
 				}, comp.uid);
 
+				// it shouldn't be possible to tab into the hidden element
+				(I.can('summon_file_dialog') ? input : browseButton).setAttribute('tabindex', -1);
 
-				input.onchange = function onChange(e) { // there should be only one handler for this
+				input.onchange = function onChange() { // there should be only one handler for this
 					comp.files = [];
 
 					Basic.each(this.files, function(file) {
@@ -7386,6 +7425,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 			destroy: function() {
 				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
 				_ruid = _files = _allowedExts = _options = null;
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 
@@ -7578,6 +7618,7 @@ define("moxie/runtime/html5/file/FileReader", [
 
 			destroy: function() {
 				_fr = null;
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 
@@ -7745,11 +7786,14 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 								_xhr.onreadystatechange = function() {};
 
 								// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
-								if (_xhr.status === 0) {
-									target.trigger('error');
-								} else {
-									target.trigger('load');
-								}							
+								try {
+									if (_xhr.status >= 200 && _xhr.status < 400) {
+										target.trigger('load');
+										break;
+									}
+								} catch(ex) {}
+
+								target.trigger('error');
 								break;
 						}
 					};
@@ -7860,6 +7904,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 			destroy: function() {
 				self = _filename = null;
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 
@@ -9228,12 +9273,12 @@ define("moxie/runtime/html5/image/ImageInfo", [
  */
 define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
 
-    function scale(image, ratio) {
-        var sW = image.width;
-        var dW = Math.floor(sW * ratio);
+    function scale(image, ratio, resample) {
+        var sD = image.width > image.height ? 'width' : 'height'; // take the largest side
+        var dD = Math.round(image[sD] * ratio);
         var scaleCapped = false;
 
-        if (ratio < 0.5 || ratio > 2) {
+        if (resample !== 'nearest' && (ratio < 0.5 || ratio > 2)) {
             ratio = ratio < 0.5 ? 0.5 : 2;
             scaleCapped = true;
         }
@@ -9241,7 +9286,7 @@ define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
         var tCanvas = _scale(image, ratio);
 
         if (scaleCapped) {
-            return scale(tCanvas, dW / tCanvas.width);
+            return scale(tCanvas, dD / tCanvas[sD], resample);
         } else {
             return tCanvas;
         }
@@ -9251,8 +9296,8 @@ define("moxie/runtime/html5/image/ResizerCanvas", [], function() {
     function _scale(image, ratio) {
         var sW = image.width;
         var sH = image.height;
-        var dW = Math.floor(sW * ratio);
-        var dH = Math.floor(sH * ratio);
+        var dW = Math.round(sW * ratio);
+        var dH = Math.round(sH * ratio);
 
         var canvas = document.createElement('canvas');
         canvas.width = dW;
@@ -9320,7 +9365,8 @@ define("moxie/runtime/html5/image/Image", [
 				if (blob.isDetached()) {
 					_binStr = blob.getSource();
 					_preload.call(this, _binStr);
-					return;
+				} else if (Env.can('use_blob_uri')) {
+					_preload.call(this, URL.createObjectURL(blob.getSource()));
 				} else {
 					_readAsDataUrl.call(this, blob.getSource(), function(dataUrl) {
 						if (asBinary) {
@@ -9332,7 +9378,8 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			loadFromImage: function(img, exact) {
-				this.meta = img.meta;
+				var comp = this;
+				comp.meta = img.meta;
 
 				_blob = new File(null, {
 					name: img.name,
@@ -9340,7 +9387,14 @@ define("moxie/runtime/html5/image/Image", [
 					type: img.type
 				});
 
-				_preload.call(this, exact ? (_binStr = img.getAsBinaryString()) : img.getAsDataURL());
+				if (Env.can('create_canvas') && !exact) {
+					_canvas = img.getAsCanvas();
+					setTimeout(function() {
+						comp.trigger('load');
+					});
+				} else {
+					_preload.call(this, exact ? (_binStr = img.getAsBinaryString()) : img.getAsDataURL());
+				}
 			},
 
 			getInfo: function() {
@@ -9429,7 +9483,7 @@ define("moxie/runtime/html5/image/Image", [
 				var quality = arguments[1] || 90;
 
 				// if image has not been modified, return the source right away
-				if (!_modified) {
+				if (!_modified && _img.src.substr(0, 5) === 'data:') {
 					return _img.src;
 				}
 
@@ -9548,6 +9602,7 @@ define("moxie/runtime/html5/image/Image", [
 
 		function _preload(str) {
 			var comp = this;
+			var prefix = str.substr(0, 5);
 
 			_img = new Image();
 			_img.onerror = function() {
@@ -9558,7 +9613,7 @@ define("moxie/runtime/html5/image/Image", [
 				comp.trigger('load');
 			};
 
-			_img.src = str.substr(0, 5) == 'data:' ? str : _toDataUrl(str, _blob.type);
+			_img.src = (prefix  === 'data:' || prefix === 'blob:' ? str : _toDataUrl(str, _blob.type));
 		}
 
 
@@ -9658,6 +9713,10 @@ define("moxie/runtime/html5/image/Image", [
 			if (_imgInfo) {
 				_imgInfo.purge();
 				_imgInfo = null;
+			}
+
+			if (_img && Env.can('use_blob_uri')) {
+				URL.revokeObjectURL(_img.src);
 			}
 
 			_binStr = _img = _canvas = _blob = null;
@@ -10015,12 +10074,19 @@ define("moxie/runtime/flash/file/Blob", [
 define("moxie/runtime/flash/file/FileInput", [
 	"moxie/runtime/flash/Runtime",
 	"moxie/file/File",
+	"moxie/core/utils/Dom",
 	"moxie/core/utils/Basic"
-], function(extensions, File, Basic) {
-	
-	var FileInput = {		
+], function(extensions, File, Dom, Basic) {
+
+	var FileInput = {
 		init: function(options) {
 			var comp = this, I = this.getRuntime();
+			var browseButton = Dom.get(options.browse_button);
+
+			if (browseButton) {
+				browseButton.setAttribute('tabindex', -1);
+				browseButton = null;
+			}
 
 			this.bind("Change", function() {
 				var files = I.shimExec.call(comp, 'FileInput', 'getFiles');
@@ -10683,8 +10749,9 @@ define("moxie/runtime/silverlight/file/Blob", [
 define("moxie/runtime/silverlight/file/FileInput", [
 	"moxie/runtime/silverlight/Runtime",
 	"moxie/file/File",
+	"moxie/core/utils/Dom",
 	"moxie/core/utils/Basic"
-], function(extensions, File, Basic) {
+], function(extensions, File, Dom, Basic) {
 
 	function toFilters(accept) {
 		var filter = '';
@@ -10698,6 +10765,12 @@ define("moxie/runtime/silverlight/file/FileInput", [
 	var FileInput = {
 		init: function(options) {
 			var comp = this, I = this.getRuntime();
+			var browseButton = Dom.get(options.browse_button);
+
+			if (browseButton) {
+				browseButton.setAttribute('tabindex', -1);
+				browseButton = null;
+			}
 
 			this.bind("Change", function() {
 				var files = I.shimExec.call(comp, 'FileInput', 'getFiles');
@@ -11036,11 +11109,10 @@ define("moxie/runtime/html4/Runtime", [
 				return I.can('select_file');
 			},
 			summon_file_dialog: function() { // yeah... some dirty sniffing here...
-				return I.can('select_file') && (
-					(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '>=')) ||
-					(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '>=')) ||
-					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) ||
-					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
+				return I.can('select_file') && !(
+					(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '<')) ||
+					(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '<')) ||
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<'))
 				);
 			},
 			upload_filesize: True,
@@ -11111,6 +11183,8 @@ define("moxie/runtime/html4/file/FileInput", [
 				currForm = Dom.get(_uid + '_form');
 				if (currForm) {
 					Basic.extend(currForm.style, { top: '100%' });
+					// it shouldn't be possible to tab into the hidden element
+					currForm.firstChild.setAttribute('tabindex', -1);
 				}
 			}
 
@@ -11134,6 +11208,10 @@ define("moxie/runtime/html4/file/FileInput", [
 			input.setAttribute('id', uid);
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', _mimes.join(','));
+
+			if (I.can('summon_file_dialog')) {
+				input.setAttribute('tabindex', -1);
+			}
 
 			Basic.extend(input.style, {
 				fontSize: '999px',
@@ -11236,6 +11314,9 @@ define("moxie/runtime/html4/file/FileInput", [
 							Dom.get(_options.browse_button).style.zIndex = zIndex;
 							this.getRuntime().getShimContainer().style.zIndex = zIndex - 1;
 						});
+					} else {
+						// it shouldn't be possible to tab into the hidden element
+						browseButton.setAttribute('tabindex', -1);
 					}
 
 					/* Since we have to place input[type=file] on top of the browse_button for some browsers,
@@ -11593,6 +11674,10 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 					// target.dispatchEvent('readystatechange');
 					target.dispatchEvent('abort');
 				});
+			},
+
+			destroy: function() {
+				this.getRuntime().getShim().removeInstance(this.uid);
 			}
 		});
 	}
