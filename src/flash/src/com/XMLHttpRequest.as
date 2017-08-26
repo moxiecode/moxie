@@ -243,8 +243,8 @@ package com
 		private function onStatus(e:HTTPStatusEvent) : void {
 			_status = e.status;
 		}
-		
-		private function onIOError(e:IOErrorEvent) : void {
+
+		private function onIOError(e:*) : void {
 			if (_status == 0) { // httpStatus might have already set status to some failure code (according to livedocs)
 				_status = 404; // assume that request succeeded, but url was wrong
 			}
@@ -302,7 +302,14 @@ package com
 			onOpen(); // trigger it manually
 						
 			_readyState = XMLHttpRequest.LOADING;
-			_conn.upload(request, _blobFieldName, false);
+			try {
+				_conn.upload(request, _blobFieldName, false);
+			} catch (ex:*) {
+				onIOError({
+					type: IOErrorEvent.IO_ERROR,
+					target: _conn
+				});
+			}
 		}
 		
 		
@@ -390,7 +397,14 @@ package com
 				
 				progress.addEventListener(Event.OPEN, function() : void {
 					start = new Date;
+					try {
 					_conn.load(request);
+					} catch (ex:*) {
+						onIOError({
+							type: IOErrorEvent.IO_ERROR,
+							target: _conn
+						});
+					}
 				});
 				
 				_conn.addEventListener(Event.COMPLETE, function(e:Event) : void {
@@ -410,7 +424,15 @@ package com
 				_conn.addEventListener(Event.COMPLETE, onComplete);
 				
 				onOpen(); // trigger it manually
+
+				try {
 				_conn.load(request);
+				} catch (ex:*) {
+					onIOError({
+						type: IOErrorEvent.IO_ERROR,
+						target: _conn
+					});
+				}
 			}
 			
 			_readyState = XMLHttpRequest.LOADING;
