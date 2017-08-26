@@ -29,7 +29,7 @@
 
 	var matches = document.location.search.match(/src=(min|dev|cov)/);
 	var source = matches ? matches[1] : 'min';
-	document.write('<script src="' + baseUrl + '/../../bin/js/moxie.' + source + '.js"></script>');
+	document.write('<script src="' + baseUrl + '/../../bin/js/moxie' + (source !== 'dev' ? '.' + source : '') + '.js"></script>');
 	// load that compatibility shim that we use all over the tests, if it wasn't already loaded
 	if (!window.o) {
 		document.write('<script src="' + baseUrl + '/../../src/javascript/o.js"></script>');
