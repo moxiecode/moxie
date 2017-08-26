@@ -133,17 +133,22 @@ package com
 						data: buffer.data
 					}
 				});
+				return;
 			} else if (buffer.fileRef) {
 				buffer.fileRef.addEventListener(ProgressEvent.PROGRESS, onProgress);
 				buffer.fileRef.addEventListener(Event.COMPLETE, onComplete);
 				buffer.fileRef.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
-				buffer.fileRef.load();
-			} else {
-				onIOError({ 
-					type: IOErrorEvent.IO_ERROR,
-					target: {}
-				});
+
+				try {
+					buffer.fileRef.load();
+					return;
+				} catch (err:*) {} // might be MemoryError for example
 			}
+
+			onIOError({
+				type: IOErrorEvent.IO_ERROR,
+				target: {}
+			});
 		}
 		
 		
