@@ -608,10 +608,15 @@ define("moxie/core/utils/Env", [
 				return false;
 			},
 
-			use_blob_uri: (function() {
+			use_blob_uri: function() {
 				var URL = window.URL;
-				return URL && 'createObjectURL' in URL && 'revokeObjectURL' in URL;
-			}()),
+				caps.use_blob_uri = (URL &&
+					'createObjectURL' in URL &&
+					'revokeObjectURL' in URL &&
+					(Env.browser !== 'IE' || Env.verComp(Env.version, '11.0.46', '>=')) // IE supports createObjectURL, but not fully, for example it fails to use it as a src for the image
+				);
+				return caps.use_blob_uri;
+			},
 
 			// ideas for this heavily come from Modernizr (http://modernizr.com/)
 			use_data_uri: (function() {
