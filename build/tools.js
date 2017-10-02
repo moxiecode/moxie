@@ -33,7 +33,7 @@ exports.uglify = function (sourceFiles, outputFile, options) {
 	}
 
 	// Compress
-	result = uglifyJS.minify(code, {
+	var result = uglifyJS.minify(code, {
 		fromString: true,
 		compress: options
 	});
