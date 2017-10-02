@@ -47,8 +47,7 @@ define("moxie/runtime/html5/image/Image", [
 				if (blob.isDetached()) {
 					_binStr = blob.getSource();
 					_preload.call(this, _binStr);
-				} else if (Env.can('use_blob_uri')) {
-					_preload.call(this, URL.createObjectURL(blob.getSource()));
+					return;
 				} else {
 					_readAsDataUrl.call(this, blob.getSource(), function(dataUrl) {
 						if (asBinary) {
@@ -60,8 +59,7 @@ define("moxie/runtime/html5/image/Image", [
 			},
 
 			loadFromImage: function(img, exact) {
-				var comp = this;
-				comp.meta = img.meta;
+				this.meta = img.meta;
 
 				_blob = new File(null, {
 					name: img.name,
@@ -69,14 +67,7 @@ define("moxie/runtime/html5/image/Image", [
 					type: img.type
 				});
 
-				if (Env.can('create_canvas') && !exact) {
-					_canvas = img.getAsCanvas();
-					setTimeout(function() {
-						comp.trigger('load');
-					});
-				} else {
-					_preload.call(this, exact ? (_binStr = img.getAsBinaryString()) : img.getAsDataURL());
-				}
+				_preload.call(this, exact ? (_binStr = img.getAsBinaryString()) : img.getAsDataURL());
 			},
 
 			getInfo: function() {
@@ -165,7 +156,7 @@ define("moxie/runtime/html5/image/Image", [
 				var quality = arguments[1] || 90;
 
 				// if image has not been modified, return the source right away
-				if (!_modified && _img.src.substr(0, 5) === 'data:') {
+				if (!_modified) {
 					return _img.src;
 				}
 
@@ -284,7 +275,6 @@ define("moxie/runtime/html5/image/Image", [
 
 		function _preload(str) {
 			var comp = this;
-			var prefix = str.substr(0, 5);
 
 			_img = new Image();
 			_img.onerror = function() {
@@ -295,7 +285,7 @@ define("moxie/runtime/html5/image/Image", [
 				comp.trigger('load');
 			};
 
-			_img.src = (prefix  === 'data:' || prefix === 'blob:' ? str : _toDataUrl(str, _blob.type));
+			_img.src = str.substr(0, 5) == 'data:' ? str : _toDataUrl(str, _blob.type);
 		}
 
 
@@ -395,10 +385,6 @@ define("moxie/runtime/html5/image/Image", [
 			if (_imgInfo) {
 				_imgInfo.purge();
 				_imgInfo = null;
-			}
-
-			if (_img && Env.can('use_blob_uri')) {
-				URL.revokeObjectURL(_img.src);
 			}
 
 			_binStr = _img = _canvas = _blob = null;
