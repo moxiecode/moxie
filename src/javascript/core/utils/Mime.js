@@ -232,6 +232,8 @@ define("moxie/core/utils/Mime", [
 	addMimeType(mimeData);
 
 	return {
+		mimes: mimes,
+		extensions: extensions,
 		addMimeType: addMimeType,
 		extList2mimes: extList2mimes,
 		mimes2exts: mimes2exts,
