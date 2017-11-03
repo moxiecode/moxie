@@ -714,7 +714,8 @@ define("moxie/core/utils/Env", [
 				console.appendChild(document.createTextNode(data + "\n"));
 			}
 
-			if (window && window.console && window.console.log) {
+			// if debugger present, IE8 might have window.console.log method, but not be able to apply on it (why...)
+			if (window && window.console && window.console.log && window.console.log.apply) {
 				window.console.log.apply(window.console, arguments);
 			} else if (document) {
 				var console = document.getElementById('moxie-console');
