@@ -162,7 +162,7 @@ o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
 });
 
 
-o.each("html5,html4".split(','), function(runtime) {
+o.each("html5".split(','), function(runtime) {
 	test("Change type of accepted files via: setOption('accept', '...'): " + runtime, function (assert) {
 
 		$('<a id="browse_button" href="javascript:;">Browse...</a>')
