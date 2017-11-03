@@ -226,7 +226,7 @@ test("inherit()", function() {
 		o.inherit(Parent, GrandParent);
 
 		function Parent() {
-			Parent.super.constructor.apply(this, arguments);
+			Parent.parent.constructor.apply(this, arguments);
 
 			this.parent = 'GrandParent';
 			this.name = 'Parent';
@@ -236,7 +236,7 @@ test("inherit()", function() {
 			if (name === 'one') {
 				this._options[name] = 1;
 			} else {
-				Parent.super.setOption.apply(this, arguments);
+				Parent.parent.setOption.apply(this, arguments);
 			}
 		};
 
@@ -249,7 +249,7 @@ test("inherit()", function() {
 		o.inherit(Child1, Parent);
 
 		function Child1() {
-			Child1.super.constructor.apply(this, arguments);
+			Child1.parent.constructor.apply(this, arguments);
 
 			this.parent = 'Parent';
 			this.name = 'Child1';
@@ -259,7 +259,7 @@ test("inherit()", function() {
 			if (name == 'two') {
 				this._options[name] = 2;
 			} else {
-				Child1.super.setOption.apply(this, arguments);
+				Child1.parent.setOption.apply(this, arguments);
 			}
 		};
 
@@ -272,7 +272,7 @@ test("inherit()", function() {
 		o.inherit(Child2, Parent);
 
 		function Child2() {
-			Child2.super.constructor.apply(this, arguments);
+			Child2.parent.constructor.apply(this, arguments);
 
 			this.parent = 'Parent';
 			this.name = 'Child2';
@@ -282,7 +282,7 @@ test("inherit()", function() {
 			if (name == 'two') {
 				this._options[name] = -2;
 			} else {
-				Child2.super.setOption.apply(this, arguments);
+				Child2.parent.setOption.apply(this, arguments);
 			}
 		};
 
@@ -303,7 +303,7 @@ test("inherit()", function() {
 			if (name == 'two') {
 				this._options[name] = -2;
 			} else {
-				Child3.super.setOption.apply(this, arguments);
+				Child3.parent.setOption.apply(this, arguments);
 			}
 		};
 
@@ -326,7 +326,7 @@ test("inherit()", function() {
 			if (name == 'two') {
 				this._options[name] = -2;
 			} else {
-				Child4.super.setOption.apply(this, arguments);
+				Child4.parent.setOption.apply(this, arguments);
 			}
 		};
 
