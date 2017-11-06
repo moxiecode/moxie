@@ -1,6 +1,3 @@
-[submodule "build/swf2lzma"]
-	path = build/swf2lzma
-	url = https://github.com/jspiro/swf2lzma.git
 [submodule "tests/js/testrunner"]
 	path = tests/js/testrunner
 	url = https://github.com/moxiecode/testrunner.git

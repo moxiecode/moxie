@@ -69,7 +69,7 @@ task("mkjs", [], function () {
 
 	var modules = [].slice.call(arguments);
 	if (!modules.length) {
-		modules = ["file/Blob", "file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest", "image/Image"];
+		modules = ["file/Blob", "file/FileInput", "file/FileDrop", "image/Image"];
 	}
 
 	// get paths to runtime extensions
@@ -133,83 +133,6 @@ task("mkjs", [], function () {
 		});
 	}
 });
-
-
-
-desc("Compile SWF");
-task("mkswf", [], function() {
-	var targetDir = "bin/flash";
-
-	// start fresh
-	if (fs.existsSync(targetDir)) {
-		jake.rmRf(targetDir);
-	}
-	jake.mkdirP(targetDir);
-
-	// compile both
-	utils.inSeries([
-		function(cb) {
-			mkswf({
-				src: "./src/flash/src",
-				input: "./src/flash/src/Moxie.as",
-				output: targetDir + "/Moxie.swf",
-				extra: "-define=MXI::IncludeImageLibs,true -define=MXI::EnableCSS,false -debug=false -optimize=true -swf-version=16"
-			}, cb);
-		},
-		function(cb) {
-			mkswf({
-				src: "./src/flash/src",
-				input: "./src/flash/src/Moxie.as",
-				output: targetDir + "/Moxie.cdn.swf",
-				extra: "-define=MXI::IncludeImageLibs,true -define=MXI::EnableCSS,true -debug=false -optimize=true -swf-version=16"
-			}, cb);
-		},
-		function(cb) {
-			// we do not require any fancy stuff in this one, so target FP 11.2 (last version supported by linux)
-			mkswf({
-				src: "./src/flash/src",
-				input: "./src/flash/src/Moxie.as",
-				output: targetDir + "/Moxie.min.swf",
-				extra: "-define=MXI::IncludeImageLibs,false -define=MXI::EnableCSS,false -debug=false -optimize=true -swf-version=15"
-			}, cb);
-		}
-	], complete);
-}, true);
-
-
-
-desc("Compile XAP");
-task("mkxap", [], function() {
-	var targetDir = "bin\\silverlight\\";
-
-	// start fresh
-	if (fs.existsSync(targetDir)) {
-		jake.rmRf(targetDir);
-	}
-	jake.mkdirP(targetDir);
-
-	// compile both
-	utils.inSeries([
-		function(cb) {
-			mkxap({
-				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:IncludeImageLibs=TRUE,XapFilename=Moxie.xap,OutputDir=..\\..\\" + targetDir
-			}, cb);
-		},
-		function(cb) {
-			mkxap({
-				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:IncludeImageLibs=TRUE,EnableCSS=TRUE,XapFilename=Moxie.cdn.xap,OutputDir=..\\..\\" + targetDir
-			}, cb);
-		},
-		function(cb) {
-			mkxap({
-				input: ".\\src\\silverlight\\Moxie.csproj",
-				output: "/p:IncludeImageLibs=FALSE,XapFilename=Moxie.min.xap,OutputDir=..\\..\\" + targetDir
-			}, cb);
-		}
-	], complete);
-}, true);
 
 
 
