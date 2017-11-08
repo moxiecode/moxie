@@ -240,5 +240,5 @@ define("moxie/core/utils/Mime", [
 		mimes2extList: mimes2extList,
 		getFileExtension: getFileExtension,
 		getFileMime: getFileMime
-	}
+	};
 });

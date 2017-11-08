@@ -270,6 +270,7 @@ define('moxie/file/FileInput', [
 
 				self.handleEventProps(dispatches);
 
+				self.disable(false);
 				self.refresh();
 
 				// ready event is perfectly asynchronous
@@ -359,7 +360,10 @@ define('moxie/file/FileInput', [
 			@param {Boolean} [state=true] Disable component if - true, enable if - false
 			*/
 			disable: function(state) {
-				_disabled = state === undefined ? true : state;
+				var input = Dom.get(_uid);
+				if (input) {
+					input.disabled = (_disabled = state === undefined ? true : state);
+				}
 			},
 
 
@@ -379,7 +383,7 @@ define('moxie/file/FileInput', [
 					var pos = Dom.getPos(browseButton, container);
 					var size = Dom.getSize(browseButton);
 
-					if (Env.can('summon_browse_dialog')) {
+					if (Env.can('summon_file_dialog')) {
 						browseButton.style.zIndex = zIndex + 1;
 					}
 
@@ -450,12 +454,13 @@ define('moxie/file/FileInput', [
 
 			input.id = _uid;
 			input.setAttribute('type', 'file');
+			input.disabled = true;
 
 			if (_options.multiple && Env.can('select_multiple')) {
-				input.setAttribute('multiple', 'multiple');
+				input.multiple = true;
 			}
 
-			if (_options.multiple && Env.can('select_folder')) {
+			if (_options.directory && Env.can('select_folder')) {
 				input.setAttribute('directory', 'directory');
 				input.setAttribute('webkitdirectory', 'webkitdirectory');
 			}
@@ -472,7 +477,8 @@ define('moxie/file/FileInput', [
 				width: '100%',
 				height: '100%',
 				fontSize: '999px',
-				opacity: 0
+				opacity: 0,
+				cursor: 'pointer'
 			});
 
 			input.onchange = function onChange() { // there should be only one handler for this

@@ -569,14 +569,14 @@ define("moxie/core/utils/Env", [
 				return isSupported;
 			},
 
-			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
+			filter_by_extension: function() { // if you know how to feature-detect this, please suggest
 				return !(
 					(Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '<')) ||
 					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) ||
 					(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '<')) ||
 					(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<'))
 				);
-			}()),
+			},
 
 			return_response_type: function(responseType) {
 				try {
