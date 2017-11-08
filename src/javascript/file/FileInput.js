@@ -13,12 +13,11 @@ define('moxie/file/FileInput', [
 	'moxie/core/utils/Env',
 	'moxie/core/utils/Mime',
 	'moxie/core/utils/Dom',
+	'moxie/core/utils/Events',
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
-	'moxie/core/I18n',
-	'moxie/runtime/Runtime',
-	'moxie/runtime/RuntimeClient'
-], function(Basic, Env, Mime, Dom, x, EventTarget, I18n, Runtime, RuntimeClient) {
+	'moxie/core/I18n'
+], function(Basic, Env, Mime, Dom, Events, x, EventTarget, I18n) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
@@ -76,16 +75,27 @@ define('moxie/file/FileInput', [
 		@event refresh
 		@param {Object} event
 		*/
+		'refresh',
+
+		/**
+		Dispatched when option is getting changed (@see setOption)
+
+		@event optionchange
+		@param {Object} event
+		@param {String} name
+		@param {Mixed} value
+		@param {Mixed} oldValue Previous value of the option
+		*/
+		'optionchange',
 
 		/**
 		Dispatched when selection of files in the dialog is complete.
 
 		@event change
 		@param {Object} event
+		@param {Array} fileRefs Array of selected file references
 		*/
 		'change',
-
-		'cancel', // TODO: might be useful
 
 		/**
 		Dispatched when mouse cursor enters file-picker area. Can be used to style element
@@ -119,7 +129,15 @@ define('moxie/file/FileInput', [
 		@event mouseup
 		@param {Object} event
 		*/
-		'mouseup'
+		'mouseup',
+
+		/**
+		Dispatched when component is destroyed (just before all events are unbined).
+
+		@event destroy
+		@param {Object} event
+		*/
+		'destroy'
 	];
 
 	function FileInput(options) {
@@ -127,57 +145,35 @@ define('moxie/file/FileInput', [
 			Env.log("Instantiating FileInput...");
 		}
 
-		var container, browseButton, defaults;
+		var _uid = Basic.guid('mxi_');
+		var _disabled = true;
+		var _fileRefs = [];
+		var _options;
+
+		var _containerPosition, _browseButtonPosition, _browseButtonZindex;
 
 		// if flat argument passed it should be browse_button id
 		if (Basic.inArray(Basic.typeOf(options), ['string', 'node']) !== -1) {
-			options = { browse_button : options };
+			_options = { browse_button : options };
 		}
 
-		// this will help us to find proper default container
-		browseButton = Dom.get(options.browse_button);
-		if (!browseButton) {
+		if (!Dom.get(options.browse_button)) {
 			// browse button is required
 			throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
 		}
 
-		// figure out the options
-		defaults = {
+		_options = Basic.extend({
 			accept: [{
 				title: I18n.translate('All Files'),
 				extensions: '*'
 			}],
-			multiple: false,
-			required_caps: false,
-			container: browseButton.parentNode || document.body
-		};
-
-		options = Basic.extend({}, defaults, options);
-
-		// convert to object representation
-		if (typeof(options.required_caps) === 'string') {
-			options.required_caps = Runtime.parseCaps(options.required_caps);
-		}
+			multiple: false
+		}, options);
 
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
-		if (typeof(options.accept) === 'string') {
-			options.accept = Mime.mimes2extList(options.accept);
+		if (typeof(_options.accept) === 'string') {
+			_options.accept = Mime.mimes2extList(_options.accept);
 		}
-
-		container = Dom.get(options.container);
-		// make sure we have container
-		if (!container) {
-			container = document.body;
-		}
-
-		// make container relative, if it's not
-		if (Dom.getStyle(container, 'position') === 'static') {
-			container.style.position = 'relative';
-		}
-
-		container = browseButton = null; // IE
-
-		RuntimeClient.call(this);
 
 		Basic.extend(this, {
 			/**
@@ -189,16 +185,7 @@ define('moxie/file/FileInput', [
 			@type {String}
 			@default UID
 			*/
-			uid: Basic.guid('uid_'),
-
-			/**
-			Unique id of the connected runtime, if any.
-
-			@property ruid
-			@protected
-			@type {String}
-			*/
-			ruid: null,
+			uid: _uid,
 
 			/**
 			Unique id of the runtime container. Useful to get hold of it for various manipulations.
@@ -207,7 +194,7 @@ define('moxie/file/FileInput', [
 			@protected
 			@type {String}
 			*/
-			shimid: null,
+			shimid: _uid + '_container',
 
 			/**
 			Array of selected moxie.file.File objects
@@ -216,7 +203,7 @@ define('moxie/file/FileInput', [
 			@type {Array}
 			@default null
 			*/
-			files: null,
+			files: _fileRefs,
 
 			/**
 			Initializes the file-picker, connects it to runtime and dispatches event ready when done.
@@ -225,51 +212,82 @@ define('moxie/file/FileInput', [
 			*/
 			init: function() {
 				var self = this;
+				var container = Dom.get(_options.container) || document.body;
+				var browseButton = Dom.get(_options.browse_button);
+				var shimContainer = createShimContainer.call(self);
+				var input = createInput.call(self);
+				var zIndex, top;
 
-				self.bind('RuntimeInit', function(e, runtime) {
-					self.ruid = runtime.uid;
-					self.shimid = runtime.shimid;
+				// we will be altering some initial styles, so lets save them to restore later
+				_containerPosition = Dom.getStyle(container, 'position');
+				_browseButtonPosition = Dom.getStyle(browseButton, 'position');
+				_browseButtonZindex = Dom.getStyle(browseButton, 'z-index') || 'auto';
 
-					self.bind("Ready", function() {
-						self.trigger("Refresh");
-					}, 999);
+				// it shouldn't be possible to tab into the hidden element
+				(Env.can('summon_file_dialog') ? input : browseButton).setAttribute('tabindex', -1);
 
-					// re-position and resize shim container
-					self.bind('Refresh', function() {
-						var pos, size, browseButton, shimContainer, zIndex;
+				/* Since we have to place input[type=file] on top of the browse_button for some browsers,
+				browse_button loses interactivity, so we restore it here */
+				top = Env.can('summon_file_dialog') ? browseButton : shimContainer;
 
-						browseButton = Dom.get(options.browse_button);
-						shimContainer = Dom.get(runtime.shimid); // do not use runtime.getShimContainer(), since it will create container if it doesn't exist
+				Events.addEvent(top, 'mouseover', function() {
+					self.trigger('mouseenter');
+				}, _uid);
 
-						if (browseButton) {
-							pos = Dom.getPos(browseButton, Dom.get(options.container));
-							size = Dom.getSize(browseButton);
-							zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 0;
+				Events.addEvent(top, 'mouseout', function() {
+					self.trigger('mouseleave');
+				}, _uid);
 
-							if (shimContainer) {
-								Basic.extend(shimContainer.style, {
-									top: pos.y + 'px',
-									left: pos.x + 'px',
-									width: size.w + 'px',
-									height: size.h + 'px',
-									zIndex: zIndex + 1
-								});
-							}
-						}
-						shimContainer = browseButton = null;
-					});
+				Events.addEvent(top, 'mousedown', function() {
+					self.trigger('mousedown');
+				}, _uid);
 
-					runtime.exec.call(self, 'FileInput', 'init', options);
-				});
+				Events.addEvent(container, 'mouseup', function() {
+					self.trigger('mouseup');
+				}, _uid);
 
-				// runtime needs: options.required_features, options.runtime_order and options.container
-				self.connectRuntime(Basic.extend({}, options, {
-					required_caps: {
-						select_file: true
+				// Route click event to the input[type=file] element for browsers that support such behavior
+				if (Env.can('summon_file_dialog')) {
+					if (_browseButtonPosition === 'static') {
+						browseButton.style.position = 'relative';
 					}
-				}));
+
+					Events.addEvent(browseButton, 'click', function(e) {
+						if (!_disabled) {
+							input.click();
+						}
+						e.preventDefault();
+					}, _uid);
+				}
+
+				// make container relative, if it's not (TODO: maybe save initial state to restore it later)
+				if (_containerPosition === 'static') {
+					container.style.position = 'relative';
+				}
+
+				shimContainer.appendChild(input);
+				container.appendChild(shimContainer);
+
+				self.handleEventProps(dispatches);
+
+				self.refresh();
+
+				// ready event is perfectly asynchronous
+				self.trigger({
+					type: 'ready',
+					async: true
+				});
 			},
 
+			/**
+			Returns container for the runtime as DOM element
+
+			@method getShimContainer
+			@return {DOMElement}
+			*/
+			getShimContainer: function() {
+				return Dom.get(this.shimid);
+			},
 
 			/**
 			 * Get current option value by its name
@@ -291,26 +309,45 @@ define('moxie/file/FileInput', [
 			 * @param value
 			 */
 			setOption: function(name, value) {
-				if (!options.hasOwnProperty(name)) {
+				if (!_options.hasOwnProperty(name)) {
 					return;
 				}
 
-				var oldValue = options[name];
+				var oldValue = _options[name];
+				var input = Dom.get(_uid);
 
 				switch (name) {
 					case 'accept':
-						if (typeof(value) === 'string') {
-							value = Mime.mimes2extList(value);
+						if (value) {
+							var mimes = Mime.extList2mimes(value, Env.can('filter_by_extension'));
+							input.setAttribute('accept', mimes.join(','));
+						} else {
+							input.removeAttribute('accept');
 						}
 						break;
 
+					case 'directory':
+						if (value && Env.can('select_folder')) {
+							input.setAttribute('directory', '');
+							input.setAttribute('webkitdirectory', '');
+						} else {
+							input.removeAttribute('directory');
+							input.removeAttribute('webkitdirectory');
+						}
+						break;
+
+					case 'multiple':
+						if (value && Env.can('select_multiple')) {
+							input.setAttribute('multiple', '');
+						} else {
+							input.removeAttribute('multiple');
+						}
+
 					case 'container':
-					case 'required_caps':
 						throw new x.FileException(x.FileException.NO_MODIFICATION_ALLOWED_ERR);
 				}
 
-				options[name] = value;
-				this.exec('FileInput', 'setOption', name, value);
+				_options[name] = value;
 
 				this.trigger('OptionChanged', name, value, oldValue);
 			},
@@ -322,10 +359,7 @@ define('moxie/file/FileInput', [
 			@param {Boolean} [state=true] Disable component if - true, enable if - false
 			*/
 			disable: function(state) {
-				var runtime = this.getRuntime();
-				if (runtime) {
-					this.exec('FileInput', 'disable', Basic.typeOf(state) === 'undefined' ? true : state);
-				}
+				_disabled = state === undefined ? true : state;
 			},
 
 
@@ -335,7 +369,32 @@ define('moxie/file/FileInput', [
 			@method refresh
 			*/
 			refresh: function() {
-				this.trigger("Refresh");
+				var self = this;
+				var container = Dom.get(_options.container) || document.body;
+				var browseButton = Dom.get(_options.browse_button);
+				var shimContainer = self.getShimContainer();
+				var zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 0;
+
+				if (browseButton) {
+					var pos = Dom.getPos(browseButton, container);
+					var size = Dom.getSize(browseButton);
+
+					if (Env.can('summon_browse_dialog')) {
+						browseButton.style.zIndex = zIndex + 1;
+					}
+
+					if (shimContainer) {
+						Basic.extend(shimContainer.style, {
+							top: pos.y + 'px',
+							left: pos.x + 'px',
+							width: size.w + 'px',
+							height: size.h + 'px',
+							zIndex: zIndex
+						});
+					}
+				}
+
+				self.trigger("Refresh");
 			},
 
 
@@ -345,25 +404,132 @@ define('moxie/file/FileInput', [
 			@method destroy
 			*/
 			destroy: function() {
-				var runtime = this.getRuntime();
-				if (runtime) {
-					runtime.exec.call(this, 'FileInput', 'destroy');
-					this.disconnectRuntime();
+				var self = this;
+				var shimContainer = self.getShimContainer();
+				var container = Dom.get(_options.container);
+				var browseButton = Dom.get(_options.browse_button);
+
+				if (container) {
+					Events.removeAllEvents(container, _uid);
+					container.style.position = _containerPosition;
 				}
 
-				if (Basic.typeOf(this.files) === 'array') {
+				if (browseButton) {
+					Events.removeAllEvents(browseButton, _uid);
+					Basic.extend(browseButton.style, {
+						position: _browseButtonPosition,
+						zIndex: _browseButtonZindex
+					});
+				}
+
+				if (shimContainer) {
+					Events.removeAllEvents(shimContainer, _uid);
+				}
+
+				if (Basic.typeOf(_fileRefs) === 'array') {
 					// no sense in leaving associated files behind
-					Basic.each(this.files, function(file) {
+					Basic.each(_fileRefs, function(file) {
 						file.destroy();
 					});
 				}
-				this.files = null;
 
-				this.unbindAll();
+				_options = null;
+				_fileRefs.length = 0;
+
+				self.trigger('Destroy');
+				self.unbindAll();
 			}
 		});
 
-		this.handleEventProps(dispatches);
+
+		function createInput() {
+			var self = this;
+			// figure out accept string
+			var mimes = Mime.extList2mimes(_options.accept, Env.can('filter_by_extension'));
+			var input = document.createElement('input');
+
+			input.id = _uid;
+			input.setAttribute('type', 'file');
+
+			if (_options.multiple && Env.can('select_multiple')) {
+				input.setAttribute('multiple', 'multiple');
+			}
+
+			if (_options.multiple && Env.can('select_folder')) {
+				input.setAttribute('directory', 'directory');
+				input.setAttribute('webkitdirectory', 'webkitdirectory');
+			}
+
+			if (mimes) {
+				input.setAttribute('accept', mimes.join(','));
+			}
+
+			// prepare file input to be placed underneath the browse_button element
+			Basic.extend(input.style, {
+				position: 'absolute',
+				top: 0,
+				left: 0,
+				width: '100%',
+				height: '100%',
+				fontSize: '999px',
+				opacity: 0
+			});
+
+			input.onchange = function onChange() { // there should be only one handler for this
+				_fileRefs.length = 0;
+
+				Basic.each(this.files, function(file) {
+					if (_options.directory) {
+						// folders are represented by dots, filter them out (Chrome 11+)
+						if (file.name == ".") {
+							// if it looks like a folder...
+							return true;
+						}
+					}
+
+					var fileRef = new File(_uid, file);
+					fileRef.relativePath = file.webkitRelativePath ? '/' + file.webkitRelativePath.replace(/^\//, '') : '';
+
+					_fileRefs.push(fileRef);
+				});
+
+				// clearing the value enables the user to select the same file again if they want to
+				if (Env.browser !== 'IE' && Env.browser !== 'IEMobile') {
+					this.value = '';
+				} else {
+					// in IE input[type="file"] is read-only so the only way to reset it is to re-insert it
+					var clone = this.cloneNode(true);
+					this.parentNode.replaceChild(clone, this);
+					clone.onchange = onChange;
+				}
+
+				if (_fileRefs.length) {
+					self.trigger('change', _fileRefs);
+				}
+			};
+
+			return input;
+		}
+
+		function createShimContainer() {
+			var shimContainer;
+
+			// create shim container and insert it at an absolute position into the outer container
+			shimContainer = document.createElement('div');
+			shimContainer.id = this.shimid;
+			shimContainer.className = 'mxi-shim';
+
+			Basic.extend(shimContainer.style, {
+				position: 'absolute',
+				top: '0px',
+				left: '0px',
+				width: '1px',
+				height: '1px',
+				overflow: 'hidden'
+			});
+
+			return shimContainer;
+		}
 	}
 
 	FileInput.prototype = EventTarget.instance;

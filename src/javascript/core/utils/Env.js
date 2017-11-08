@@ -559,25 +559,6 @@ define("moxie/core/utils/Env", [
 				return !!window.moxie;
 			},
 
-			define_property: (function() {
-				/* // currently too much extra code required, not exactly worth it
-				try { // as of IE8, getters/setters are supported only on DOM elements
-					var obj = {};
-					if (Object.defineProperty) {
-						Object.defineProperty(obj, 'prop', {
-							enumerable: true,
-							configurable: true
-						});
-						return true;
-					}
-				} catch(ex) {}
-
-				if (Object.prototype.__defineGetter__ && Object.prototype.__defineSetter__) {
-					return true;
-				}*/
-				return false;
-			}()),
-
 			create_canvas: function() {
 				// On the S60 and BB Storm, getContext exists, but always returns undefined
 				// so we actually have to call getContext() to verify
@@ -587,6 +568,15 @@ define("moxie/core/utils/Env", [
 				caps.create_canvas = isSupported;
 				return isSupported;
 			},
+
+			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
+				return !(
+					(Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '<')) ||
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) ||
+					(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '<')) ||
+					(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<'))
+				);
+			}()),
 
 			return_response_type: function(responseType) {
 				try {
@@ -606,6 +596,32 @@ define("moxie/core/utils/Env", [
 					}
 				} catch (ex) {}
 				return false;
+			},
+
+			select_file: function() {
+				return Env.can('use_fileinput') && window.File;
+			},
+
+			select_folder: function() {
+				return Env.can('select_file') && (
+					Env.browser === 'Chrome' && Env.verComp(Env.version, 21, '>=') ||
+					Env.browser === 'Firefox' && Env.verComp(Env.version, 42, '>=') // https://developer.mozilla.org/en-US/Firefox/Releases/42
+				);
+			},
+
+			select_multiple: function() {
+				// it is buggy on Safari Windows and iOS
+				return Env.can('select_file') &&
+					!(Env.browser === 'Safari' && Env.os === 'Windows') &&
+					!(Env.os === 'iOS' && Env.verComp(Env.osVersion, "7.0.0", '>') && Env.verComp(Env.osVersion, "8.0.0", '<'));
+			},
+
+			summon_file_dialog: function() { // yeah... some dirty sniffing here...
+				return Env.can('select_file') && !(
+					(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '<')) ||
+					(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '<')) ||
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<'))
+				);
 			},
 
 			use_blob_uri: function() {
@@ -690,11 +706,7 @@ define("moxie/core/utils/Env", [
 		os: uaResult.os.name, // everybody intuitively types it in a lowercase for some reason
 		osVersion: uaResult.os.version,
 
-		verComp: version_compare,
-
-		swf_url: "../flash/Moxie.swf",
-		xap_url: "../silverlight/Moxie.xap",
-		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
+		verComp: version_compare
 	};
 
 	// for backward compatibility
