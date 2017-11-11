@@ -11,14 +11,13 @@
 define('moxie/file/FileDrop', [
 	'moxie/core/I18n',
 	'moxie/core/utils/Dom',
-	'moxie/core/Exceptions',
 	'moxie/core/utils/Basic',
 	'moxie/core/utils/Events',
 	'moxie/core/utils/Env',
 	'moxie/file/FileRef',
 	'moxie/core/EventTarget',
 	'moxie/core/utils/Mime'
-], function(I18n, Dom, x, Basic, Events, Env, FileRef, EventTarget, Mime) {
+], function(I18n, Dom, Basic, Events, Env, FileRef, EventTarget, Mime) {
 	/**
 	Turn arbitrary DOM element to a drop zone accepting files.
 
@@ -48,7 +47,6 @@ define('moxie/file/FileDrop', [
 	@param {Object|String} options If options has typeof string, argument is considered as options.drop_zone
 		@param {String|DOMElement} options.drop_zone DOM Element to turn into a drop zone
 		@param {Array} [options.accept] Array of mime types to accept. By default accepts all
-		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support
 	*/
 	var dispatches = [
 		/**

@@ -14,15 +14,12 @@ define('moxie/file/FileInput', [
 	'moxie/core/utils/Mime',
 	'moxie/core/utils/Dom',
 	'moxie/core/utils/Events',
-	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
 	'moxie/core/I18n',
 	'moxie/file/FileRef'
-], function(Basic, Env, Mime, Dom, Events, x, EventTarget, I18n, FileRef) {
+], function(Basic, Env, Mime, Dom, Events, EventTarget, I18n, FileRef) {
 	/**
-	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
-	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
-	with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
+	Provides a convenient way to turn any DOM element into a file-picker.
 
 	@class moxie/file/FileInput
 	@constructor
@@ -35,7 +32,6 @@ define('moxie/file/FileInput', [
 		@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
 		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode
 		for _browse\_button_.
-		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
 
 	@example
 		<div id="container">
@@ -160,7 +156,7 @@ define('moxie/file/FileInput', [
 
 		if (!Dom.get(options.browse_button)) {
 			// browse button is required
-			throw new x.DOMException(x.DOMException.NOT_FOUND_ERR);
+			throw new Error("browse_button must be present in the DOM, prior to FileInput instantiation.");
 		}
 
 		_options = Basic.extend({
@@ -344,7 +340,7 @@ define('moxie/file/FileInput', [
 						break;
 
 					case 'container':
-						throw new x.FileException(x.FileException.NO_MODIFICATION_ALLOWED_ERR);
+						throw new Error("container option cannot be altered.");
 				}
 
 				_options[name] = value;
