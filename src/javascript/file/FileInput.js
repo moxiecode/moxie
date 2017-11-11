@@ -16,8 +16,9 @@ define('moxie/file/FileInput', [
 	'moxie/core/utils/Events',
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
-	'moxie/core/I18n'
-], function(Basic, Env, Mime, Dom, Events, x, EventTarget, I18n) {
+	'moxie/core/I18n',
+	'moxie/file/FileRef'
+], function(Basic, Env, Mime, Dom, Events, x, EventTarget, I18n, FileRef) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
@@ -197,7 +198,7 @@ define('moxie/file/FileInput', [
 			shimid: _uid + '_container',
 
 			/**
-			Array of selected moxie.file.File objects
+			Array of selected File objects
 
 			@property files
 			@type {Array}
@@ -206,7 +207,7 @@ define('moxie/file/FileInput', [
 			files: _fileRefs,
 
 			/**
-			Initializes the file-picker, connects it to runtime and dispatches event ready when done.
+			Initializes the component and dispatches event ready when done.
 
 			@method init
 			*/
@@ -216,7 +217,7 @@ define('moxie/file/FileInput', [
 				var browseButton = Dom.get(_options.browse_button);
 				var shimContainer = createShimContainer.call(self);
 				var input = createInput.call(self);
-				var zIndex, top;
+				var top;
 
 				// we will be altering some initial styles, so lets save them to restore later
 				_containerPosition = Dom.getStyle(container, 'position');
@@ -274,10 +275,7 @@ define('moxie/file/FileInput', [
 				self.refresh();
 
 				// ready event is perfectly asynchronous
-				self.trigger({
-					type: 'ready',
-					async: true
-				});
+				self.trigger({ type: 'ready', async: true });
 			},
 
 			/**
@@ -343,6 +341,7 @@ define('moxie/file/FileInput', [
 						} else {
 							input.removeAttribute('multiple');
 						}
+						break;
 
 					case 'container':
 						throw new x.FileException(x.FileException.NO_MODIFICATION_ALLOWED_ERR);
@@ -432,7 +431,7 @@ define('moxie/file/FileInput', [
 
 				if (Basic.typeOf(_fileRefs) === 'array') {
 					// no sense in leaving associated files behind
-					Basic.each(_fileRefs, function(file) {
+					Basic.each(_fileRefs, function (file) {
 						file.destroy();
 					});
 				}
@@ -493,7 +492,7 @@ define('moxie/file/FileInput', [
 						}
 					}
 
-					var fileRef = new File(_uid, file);
+					var fileRef = new FileRef(null, file);
 					fileRef.relativePath = file.webkitRelativePath ? '/' + file.webkitRelativePath.replace(/^\//, '') : '';
 
 					_fileRefs.push(fileRef);

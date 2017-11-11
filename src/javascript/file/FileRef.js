@@ -1,5 +1,5 @@
 /**
- * File.js
+ * FileRef.js
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,47 +8,49 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('moxie/file/File', [
+define('moxie/file/FileRef', [
 	'moxie/core/utils/Basic',
 	'moxie/core/utils/Mime',
-	'moxie/file/Blob'
-], function(Basic, Mime, Blob) {
+	'moxie/file/BlobRef'
+], function(Basic, Mime, BlobRef) {
 	/**
-	@class moxie/file/File
-	@extends Blob
+	@class moxie/file/FileRef
+	@extends BlobRef
 	@constructor
-	@param {String} ruid Unique id of the runtime, to which this blob belongs to
 	@param {Object} file Object "Native" file object, as it is represented in the runtime
 	*/
-	function File(ruid, file) {
-		if (!file) { // avoid extra errors in case we overlooked something
-			file = {};
+	function FileRef(file) {
+		// originally the first argument was runtime uid, but then we got rid of runtimes
+		// however lets better retain backward compatibility here
+		if (Basic.typeOf(file) !== 'object' && Basic.typeOf(arguments[1]) !== 'undefined') {
+			file = arguments[1];
 		}
 
-		Blob.apply(this, arguments);
+		BlobRef.apply(this, arguments);
 
+		// if type was not set by BlobRef constructor and we have a clue, try some
 		if (!this.type) {
-			this.type = Mime.getFileMime(file.name);
+			this.type = Mime.getFileRefMime(file.name);
 		}
 
 		// sanitize file name or generate new one
 		var name;
 		if (file.name) {
-			name = file.name.replace(/\\/g, '/');
+			name = file.name.replace(/\\/g, '/'); // this is weird, but I think this was meant to extract the file name from the URL
 			name = name.substr(name.lastIndexOf('/') + 1);
 		} else if (this.type) {
 			var prefix = this.type.split('/')[0];
 			name = Basic.guid((prefix !== '' ? prefix : 'file') + '_');
-			
+
 			if (Mime.extensions[this.type]) {
 				name += '.' + Mime.extensions[this.type][0]; // append proper extension if possible
 			}
 		}
-		
-		
+
+
 		Basic.extend(this, {
 			/**
-			File name
+			FileRef name
 
 			@property name
 			@type {String}
@@ -58,13 +60,14 @@ define('moxie/file/File', [
 
 			/**
 			Relative path to the file inside a directory
+			(in fact this property currently is the whole reason for this wrapper to exist)
 
 			@property relativePath
 			@type {String}
 			@default ''
 			*/
 			relativePath: '',
-			
+
 			/**
 			Date of last modification
 
@@ -76,7 +79,7 @@ define('moxie/file/File', [
 		});
 	}
 
-	File.prototype = Blob.prototype;
+	Basic.inherit(FileRef, BlobRef);
 
-	return File;
+	return FileRef;
 });
