@@ -105,38 +105,10 @@ define('moxie/core/utils/Dom', ['moxie/core/utils/Env'], function(Env) {
 	@return {object} Absolute position of the specified element object with x, y fields.
 	*/
 	var getPos = function(node, root) {
-		var x = 0, y = 0, parent, doc = document, nodeRect, rootRect;
+		var x = 0, y = 0, parent, doc = document, nodeRect;
 
 		node = node;
 		root = root || doc.body;
-
-		// Returns the x, y cordinate for an element on IE 6 and IE 7
-		function getIEPos(node) {
-			var bodyElm, rect, x = 0, y = 0;
-
-			if (node) {
-				rect = node.getBoundingClientRect();
-				bodyElm = doc.compatMode === "CSS1Compat" ? doc.documentElement : doc.body;
-				x = rect.left + bodyElm.scrollLeft;
-				y = rect.top + bodyElm.scrollTop;
-			}
-
-			return {
-				x : x,
-				y : y
-			};
-		}
-
-		// Use getBoundingClientRect on IE 6 and IE 7 but not on IE 8 in standards mode
-		if (node && node.getBoundingClientRect && Env.browser === 'IE' && (!doc.documentMode || doc.documentMode < 8)) {
-			nodeRect = getIEPos(node);
-			rootRect = getIEPos(root);
-
-			return {
-				x : nodeRect.x - rootRect.x,
-				y : nodeRect.y - rootRect.y
-			};
-		}
 
 		parent = node;
 		while (parent && parent != root && parent.nodeType) {
