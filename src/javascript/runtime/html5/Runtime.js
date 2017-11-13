@@ -52,8 +52,9 @@ define("moxie/runtime/html5/Runtime", [
 					return !(
 						(Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '<')) || 
 						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) || 
-						(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '<')) ||
-						(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<'))
+						(Env.browser === 'Safari' && Env.verComp(Env.version, 11, '<')) ||
+						(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<')) ||
+						Env.os === 'iOS' // as of iOS11, no extensions support in accept attribute
 					);
 				}()),
 				return_response_headers: True,
