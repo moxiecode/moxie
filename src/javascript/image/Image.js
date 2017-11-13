@@ -11,18 +11,14 @@
 define("moxie/image/Image", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
-	"moxie/core/Exceptions",
-	"moxie/file/FileReaderSync",
-	"moxie/xhr/XMLHttpRequest",
-	"moxie/runtime/Runtime",
-	"moxie/runtime/RuntimeClient",
-	"moxie/runtime/Transporter",
 	"moxie/core/utils/Env",
 	"moxie/core/EventTarget",
-	"moxie/file/Blob",
-	"moxie/file/File",
-	"moxie/core/utils/Encode"
-], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, Runtime, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode) {
+	"moxie/file/BlobRef",
+	"moxie/file/FileRef",
+	"moxie/core/utils/Encode",
+	"moxie/image/ImageInfo",
+	"moxie/image/ResizerCanvas"
+], function(Basic, Dom, Env, EventTarget, BlobRef, FileRef, Encode, ImageInfo, ResizerCanvas) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -62,8 +58,9 @@ define("moxie/image/Image", [
 	];
 
 	function Image() {
-
-		RuntimeClient.call(this);
+		var _img, _imgInfo, _canvas, _binStr, _blob;
+		var _modified = false; // is set true whenever image is modified
+		var _preserveHeaders = true;
 
 		Basic.extend(this, {
 			/**
@@ -73,14 +70,6 @@ define("moxie/image/Image", [
 			@type {String}
 			*/
 			uid: Basic.guid('uid_'),
-
-			/**
-			Unique id of the connected runtime, if any.
-
-			@property ruid
-			@type {String}
-			*/
-			ruid: null,
 
 			/**
 			Name of the file, that was used to create an image, if available. If not equals to empty string.
@@ -149,7 +138,7 @@ define("moxie/image/Image", [
 
 			/**
 			Loads image from various sources. Currently the source for new image can be: moxie.image.Image,
-			moxie.file.Blob/moxie.file.File, native Blob/File, dataUrl or URL. Depending on the type of the
+			moxie.file.BlobRef/moxie.file.FileRef, native Blob/File, dataUrl or URL. Depending on the type of the
 			source, arguments - differ. When source is URL, Image will be downloaded from remote destination
 			and loaded in memory.
 
@@ -334,7 +323,7 @@ define("moxie/image/Image", [
 						}
 					}
 
-					this.exec('Image', 'resize', srcRect, scale, opts);
+					_resize.call(self, srcRect, scale, opts);
 				} catch(ex) {
 					// for now simply trigger error event
 					self.trigger('error', ex.code);
@@ -387,10 +376,11 @@ define("moxie/image/Image", [
 			},
 
 			getAsCanvas: function() {
-				if (!Env.can('create_canvas')) {
-					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
+				if (!_canvas) {
+					_canvas = _getCanvas();
 				}
-				return this.exec('Image', 'getAsCanvas');
+				_canvas.id = this.uid + '_canvas';
+				return _canvas;
 			},
 
 			/**
@@ -403,10 +393,19 @@ define("moxie/image/Image", [
 			@return {Blob} Image as Blob
 			*/
 			getAsBlob: function(type, quality) {
-				if (!this.size) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+				if (type !== this.type) {
+					_modified = true; // reconsider the state
+					return new FileRef(null, {
+						name: _blob.name || '',
+						type: type,
+						data: this.getAsDataURL(type, quality)
+					});
 				}
-				return this.exec('Image', 'getAsBlob', type || 'image/jpeg', quality || 90);
+				return new FileRef(null, {
+					name: _blob.name || '',
+					type: type,
+					data: this.getAsBinaryString(type, quality)
+				});
 			},
 
 			/**
@@ -418,11 +417,27 @@ define("moxie/image/Image", [
 			@param {Number} [quality=90] Applicable only together with mime type image/jpeg
 			@return {String} Image as dataURL string
 			*/
-			getAsDataURL: function(type, quality) {
-				if (!this.size) {
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+			getAsDataURL: function(type) {
+				var quality = arguments[1] || 90;
+
+				// if image has not been modified, return the source right away
+				if (!_modified) {
+					return _img.src;
 				}
-				return this.exec('Image', 'getAsDataURL', type || 'image/jpeg', quality || 90);
+
+				// make sure we have a canvas to work with
+				_getCanvas();
+
+				if ('image/jpeg' !== type) {
+					return _canvas.toDataURL('image/png');
+				} else {
+					try {
+						// older Geckos used to result in an exception on quality argument
+						return _canvas.toDataURL('image/jpeg', quality/100);
+					} catch (ex) {
+						return _canvas.toDataURL('image/jpeg');
+					}
+				}
 			},
 
 			/**
@@ -435,14 +450,66 @@ define("moxie/image/Image", [
 			@return {String} Image as binary string
 			*/
 			getAsBinaryString: function(type, quality) {
-				var dataUrl = this.getAsDataURL(type, quality);
-				return Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7));
+				// if image has not been modified, return the source right away
+				if (!_modified) {
+					// if image was not loaded from binary string
+					if (!_binStr) {
+						_binStr = _toBinary(me.getAsDataURL(type, quality));
+					}
+					return _binStr;
+				}
+
+				if ('image/jpeg' !== type) {
+					_binStr = _toBinary(this.getAsDataURL(type, quality));
+				} else {
+					var dataUrl;
+
+					// if jpeg
+					if (!quality) {
+						quality = 90;
+					}
+
+					// make sure we have a canvas to work with
+					_getCanvas();
+
+					try {
+						// older Geckos used to result in an exception on quality argument
+						dataUrl = _canvas.toDataURL('image/jpeg', quality/100);
+					} catch (ex) {
+						dataUrl = _canvas.toDataURL('image/jpeg');
+					}
+
+					_binStr = _toBinary(dataUrl);
+
+					if (_imgInfo) {
+						_binStr = _imgInfo.stripHeaders(_binStr);
+
+						if (_preserveHeaders) {
+							// update dimensions info in exif
+							if (_imgInfo.meta && _imgInfo.meta.exif) {
+								_imgInfo.setExif({
+									PixelXDimension: this.width,
+									PixelYDimension: this.height
+								});
+							}
+
+							// re-inject the headers
+							_binStr = _imgInfo.writeHeaders(_binStr);
+						}
+
+						// will be re-created from fresh on next getInfo call
+						_imgInfo.purge();
+						_imgInfo = null;
+					}
+				}
+
+				_modified = false;
+
+				return _binStr;
 			},
 
 			/**
-			Embeds a visual representation of the image into the specified node. Depending on the runtime,
-			it might be a canvas, an img node or a thrid party shim object (Flash or SilverLight - very rare,
-			can be used in legacy browsers that do not have canvas or proper dataURI support).
+			Embeds a visual representation of the image into the specified node.
 
 			@method embed
 			@param {DOMElement} el DOM element to insert the image object into
@@ -455,9 +522,7 @@ define("moxie/image/Image", [
 				@param {Boolean} [options.fit=true] By default thumbs will be up- or downscaled as necessary to fit the dimensions
 			*/
 			embed: function(el, options) {
-				var self = this
-				, runtime // this has to be outside of all the closures to contain proper runtime
-				;
+				var self = this;
 
 				var opts = Basic.extend({
 					width: this.width,
@@ -489,64 +554,18 @@ define("moxie/image/Image", [
 						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 					}
 
-					if (Env.can('use_data_uri_of', dataUrl.length)) {
-						el.innerHTML = '<img src="' + dataUrl + '" width="' + img.width + '" height="' + img.height + '" alt="" />';
-						img.destroy();
-						self.trigger('embedded');
-					} else {
-						var tr = new Transporter();
-
-						tr.bind("TransportingComplete", function() {
-							runtime = self.connectRuntime(this.result.ruid);
-
-							self.bind("Embedded", function() {
-								// position and size properly
-								Basic.extend(runtime.getShimContainer().style, {
-									//position: 'relative',
-									top: '0px',
-									left: '0px',
-									width: img.width + 'px',
-									height: img.height + 'px'
-								});
-
-								// some shims (Flash/SilverLight) reinitialize, if parent element is hidden, reordered or it's
-								// position type changes (in Gecko), but since we basically need this only in IEs 6/7 and
-								// sometimes 8 and they do not have this problem, we can comment this for now
-								/*tr.bind("RuntimeInit", function(e, runtime) {
-									tr.destroy();
-									runtime.destroy();
-									onResize.call(self); // re-feed our image data
-								});*/
-
-								runtime = null; // release
-							}, 999);
-
-							runtime.exec.call(self, "ImageView", "display", this.result.uid, width, height);
-							img.destroy();
-						});
-
-						tr.transport(Encode.atob(dataUrl.substring(dataUrl.indexOf('base64,') + 7)), type, {
-							required_caps: {
-								display_media: true
-							},
-							runtime_order: 'flash,silverlight',
-							container: el
-						});
-					}
+					el.innerHTML = '<img src="' + dataUrl + '" width="' + img.width + '" height="' + img.height + '" alt="" />';
+					img.destroy();
+					self.trigger('embedded');
 				}
 
 				try {
 					if (!(el = Dom.get(el))) {
-						throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);
+						throw new Error('Embed container cannot be found in the DOM.');
 					}
 
 					if (!this.size) { // only preloaded image objects can be used as source
-						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-					}
-
-					// high-resolution images cannot be consistently handled across the runtimes
-					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
-						//throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+						throw new Error('Image should be preloaded, before it is emedded.');
 					}
 
 					var imgCopy = new Image();
@@ -569,7 +588,7 @@ define("moxie/image/Image", [
 					return imgCopy;
 				} catch(ex) {
 					// for now simply trigger error event
-					this.trigger('error', ex.code);
+					this.trigger('error', ex.message);
 				}
 			},
 
@@ -580,10 +599,8 @@ define("moxie/image/Image", [
 			@method destroy
 			*/
 			destroy: function() {
-				if (this.ruid) {
-					this.getRuntime().exec.call(this, 'Image', 'destroy');
-					this.disconnectRuntime();
-				}
+				_purge.call(this);
+
 				if (this.meta && this.meta.thumb) {
 					// thumb is blob, make sure we destroy it first
 					this.meta.thumb.data.destroy();
@@ -638,9 +655,9 @@ define("moxie/image/Image", [
 					_loadFromImage.apply(this, arguments);
 				}
 				// if source is o.Blob/o.File
-				else if (src instanceof Blob) {
+				else if (src instanceof BlobRef) {
 					if (!~Basic.inArray(src.type, ['image/jpeg', 'image/png'])) {
-						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
+						throw new Error("At the moment only image/jpeg and image/png are accepted.");
 					}
 					_loadFromBlob.apply(this, arguments);
 				}
@@ -652,7 +669,7 @@ define("moxie/image/Image", [
 				else if (srcType === 'string') {
 					// if dataUrl String
 					if (src.substr(0, 5) === 'data:') {
-						_load.call(this, new Blob(null, { data: src }), arguments[1]);
+						_load.call(this, new Blob(null, { data: src }), arguments[1]); // TODO: require something like ImageResult here
 					}
 					// else assume Url, either relative or absolute
 					else {
@@ -664,53 +681,39 @@ define("moxie/image/Image", [
 					_load.call(this, src.src, arguments[1]);
 				}
 				else {
-					throw new x.DOMException(x.DOMException.TYPE_MISMATCH_ERR);
+					throw new Error("Incompatible source for the image supplied to Image.load().")
 				}
 			} catch(ex) {
 				// for now simply trigger error event
-				this.trigger('error', ex.code);
+				this.trigger('error', ex.message);
 			}
 		}
 
 
-		function _loadFromImage(img, exact) {
-			var runtime = this.connectRuntime(img.ruid);
-			this.ruid = runtime.uid;
-			runtime.exec.call(this, 'Image', 'loadFromImage', img, (Basic.typeOf(exact) === 'undefined' ? true : exact));
-		}
+		function _loadFromBlob(blob) {
+			var asBinary = arguments.length > 1 ? arguments[1] : true;
 
+			_blob = blob;
 
-		function _loadFromBlob(blob, options) {
-			var self = this;
-
-			self.name = blob.name || '';
-
-			function exec(runtime) {
-				self.ruid = runtime.uid;
-				runtime.exec.call(self, 'Image', 'loadFromBlob', blob);
-			}
-
-			if (blob.isDetached()) {
-				this.bind('RuntimeInit', function(e, runtime) {
-					exec(runtime);
-				});
-
-				// convert to object representation
-				if (options && typeof(options.required_caps) === 'string') {
-					options.required_caps = Runtime.parseCaps(options.required_caps);
+			_readAsDataUrl.call(this, blob.getSource(), function(dataUrl) {
+				if (asBinary) {
+					_binStr = _toBinary(dataUrl);
 				}
-
-				this.connectRuntime(Basic.extend({
-					required_caps: {
-						access_image_binary: true,
-						resize_image: true
-					}
-				}, options));
-			} else {
-				exec(this.connectRuntime(blob.ruid));
-			}
+				_preload.call(this, dataUrl);
+			});
 		}
 
+		function _loadFromImage(img) {
+			this.meta = img.meta;
+
+			_blob = new FileRef(null, {
+				name: img.name,
+				size: img.size,
+				type: img.type
+			});
+
+			_preload.call(this, exact ? (_binStr = img.getAsBinaryString()) : img.getAsDataURL());
+		}
 
 		function _loadFromUrl(url, options) {
 			var self = this, xhr;
@@ -742,11 +745,181 @@ define("moxie/image/Image", [
 
 			xhr.send(null, options);
 		}
-	}
 
-	// virtual world will crash on you if image has a resolution higher than this:
-	Image.MAX_RESIZE_WIDTH = 8192;
-	Image.MAX_RESIZE_HEIGHT = 8192;
+		function _resize(rect, ratio, options) {
+			var canvas = document.createElement('canvas');
+			canvas.width = rect.width;
+			canvas.height = rect.height;
+
+			canvas.getContext("2d").drawImage(_getImg(), rect.x, rect.y, rect.width, rect.height, 0, 0, canvas.width, canvas.height);
+
+			_canvas = ResizerCanvas.scale(canvas, ratio);
+
+			_preserveHeaders = options.preserveHeaders;
+
+			// rotate if required, according to orientation tag
+			if (!_preserveHeaders) {
+				var orientation = (this.meta && this.meta.tiff && this.meta.tiff.Orientation) || 1;
+				_canvas = _rotateToOrientaion(_canvas, orientation);
+			}
+
+			this.width = _canvas.width;
+			this.height = _canvas.height;
+
+			_modified = true;
+
+			this.trigger('Resize');
+		}
+
+		function _getImg() {
+			if (!_canvas && !_img) {
+				throw new x.ImageError(x.DOMException.INVALID_STATE_ERR);
+			}
+			return _canvas || _img;
+		}
+
+
+		function _getCanvas() {
+			var canvas = _getImg();
+			if (canvas.nodeName.toLowerCase() == 'canvas') {
+				return canvas;
+			}
+			_canvas = document.createElement('canvas');
+			_canvas.width = canvas.width;
+			_canvas.height = canvas.height;
+			_canvas.getContext("2d").drawImage(canvas, 0, 0);
+			return _canvas;
+		}
+
+
+		function _toBinary(str) {
+			return Encode.atob(str.substring(str.indexOf('base64,') + 7));
+		}
+
+
+		function _toDataUrl(str, type) {
+			return 'data:' + (type || '') + ';base64,' + Encode.btoa(str);
+		}
+
+
+		function _preload(str) {
+			var comp = this;
+
+			_img = new Image();
+			_img.onerror = function() {
+				_purge.call(this);
+				comp.trigger('error', x.ImageError.WRONG_FORMAT);
+			};
+			_img.onload = function() {
+				comp.trigger('load');
+			};
+
+			_img.src = str.substr(0, 5) == 'data:' ? str : _toDataUrl(str, _blob.type);
+		}
+
+
+		function _readAsDataUrl(file, callback) {
+			var comp = this, fr;
+
+			// use FileReader if it's available
+			if (window.FileReader) {
+				fr = new FileReader();
+				fr.onload = function() {
+					callback.call(comp, this.result);
+				};
+				fr.onerror = function() {
+					comp.trigger('error', x.ImageError.WRONG_FORMAT);
+				};
+				fr.readAsDataURL(file);
+			} else {
+				return callback.call(this, file.getAsDataURL());
+			}
+		}
+
+		/**
+		* Transform canvas coordination according to specified frame size and orientation
+		* Orientation value is from EXIF tag
+		* @author Shinichi Tomita <shinichi.tomita@gmail.com>
+		*/
+		function _rotateToOrientaion(img, orientation) {
+			var RADIANS = Math.PI/180;
+			var canvas = document.createElement('canvas');
+			var ctx = canvas.getContext('2d');
+			var width = img.width;
+			var height = img.height;
+
+			if (Basic.inArray(orientation, [5,6,7,8]) > -1) {
+				canvas.width = height;
+				canvas.height = width;
+			} else {
+				canvas.width = width;
+				canvas.height = height;
+			}
+
+			/**
+			1 = The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side.
+			2 = The 0th row is at the visual top of the image, and the 0th column is the visual right-hand side.
+			3 = The 0th row is at the visual bottom of the image, and the 0th column is the visual right-hand side.
+			4 = The 0th row is at the visual bottom of the image, and the 0th column is the visual left-hand side.
+			5 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual top.
+			6 = The 0th row is the visual right-hand side of the image, and the 0th column is the visual top.
+			7 = The 0th row is the visual right-hand side of the image, and the 0th column is the visual bottom.
+			8 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
+			*/
+			switch (orientation) {
+				case 2:
+					// horizontal flip
+					ctx.translate(width, 0);
+					ctx.scale(-1, 1);
+					break;
+				case 3:
+					// 180 rotate left
+					ctx.translate(width, height);
+					ctx.rotate(180 * RADIANS);
+					break;
+				case 4:
+					// vertical flip
+					ctx.translate(0, height);
+					ctx.scale(1, -1);
+					break;
+				case 5:
+					// vertical flip + 90 rotate right
+					ctx.rotate(90 * RADIANS);
+					ctx.scale(1, -1);
+					break;
+				case 6:
+					// 90 rotate right
+					ctx.rotate(90 * RADIANS);
+					ctx.translate(0, -height);
+					break;
+				case 7:
+					// horizontal flip + 90 rotate right
+					ctx.rotate(90 * RADIANS);
+					ctx.translate(width, -height);
+					ctx.scale(-1, 1);
+					break;
+				case 8:
+					// 90 rotate left
+					ctx.rotate(-90 * RADIANS);
+					ctx.translate(-width, 0);
+					break;
+			}
+
+			ctx.drawImage(img, 0, 0, width, height);
+			return canvas;
+		}
+
+
+		function _purge() {
+			if (_imgInfo) {
+				_imgInfo.purge();
+				_imgInfo = null;
+			}
+
+			_binStr = _img = _canvas = _blob = null;
+			_modified = false;
+		}
+	}
 
 	Image.prototype = EventTarget.instance;
 
