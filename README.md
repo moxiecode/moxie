@@ -137,7 +137,7 @@ All of the following commands will generate packages under `tmp/` folder.
 You can customize various parameters, such as the path the the Moxie.swf file by changing properties on `mOxie.Env` after the script is loaded:
 
     <script src="moxie.js"></script>
-    <script>mOxie.Env.swf_url = './flash/Moxie.min.swf';</script>
+    <script>moxie.core.utils.Env.swf_url = './flash/Moxie.min.swf';</script>
 
 Also see the [File Picker](https://github.com/moxiecode/moxie/wiki/File-Picker) example on the wiki.
 
