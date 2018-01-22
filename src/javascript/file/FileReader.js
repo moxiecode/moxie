@@ -146,6 +146,16 @@ define('moxie/file/FileReader', [
 			},
 			
 			/**
+			Initiates reading of File/Blob object contents to an ArrayBuffer.
+			
+			@method readAsArrayBuffer
+			@param {Blob|File} blob Object to preload
+			*/
+			readAsArrayBuffer: function(blob) {
+				_read.call(this, 'readAsArrayBuffer', blob);
+			},
+			
+			/**
 			Aborts preloading process.
 
 			@method abort
