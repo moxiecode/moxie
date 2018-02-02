@@ -66,7 +66,7 @@
     "jshint": "2.1.x",
     "moxie-zip": "0.0.x",
     "request": "^2.25.0",
-    "uglify-js": ">= 2.0.0",
+    "uglify-js": "^2.0.0",
     "yuidocjs": "0.3.x"
   },
   "scripts": {
