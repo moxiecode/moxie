@@ -39,13 +39,13 @@ define('moxie/file/File', [
 		} else if (this.type) {
 			var prefix = this.type.split('/')[0];
 			name = Basic.guid((prefix !== '' ? prefix : 'file') + '_');
-			
+
 			if (Mime.extensions[this.type]) {
 				name += '.' + Mime.extensions[this.type][0]; // append proper extension if possible
 			}
 		}
-		
-		
+
+
 		Basic.extend(this, {
 			/**
 			File name
@@ -64,7 +64,7 @@ define('moxie/file/File', [
 			@default ''
 			*/
 			relativePath: '',
-			
+
 			/**
 			Date of last modification
 
@@ -72,7 +72,7 @@ define('moxie/file/File', [
 			@type {String}
 			@default now
 			*/
-			lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString() // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
+			lastModifiedDate: file.lastModified ? new Date(file.lastModified) : file.lastModifiedDate || (new Date()).toLocaleString() // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
 		});
 	}
 
