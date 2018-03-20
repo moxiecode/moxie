@@ -176,10 +176,6 @@ export default class FileInput extends EventTarget {
 		let _uid = Basic.guid('mxi_');
 		let _options;
 
-		if (MXI_DEBUG) {
-			Env.log("Instantiating FileInput...");
-		}
-
 		// if flat argument passed it should be browse_button id
 		if (Basic.inArray(Basic.typeOf(options), ['string', 'node']) !== -1) {
 			_options = { browse_button : options };

@@ -8,7 +8,6 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Env from './utils/Env';
 import Basic from './utils/Basic';
 
 // hash of event listeners by object uid
@@ -208,11 +207,6 @@ export default class EventTarget {
 			args.shift();
 			evt.type = type;
 			args.unshift(evt);
-
-			if (MXI_DEBUG && Env.debug.events) {
-				// TODO: find a way to get the name of ctor
-				// Env.log("%cEvent '%s' fired on %s", 'color: #999;', evt.type, (this.ctorName ? this.ctorName + '::' : '') + uid);
-			}
 
 			// Dispatch event to all listeners
 			let queue = [];

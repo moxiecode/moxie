@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import { Basic, Mime, Env, Dom, Events, I18n } from '../utils';
+import { Basic, Mime, Dom, Events, I18n } from '../utils';
 import EventTarget from '../EventTarget';
 import FileRef from './FileRef'
 
@@ -144,10 +144,6 @@ export default class FileDrop extends EventTarget {
 		let self = this;
 		let _uid = Basic.guid('mxi_');
 		let _options;
-
-		if (MXI_DEBUG) {
-			Env.log("Instantiating FileDrop...");
-		}
 
 		// if flat argument passed it should be drop_zone id
 		if (typeof(options) === 'string') {

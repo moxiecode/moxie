@@ -589,42 +589,4 @@ var Env: any = {
 // @deprecated Use `Env.os` instead
 Env.OS = Env.os;
 
-if (MXI_DEBUG) {
-	Env.debug = {
-		runtime: true,
-		events: false
-	};
-
-	Env.log = function() {
-
-		function logObj(data) {
-			// TODO: this should recursively print out the object in a pretty way
-			console.appendChild(document.createTextNode(data + "\n"));
-		}
-
-		// if debugger present, IE8 might have window.console.log method, but not be able to apply on it (why...)
-		if (window && window.console && window.console.log && window.console.log.apply) {
-			window.console.log.apply(window.console, arguments);
-		} else if (document) {
-			var console = document.getElementById('moxie-console');
-			if (!console) {
-				console = document.createElement('pre');
-				console.id = 'moxie-console';
-				//console.style.display = 'none';
-				document.body.appendChild(console);
-			}
-
-			var data = arguments[0];
-			if (Basic.typeOf(data) === 'string') {
-				data = Basic.sprintf.apply(this, arguments);
-			} else if (Basic.inArray(Basic.typeOf(data), ['object', 'array']) !== -1) {
-				logObj(data);
-				return;
-			}
-
-			console.appendChild(document.createTextNode(data + "\n"));
-		}
-	};
-}
-
 export default Env;
