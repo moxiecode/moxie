@@ -22,6 +22,7 @@
     }
   ],
   "main": "./dist/moxie",
+  "types": "./dist/moxie.d.ts",
   "homepage": "https://github.com/moxiecode/moxie/",
   "repository": {
     "type": "git",
