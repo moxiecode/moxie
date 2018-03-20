@@ -21,7 +21,7 @@
       "email": "davit.barbakadze@ephox.com"
     }
   ],
-  "main": "./bin/js/moxie.min",
+  "main": "./dist/moxie",
   "homepage": "https://github.com/moxiecode/moxie/",
   "repository": {
     "type": "git",
@@ -76,6 +76,7 @@
     "yuidocjs": "0.3.x"
   },
   "scripts": {
-    "test": "jake test"
+    "test": "jake test",
+    "build": "webpack"
   }
 }

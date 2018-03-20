@@ -16,7 +16,7 @@ module.exports = {
     extensions: [ '.ts', '.js' ]
   },
   output: {
-    filename: 'moxie.min.js',
+    filename: 'moxie.js',
     path: path.resolve(__dirname, 'dist')
   }
 };
