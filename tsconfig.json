@@ -5,7 +5,7 @@
     "noUnusedLocals": true,
     "module": "es2015",
     "lib": ["es2015", "dom"],
-    "declaration": false,
+    "declaration": true,
     "sourceMap": true,
     "outDir": "src/js",
     "baseUrl": ".",
