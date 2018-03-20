@@ -33,7 +33,7 @@ Provides a convenient way to turn any DOM element into a file-picker.
 	</div>
 
 	<script>
-		var fileInput = new moxie.file.FileInput({
+		let fileInput = new moxie.file.FileInput({
 			browse_button: 'file-picker', // or document.getElementById('file-picker')
 			container: 'container',
 			accept: [
@@ -42,7 +42,7 @@ Provides a convenient way to turn any DOM element into a file-picker.
 			multiple: true // allow multiple file selection
 		});
 
-		fileInput.onchange = function(e) {
+		fileInput.onchange = function (e) {
 			// do something to files array
 			console.info(e.target.files); // or this.files or fileInput.files
 		};
@@ -50,7 +50,7 @@ Provides a convenient way to turn any DOM element into a file-picker.
 		fileInput.init(); // initialize
 	</script>
 */
-var dispatches = [
+const dispatches = [
 	/**
 	Dispatched when runtime is connected and file-picker is ready to be used.
 
@@ -132,14 +132,6 @@ var dispatches = [
 ];
 
 export default class FileInput extends EventTarget {
-
-	private _disabled: boolean = true;
-	private _options;
-
-	private _containerPosition;
-	private _browseButtonPosition;
-	private _browseButtonZindex;
-
 	/**
 	Unique id of the component
 
@@ -169,12 +161,20 @@ export default class FileInput extends EventTarget {
 	*/
 	files: FileRef[] = [];
 
+	private _disabled: boolean = true;
+	private _options;
+
+	private _containerPosition;
+	private _browseButtonPosition;
+	private _browseButtonZindex;
+
+
 	constructor(options) {
 		super();
 
-		var self = this;
-		var _uid = Basic.guid('mxi_');
-		var _options;
+		let self = this;
+		let _uid = Basic.guid('mxi_');
+		let _options;
 
 		if (MXI_DEBUG) {
 			Env.log("Instantiating FileInput...");
@@ -214,14 +214,14 @@ export default class FileInput extends EventTarget {
 	@method init
 	*/
 	init() {
-		var self = this;
-		var _uid = self.uid;
-		var _options = self._options;
-		var container = Dom.get(_options.container) || document.body;
-		var browseButton = Dom.get(_options.browse_button);
-		var shimContainer = self.createShimContainer();
-		var input = self.createInput();
-		var top;
+		let self = this;
+		let _uid = self.uid;
+		let _options = self._options;
+		let container = Dom.get(_options.container) || document.body;
+		let browseButton = Dom.get(_options.browse_button);
+		let shimContainer = self.createShimContainer();
+		let input = self.createInput();
+		let top;
 
 		// we will be altering some initial styles, so lets save them to restore later
 		self._containerPosition = Dom.getStyle(container, 'position');
@@ -235,19 +235,19 @@ export default class FileInput extends EventTarget {
 		browse_button loses interactivity, so we restore it here */
 		top = Env.can('summon_file_dialog') ? browseButton : shimContainer;
 
-		Events.addEvent(top, 'mouseover', function() {
+		Events.addEvent(top, 'mouseover', function () {
 			self.trigger('mouseenter');
 		}, _uid);
 
-		Events.addEvent(top, 'mouseout', function() {
+		Events.addEvent(top, 'mouseout', function () {
 			self.trigger('mouseleave');
 		}, _uid);
 
-		Events.addEvent(top, 'mousedown', function() {
+		Events.addEvent(top, 'mousedown', function () {
 			self.trigger('mousedown');
 		}, _uid);
 
-		Events.addEvent(container, 'mouseup', function() {
+		Events.addEvent(container, 'mouseup', function () {
 			self.trigger('mouseup');
 		}, _uid);
 
@@ -257,7 +257,7 @@ export default class FileInput extends EventTarget {
 				browseButton.style.position = 'relative';
 			}
 
-			Events.addEvent(browseButton, 'click', function(e) {
+			Events.addEvent(browseButton, 'click', function (e) {
 				if (!self._disabled) {
 					input.click();
 				}
@@ -311,20 +311,20 @@ export default class FileInput extends EventTarget {
 	 * @param value
 	 */
 	setOption(name, value) {
-		var _options = this._options;
-		var _uid = this.uid;
+		let _options = this._options;
+		let _uid = this.uid;
 
 		if (!_options.hasOwnProperty(name)) {
 			return;
 		}
 
-		var oldValue = _options[name];
-		var input = Dom.get(_uid);
+		let oldValue = _options[name];
+		let input = Dom.get(_uid);
 
 		switch (name) {
 			case 'accept':
 				if (value) {
-					var mimes = Mime.extList2mimes(value, Env.can('filter_by_extension'));
+					let mimes = Mime.extList2mimes(value, Env.can('filter_by_extension'));
 					input.setAttribute('accept', mimes.join(','));
 				} else {
 					input.removeAttribute('accept');
@@ -365,7 +365,7 @@ export default class FileInput extends EventTarget {
 	@param {Boolean} [state=true] Disable component if - true, enable if - false
 	*/
 	disable(state) {
-		var input = Dom.get(this.uid);
+		let input = Dom.get(this.uid);
 		if (input) {
 			input.disabled = (this._disabled = state === undefined ? true : state);
 		}
@@ -377,15 +377,15 @@ export default class FileInput extends EventTarget {
 	@method refresh
 	*/
 	refresh() {
-		var self = this;
-		var container = Dom.get(this._options.container) || document.body;
-		var browseButton = Dom.get(this._options.browse_button);
-		var shimContainer = self.getShimContainer();
-		var zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 0;
+		let self = this;
+		let container = Dom.get(this._options.container) || document.body;
+		let browseButton = Dom.get(this._options.browse_button);
+		let shimContainer = self.getShimContainer();
+		let zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 0;
 
 		if (browseButton) {
-			var pos = Dom.getPos(browseButton, container);
-			var size = Dom.getSize(browseButton);
+			let pos = Dom.getPos(browseButton, container);
+			let size = Dom.getSize(browseButton);
 
 			if (Env.can('summon_file_dialog')) {
 				browseButton.style.zIndex = zIndex + 1;
@@ -397,7 +397,7 @@ export default class FileInput extends EventTarget {
 					left: pos.x + 'px',
 					width: size.w + 'px',
 					height: size.h + 'px',
-					zIndex: zIndex
+					zIndex
 				});
 			}
 		}
@@ -411,10 +411,10 @@ export default class FileInput extends EventTarget {
 	@method destroy
 	*/
 	destroy() {
-		var self = this;
-		var shimContainer = self.getShimContainer();
-		var container = Dom.get(self._options.container);
-		var browseButton = Dom.get(self._options.browse_button);
+		let self = this;
+		let shimContainer = self.getShimContainer();
+		let container = Dom.get(self._options.container);
+		let browseButton = Dom.get(self._options.browse_button);
 
 		if (container) {
 			Events.removeAllEvents(container, self.uid);
@@ -449,13 +449,13 @@ export default class FileInput extends EventTarget {
 
 
 	private createInput() {
-		var self = this;
-		var _options = self._options;
-		var _uid = self.uid;
+		let self = this;
+		let _options = self._options;
+		let _uid = self.uid;
 
 		// figure out accept string
-		var mimes = Mime.extList2mimes(_options.accept, Env.can('filter_by_extension'));
-		var input = <HTMLInputElement> document.createElement('input');
+		let mimes = Mime.extList2mimes(_options.accept, Env.can('filter_by_extension'));
+		let input = <HTMLInputElement> document.createElement('input');
 
 		input.id = _uid;
 		input.setAttribute('type', 'file');
@@ -489,16 +489,16 @@ export default class FileInput extends EventTarget {
 		input.onchange = function onChange() { // there should be only one handler for this
 			self.files.length = 0;
 
-			Basic.each(input.files, function(file) {
+			Basic.each(input.files, function (file) {
 				if (_options.directory) {
 					// folders are represented by dots, filter them out (Chrome 11+)
-					if (file.name == ".") {
+					if (file.name === ".") {
 						// if it looks like a folder...
 						return true;
 					}
 				}
 
-				var fileRef = new FileRef(null, file);
+				let fileRef = new FileRef(null, file);
 				fileRef.relativePath = file.webkitRelativePath ? '/' + file.webkitRelativePath.replace(/^\//, '') : '';
 
 				self.files.push(fileRef);
@@ -509,7 +509,7 @@ export default class FileInput extends EventTarget {
 				input.value = '';
 			} else {
 				// in IE input[type="file"] is read-only so the only way to reset it is to re-insert it
-				var clone = <HTMLInputElement> input.cloneNode(true);
+				let clone = <HTMLInputElement> input.cloneNode(true);
 				this.parentNode.replaceChild(clone, this);
 				clone.onchange = onChange;
 			}
@@ -523,7 +523,7 @@ export default class FileInput extends EventTarget {
 	}
 
 	private createShimContainer() {
-		var shimContainer;
+		let shimContainer;
 
 		// create shim container and insert it at an absolute position into the outer container
 		shimContainer = document.createElement('div');

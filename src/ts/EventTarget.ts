@@ -12,7 +12,7 @@ import Env from './utils/Env';
 import Basic from './utils/Basic';
 
 // hash of event listeners by object uid
-var eventpool = {};
+let eventpool = {};
 
 /**
 Parent object for all event dispatching components and objects
@@ -54,7 +54,7 @@ export default class EventTarget {
 	@param {Object} [scope=this] A scope to invoke event handler in
 	*/
 	addEventListener(type, fn, priority, scope) {
-		var self = this, list;
+		let self = this, list;
 
 		// without uid no event handlers can be added, so make sure we got one
 		if (!this.hasOwnProperty('uid')) {
@@ -65,7 +65,7 @@ export default class EventTarget {
 
 		if (/\s/.test(type)) {
 			// multiple event types were passed for one handler
-			Basic.each(type.split(/\s+/), function(type) {
+			Basic.each(type.split(/\s+/), function (type) {
 				self.addEventListener(type, fn, priority, scope);
 			});
 			return;
@@ -75,7 +75,7 @@ export default class EventTarget {
 		priority = parseInt(priority, 10) || 0;
 
 		list = eventpool[this.uid] && eventpool[this.uid][type] || [];
-		list.push({fn : fn, priority : priority, scope : scope || this});
+		list.push({fn, priority, scope: scope || this});
 
 		if (!eventpool[this.uid]) {
 			eventpool[this.uid] = {};
@@ -91,7 +91,7 @@ export default class EventTarget {
 	@return {Mixed} Returns a handler if it was found and false, if - not
 	*/
 	hasEventListener(type) {
-		var list;
+		let list;
 		if (type) {
 			type = type.toLowerCase();
 			list = eventpool[this.uid] && eventpool[this.uid][type];
@@ -109,13 +109,13 @@ export default class EventTarget {
 	@param {Function} [fn] Handler to unregister
 	*/
 	removeEventListener(type, fn) {
-		var self = this, list, i;
+		let self = this, list, i;
 
 		type = type.toLowerCase();
 
 		if (/\s/.test(type)) {
 			// multiple event types were passed for one handler
-			Basic.each(type.split(/\s+/), function(type) {
+			Basic.each(type.split(/\s+/), function (type) {
 				self.removeEventListener(type, fn);
 			});
 			return;
@@ -167,7 +167,7 @@ export default class EventTarget {
 	@return {Boolean} true by default and false if any handler returned false
 	*/
 	dispatchEvent(type) {
-		var uid, list, args, tmpEvt, evt: any = {}, result = true, undef;
+		let uid, list, args, tmpEvt, evt: any = {}, result = true, undef;
 
 		if (Basic.typeOf(type) !== 'string') {
 			// we can't use original object directly (because of Silverlight)
@@ -186,7 +186,7 @@ export default class EventTarget {
 
 		// check if event is meant to be dispatched on an object having specific uid
 		if (type.indexOf('::') !== -1) {
-			(function(arr) {
+			(function (arr) {
 				uid = arr[0];
 				type = arr[1];
 			}(type.split('::')));
@@ -200,7 +200,7 @@ export default class EventTarget {
 
 		if (list) {
 			// sort event list by prority
-			list.sort(function(a, b) { return b.priority - a.priority; });
+			list.sort(function (a, b) { return b.priority - a.priority; });
 
 			args = [].slice.call(arguments);
 
@@ -211,29 +211,29 @@ export default class EventTarget {
 
 			if (MXI_DEBUG && Env.debug.events) {
 				// TODO: find a way to get the name of ctor
-				//Env.log("%cEvent '%s' fired on %s", 'color: #999;', evt.type, (this.ctorName ? this.ctorName + '::' : '') + uid);
+				// Env.log("%cEvent '%s' fired on %s", 'color: #999;', evt.type, (this.ctorName ? this.ctorName + '::' : '') + uid);
 			}
 
 			// Dispatch event to all listeners
-			var queue = [];
-			Basic.each(list, function(handler) {
+			let queue = [];
+			Basic.each(list, function (handler) {
 				// explicitly set the target, otherwise events fired from shims do not get it
 				args[0].target = handler.scope;
 				// if event is marked as async, detach the handler
 				if (evt.async) {
-					queue.push(function(cb) {
-						setTimeout(function() {
+					queue.push(function (cb) {
+						setTimeout(function () {
 							cb(handler.fn.apply(handler.scope, args) === false);
 						}, 1);
 					});
 				} else {
-					queue.push(function(cb) {
+					queue.push(function (cb) {
 						cb(handler.fn.apply(handler.scope, args) === false); // if handler returns false stop propagation
 					});
 				}
 			});
 			if (queue.length) {
-				Basic.inSeries(queue, function(err) {
+				Basic.inSeries(queue, function (err) {
 					result = !err;
 				});
 			}
@@ -252,7 +252,7 @@ export default class EventTarget {
 	@param {Object} [scope=this] A scope to invoke event handler in
 	*/
 	bindOnce(type, fn, priority, scope) {
-		var self = this;
+		let self = this;
 		self.bind.call(this, type, function cb() {
 			self.unbind(type, cb);
 			return fn.apply(this, arguments);
@@ -307,17 +307,17 @@ export default class EventTarget {
 	@private
 	*/
 	handleEventProps(dispatches) {
-		var self = this;
+		let self = this;
 
-		this.bind(dispatches.join(' '), function(e) {
-			var prop = 'on' + e.type.toLowerCase();
+		this.bind(dispatches.join(' '), function (e) {
+			let prop = 'on' + e.type.toLowerCase();
 			if (Basic.typeOf(this[prop]) === 'function') {
 				this[prop].apply(this, arguments);
 			}
 		});
 
 		// object must have defined event properties, even if it doesn't make use of them
-		Basic.each(dispatches, function(prop) {
+		Basic.each(dispatches, function (prop) {
 			prop = 'on' + prop.toLowerCase(prop);
 			if (Basic.typeOf(self[prop]) === 'undefined') {
 				self[prop] = null;

@@ -10,7 +10,7 @@
 
 import Basic from './Basic';
 
-var i18n = {};
+const i18n = {};
 
 /**
 @class moxie/utils/I18n
@@ -21,7 +21,7 @@ var i18n = {};
  * @param {Object} pack Language pack items to add.
  * @return {Object} Extended language pack object.
  */
-var addI18n = function (pack) {
+const addI18n = function (pack) {
 	return Basic.extend(i18n, pack);
 }
 
@@ -31,7 +31,7 @@ var addI18n = function (pack) {
  * @param {String} str String to look for.
  * @return {String} Translated string or the input string if it wasn't found.
  */
-var translate = function (str) {
+const translate = function (str) {
 	return i18n[str] || str;
 }
 
@@ -41,12 +41,12 @@ var translate = function (str) {
  * @param {String} str String to look for.
  * @return {String} Translated string or the input string if it wasn't found.
  */
-var _ = function (str) {
+const _ = function (str) {
 	return this.translate(str);
 }
 
 
-export default <any> {
+export default {
 	addI18n,
 	translate,
 	_,

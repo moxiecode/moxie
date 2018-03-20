@@ -26,7 +26,7 @@ export default class FileRef extends BlobRef {
 	@type {String}
 	@default UID
 	*/
-	public name: string;
+	name: string;
 
 	/**
 	Relative path to the file inside a directory
@@ -36,7 +36,7 @@ export default class FileRef extends BlobRef {
 	@type {String}
 	@default ''
 	*/
-	public relativePath: string = '';
+	relativePath: string = '';
 
 	/**
 	Date of last modification
@@ -45,7 +45,7 @@ export default class FileRef extends BlobRef {
 	@type {String}
 	@default now
 	*/
-	public lastModifiedDate: string;
+	lastModifiedDate: string;
 
 
 	constructor(file, legacyBlob?) {
@@ -53,16 +53,16 @@ export default class FileRef extends BlobRef {
 
 		// if type was not set by BlobRef constructor and we have a clue, try some
 		if (!this.type) {
-			this.type = Mime.getFileRefMime(file.name);
+			this.type = Mime.getFileMime(file.name);
 		}
 
 		// sanitize file name or generate new one
-		var name;
+		let name;
 		if (file.name) {
 			name = file.name.replace(/\\/g, '/'); // this is weird, but I think this was meant to extract the file name from the URL
 			name = name.substr(name.lastIndexOf('/') + 1);
 		} else if (this.type) {
-			var prefix = this.type.split('/')[0];
+			let prefix = this.type.split('/')[0];
 			name = Basic.guid((prefix !== '' ? prefix : 'file') + '_');
 
 			if (Mime.extensions[this.type]) {

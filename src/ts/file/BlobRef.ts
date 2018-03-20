@@ -10,7 +10,7 @@
 
 import Basic from '../utils/Basic';
 
-var blobpool: any = {};
+const blobpool: any = {};
 
 /**
 @class moxie/file/BlobRef
@@ -26,7 +26,7 @@ export default class BlobRef {
 	@property uid
 	@type {String}
 	*/
-	public uid: string;
+	uid: string;
 
 	/**
 	Size of blob
@@ -35,7 +35,7 @@ export default class BlobRef {
 	@type {Number}
 	@default 0
 	*/
-	public size: number;
+	size: number;
 
 	/**
 	Mime type of blob
@@ -44,7 +44,7 @@ export default class BlobRef {
 	@type {String}
 	@default ''
 	*/
-	public type: string;
+	type: string;
 
 
 	constructor(protected _blob: any, legacyBlob?) {

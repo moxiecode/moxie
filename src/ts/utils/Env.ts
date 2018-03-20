@@ -1,3 +1,4 @@
+/* tslint:disable */
 /**
  * Env.js
  *
@@ -36,16 +37,8 @@ var UAParser: any = (function (undefined) {
 		FUNC_TYPE   = 'function',
 		UNDEF_TYPE  = 'undefined',
 		OBJ_TYPE    = 'object',
-		MAJOR       = 'major',
-		MODEL       = 'model',
 		NAME        = 'name',
-		TYPE        = 'type',
-		VENDOR      = 'vendor',
-		VERSION     = 'version',
-		ARCHITECTURE= 'architecture',
-		CONSOLE     = 'console',
-		MOBILE      = 'mobile',
-		TABLET      = 'tablet';
+		VERSION     = 'version';
 
 
 	///////////
@@ -634,4 +627,4 @@ if (MXI_DEBUG) {
 	};
 }
 
-export default <any> Env;
+export default Env;

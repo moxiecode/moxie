@@ -23,10 +23,10 @@ Turn arbitrary DOM element to a drop zone accepting files.
 	<div id="filelist"></div>
 
 	<script type="text/javascript">
-		var fileDrop = new moxie.file.FileDrop('drop_zone'), fileList = moxie.utils.Dom.get('filelist');
+		let fileDrop = new moxie.file.FileDrop('drop_zone'), fileList = moxie.utils.Dom.get('filelist');
 
-		fileDrop.ondrop = function() {
-			moxie.utils.Basic.each(this.files, function(file) {
+		fileDrop.ondrop = function () {
+			moxie.utils.Basic.each(this.files, function (file) {
 				fileList.innerHTML += '<div>' + file.name + '</div>';
 			});
 		};
@@ -42,7 +42,7 @@ Turn arbitrary DOM element to a drop zone accepting files.
 	@param {String|DOMElement} options.drop_zone DOM Element to turn into a drop zone
 	@param {Array} [options.accept] Array of mime types to accept. By default accepts all
 */
-var dispatches = [
+const dispatches = [
 	/**
 	Dispatched when runtime is connected and drop zone is ready to accept files.
 
@@ -104,12 +104,6 @@ var dispatches = [
 ];
 
 export default class FileDrop extends EventTarget {
-
-	private _disabled: boolean = true;
-	private _options;
-
-	private _containerPosition;
-
 	/**
 	Unique id of the component
 
@@ -139,12 +133,17 @@ export default class FileDrop extends EventTarget {
 	*/
 	files: FileRef[] = [];
 
+	private _disabled: boolean = true;
+	private _options;
+
+	private _containerPosition;
+
 	constructor(options) {
 		super();
 
-		var self = this;
-		var _uid = Basic.guid('mxi_');
-		var _options;
+		let self = this;
+		let _uid = Basic.guid('mxi_');
+		let _options;
 
 		if (MXI_DEBUG) {
 			Env.log("Instantiating FileDrop...");
@@ -178,11 +177,11 @@ export default class FileDrop extends EventTarget {
 	@method init
 	*/
 	init() {
-		var self = this;
-		var _options = self._options;
-		var _uid = self.uid;
+		let self = this;
+		let _options = self._options;
+		let _uid = self.uid;
 
-		var dropZone = Dom.get(_options.drop_zone) || document.body;
+		let dropZone = Dom.get(_options.drop_zone) || document.body;
 
 		if (dropZone.id) {
 			self.shimid = dropZone.id;
@@ -196,7 +195,7 @@ export default class FileDrop extends EventTarget {
 			_options.drop_zone.style.position = 'relative';
 		}
 
-		Events.addEvent(dropZone, 'dragover', function(e) {
+		Events.addEvent(dropZone, 'dragover', function (e) {
 			if (!self._hasFiles(e)) {
 				return;
 			}
@@ -204,7 +203,7 @@ export default class FileDrop extends EventTarget {
 			e.dataTransfer.dropEffect = 'copy';
 		}, _uid);
 
-		Events.addEvent(dropZone, 'drop', function(e) {
+		Events.addEvent(dropZone, 'drop', function (e) {
 			e.preventDefault();
 
 			if (!self._hasFiles(e) || self._disabled) {
@@ -215,22 +214,22 @@ export default class FileDrop extends EventTarget {
 
 			// Chrome 21+ accepts folders via Drag'n'Drop
 			if (e.dataTransfer.items && e.dataTransfer.items[0].webkitGetAsEntry) {
-				self._readItems(e.dataTransfer.items, function() {
+				self._readItems(e.dataTransfer.items, function () {
 					self.trigger("drop");
 				});
 			} else {
-				Basic.each(e.dataTransfer.files, function(file) {
+				Basic.each(e.dataTransfer.files, function (file) {
 					self._addFile(file);
 				});
 				self.trigger("drop", self.files);
 			}
 		}, _uid);
 
-		Events.addEvent(dropZone, 'dragenter', function(e) {
+		Events.addEvent(dropZone, 'dragenter', function (e) {
 			self.trigger("dragenter");
 		}, _uid);
 
-		Events.addEvent(dropZone, 'dragleave', function(e) {
+		Events.addEvent(dropZone, 'dragleave', function (e) {
 			self.trigger("dragleave");
 		}, _uid);
 
@@ -273,12 +272,12 @@ export default class FileDrop extends EventTarget {
 	 * @param value
 	 */
 	setOption(name, value) {
-		var _options = this._options;
+		let _options = this._options;
 		if (!_options.hasOwnProperty(name)) {
 			return;
 		}
 
-		var oldValue = _options[name];
+		let oldValue = _options[name];
 		_options[name] = value;
 
 		this.trigger('OptionChanged', name, value, oldValue);
@@ -300,11 +299,11 @@ export default class FileDrop extends EventTarget {
 	@method destroy
 	*/
 	destroy() {
-		var self = this;
-		var _fileRefs = self.files;
-		var _uid = self.uid;
-		var _options = self._options;
-		var dropZone = Dom.get(_options.drop_zone) || document.body;
+		let self = this;
+		let _fileRefs = self.files;
+		let _uid = self.uid;
+		let _options = self._options;
+		let dropZone = Dom.get(_options.drop_zone) || document.body;
 
 		Events.removeAllEvents(dropZone, _uid);
 		dropZone.style.position = self._containerPosition;
@@ -329,7 +328,7 @@ export default class FileDrop extends EventTarget {
 			return false;
 		}
 
-		var types = Basic.toArray(e.dataTransfer.types || []);
+		let types = Basic.toArray(e.dataTransfer.types || []);
 
 		return Basic.inArray("Files", types) !== -1 ||
 			Basic.inArray("public.file-url", types) !== -1 || // Safari < 5
@@ -338,38 +337,38 @@ export default class FileDrop extends EventTarget {
 	}
 
 	private _addFile(file, relativePath = '') {
-		var self = this;
+		let self = this;
 		if (self._isAcceptable(file)) {
-			var fileObj = new FileRef(null, file);
+			let fileObj = new FileRef(null, file);
 			fileObj.relativePath = relativePath; // (!) currently this is the only reason to have a FileRef wrapper around native File
 			self.files.push(fileObj);
 		}
 	}
 
 	private _extractExts(accept) {
-		var exts = [];
-		for (var i = 0; i < accept.length; i++) {
+		let exts = [];
+		for (let i = 0; i < accept.length; i++) {
 			[].push.apply(exts, accept[i].extensions.split(/\s*,\s*/));
 		}
 		return Basic.inArray('*', exts) === -1 ? exts : [];
 	}
 
 	private _isAcceptable(file) {
-		var self = this;
-		var allowedExts = self._extractExts(self._options.accept);
+		let self = this;
+		let allowedExts = self._extractExts(self._options.accept);
 
 		if (!allowedExts.length) {
 			return true;
 		}
-		var ext = Mime.getFileExtension(file.name);
+		let ext = Mime.getFileExtension(file.name);
 		return !ext || Basic.inArray(ext, allowedExts) !== -1;
 	}
 
 	private _readItems(items, cb) {
-		var self = this;
-		var entries = [];
-		Basic.each(items, function(item) {
-			var entry = item.webkitGetAsEntry();
+		let self = this;
+		let entries = [];
+		Basic.each(items, function (item) {
+			let entry = item.webkitGetAsEntry();
 			// Address #998 (https://code.google.com/p/chromium/issues/detail?id=332579)
 			if (entry) {
 				// file() fails on OSX when the filename contains a special character (e.g. umlaut): see #61
@@ -389,25 +388,25 @@ export default class FileDrop extends EventTarget {
 	}
 
 	private _readEntries(entries, cb) {
-		var self = this;
-		var queue = [];
-		Basic.each(entries, function(entry) {
-			queue.push(function(cbcb) {
+		let self = this;
+		let queue = [];
+		Basic.each(entries, function (entry) {
+			queue.push(function (cbcb) {
 				self._readEntry(entry, cbcb);
 			});
 		});
-		Basic.inSeries(queue, function() {
+		Basic.inSeries(queue, function () {
 			cb();
 		});
 	}
 
 	private _readEntry(entry, cb) {
-		var self = this;
+		let self = this;
 		if (entry.isFile) {
-			entry.file(function(file) {
+			entry.file(function (file) {
 				self._addFile(file, entry.fullPath);
 				cb();
-			}, function() {
+			}, function () {
 				// fire an error event maybe
 				cb();
 			});
@@ -419,12 +418,12 @@ export default class FileDrop extends EventTarget {
 	}
 
 	private _readDirEntry(dirEntry, cb) {
-		var self = this;
-		var entries = [], dirReader = dirEntry.createReader();
+		let self = this;
+		let entries = [], dirReader = dirEntry.createReader();
 
 		// keep quering recursively till no more entries
 		function getEntries(cbcb) {
-			dirReader.readEntries(function(moreEntries) {
+			dirReader.readEntries(function (moreEntries) {
 				if (moreEntries.length) {
 					[].push.apply(entries, moreEntries);
 					getEntries(cbcb);
@@ -435,7 +434,7 @@ export default class FileDrop extends EventTarget {
 		}
 
 		// ...and you thought FileReader was crazy...
-		getEntries(function() {
+		getEntries(function () {
 			self._readEntries(entries, cb);
 		});
 	}

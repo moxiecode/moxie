@@ -3,8 +3,6 @@ var path = require('path');
 
 var utils = require('./build/utils');
 var mkjs = require('./build/mkjs');
-var mkswf = require('./build/mkswf');
-var mkxap = require('./build/mkxap');
 var wiki = require('./build/wiki');
 var tools = require('./build/tools');
 
@@ -24,7 +22,7 @@ var copyright = [
 ].join("\n");
 
 
-task("default", ["mkjs", "mkswf", "mkxap", "docs"], function (params) {});
+task("default", ["mkjs", "docs"], function (params) {});
 
 
 

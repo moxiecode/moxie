@@ -15,21 +15,21 @@ import Basic from './Basic';
 @private
 */
 
-var loadScript = function(url, cb, attrs) {
-	var head, script, cbCalled = false;
+const loadScript = function (url, cb, attrs) {
+	let head, script, cbCalled = false;
 
 	head = document.getElementsByTagName('head')[0];
 	script = document.createElement('script');
 	script.type = 'text/javascript';
 
 	script.onreadystatechange = function () {
-		if (this.readyState == 'complete' && !cbCalled) {
+		if (this.readyState === 'complete' && !cbCalled) {
 			cbCalled = true;
 			cb();
 		}
 	}
 
-	script.onload = function() {
+	script.onload = function () {
 		if (!cbCalled) {
 			cbCalled = true;
 			cb();
@@ -37,7 +37,7 @@ var loadScript = function(url, cb, attrs) {
 	};
 
 	if (typeof(attrs) === 'object') {
-		Basic.each(attrs, function(value, key) {
+		Basic.each(attrs, function (value, key) {
 			script.setAttribute(key, value);
 		});
 	}
@@ -49,13 +49,13 @@ var loadScript = function(url, cb, attrs) {
 };
 
 
-var interpolateProgress = function(loaded, total, partNum, totalParts) {
-	var partSize = total / totalParts;
+const interpolateProgress = function (loaded, total, partNum, totalParts) {
+	let partSize = total / totalParts;
 	return Math.ceil((partNum - 1) * partSize + partSize * loaded / total);
 };
 
 
-export default <any> {
-	loadScript: loadScript,
-	interpolateProgress: interpolateProgress
+export default {
+	loadScript,
+	interpolateProgress
 };

@@ -24,8 +24,8 @@ based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
 @param {String} url Url to parse (defaults to empty string if undefined)
 @return {Object} Hash containing extracted uri components
 */
-var parseUrl = function(url?, currentUrl?) {
-	var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment']
+const parseUrl = function (url?, currentUrl?) {
+	let key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment']
 	, i = key.length
 	, ports = {
 		http: 80,
@@ -65,7 +65,7 @@ var parseUrl = function(url?, currentUrl?) {
 		uri.host = currentUrl.host;
 		uri.port = currentUrl.port;
 
-		var path = '';
+		let path = '';
 		// for urls without trailing slash we need to figure out the path
 		if (/^[^\/]/.test(uri.path)) {
 			path = currentUrl.path;
@@ -103,8 +103,8 @@ Resolve url - among other things will turn relative url to absolute
 @param {String|Object} url Either absolute or relative, or a result of parseUrl call
 @return {String} Resolved, absolute url
 */
-var resolveUrl = function(url) {
-	var ports = { // we ignore default ports
+const resolveUrl = function (url) {
+	let ports = { // we ignore default ports
 		http: 80,
 		https: 443
 	}
@@ -121,7 +121,7 @@ Check if specified url has the same origin as the current document
 @param {String|Object} url
 @return {Boolean}
 */
-var hasSameOrigin = function(url) {
+const hasSameOrigin = function (url) {
 	function origin(url) {
 		return [url.scheme, url.host, url.port].join('/');
 	}

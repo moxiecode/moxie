@@ -17,7 +17,7 @@ import I18n from './I18n';
 @static
 */
 
-var mimeData = "" +
+const mimeData = "" +
 	"application/msword,doc dot," +
 	"application/pdf,pdf," +
 	"application/pgp-signature,pgp," +
@@ -79,7 +79,7 @@ var mimeData = "" +
  * @property mimes
  * @type {Object}
  */
-var mimes = {};
+const mimes = {};
 
 /**
  * Map of extensions to mimes
@@ -87,7 +87,7 @@ var mimes = {};
  * @property extensions
  * @type {Object}
  */
-var extensions = {};
+const extensions = {};
 
 
 /**
@@ -104,8 +104,8 @@ var extensions = {};
 * @method addMimeType
 * @param {String} mimeData
 */
-var addMimeType = function (mimeData) {
-	var items = mimeData.split(/,/), i, ii, ext;
+const addMimeType = function (mimeData) {
+	let items = mimeData.split(/,/), i, ii, ext;
 
 	for (i = 0; i < items.length; i += 2) {
 		ext = items[i + 1].split(/ /);
@@ -120,8 +120,8 @@ var addMimeType = function (mimeData) {
 };
 
 
-var extList2mimes = function (filters, addMissingExtensions) {
-	var ext, i, ii, type, mimes = [];
+const extList2mimes = function (filters, addMissingExtensions) {
+	let ext, i, ii, type, mimes = [];
 
 	// convert extensions to mime types list
 	for (i = 0; i < filters.length; i++) {
@@ -151,10 +151,10 @@ var extList2mimes = function (filters, addMissingExtensions) {
 };
 
 
-var mimes2exts = function(mimes) {
-	var exts = [];
+const mimes2exts = function (mimes) {
+	let exts = [];
 
-	Basic.each(mimes, function(mime) {
+	Basic.each(mimes, function (mime) {
 		mime = mime.toLowerCase();
 
 		if (mime === '*') {
@@ -163,11 +163,11 @@ var mimes2exts = function(mimes) {
 		}
 
 		// check if this thing looks like mime type
-		var m = mime.match(/^(\w+)\/(\*|\w+)$/);
+		const m = mime.match(/^(\w+)\/(\*|\w+)$/);
 		if (m) {
 			if (m[2] === '*') {
 				// wildcard mime type detected
-				Basic.each(extensions, function(arr, mime) {
+				Basic.each(extensions, function (arr, mime) {
 					if ((new RegExp('^' + m[1] + '/')).test(mime)) {
 						[].push.apply(exts, extensions[mime]);
 					}
@@ -181,8 +181,8 @@ var mimes2exts = function(mimes) {
 };
 
 
-var mimes2extList = function(mimes) {
-	var accept = [], exts = [];
+const mimes2extList = function (mimes) {
+	let accept = [], exts = [];
 
 	if (Basic.typeOf(mimes) === 'string') {
 		mimes = Basic.trim(mimes).split(/\s*,\s*/);
@@ -205,8 +205,8 @@ var mimes2extList = function(mimes) {
  * @param {String} fileName
  * @return {String} File extension
  */
-var getFileExtension = function(fileName) {
-	var matches = fileName && fileName.match(/\.([^.]+)$/);
+const getFileExtension = function (fileName) {
+	const matches = fileName && fileName.match(/\.([^.]+)$/);
 	if (matches) {
 		return matches[1].toLowerCase();
 	}
@@ -222,14 +222,14 @@ var getFileExtension = function(fileName) {
  * @param {String} fileName
  * @return File mime-type if found or an empty string if not
  */
-var getFileMime = function(fileName) {
+const getFileMime = function (fileName) {
 	return mimes[getFileExtension(fileName)] || '';
 };
 
 
 addMimeType(mimeData);
 
-export default <any> {
+export default {
 	mimes,
 	extensions,
 	addMimeType,

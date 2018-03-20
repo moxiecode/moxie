@@ -23,10 +23,8 @@ Gets the true type of the built-in object (better version of typeof).
 @param {Object} o Object to check.
 @return {String} Object [[Class]]
 */
-var typeOf = function (o) {
-	var undef;
-
-	if (o === undef) {
+const typeOf = function (o) {
+	if (o === undefined) {
 		return 'undefined';
 	} else if (o === null) {
 		return 'null';
@@ -47,7 +45,7 @@ Extends the specified object with another object(s).
 @param {Object} [obj]* Multiple objects to extend with.
 @return {Object} Same as target, the extended object.
 */
-var extend = function (...args) {
+const extend = function (...args) {
 	return merge(false, false, arguments);
 }
 
@@ -61,22 +59,22 @@ Extends the specified object with another object(s), but only if the property ex
 @param {Object} [obj]* Multiple objects to extend with.
 @return {Object} Same as target, the extended object.
 */
-var extendIf = function () {
+const extendIf = function () {
 	return merge(true, false, arguments);
 }
 
 
-var extendImmutable = function () {
+const extendImmutable = function () {
 	return merge(false, true, arguments);
 }
 
 
-var extendImmutableIf = function () {
+const extendImmutableIf = function () {
 	return merge(true, true, arguments);
 }
 
 
-var clone = function (value) {
+const clone = function (value) {
 	switch (typeOf(value)) {
 		case 'array':
 			return merge(false, true, [[], value]);
@@ -90,7 +88,7 @@ var clone = function (value) {
 }
 
 
-var shallowCopy = function (obj) {
+const shallowCopy = function (obj) {
 	switch (typeOf(obj)) {
 		case 'array':
 			return Array.prototype.slice.call(obj);
@@ -102,14 +100,14 @@ var shallowCopy = function (obj) {
 }
 
 
-var merge = function (strict, immutable, args) {
-	var undef;
-	var target = args[0];
+const merge = function (strict, immutable, args) {
+	const undef = undefined;
+	const target = args[0];
 
 	each(args, function (arg, i) {
 		if (i > 0) {
 			each(arg, function (value, key) {
-				var isComplex = inArray(typeOf(value), ['array', 'object']) !== -1;
+				const isComplex = inArray(typeOf(value), ['array', 'object']) !== -1;
 
 				if (value === undef || strict && target[key] === undef) {
 					return true;
@@ -133,16 +131,17 @@ var merge = function (strict, immutable, args) {
 
 
 /**
-Executes the callback var for each item in array/object. If you return false in the = function
+Executes the callback const for each item in array/object. If you return false in the = function
 callback it will break the loop.
 
 @method each
 @static
 @param {Object} obj Object to iterate.
-@param {function} callback Callback var to execute for each item. = function
+@param {function} callback Callback const to execute for each item. = function
 */
-var each = function (obj, callback) {
-	var length, key, i, undef;
+const each = function (obj, callback) {
+	let length, key, i;
+	const undef = undefined;
 
 	if (obj) {
 		try {
@@ -179,8 +178,8 @@ Checks if object is empty.
 @param {Object} o Object to check.
 @return {Boolean}
 */
-var isEmptyObj = function (obj) {
-	var prop;
+const isEmptyObj = function (obj) {
+	let prop;
 
 	if (!obj || typeOf(obj) !== 'object') {
 		return true;
@@ -205,8 +204,8 @@ immediately.
 @param {Array} queue Array of functions to call in sequence
 @param {Function} cb Main callback that is called in the end, or in case of error
 */
-var inSeries = function (queue, cb) {
-	var i = 0, length = queue.length;
+const inSeries = function (queue, cb) {
+	const i = 0, length = queue.length;
 
 	if (typeOf(cb) !== 'function') {
 		cb = function () { };
@@ -216,7 +215,7 @@ var inSeries = function (queue, cb) {
 		cb();
 	}
 
-	var callNext = function (i) {
+	const callNext = function (i) {
 		if (typeOf(queue[i]) === 'function') {
 			queue[i](function (error) {
 				/*jshint expr:true */
@@ -240,8 +239,9 @@ immediately.
 @param {Array} queue Array of functions to call in sequence
 @param {Function} cb Main callback that is called in the end, or in case of erro
 */
-var inParallel = function (queue, cb) {
-	var count = 0, num = queue.length, cbArgs = new Array(num);
+const inParallel = function (queue, cb) {
+	let count = 0;
+	const num = queue.length, cbArgs = new Array(num);
 
 	each(queue, function (fn, i) {
 		fn(function (error) {
@@ -249,7 +249,7 @@ var inParallel = function (queue, cb) {
 				return cb(error);
 			}
 
-			var args = [].slice.call(arguments);
+			const args = [].slice.call(arguments);
 			args.shift(); // strip error - undefined or not
 
 			cbArgs[i] = args;
@@ -273,13 +273,13 @@ Find an element in array and return it's index if present, otherwise return -1.
 @param {Array} array
 @return {Int} Index of the element, or -1 if not found
 */
-var inArray = function (needle, array) {
+const inArray = function (needle, array) {
 	if (array) {
 		if (Array.prototype.indexOf) {
 			return Array.prototype.indexOf.call(array, needle);
 		}
 
-		for (var i = 0, length = array.length; i < length; i++) {
+		for (let i = 0, length = array.length; i < length; i++) {
 			if (array[i] === needle) {
 				return i;
 			}
@@ -298,8 +298,8 @@ Returns elements of first array if they are not present in second. And false - o
 @param {Array} array
 @return {Array|Boolean}
 */
-var arrayDiff = function (needles, array) {
-	var diff = [];
+const arrayDiff = function (needles, array) {
+	const diff = [];
 
 	if (typeOf(needles) !== 'array') {
 		needles = [needles];
@@ -309,7 +309,7 @@ var arrayDiff = function (needles, array) {
 		array = [array];
 	}
 
-	for (var i in needles) {
+	for (const i in needles) {
 		if (inArray(needles[i], array) === -1) {
 			diff.push(needles[i]);
 		}
@@ -327,8 +327,8 @@ Find intersection of two arrays.
 @param {Array} array2
 @return {Array} Intersection of two arrays or null if there is none
 */
-var arrayIntersect = function (array1, array2) {
-	var result = [];
+const arrayIntersect = function (array1, array2) {
+	const result = [];
 	each(array1, function (item) {
 		if (inArray(item, array2) !== -1) {
 			result.push(item);
@@ -346,8 +346,9 @@ Forces anything into an array.
 @param {Object} obj Object with length field.
 @return {Array} Array object containing all items.
 */
-var toArray = function (obj) {
-	var i, arr = [];
+const toArray = function (obj) {
+	let i;
+	const arr = [];
 
 	for (i = 0; i < obj.length; i++) {
 		arr[i] = obj[i];
@@ -369,17 +370,17 @@ to be hit with an asteroid.
 @method guid
 @return {String} Virtually unique id.
 */
-var guid = (function () {
-	var counter = 0;
+const guid = (function () {
+	let counter = 0;
 
-	return function (prefix) {
-		var guid = new Date().getTime().toString(32), i;
+	return function (prefix = 'o_') {
+		let guid = new Date().getTime().toString(32), i;
 
 		for (i = 0; i < 5; i++) {
 			guid += Math.floor(Math.random() * 65535).toString(32);
 		}
 
-		return (prefix || 'o_') + guid + (counter++).toString(32);
+		return prefix + guid + (counter++).toString(32);
 	};
 }());
 
@@ -392,7 +393,7 @@ Trims white spaces around the string
 @param {String} str
 @return {String}
 */
-var trim = function (str) {
+const trim = function (str) {
 	if (!str) {
 		return str;
 	}
@@ -408,18 +409,18 @@ Parses the specified size string into a byte value. For example 10kb becomes 102
 @param {String/Number} size String to parse or number to just pass through.
 @return {Number} Size in bytes.
 */
-var parseSizeStr = function (size) {
+const parseSizeStr = function (size) {
 	if (typeof (size) !== 'string') {
 		return size;
 	}
 
-	var muls = {
+	const muls = {
 		t: 1099511627776,
 		g: 1073741824,
 		m: 1048576,
 		k: 1024
-	},
-		mul;
+	};
+	let mul;
 
 	size = /^([0-9\.]+)([tmgk]?)$/.exec(size.toLowerCase().replace(/[^0-9\.tmkg]/g, ''));
 	mul = size[2];
@@ -438,11 +439,11 @@ var parseSizeStr = function (size) {
  * @param {String} str String with tokens
  * @return {String} String with replaced tokens
  */
-var sprintf = function (str) {
-	var args = [].slice.call(arguments, 1);
+const sprintf = function (str) {
+	const args = [].slice.call(arguments, 1);
 
 	return str.replace(/%([a-z])/g, function ($0, $1) {
-		var value = args.shift();
+		const value = args.shift();
 
 		switch ($1) {
 			case 's':
@@ -465,15 +466,15 @@ var sprintf = function (str) {
 
 
 
-var delay = function (cb, timeout) {
-	var self = this;
+const delay = function (cb, timeout) {
+	const self = this;
 	setTimeout(function () {
 		cb.call(self);
 	}, timeout || 1);
 }
 
 
-var verComp = function (v1, v2, operator) {
+const verComp = function (v1, v2, operator) {
 	// From: http://phpjs.org/functions
 	// +      original by: Philippe Jausions (http://pear.php.net/user/jausions)
 	// +      original by: Aidan Lister (http://aidanlister.com/)
@@ -490,10 +491,6 @@ var verComp = function (v1, v2, operator) {
 	// *        example 4: version_compare('4.1.0.52','4.01.0.51');
 	// *        returns 4: 1
 
-	// Important: compare must be initialized at 0.
-	var i = 0,
-		x = 0,
-		compare = 0,
 		// vm maps textual PHP versions to negatives so they're less than 0.
 		// PHP currently defines these as CASE-SENSITIVE. It is important to
 		// leave these as negatives so that they can come before numerical versions
@@ -501,7 +498,7 @@ var verComp = function (v1, v2, operator) {
 		// (1alpha is < 1 and < 1.1 but > 1dev1)
 		// If a non-numerical value can't be mapped to this table, it receives
 		// -7 as its value.
-		vm = {
+	const vm = {
 			'dev': -6,
 			'alpha': -5,
 			'a': -5,
@@ -535,11 +532,16 @@ var verComp = function (v1, v2, operator) {
 			return !v ? 0 : (isNaN(v) ? vm[v] || -7 : parseInt(v, 10));
 		};
 
+	// Important: compare must be initialized at 0.
+	let i = 0,
+		x = 0,
+		compare = 0;
+
 	v1 = prepVersion(v1);
 	v2 = prepVersion(v2);
 	x = Math.max(v1.length, v2.length);
 	for (i = 0; i < x; i++) {
-		if (v1[i] == v2[i]) {
+		if (v1[i] === v2[i]) {
 			continue;
 		}
 		v1[i] = numVersion(v1[i]);
@@ -588,7 +590,7 @@ var verComp = function (v1, v2, operator) {
 
 
 
-export default <any>{
+export default {
 	guid,
 	typeOf,
 	extend,
