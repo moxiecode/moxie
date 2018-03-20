@@ -19,8 +19,8 @@ jscoverage
 .DS_Store
 node_modules
 .idea
-src/js
 src/javascript*
 src/**/*.js
 src/**/*.js.map
+src/**/*.d.ts
 

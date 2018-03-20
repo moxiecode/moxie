@@ -3,15 +3,12 @@
     "moduleResolution": "node",
     "target": "es5",
     "noUnusedLocals": true,
-    "module": "es2015",
+    "module": "amd",
     "lib": ["es2015", "dom"],
     "declaration": true,
     "sourceMap": true,
-    "outDir": "src/js",
-    "baseUrl": ".",
-    "paths": {
-      "moxie": ["src/ts"]
-    }
+    "baseUrl": "src/ts",
+    "outFile": "moxie.js"
   },
   "include": [
     "src/ts"
