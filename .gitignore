@@ -1,6 +1,7 @@
 src/silverlight/Bin/
 src/silverlight/obj/
 tmp
+lib
 wiki
 jslint.xml
 docs
@@ -17,4 +18,8 @@ jscoverage
 .DS_Store
 node_modules
 .idea
+src/js
+src/javascript*
+src/**/*.js
+src/**/*.js.map
 

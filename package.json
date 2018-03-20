@@ -66,7 +66,13 @@
     "jshint": "2.1.x",
     "moxie-zip": "0.0.x",
     "request": "^2.25.0",
+    "ts-loader": "^4.1.0",
+    "tslint": "^5.9.1",
+    "typescript": "^2.7.2",
     "uglify-js": ">= 2.0.0",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.12",
+    "webpack-dev-server": "^3.1.1",
     "yuidocjs": "0.3.x"
   },
   "scripts": {
