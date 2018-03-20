@@ -2,6 +2,7 @@ src/silverlight/Bin/
 src/silverlight/obj/
 tmp
 lib
+bin
 wiki
 jslint.xml
 docs
