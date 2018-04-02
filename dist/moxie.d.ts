@@ -1,4 +1,4 @@
-declare module "utils/Basic" {
+declare module "moxie/utils/Basic" {
     const _default: {
         guid: (prefix?: string) => string;
         typeOf: (o: any) => any;
@@ -21,7 +21,182 @@ declare module "utils/Basic" {
     };
     export default _default;
 }
-declare module "EventTarget" {
+declare module "moxie/utils/Dom" {
+    const _default: {
+        get: (id: any) => any;
+        hasClass: (obj: any, name: any) => boolean;
+        addClass: (obj: any, name: any) => void;
+        removeClass: (obj: any, name: any) => void;
+        getStyle: (obj: any, name: any) => any;
+        getPos: (node: any, root: any) => {
+            x: number;
+            y: number;
+        };
+        getSize: (node: any) => {
+            w: any;
+            h: any;
+        };
+    };
+    export default _default;
+}
+declare module "moxie/utils/Encode" {
+    const _default: {
+        utf8Encode: (str: any) => string;
+        utf8Decode: (str_data: any) => string;
+        atob: (data: any, utf8: any) => string;
+        btoa: (data: any, utf8: any) => string;
+    };
+    export default _default;
+}
+declare module "moxie/utils/Env" {
+    var Env: any;
+    export default Env;
+}
+declare module "moxie/utils/Events" {
+    const _default: {
+        addEvent: (obj: any, name: any, func: any, key: any) => void;
+        removeEvent: (obj: any, name: any, callback: any) => void;
+        removeAllEvents: (obj: any, key: any) => void;
+    };
+    export default _default;
+}
+declare module "moxie/utils/I18n" {
+    const _default: {
+        addI18n: (pack: any) => any;
+        translate: (str: any) => any;
+        _: (str: any) => any;
+        sprintf: (str: any) => any;
+    };
+    export default _default;
+}
+declare module "moxie/utils/Mime" {
+    const _default: {
+        mimes: {};
+        extensions: {};
+        addMimeType: (mimeData: any) => void;
+        extList2mimes: (filters: any, addMissingExtensions: any) => any[];
+        mimes2exts: (mimes: any) => any[];
+        mimes2extList: (mimes: any) => any[];
+        getFileExtension: (fileName: any) => any;
+        getFileMime: (fileName: any) => any;
+    };
+    export default _default;
+}
+declare module "moxie/utils/Url" {
+    const _default: any;
+    export default _default;
+}
+declare module "moxie/utils/Loader" {
+    const _default: {
+        loadScript: (url: any, cb: any, attrs: any) => any;
+        interpolateProgress: (loaded: any, total: any, partNum: any, totalParts: any) => number;
+    };
+    export default _default;
+}
+declare module "moxie/utils/index" {
+    import Basic from "moxie/utils/Basic";
+    import Dom from "moxie/utils/Dom";
+    import Encode from "moxie/utils/Encode";
+    import Env from "moxie/utils/Env";
+    import Events from "moxie/utils/Events";
+    import Loader from "moxie/utils/Loader";
+    import Mime from "moxie/utils/Mime";
+    import Url from "moxie/utils/Url";
+    import I18n from "moxie/utils/I18n";
+    export { Basic, Dom, Encode, Env, Events, Loader, Mime, Url, I18n };
+}
+declare module "moxie/file/BlobRef" {
+    /**
+    @class moxie/file/BlobRef
+    @constructor
+    @param {Object} blob Object "Native" blob object, as it is represented in the runtime
+    */
+    export default class BlobRef {
+        protected _blob: any;
+        /**
+        Unique id of the component
+    
+        @property uid
+        @type {String}
+        */
+        uid: string;
+        /**
+        Size of blob
+    
+        @property size
+        @type {Number}
+        @default 0
+        */
+        size: number;
+        /**
+        Mime type of blob
+    
+        @property type
+        @type {String}
+        @default ''
+        */
+        type: string;
+        constructor(_blob: any, legacyBlob?: any);
+        /**
+        @method slice
+        @param {Number} [start=0]
+        @param {Number} [end=blob.size]
+        @param {String} [type] Content Mime type
+        */
+        slice(): BlobRef;
+        /**
+        Returns "native" blob object (as it is represented in connected runtime) or null if not found
+    
+        @method getSource
+        @return {BlobRef} Returns "native" blob object or null if not found
+        */
+        getSource(): any;
+        /**
+        Destroy BlobRef and free any resources it was using
+    
+        @method destroy
+        */
+        destroy(): void;
+    }
+}
+declare module "moxie/file/FileRef" {
+    import BlobRef from "moxie/file/BlobRef";
+    /**
+    @class moxie/file/FileRef
+    @extends BlobRef
+    @constructor
+    @param {Object} file Object "Native" file object, as it is represented in the runtime
+    */
+    export default class FileRef extends BlobRef {
+        /**
+        FileRef name
+    
+        @property name
+        @type {String}
+        @default UID
+        */
+        name: string;
+        /**
+        Relative path to the file inside a directory
+        (in fact this property currently is the whole reason for this wrapper to exist)
+    
+        @property relativePath
+        @type {String}
+        @default ''
+        */
+        relativePath: string;
+        /**
+        Date of last modification
+    
+        @property lastModifiedDate
+        @type {String}
+        @default now
+        */
+        lastModifiedDate: string;
+        constructor(file: any, legacyBlob?: any);
+    }
+}
+declare module "moxie/EventTarget" {
     /**
     Parent object for all event dispatching components and objects
     
@@ -132,184 +307,9 @@ declare module "EventTarget" {
         handleEventProps(dispatches: any): void;
     }
 }
-declare module "utils/Dom" {
-    const _default: {
-        get: (id: any) => any;
-        hasClass: (obj: any, name: any) => boolean;
-        addClass: (obj: any, name: any) => void;
-        removeClass: (obj: any, name: any) => void;
-        getStyle: (obj: any, name: any) => any;
-        getPos: (node: any, root: any) => {
-            x: number;
-            y: number;
-        };
-        getSize: (node: any) => {
-            w: any;
-            h: any;
-        };
-    };
-    export default _default;
-}
-declare module "utils/Encode" {
-    const _default: {
-        utf8Encode: (str: any) => string;
-        utf8Decode: (str_data: any) => string;
-        atob: (data: any, utf8: any) => string;
-        btoa: (data: any, utf8: any) => string;
-    };
-    export default _default;
-}
-declare module "utils/Env" {
-    var Env: any;
-    export default Env;
-}
-declare module "utils/Events" {
-    const _default: {
-        addEvent: (obj: any, name: any, func: any, key: any) => void;
-        removeEvent: (obj: any, name: any, callback: any) => void;
-        removeAllEvents: (obj: any, key: any) => void;
-    };
-    export default _default;
-}
-declare module "utils/I18n" {
-    const _default: {
-        addI18n: (pack: any) => any;
-        translate: (str: any) => any;
-        _: (str: any) => any;
-        sprintf: (str: any) => any;
-    };
-    export default _default;
-}
-declare module "utils/Mime" {
-    const _default: {
-        mimes: {};
-        extensions: {};
-        addMimeType: (mimeData: any) => void;
-        extList2mimes: (filters: any, addMissingExtensions: any) => any[];
-        mimes2exts: (mimes: any) => any[];
-        mimes2extList: (mimes: any) => any[];
-        getFileExtension: (fileName: any) => any;
-        getFileMime: (fileName: any) => any;
-    };
-    export default _default;
-}
-declare module "utils/Url" {
-    const _default: any;
-    export default _default;
-}
-declare module "utils/Loader" {
-    const _default: {
-        loadScript: (url: any, cb: any, attrs: any) => any;
-        interpolateProgress: (loaded: any, total: any, partNum: any, totalParts: any) => number;
-    };
-    export default _default;
-}
-declare module "utils/index" {
-    import Basic from "utils/Basic";
-    import Dom from "utils/Dom";
-    import Encode from "utils/Encode";
-    import Env from "utils/Env";
-    import Events from "utils/Events";
-    import Loader from "utils/Loader";
-    import Mime from "utils/Mime";
-    import Url from "utils/Url";
-    import I18n from "utils/I18n";
-    export { Basic, Dom, Encode, Env, Events, Loader, Mime, Url, I18n };
-}
-declare module "file/BlobRef" {
-    /**
-    @class moxie/file/BlobRef
-    @constructor
-    @param {Object} blob Object "Native" blob object, as it is represented in the runtime
-    */
-    export default class BlobRef {
-        protected _blob: any;
-        /**
-        Unique id of the component
-    
-        @property uid
-        @type {String}
-        */
-        uid: string;
-        /**
-        Size of blob
-    
-        @property size
-        @type {Number}
-        @default 0
-        */
-        size: number;
-        /**
-        Mime type of blob
-    
-        @property type
-        @type {String}
-        @default ''
-        */
-        type: string;
-        constructor(_blob: any, legacyBlob?: any);
-        /**
-        @method slice
-        @param {Number} [start=0]
-        @param {Number} [end=blob.size]
-        @param {String} [type] Content Mime type
-        */
-        slice(): BlobRef;
-        /**
-        Returns "native" blob object (as it is represented in connected runtime) or null if not found
-    
-        @method getSource
-        @return {BlobRef} Returns "native" blob object or null if not found
-        */
-        getSource(): any;
-        /**
-        Destroy BlobRef and free any resources it was using
-    
-        @method destroy
-        */
-        destroy(): void;
-    }
-}
-declare module "file/FileRef" {
-    import BlobRef from "file/BlobRef";
-    /**
-    @class moxie/file/FileRef
-    @extends BlobRef
-    @constructor
-    @param {Object} file Object "Native" file object, as it is represented in the runtime
-    */
-    export default class FileRef extends BlobRef {
-        /**
-        FileRef name
-    
-        @property name
-        @type {String}
-        @default UID
-        */
-        name: string;
-        /**
-        Relative path to the file inside a directory
-        (in fact this property currently is the whole reason for this wrapper to exist)
-    
-        @property relativePath
-        @type {String}
-        @default ''
-        */
-        relativePath: string;
-        /**
-        Date of last modification
-    
-        @property lastModifiedDate
-        @type {String}
-        @default now
-        */
-        lastModifiedDate: string;
-        constructor(file: any, legacyBlob?: any);
-    }
-}
-declare module "file/FileDrop" {
-    import EventTarget from "EventTarget";
-    import FileRef from "file/FileRef";
+declare module "moxie/file/FileDrop" {
+    import EventTarget from "moxie/EventTarget";
+    import FileRef from "moxie/file/FileRef";
     export default class FileDrop extends EventTarget {
         /**
         Unique id of the component
@@ -393,9 +393,9 @@ declare module "file/FileDrop" {
         private _readDirEntry(dirEntry, cb);
     }
 }
-declare module "file/FileInput" {
-    import EventTarget from "EventTarget";
-    import FileRef from "file/FileRef";
+declare module "moxie/file/FileInput" {
+    import EventTarget from "moxie/EventTarget";
+    import FileRef from "moxie/file/FileRef";
     export default class FileInput extends EventTarget {
         /**
         Unique id of the component
@@ -481,12 +481,12 @@ declare module "file/FileInput" {
         private createShimContainer();
     }
 }
-declare module "index" {
-    import BlobRef from "file/BlobRef";
-    import FileRef from "file/FileRef";
-    import FileDrop from "file/FileDrop";
-    import FileInput from "file/FileInput";
-    import EventTarget from "EventTarget";
+declare module "moxie" {
+    import BlobRef from "moxie/file/BlobRef";
+    import FileRef from "moxie/file/FileRef";
+    import FileDrop from "moxie/file/FileDrop";
+    import FileInput from "moxie/file/FileInput";
+    import EventTarget from "moxie/EventTarget";
     const _default: {
         utils: {
             Basic: {
@@ -558,10 +558,10 @@ declare module "index" {
     };
     export default _default;
 }
-declare module "file/index" {
-    import BlobRef from "file/BlobRef";
-    import FileRef from "file/FileRef";
-    import FileInput from "file/FileInput";
-    import FileDrop from "file/FileDrop";
+declare module "moxie/file/index" {
+    import BlobRef from "moxie/file/BlobRef";
+    import FileRef from "moxie/file/FileRef";
+    import FileInput from "moxie/file/FileInput";
+    import FileDrop from "moxie/file/FileDrop";
     export { BlobRef, FileRef, FileInput, FileDrop };
 }
