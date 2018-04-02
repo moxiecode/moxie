@@ -60,6 +60,13 @@ declare module "moxie/utils/Events" {
     };
     export default _default;
 }
+declare module "moxie/utils/Loader" {
+    const _default: {
+        loadScript: (url: any, cb: any, attrs: any) => any;
+        interpolateProgress: (loaded: any, total: any, partNum: any, totalParts: any) => number;
+    };
+    export default _default;
+}
 declare module "moxie/utils/I18n" {
     const _default: {
         addI18n: (pack: any) => any;
@@ -86,14 +93,7 @@ declare module "moxie/utils/Url" {
     const _default: any;
     export default _default;
 }
-declare module "moxie/utils/Loader" {
-    const _default: {
-        loadScript: (url: any, cb: any, attrs: any) => any;
-        interpolateProgress: (loaded: any, total: any, partNum: any, totalParts: any) => number;
-    };
-    export default _default;
-}
-declare module "moxie/utils/index" {
+declare module "moxie/utils" {
     import Basic from "moxie/utils/Basic";
     import Dom from "moxie/utils/Dom";
     import Encode from "moxie/utils/Encode";
@@ -307,92 +307,6 @@ declare module "moxie/EventTarget" {
         handleEventProps(dispatches: any): void;
     }
 }
-declare module "moxie/file/FileDrop" {
-    import EventTarget from "moxie/EventTarget";
-    import FileRef from "moxie/file/FileRef";
-    export default class FileDrop extends EventTarget {
-        /**
-        Unique id of the component
-    
-        @property uid
-        @protected
-        @readOnly
-        @type {String}
-        @default UID
-        */
-        uid: string;
-        /**
-        Unique id of the runtime container. Useful to get hold of it for various manipulations.
-    
-        @property shimid
-        @protected
-        @type {String}
-        */
-        shimid: string;
-        /**
-        Array of selected File objects
-    
-        @property files
-        @type {Array}
-        @default null
-        */
-        files: FileRef[];
-        private _disabled;
-        private _options;
-        private _containerPosition;
-        constructor(options: any);
-        /**
-        Initializes the component and dispatches event ready when done.
-    
-        @method init
-        */
-        init(): void;
-        /**
-        Returns container for the runtime as DOM element
-    
-        @method getShimContainer
-        @return {DOMElement}
-        */
-        getShimContainer(): any;
-        /**
-         * Get current option value by its name
-         *
-         * @method getOption
-         * @param name
-         * @return {Mixed}
-         */
-        getOption(name: any): any;
-        /**
-         * Sets a new value for the option specified by name
-         *
-         * @method setOption
-         * @param name
-         * @param value
-         */
-        setOption(name: any, value: any): void;
-        /**
-        Disables component, so that it doesn't accept files.
-    
-        @method disable
-        @param {Boolean} [state=true] Disable component if - true, enable if - false
-        */
-        disable(state: any): void;
-        /**
-        Destroy component.
-    
-        @method destroy
-        */
-        destroy(): void;
-        private _hasFiles(e);
-        private _addFile(file, relativePath?);
-        private _extractExts(accept);
-        private _isAcceptable(file);
-        private _readItems(items, cb);
-        private _readEntries(entries, cb);
-        private _readEntry(entry, cb);
-        private _readDirEntry(dirEntry, cb);
-    }
-}
 declare module "moxie/file/FileInput" {
     import EventTarget from "moxie/EventTarget";
     import FileRef from "moxie/file/FileRef";
@@ -481,11 +395,101 @@ declare module "moxie/file/FileInput" {
         private createShimContainer();
     }
 }
-declare module "moxie" {
+declare module "moxie/file/FileDrop" {
+    import EventTarget from "moxie/EventTarget";
+    import FileRef from "moxie/file/FileRef";
+    export default class FileDrop extends EventTarget {
+        /**
+        Unique id of the component
+    
+        @property uid
+        @protected
+        @readOnly
+        @type {String}
+        @default UID
+        */
+        uid: string;
+        /**
+        Unique id of the runtime container. Useful to get hold of it for various manipulations.
+    
+        @property shimid
+        @protected
+        @type {String}
+        */
+        shimid: string;
+        /**
+        Array of selected File objects
+    
+        @property files
+        @type {Array}
+        @default null
+        */
+        files: FileRef[];
+        private _disabled;
+        private _options;
+        private _containerPosition;
+        constructor(options: any);
+        /**
+        Initializes the component and dispatches event ready when done.
+    
+        @method init
+        */
+        init(): void;
+        /**
+        Returns container for the runtime as DOM element
+    
+        @method getShimContainer
+        @return {DOMElement}
+        */
+        getShimContainer(): any;
+        /**
+         * Get current option value by its name
+         *
+         * @method getOption
+         * @param name
+         * @return {Mixed}
+         */
+        getOption(name: any): any;
+        /**
+         * Sets a new value for the option specified by name
+         *
+         * @method setOption
+         * @param name
+         * @param value
+         */
+        setOption(name: any, value: any): void;
+        /**
+        Disables component, so that it doesn't accept files.
+    
+        @method disable
+        @param {Boolean} [state=true] Disable component if - true, enable if - false
+        */
+        disable(state: any): void;
+        /**
+        Destroy component.
+    
+        @method destroy
+        */
+        destroy(): void;
+        private _hasFiles(e);
+        private _addFile(file, relativePath?);
+        private _extractExts(accept);
+        private _isAcceptable(file);
+        private _readItems(items, cb);
+        private _readEntries(entries, cb);
+        private _readEntry(entry, cb);
+        private _readDirEntry(dirEntry, cb);
+    }
+}
+declare module "moxie/file" {
     import BlobRef from "moxie/file/BlobRef";
     import FileRef from "moxie/file/FileRef";
-    import FileDrop from "moxie/file/FileDrop";
     import FileInput from "moxie/file/FileInput";
+    import FileDrop from "moxie/file/FileDrop";
+    export { BlobRef, FileRef, FileInput, FileDrop };
+}
+declare module "moxie" {
+    import { BlobRef, FileDrop, FileInput, FileRef } from "moxie/file";
     import EventTarget from "moxie/EventTarget";
     const _default: {
         utils: {
@@ -547,6 +551,12 @@ declare module "moxie" {
                 getFileMime: (fileName: any) => any;
             };
             Url: any;
+            I18n: {
+                addI18n: (pack: any) => any;
+                translate: (str: any) => any;
+                _: (str: any) => any;
+                sprintf: (str: any) => any;
+            };
         };
         file: {
             BlobRef: typeof BlobRef;
@@ -557,11 +567,4 @@ declare module "moxie" {
         EventTarget: typeof EventTarget;
     };
     export default _default;
-}
-declare module "moxie/file/index" {
-    import BlobRef from "moxie/file/BlobRef";
-    import FileRef from "moxie/file/FileRef";
-    import FileInput from "moxie/file/FileInput";
-    import FileDrop from "moxie/file/FileDrop";
-    export { BlobRef, FileRef, FileInput, FileDrop };
 }
