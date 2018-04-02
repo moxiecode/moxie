@@ -12,8 +12,6 @@ declare module "utils/Basic" {
         inSeries: (queue: any, cb: any) => void;
         inParallel: (queue: any, cb: any) => void;
         inArray: (needle: any, array: any) => any;
-        arrayDiff: (needles: any, array: any) => false | any[];
-        arrayIntersect: (array1: any, array2: any) => any[];
         toArray: (obj: any) => any[];
         trim: (str: any) => any;
         sprintf: (str: any) => any;
@@ -173,13 +171,6 @@ declare module "utils/Events" {
     };
     export default _default;
 }
-declare module "utils/Loader" {
-    const _default: {
-        loadScript: (url: any, cb: any, attrs: any) => any;
-        interpolateProgress: (loaded: any, total: any, partNum: any, totalParts: any) => number;
-    };
-    export default _default;
-}
 declare module "utils/I18n" {
     const _default: {
         addI18n: (pack: any) => any;
@@ -204,6 +195,13 @@ declare module "utils/Mime" {
 }
 declare module "utils/Url" {
     const _default: any;
+    export default _default;
+}
+declare module "utils/Loader" {
+    const _default: {
+        loadScript: (url: any, cb: any, attrs: any) => any;
+        interpolateProgress: (loaded: any, total: any, partNum: any, totalParts: any) => number;
+    };
     export default _default;
 }
 declare module "utils/index" {
@@ -309,6 +307,92 @@ declare module "file/FileRef" {
         constructor(file: any, legacyBlob?: any);
     }
 }
+declare module "file/FileDrop" {
+    import EventTarget from "EventTarget";
+    import FileRef from "file/FileRef";
+    export default class FileDrop extends EventTarget {
+        /**
+        Unique id of the component
+    
+        @property uid
+        @protected
+        @readOnly
+        @type {String}
+        @default UID
+        */
+        uid: string;
+        /**
+        Unique id of the runtime container. Useful to get hold of it for various manipulations.
+    
+        @property shimid
+        @protected
+        @type {String}
+        */
+        shimid: string;
+        /**
+        Array of selected File objects
+    
+        @property files
+        @type {Array}
+        @default null
+        */
+        files: FileRef[];
+        private _disabled;
+        private _options;
+        private _containerPosition;
+        constructor(options: any);
+        /**
+        Initializes the component and dispatches event ready when done.
+    
+        @method init
+        */
+        init(): void;
+        /**
+        Returns container for the runtime as DOM element
+    
+        @method getShimContainer
+        @return {DOMElement}
+        */
+        getShimContainer(): any;
+        /**
+         * Get current option value by its name
+         *
+         * @method getOption
+         * @param name
+         * @return {Mixed}
+         */
+        getOption(name: any): any;
+        /**
+         * Sets a new value for the option specified by name
+         *
+         * @method setOption
+         * @param name
+         * @param value
+         */
+        setOption(name: any, value: any): void;
+        /**
+        Disables component, so that it doesn't accept files.
+    
+        @method disable
+        @param {Boolean} [state=true] Disable component if - true, enable if - false
+        */
+        disable(state: any): void;
+        /**
+        Destroy component.
+    
+        @method destroy
+        */
+        destroy(): void;
+        private _hasFiles(e);
+        private _addFile(file, relativePath?);
+        private _extractExts(accept);
+        private _isAcceptable(file);
+        private _readItems(items, cb);
+        private _readEntries(entries, cb);
+        private _readEntry(entry, cb);
+        private _readDirEntry(dirEntry, cb);
+    }
+}
 declare module "file/FileInput" {
     import EventTarget from "EventTarget";
     import FileRef from "file/FileRef";
@@ -397,91 +481,82 @@ declare module "file/FileInput" {
         private createShimContainer();
     }
 }
-declare module "file/FileDrop" {
-    import EventTarget from "EventTarget";
+declare module "index" {
+    import BlobRef from "file/BlobRef";
     import FileRef from "file/FileRef";
-    export default class FileDrop extends EventTarget {
-        /**
-        Unique id of the component
-    
-        @property uid
-        @protected
-        @readOnly
-        @type {String}
-        @default UID
-        */
-        uid: string;
-        /**
-        Unique id of the runtime container. Useful to get hold of it for various manipulations.
-    
-        @property shimid
-        @protected
-        @type {String}
-        */
-        shimid: string;
-        /**
-        Array of selected File objects
-    
-        @property files
-        @type {Array}
-        @default null
-        */
-        files: FileRef[];
-        private _disabled;
-        private _options;
-        private _containerPosition;
-        constructor(options: any);
-        /**
-        Initializes the component and dispatches event ready when done.
-    
-        @method init
-        */
-        init(): void;
-        /**
-        Returns container for the runtime as DOM element
-    
-        @method getShimContainer
-        @return {DOMElement}
-        */
-        getShimContainer(): any;
-        /**
-         * Get current option value by its name
-         *
-         * @method getOption
-         * @param name
-         * @return {Mixed}
-         */
-        getOption(name: any): any;
-        /**
-         * Sets a new value for the option specified by name
-         *
-         * @method setOption
-         * @param name
-         * @param value
-         */
-        setOption(name: any, value: any): void;
-        /**
-        Disables component, so that it doesn't accept files.
-    
-        @method disable
-        @param {Boolean} [state=true] Disable component if - true, enable if - false
-        */
-        disable(state: any): void;
-        /**
-        Destroy component.
-    
-        @method destroy
-        */
-        destroy(): void;
-        private _hasFiles(e);
-        private _addFile(file, relativePath?);
-        private _extractExts(accept);
-        private _isAcceptable(file);
-        private _readItems(items, cb);
-        private _readEntries(entries, cb);
-        private _readEntry(entry, cb);
-        private _readDirEntry(dirEntry, cb);
-    }
+    import FileDrop from "file/FileDrop";
+    import FileInput from "file/FileInput";
+    import EventTarget from "EventTarget";
+    const _default: {
+        utils: {
+            Basic: {
+                guid: (prefix?: string) => string;
+                typeOf: (o: any) => any;
+                extend: (...args: any[]) => any;
+                extendIf: () => any;
+                extendImmutable: () => any;
+                extendImmutableIf: () => any;
+                clone: (value: any) => any;
+                each: (obj: any, callback: any) => void;
+                isEmptyObj: (obj: any) => boolean;
+                inSeries: (queue: any, cb: any) => void;
+                inParallel: (queue: any, cb: any) => void;
+                inArray: (needle: any, array: any) => any;
+                toArray: (obj: any) => any[];
+                trim: (str: any) => any;
+                sprintf: (str: any) => any;
+                parseSizeStr: (size: any) => any;
+                delay: (cb: any, timeout: any) => void;
+                verComp: (v1: any, v2: any, operator: any) => number | boolean;
+            };
+            Dom: {
+                get: (id: any) => any;
+                hasClass: (obj: any, name: any) => boolean;
+                addClass: (obj: any, name: any) => void;
+                removeClass: (obj: any, name: any) => void;
+                getStyle: (obj: any, name: any) => any;
+                getPos: (node: any, root: any) => {
+                    x: number;
+                    y: number;
+                };
+                getSize: (node: any) => {
+                    w: any;
+                    h: any;
+                };
+            };
+            Encode: {
+                utf8Encode: (str: any) => string;
+                utf8Decode: (str_data: any) => string;
+                atob: (data: any, utf8: any) => string;
+                btoa: (data: any, utf8: any) => string;
+            };
+            Env: any;
+            Events: {
+                addEvent: (obj: any, name: any, func: any, key: any) => void;
+                removeEvent: (obj: any, name: any, callback: any) => void;
+                removeAllEvents: (obj: any, key: any) => void;
+            };
+            Mime: {
+                mimes: {};
+                extensions: {};
+                addMimeType: (mimeData: any) => void;
+                extList2mimes: (filters: any, addMissingExtensions: any) => any[];
+                mimes2exts: (mimes: any) => any[];
+                mimes2extList: (mimes: any) => any[];
+                getFileExtension: (fileName: any) => any;
+                getFileMime: (fileName: any) => any;
+            };
+            Url: any;
+        };
+        file: {
+            BlobRef: typeof BlobRef;
+            FileRef: typeof FileRef;
+            FileDrop: typeof FileDrop;
+            FileInput: typeof FileInput;
+        };
+        EventTarget: typeof EventTarget;
+    };
+    export default _default;
 }
 declare module "file/index" {
     import BlobRef from "file/BlobRef";
@@ -489,10 +564,4 @@ declare module "file/index" {
     import FileInput from "file/FileInput";
     import FileDrop from "file/FileDrop";
     export { BlobRef, FileRef, FileInput, FileDrop };
-}
-declare module "index" {
-    import * as utils from "utils/index";
-    import * as file from "file/index";
-    import EventTarget from "EventTarget";
-    export { utils, file, EventTarget };
 }

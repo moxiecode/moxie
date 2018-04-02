@@ -21,7 +21,7 @@
       "email": "davit.barbakadze@ephox.com"
     }
   ],
-  "main": "./dist/moxie",
+  "main": "./dist/moxie.js",
   "types": "./dist/moxie.d.ts",
   "homepage": "https://github.com/moxiecode/moxie/",
   "repository": {
