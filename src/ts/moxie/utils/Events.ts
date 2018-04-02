@@ -133,7 +133,7 @@ const removeAllEvents = function (obj, key) {
 	});
 };
 
-export default {
+export {
 	addEvent,
 	removeEvent,
 	removeAllEvents

@@ -143,7 +143,7 @@ const getSize = function (node) {
 	};
 };
 
-export default {
+export {
 	get,
 	hasClass,
 	addClass,

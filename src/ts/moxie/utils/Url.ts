@@ -133,7 +133,7 @@ const hasSameOrigin = function (url) {
 	return origin(parseUrl()) === origin(url);
 };
 
-export default <any> {
+export {
 	parseUrl,
 	resolveUrl,
 	hasSameOrigin

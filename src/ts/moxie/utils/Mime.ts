@@ -229,7 +229,7 @@ const getFileMime = function (fileName) {
 
 addMimeType(mimeData);
 
-export default {
+export {
 	mimes,
 	extensions,
 	addMimeType,

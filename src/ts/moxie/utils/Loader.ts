@@ -55,7 +55,7 @@ const interpolateProgress = function (loaded, total, partNum, totalParts) {
 };
 
 
-export default {
+export {
 	loadScript,
 	interpolateProgress
 };

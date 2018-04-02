@@ -62,7 +62,7 @@ const btoa = function (data, utf8) {
 	return window.btoa(utf8 ? utf8Encode(data) : data);
 };
 
-export default {
+export {
 	utf8Encode,
 	utf8Decode,
 	atob,

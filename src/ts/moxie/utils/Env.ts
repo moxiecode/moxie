@@ -589,4 +589,4 @@ var Env: any = {
 // @deprecated Use `Env.os` instead
 Env.OS = Env.os;
 
-export default Env;
+export Env;

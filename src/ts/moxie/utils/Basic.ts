@@ -523,7 +523,7 @@ const verComp = function (v1, v2, operator) {
 	}
 }
 
-export default {
+export {
 	guid,
 	typeOf,
 	extend,

@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Basic from './Basic';
+import { sprintf } from './Basic';
 
 const i18n = {};
 
@@ -46,9 +46,9 @@ const _ = function (str) {
 }
 
 
-export default {
+export {
 	addI18n,
 	translate,
 	_,
-	sprintf: Basic.sprintf
+	sprintf
 };
