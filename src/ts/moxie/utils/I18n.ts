@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import { sprintf } from './Basic';
+import { sprintf, extend } from './Basic';
 
 const i18n = {};
 
@@ -22,7 +22,7 @@ const i18n = {};
  * @return {Object} Extended language pack object.
  */
 const addI18n = function (pack) {
-	return Basic.extend(i18n, pack);
+	return extend(i18n, pack);
 }
 
 /**

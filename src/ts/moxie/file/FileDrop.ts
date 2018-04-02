@@ -8,7 +8,11 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import { Basic, Mime, Dom, Events, I18n } from 'utils';
+import { guid, typeOf, each, extend, toArray, inArray, inSeries } from 'utils/Basic';
+import { addEvent, removeAllEvents } from 'utils/Events';
+import { mimes2extList, getFileExtension } from 'utils/Mime';
+import { get, getStyle } from 'utils/Dom';
+import { translate } from 'utils/I18n';
 import EventTarget from 'EventTarget';
 import FileRef from 'file/FileRef'
 
@@ -142,7 +146,7 @@ export default class FileDrop extends EventTarget {
 		super();
 
 		let self = this;
-		let _uid = Basic.guid('mxi_');
+		let _uid = guid('mxi_');
 		let _options;
 
 		// if flat argument passed it should be drop_zone id
@@ -150,16 +154,16 @@ export default class FileDrop extends EventTarget {
 			_options = { drop_zone : options };
 		}
 
-		_options = Basic.extend({
+		_options = extend({
 			accept: [{
-				title: I18n.translate('All Files'),
+				title: translate('All Files'),
 				extensions: '*'
 			}]
 		}, options);
 
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(_options.accept) === 'string') {
-			_options.accept = Mime.mimes2extList(_options.accept);
+			_options.accept = mimes2extList(_options.accept);
 		}
 
 		self._options = _options;
@@ -177,7 +181,7 @@ export default class FileDrop extends EventTarget {
 		let _options = self._options;
 		let _uid = self.uid;
 
-		let dropZone = Dom.get(_options.drop_zone) || document.body;
+		let dropZone = get(_options.drop_zone) || document.body;
 
 		if (dropZone.id) {
 			self.shimid = dropZone.id;
@@ -186,12 +190,12 @@ export default class FileDrop extends EventTarget {
 		}
 
 		// make container relative, if it is not
-		self._containerPosition = Dom.getStyle(dropZone, 'position');
+		self._containerPosition = getStyle(dropZone, 'position');
 		if (self._containerPosition === 'static') {
 			_options.drop_zone.style.position = 'relative';
 		}
 
-		Events.addEvent(dropZone, 'dragover', function (e) {
+		addEvent(dropZone, 'dragover', function (e) {
 			if (!self._hasFiles(e)) {
 				return;
 			}
@@ -199,7 +203,7 @@ export default class FileDrop extends EventTarget {
 			e.dataTransfer.dropEffect = 'copy';
 		}, _uid);
 
-		Events.addEvent(dropZone, 'drop', function (e) {
+		addEvent(dropZone, 'drop', function (e) {
 			e.preventDefault();
 
 			if (!self._hasFiles(e) || self._disabled) {
@@ -214,18 +218,18 @@ export default class FileDrop extends EventTarget {
 					self.trigger("drop");
 				});
 			} else {
-				Basic.each(e.dataTransfer.files, function (file) {
+				each(e.dataTransfer.files, function (file) {
 					self._addFile(file);
 				});
 				self.trigger("drop", self.files);
 			}
 		}, _uid);
 
-		Events.addEvent(dropZone, 'dragenter', function (e) {
+		addEvent(dropZone, 'dragenter', function (e) {
 			self.trigger("dragenter");
 		}, _uid);
 
-		Events.addEvent(dropZone, 'dragleave', function (e) {
+		addEvent(dropZone, 'dragleave', function (e) {
 			self.trigger("dragleave");
 		}, _uid);
 
@@ -245,7 +249,7 @@ export default class FileDrop extends EventTarget {
 	@return {DOMElement}
 	*/
 	getShimContainer() {
-		return Dom.get(this.shimid);
+		return get(this.shimid);
 	}
 
 	/**
@@ -299,14 +303,14 @@ export default class FileDrop extends EventTarget {
 		let _fileRefs = self.files;
 		let _uid = self.uid;
 		let _options = self._options;
-		let dropZone = Dom.get(_options.drop_zone) || document.body;
+		let dropZone = get(_options.drop_zone) || document.body;
 
-		Events.removeAllEvents(dropZone, _uid);
+		removeAllEvents(dropZone, _uid);
 		dropZone.style.position = self._containerPosition;
 
-		if (Basic.typeOf(_fileRefs) === 'array') {
+		if (typeOf(_fileRefs) === 'array') {
 			// no sense in leaving associated files behind
-			Basic.each(_fileRefs, function (file) {
+			each(_fileRefs, function (file) {
 				file.destroy();
 			});
 		}
@@ -324,11 +328,11 @@ export default class FileDrop extends EventTarget {
 			return false;
 		}
 
-		let types = Basic.toArray(e.dataTransfer.types || []);
+		let types = toArray(e.dataTransfer.types || []);
 
-		return Basic.inArray("Files", types) !== -1 ||
-			Basic.inArray("public.file-url", types) !== -1 || // Safari < 5
-			Basic.inArray("application/x-moz-file", types) !== -1 // Gecko < 1.9.2 (< Firefox 3.6)
+		return inArray("Files", types) !== -1 ||
+			inArray("public.file-url", types) !== -1 || // Safari < 5
+			inArray("application/x-moz-file", types) !== -1 // Gecko < 1.9.2 (< Firefox 3.6)
 			;
 	}
 
@@ -346,7 +350,7 @@ export default class FileDrop extends EventTarget {
 		for (let i = 0; i < accept.length; i++) {
 			[].push.apply(exts, accept[i].extensions.split(/\s*,\s*/));
 		}
-		return Basic.inArray('*', exts) === -1 ? exts : [];
+		return inArray('*', exts) === -1 ? exts : [];
 	}
 
 	private _isAcceptable(file) {
@@ -356,14 +360,14 @@ export default class FileDrop extends EventTarget {
 		if (!allowedExts.length) {
 			return true;
 		}
-		let ext = Mime.getFileExtension(file.name);
-		return !ext || Basic.inArray(ext, allowedExts) !== -1;
+		let ext = getFileExtension(file.name);
+		return !ext || inArray(ext, allowedExts) !== -1;
 	}
 
 	private _readItems(items, cb) {
 		let self = this;
 		let entries = [];
-		Basic.each(items, function (item) {
+		each(items, function (item) {
 			let entry = item.webkitGetAsEntry();
 			// Address #998 (https://code.google.com/p/chromium/issues/detail?id=332579)
 			if (entry) {
@@ -386,12 +390,12 @@ export default class FileDrop extends EventTarget {
 	private _readEntries(entries, cb) {
 		let self = this;
 		let queue = [];
-		Basic.each(entries, function (entry) {
+		each(entries, function (entry) {
 			queue.push(function (cbcb) {
 				self._readEntry(entry, cbcb);
 			});
 		});
-		Basic.inSeries(queue, function () {
+		inSeries(queue, function () {
 			cb();
 		});
 	}

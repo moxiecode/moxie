@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Basic from './Basic';
+import { each } from './Basic';
 
 /**
 @class moxie/utils/Loader
@@ -37,7 +37,7 @@ const loadScript = function (url, cb, attrs) {
 	};
 
 	if (typeof(attrs) === 'object') {
-		Basic.each(attrs, function (value, key) {
+		each(attrs, function (value, key) {
 			script.setAttribute(key, value);
 		});
 	}

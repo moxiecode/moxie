@@ -9,7 +9,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Basic from './Basic';
+import { verComp, typeOf, inArray } from './Basic';
 
 /**
 @class moxie/utils/Env
@@ -456,7 +456,7 @@ var can = (function() {
 
 		return_response_type: function(responseType) {
 			try {
-				if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
+				if (inArray(responseType, ['', 'text', 'document']) !== -1) {
 					return true;
 				} else if (window.hasOwnProperty('XMLHttpRequest')) {
 					var xhr = new XMLHttpRequest();
@@ -564,7 +564,7 @@ var can = (function() {
 	return function(cap) {
 		var args = [].slice.call(arguments);
 		args.shift(); // shift of cap
-		return Basic.typeOf(caps[cap]) === 'function' ? caps[cap].apply(this, args) : !!caps[cap];
+		return typeOf(caps[cap]) === 'function' ? caps[cap].apply(this, args) : !!caps[cap];
 	};
 }());
 
@@ -582,11 +582,11 @@ var Env: any = {
 	os: uaResult.os.name, // everybody intuitively types it in a lowercase for some reason
 	osVersion: uaResult.os.version,
 
-	verComp: Basic.verComp
+	verComp: verComp
 };
 
 // for backward compatibility
 // @deprecated Use `Env.os` instead
 Env.OS = Env.os;
 
-export Env;
+export default Env;

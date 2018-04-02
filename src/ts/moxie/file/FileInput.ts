@@ -8,7 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import { Basic, Mime, Env, Dom, Events, I18n } from 'utils';
+import { guid, typeOf, each, extend, inArray } from 'utils/Basic';
+import { addEvent, removeAllEvents } from 'utils/Events';
+import { mimes2extList, extList2mimes } from 'utils/Mime';
+import { get, getStyle, getPos, getSize } from 'utils/Dom';
+import { translate } from 'utils/I18n';
+import Env from 'utils/Env';
 import EventTarget from 'EventTarget';
 import FileRef from 'file/FileRef'
 
@@ -173,22 +178,22 @@ export default class FileInput extends EventTarget {
 		super();
 
 		let self = this;
-		let _uid = Basic.guid('mxi_');
+		let _uid = guid('mxi_');
 		let _options;
 
 		// if flat argument passed it should be browse_button id
-		if (Basic.inArray(Basic.typeOf(options), ['string', 'node']) !== -1) {
+		if (inArray(typeOf(options), ['string', 'node']) !== -1) {
 			_options = { browse_button : options };
 		}
 
-		if (!Dom.get(options.browse_button)) {
+		if (!get(options.browse_button)) {
 			// browse button is required
 			throw new Error("browse_button must be present in the DOM, prior to FileInput instantiation.");
 		}
 
-		_options = Basic.extend({
+		_options = extend({
 			accept: [{
-				title: I18n.translate('All Files'),
+				title: translate('All Files'),
 				extensions: '*'
 			}],
 			multiple: false
@@ -196,7 +201,7 @@ export default class FileInput extends EventTarget {
 
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(_options.accept) === 'string') {
-			_options.accept = Mime.mimes2extList(_options.accept);
+			_options.accept = mimes2extList(_options.accept);
 		}
 
 		self._options = _options;
@@ -213,16 +218,16 @@ export default class FileInput extends EventTarget {
 		let self = this;
 		let _uid = self.uid;
 		let _options = self._options;
-		let container = Dom.get(_options.container) || document.body;
-		let browseButton = Dom.get(_options.browse_button);
+		let container = get(_options.container) || document.body;
+		let browseButton = get(_options.browse_button);
 		let shimContainer = self.createShimContainer();
 		let input = self.createInput();
 		let top;
 
 		// we will be altering some initial styles, so lets save them to restore later
-		self._containerPosition = Dom.getStyle(container, 'position');
-		self._browseButtonPosition = Dom.getStyle(browseButton, 'position');
-		self._browseButtonZindex = Dom.getStyle(browseButton, 'z-index') || 'auto';
+		self._containerPosition = getStyle(container, 'position');
+		self._browseButtonPosition = getStyle(browseButton, 'position');
+		self._browseButtonZindex = getStyle(browseButton, 'z-index') || 'auto';
 
 		// it shouldn't be possible to tab into the hidden element
 		(Env.can('summon_file_dialog') ? input : browseButton).setAttribute('tabindex', -1);
@@ -231,19 +236,19 @@ export default class FileInput extends EventTarget {
 		browse_button loses interactivity, so we restore it here */
 		top = Env.can('summon_file_dialog') ? browseButton : shimContainer;
 
-		Events.addEvent(top, 'mouseover', function () {
+		addEvent(top, 'mouseover', function () {
 			self.trigger('mouseenter');
 		}, _uid);
 
-		Events.addEvent(top, 'mouseout', function () {
+		addEvent(top, 'mouseout', function () {
 			self.trigger('mouseleave');
 		}, _uid);
 
-		Events.addEvent(top, 'mousedown', function () {
+		addEvent(top, 'mousedown', function () {
 			self.trigger('mousedown');
 		}, _uid);
 
-		Events.addEvent(container, 'mouseup', function () {
+		addEvent(container, 'mouseup', function () {
 			self.trigger('mouseup');
 		}, _uid);
 
@@ -253,7 +258,7 @@ export default class FileInput extends EventTarget {
 				browseButton.style.position = 'relative';
 			}
 
-			Events.addEvent(browseButton, 'click', function (e) {
+			addEvent(browseButton, 'click', function (e) {
 				if (!self._disabled) {
 					input.click();
 				}
@@ -285,7 +290,7 @@ export default class FileInput extends EventTarget {
 	@return {DOMElement}
 	*/
 	getShimContainer() {
-		return Dom.get(this.shimid);
+		return get(this.shimid);
 	}
 
 	/**
@@ -315,12 +320,12 @@ export default class FileInput extends EventTarget {
 		}
 
 		let oldValue = _options[name];
-		let input = Dom.get(_uid);
+		let input = get(_uid);
 
 		switch (name) {
 			case 'accept':
 				if (value) {
-					let mimes = Mime.extList2mimes(value, Env.can('filter_by_extension'));
+					let mimes = extList2mimes(value, Env.can('filter_by_extension'));
 					input.setAttribute('accept', mimes.join(','));
 				} else {
 					input.removeAttribute('accept');
@@ -361,7 +366,7 @@ export default class FileInput extends EventTarget {
 	@param {Boolean} [state=true] Disable component if - true, enable if - false
 	*/
 	disable(state) {
-		let input = Dom.get(this.uid);
+		let input = get(this.uid);
 		if (input) {
 			input.disabled = (this._disabled = state === undefined ? true : state);
 		}
@@ -374,21 +379,21 @@ export default class FileInput extends EventTarget {
 	*/
 	refresh() {
 		let self = this;
-		let container = Dom.get(this._options.container) || document.body;
-		let browseButton = Dom.get(this._options.browse_button);
+		let container = get(this._options.container) || document.body;
+		let browseButton = get(this._options.browse_button);
 		let shimContainer = self.getShimContainer();
-		let zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 0;
+		let zIndex = parseInt(getStyle(browseButton, 'z-index'), 10) || 0;
 
 		if (browseButton) {
-			let pos = Dom.getPos(browseButton, container);
-			let size = Dom.getSize(browseButton);
+			let pos = getPos(browseButton, container);
+			let size = getSize(browseButton);
 
 			if (Env.can('summon_file_dialog')) {
 				browseButton.style.zIndex = zIndex + 1;
 			}
 
 			if (shimContainer) {
-				Basic.extend(shimContainer.style, {
+				extend(shimContainer.style, {
 					top: pos.y + 'px',
 					left: pos.x + 'px',
 					width: size.w + 'px',
@@ -409,29 +414,29 @@ export default class FileInput extends EventTarget {
 	destroy() {
 		let self = this;
 		let shimContainer = self.getShimContainer();
-		let container = Dom.get(self._options.container);
-		let browseButton = Dom.get(self._options.browse_button);
+		let container = get(self._options.container);
+		let browseButton = get(self._options.browse_button);
 
 		if (container) {
-			Events.removeAllEvents(container, self.uid);
+			removeAllEvents(container, self.uid);
 			container.style.position = self._containerPosition;
 		}
 
 		if (browseButton) {
-			Events.removeAllEvents(browseButton, self.uid);
-			Basic.extend(browseButton.style, {
+			removeAllEvents(browseButton, self.uid);
+			extend(browseButton.style, {
 				position: self._browseButtonPosition,
 				zIndex: self._browseButtonZindex
 			});
 		}
 
 		if (shimContainer) {
-			Events.removeAllEvents(shimContainer, self.uid);
+			removeAllEvents(shimContainer, self.uid);
 		}
 
-		if (Basic.typeOf(self.files) === 'array') {
+		if (typeOf(self.files) === 'array') {
 			// no sense in leaving associated files behind
-			Basic.each(self.files, function (file) {
+			each(self.files, function (file) {
 				file.destroy();
 			});
 		}
@@ -450,7 +455,7 @@ export default class FileInput extends EventTarget {
 		let _uid = self.uid;
 
 		// figure out accept string
-		let mimes = Mime.extList2mimes(_options.accept, Env.can('filter_by_extension'));
+		let mimes = extList2mimes(_options.accept, Env.can('filter_by_extension'));
 		let input = <HTMLInputElement> document.createElement('input');
 
 		input.id = _uid;
@@ -471,7 +476,7 @@ export default class FileInput extends EventTarget {
 		}
 
 		// prepare file input to be placed underneath the browse_button element
-		Basic.extend(input.style, {
+		extend(input.style, {
 			position: 'absolute',
 			top: 0,
 			left: 0,
@@ -485,7 +490,7 @@ export default class FileInput extends EventTarget {
 		input.onchange = function onChange() { // there should be only one handler for this
 			self.files.length = 0;
 
-			Basic.each(input.files, function (file) {
+			each(input.files, function (file) {
 				if (_options.directory) {
 					// folders are represented by dots, filter them out (Chrome 11+)
 					if (file.name === ".") {
@@ -526,7 +531,7 @@ export default class FileInput extends EventTarget {
 		shimContainer.id = this.shimid;
 		shimContainer.className = 'mxi-shim';
 
-		Basic.extend(shimContainer.style, {
+		extend(shimContainer.style, {
 			position: 'absolute',
 			top: '0px',
 			left: '0px',

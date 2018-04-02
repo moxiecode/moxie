@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Basic from './Basic';
+import { typeOf } from './Basic';
 
 /**
 @class moxie/utils/Url
@@ -38,7 +38,7 @@ const parseUrl = function (url?, currentUrl?) {
 	, isSchemeLess = /^\/\/\w/.test(url)
 	;
 
-	switch (Basic.typeOf(currentUrl)) {
+	switch (typeOf(currentUrl)) {
 		case 'undefined':
 			currentUrl = parseUrl(document.location.href, false);
 			break;

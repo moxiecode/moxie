@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import { Basic } from 'utils';
+import { typeOf, guid } from 'utils/Basic';
 
 const blobpool: any = {};
 
@@ -50,7 +50,7 @@ export default class BlobRef {
 	constructor(protected _blob: any, legacyBlob?) {
 		// originally the first argument was runtime uid, but then we got rid of runtimes
 		// however lets better retain backward compatibility here
-		if (Basic.typeOf(_blob) !== 'object' && Basic.typeOf(legacyBlob) !== 'undefined') {
+		if (typeOf(_blob) !== 'object' && typeOf(legacyBlob) !== 'undefined') {
 			_blob = legacyBlob;
 		}
 
@@ -58,7 +58,7 @@ export default class BlobRef {
 			_blob = {};
 		}
 
-		this.uid =  _blob.uid || Basic.guid('uid_');
+		this.uid =  _blob.uid || guid('uid_');
 		this.size =  _blob.size || 0;
 		this.type =  _blob.type || '';
 

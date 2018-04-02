@@ -8,8 +8,8 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Basic from './Basic';
-import I18n from './I18n';
+import { trim, inArray, each, typeOf } from './Basic';
+import { translate } from './I18n';
 
 /**
 @class moxie/utils/Mime
@@ -139,7 +139,7 @@ const extList2mimes = function (filters, addMissingExtensions) {
 			// future browsers should filter by extension, finally
 			if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
 				mimes.push('.' + ext[ii]);
-			} else if (type && Basic.inArray(type, mimes) === -1) {
+			} else if (type && inArray(type, mimes) === -1) {
 				mimes.push(type);
 			} else if (!type) {
 				// if we have no type in our map, then accept all
@@ -154,7 +154,7 @@ const extList2mimes = function (filters, addMissingExtensions) {
 const mimes2exts = function (mimes) {
 	let exts = [];
 
-	Basic.each(mimes, function (mime) {
+	each(mimes, function (mime) {
 		mime = mime.toLowerCase();
 
 		if (mime === '*') {
@@ -167,7 +167,7 @@ const mimes2exts = function (mimes) {
 		if (m) {
 			if (m[2] === '*') {
 				// wildcard mime type detected
-				Basic.each(extensions, function (arr, mime) {
+				each(extensions, function (arr, mime) {
 					if ((new RegExp('^' + m[1] + '/')).test(mime)) {
 						[].push.apply(exts, extensions[mime]);
 					}
@@ -184,14 +184,14 @@ const mimes2exts = function (mimes) {
 const mimes2extList = function (mimes) {
 	let accept = [], exts = [];
 
-	if (Basic.typeOf(mimes) === 'string') {
-		mimes = Basic.trim(mimes).split(/\s*,\s*/);
+	if (typeOf(mimes) === 'string') {
+		mimes = trim(mimes).split(/\s*,\s*/);
 	}
 
 	exts = mimes2exts(mimes);
 
 	accept.push({
-		title: I18n.translate('Files'),
+		title: translate('Files'),
 		extensions: exts.length ? exts.join(',') : '*'
 	});
 

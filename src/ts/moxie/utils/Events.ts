@@ -14,10 +14,10 @@
 @static
 */
 
-import Basic from './Basic';
+import { guid, each, isEmptyObj } from './Basic';
 
 let eventhash = {};
-let uid = 'moxie_' + Basic.guid();
+let uid = 'moxie_' + guid();
 
 /**
 Adds an event handler to the specified object and store reference to the handler
@@ -40,7 +40,7 @@ const addEvent = function (obj, name, func, key) {
 
 	// Log event handler to objects internal mOxie registry
 	if (!obj[uid]) {
-		obj[uid] = Basic.guid();
+		obj[uid] = guid();
 	}
 
 	if (!eventhash.hasOwnProperty(obj[uid])) {
@@ -102,7 +102,7 @@ const removeEvent = function (obj, name, callback) {
 	}
 
 	// If mOxie registry has become empty, remove it
-	if (Basic.isEmptyObj(eventhash[obj[uid]])) {
+	if (isEmptyObj(eventhash[obj[uid]])) {
 		delete eventhash[obj[uid]];
 
 		// IE doesn't let you remove DOM object property with - delete
@@ -128,7 +128,7 @@ const removeAllEvents = function (obj, key) {
 		return;
 	}
 
-	Basic.each(eventhash[obj[uid]], function (events, name) {
+	each(eventhash[obj[uid]], function (events, name) {
 		removeEvent(obj, name, key);
 	});
 };

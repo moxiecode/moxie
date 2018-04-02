@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Basic from 'utils/Basic';
+import { guid, each, typeOf, isEmptyObj, trim, inSeries } from 'utils/Basic';
 
 // hash of event listeners by object uid
 let eventpool = {};
@@ -34,12 +34,12 @@ export default class EventTarget {
 	@property uid
 	@type String
 	*/
-	uid: string = Basic.guid();
+	uid: string = guid();
 
 
 	constructor() {
 		if (!this.uid) {
-			this.uid = Basic.guid('uid_');
+			this.uid = guid('uid_');
 		}
 	}
 
@@ -57,14 +57,14 @@ export default class EventTarget {
 
 		// without uid no event handlers can be added, so make sure we got one
 		if (!this.hasOwnProperty('uid')) {
-			this.uid = Basic.guid('uid_');
+			this.uid = guid('uid_');
 		}
 
-		type = Basic.trim(type);
+		type = trim(type);
 
 		if (/\s/.test(type)) {
 			// multiple event types were passed for one handler
-			Basic.each(type.split(/\s+/), function (type) {
+			each(type.split(/\s+/), function (type) {
 				self.addEventListener(type, fn, priority, scope);
 			});
 			return;
@@ -114,7 +114,7 @@ export default class EventTarget {
 
 		if (/\s/.test(type)) {
 			// multiple event types were passed for one handler
-			Basic.each(type.split(/\s+/), function (type) {
+			each(type.split(/\s+/), function (type) {
 				self.removeEventListener(type, fn);
 			});
 			return;
@@ -139,7 +139,7 @@ export default class EventTarget {
 				delete eventpool[this.uid][type];
 
 				// and object specific entry in a hash if it has no more listeners attached
-				if (Basic.isEmptyObj(eventpool[this.uid])) {
+				if (isEmptyObj(eventpool[this.uid])) {
 					delete eventpool[this.uid];
 				}
 			}
@@ -168,11 +168,11 @@ export default class EventTarget {
 	dispatchEvent(type) {
 		let uid, list, args, tmpEvt, evt: any = {}, result = true, undef;
 
-		if (Basic.typeOf(type) !== 'string') {
+		if (typeOf(type) !== 'string') {
 			// we can't use original object directly (because of Silverlight)
 			tmpEvt = type;
 
-			if (Basic.typeOf(tmpEvt.type) === 'string') {
+			if (typeOf(tmpEvt.type) === 'string') {
 				type = tmpEvt.type;
 
 				if (tmpEvt.total !== undef && tmpEvt.loaded !== undef) { // progress event
@@ -210,7 +210,7 @@ export default class EventTarget {
 
 			// Dispatch event to all listeners
 			let queue = [];
-			Basic.each(list, function (handler) {
+			each(list, function (handler) {
 				// explicitly set the target, otherwise events fired from shims do not get it
 				args[0].target = handler.scope;
 				// if event is marked as async, detach the handler
@@ -227,7 +227,7 @@ export default class EventTarget {
 				}
 			});
 			if (queue.length) {
-				Basic.inSeries(queue, function (err) {
+				inSeries(queue, function (err) {
 					result = !err;
 				});
 			}
@@ -305,15 +305,15 @@ export default class EventTarget {
 
 		this.bind(dispatches.join(' '), function (e) {
 			let prop = 'on' + e.type.toLowerCase();
-			if (Basic.typeOf(this[prop]) === 'function') {
+			if (typeOf(this[prop]) === 'function') {
 				this[prop].apply(this, arguments);
 			}
 		});
 
 		// object must have defined event properties, even if it doesn't make use of them
-		Basic.each(dispatches, function (prop) {
+		each(dispatches, function (prop) {
 			prop = 'on' + prop.toLowerCase(prop);
-			if (Basic.typeOf(self[prop]) === 'undefined') {
+			if (typeOf(self[prop]) === 'undefined') {
 				self[prop] = null;
 			}
 		});

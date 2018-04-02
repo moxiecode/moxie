@@ -8,7 +8,8 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import { Basic, Mime } from 'utils';
+import { guid } from 'utils/Basic';
+import { getFileMime, extensions } from 'utils/Mime';
 import BlobRef from 'file/BlobRef'
 
 /**
@@ -53,7 +54,7 @@ export default class FileRef extends BlobRef {
 
 		// if type was not set by BlobRef constructor and we have a clue, try some
 		if (!this.type) {
-			this.type = Mime.getFileMime(file.name);
+			this.type = getFileMime(file.name);
 		}
 
 		// sanitize file name or generate new one
@@ -63,10 +64,10 @@ export default class FileRef extends BlobRef {
 			name = name.substr(name.lastIndexOf('/') + 1);
 		} else if (this.type) {
 			let prefix = this.type.split('/')[0];
-			name = Basic.guid((prefix !== '' ? prefix : 'file') + '_');
+			name = guid((prefix !== '' ? prefix : 'file') + '_');
 
-			if (Mime.extensions[this.type]) {
-				name += '.' + Mime.extensions[this.type][0]; // append proper extension if possible
+			if (extensions[this.type]) {
+				name += '.' + extensions[this.type][0]; // append proper extension if possible
 			}
 		}
 		this.name =  name;
