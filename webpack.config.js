@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/ts/index.ts',
+  entry: './src/ts/moxie/index.ts',
   //devtool: 'cheap-module-eval-source-map',
   module: {
     rules: [
@@ -13,7 +13,8 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: [ '.ts', '.js' ]
+    extensions: [ '.ts', '.js' ],
+    modules: [ path.resolve(__dirname, "src/ts/moxie"), "node_modules" ]
   },
   output: {
     filename: 'moxie.js',

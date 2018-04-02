@@ -49,7 +49,6 @@ const extend = function (...args) {
 	return merge(false, false, arguments);
 }
 
-
 /**
 Extends the specified object with another object(s), but only if the property exists in the target.
 
@@ -63,16 +62,13 @@ const extendIf = function () {
 	return merge(true, false, arguments);
 }
 
-
 const extendImmutable = function () {
 	return merge(false, true, arguments);
 }
 
-
 const extendImmutableIf = function () {
 	return merge(true, true, arguments);
 }
-
 
 const clone = function (value) {
 	switch (typeOf(value)) {
@@ -87,7 +83,6 @@ const clone = function (value) {
 	}
 }
 
-
 const shallowCopy = function (obj) {
 	switch (typeOf(obj)) {
 		case 'array':
@@ -98,7 +93,6 @@ const shallowCopy = function (obj) {
 	}
 	return obj;
 }
-
 
 const merge = function (strict, immutable, args) {
 	const undef = undefined;
@@ -128,7 +122,6 @@ const merge = function (strict, immutable, args) {
 
 	return target;
 }
-
 
 /**
 Executes the callback const for each item in array/object. If you return false in the = function
@@ -226,7 +219,6 @@ const inSeries = function (queue, cb) {
 	callNext(i);
 }
 
-
 /**
 Recieve an array of functions (usually async) to call in parallel, each  function
 receives a callback as first argument that it should call, when it completes. After
@@ -263,7 +255,6 @@ const inParallel = function (queue, cb) {
 	});
 }
 
-
 /**
 Find an element in array and return it's index if present, otherwise return -1.
 
@@ -288,56 +279,6 @@ const inArray = function (needle, array) {
 	return -1;
 }
 
-
-/**
-Returns elements of first array if they are not present in second. And false - otherwise.
-
-@private
-@method arrayDiff
-@param {Array} needles
-@param {Array} array
-@return {Array|Boolean}
-*/
-const arrayDiff = function (needles, array) {
-	const diff = [];
-
-	if (typeOf(needles) !== 'array') {
-		needles = [needles];
-	}
-
-	if (typeOf(array) !== 'array') {
-		array = [array];
-	}
-
-	for (const i in needles) {
-		if (inArray(needles[i], array) === -1) {
-			diff.push(needles[i]);
-		}
-	}
-	return diff.length ? diff : false;
-}
-
-
-/**
-Find intersection of two arrays.
-
-@private
-@method arrayIntersect
-@param {Array} array1
-@param {Array} array2
-@return {Array} Intersection of two arrays or null if there is none
-*/
-const arrayIntersect = function (array1, array2) {
-	const result = [];
-	each(array1, function (item) {
-		if (inArray(item, array2) !== -1) {
-			result.push(item);
-		}
-	});
-	return result.length ? result : null;
-}
-
-
 /**
 Forces anything into an array.
 
@@ -356,7 +297,6 @@ const toArray = function (obj) {
 
 	return arr;
 }
-
 
 /**
 Generates an unique ID. The only way a user would be able to get the same ID is if the two persons
@@ -384,7 +324,6 @@ const guid = (function () {
 	};
 }());
 
-
 /**
 Trims white spaces around the string
 
@@ -399,7 +338,6 @@ const trim = function (str) {
 	}
 	return String.prototype.trim ? String.prototype.trim.call(str) : str.toString().replace(/^\s*/, '').replace(/\s*$/, '');
 }
-
 
 /**
 Parses the specified size string into a byte value. For example 10kb becomes 10240.
@@ -431,7 +369,6 @@ const parseSizeStr = function (size) {
 	}
 	return Math.floor(size);
 }
-
 
 /**
  * Pseudo sprintf implementation - simple way to replace tokens with specified values.
@@ -465,14 +402,12 @@ const sprintf = function (str) {
 }
 
 
-
 const delay = function (cb, timeout) {
 	const self = this;
 	setTimeout(function () {
 		cb.call(self);
 	}, timeout || 1);
 }
-
 
 const verComp = function (v1, v2, operator) {
 	// From: http://phpjs.org/functions
@@ -588,8 +523,6 @@ const verComp = function (v1, v2, operator) {
 	}
 }
 
-
-
 export default {
 	guid,
 	typeOf,
@@ -603,12 +536,10 @@ export default {
 	inSeries,
 	inParallel,
 	inArray,
-	arrayDiff,
-	arrayIntersect,
 	toArray,
 	trim,
 	sprintf,
 	parseSizeStr,
 	delay,
 	verComp
-};
+}

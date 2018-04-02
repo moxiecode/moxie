@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Basic from '../utils/Basic';
+import { Basic } from 'utils';
 
 const blobpool: any = {};
 

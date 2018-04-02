@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import Basic from './utils/Basic';
+import Basic from 'utils/Basic';
 
 // hash of event listeners by object uid
 let eventpool = {};

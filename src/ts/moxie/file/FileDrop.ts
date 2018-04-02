@@ -8,9 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import { Basic, Mime, Dom, Events, I18n } from '../utils';
-import EventTarget from '../EventTarget';
-import FileRef from './FileRef'
+import { Basic, Mime, Dom, Events, I18n } from 'utils';
+import EventTarget from 'EventTarget';
+import FileRef from 'file/FileRef'
 
 /**
 Turn arbitrary DOM element to a drop zone accepting files.

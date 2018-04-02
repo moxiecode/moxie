@@ -8,8 +8,8 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-import { Basic, Mime } from '../utils';
-import BlobRef from './BlobRef';
+import { Basic, Mime } from 'utils';
+import BlobRef from 'file/BlobRef'
 
 /**
 @class moxie/file/FileRef
