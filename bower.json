@@ -1,5 +1,5 @@
 {
-	"name": "moxie",
+	"name": "moxie-pickers",
 	"main": [
 		"./bin/js/moxie.min.js"
 	],

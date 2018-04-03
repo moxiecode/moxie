@@ -1,7 +1,7 @@
 src/silverlight/Bin/
 src/silverlight/obj/
 tmp
-lib
+lib/**/*.js
 bin
 wiki
 jslint.xml
@@ -19,7 +19,7 @@ jscoverage
 .DS_Store
 node_modules
 .idea
-src/javascript*
+javascript_*
 src/**/*.js
 src/**/*.js.map
 src/**/*.d.ts

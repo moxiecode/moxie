@@ -25,10 +25,8 @@ var copyright = [
 task("default", ["mkjs", "docs"], function (params) {});
 
 
-
 desc("Build release package");
 task("release", ["default", "package"], function (params) {});
-
 
 
 desc("Runs JSHint on source files");
@@ -39,123 +37,17 @@ task("jshint", [], function (params) {
 });
 
 
-
-desc("Compile JS");
-task("mkjs", [], function () {
-	var amdlc = require('amdlc');
-	var baseDir = "src/javascript", targetDir = "bin/js";
-	var uglifyOptions = {
-		unused: true,
-		dead_code: true,
-		global_defs: {
-			MXI_DEBUG: false
-		}
-	};
-
-	var options = {
-		from: [],
-		compress: uglifyOptions,
-		baseDir: baseDir,
-		rootNS: "moxie",
-		expose: "public",
-		verbose: true,
-		outputSource: targetDir + "/moxie.js",
-		outputMinified: false,
-		outputDev: false,
-		outputCoverage: false
-	};
-
-	var modules = [].slice.call(arguments);
-	if (!modules.length) {
-		modules = ["file/Blob", "file/FileInput", "file/FileDrop", "image/Image"];
-	}
-
-	// get paths to runtime extensions
-	var extPaths = mkjs.getExtensionPaths4(modules, {
-		runtimes: process.env.runtimes,
-		baseDir: baseDir
-	});
-
-	// we need to strip off the baseDir, since amdlc will be prepending its own anyway
-	extPaths = extPaths.map(function(item) {
-		var re = new RegExp('^'+baseDir+'\\/', 'i');
-		return item.replace(re, '');
-	});
-
-	// include corresponding runtime extensions
-	options.from = modules.map(function(mod) { return mod + '.js'; }).concat(extPaths);
-
-	// start fresh
-	if (fs.existsSync(targetDir)) {
-		jake.rmRf(targetDir);
-	}
-	jake.mkdirP(targetDir);
-
-
-	amdlc.compile(options);
-
-	// for dev and cov versions expose all modules to be able to test them properly
-	amdlc.compile(utils.extend({}, options, {
-		expose: 'all',
-		force: true,
-		outputSource: false,
-		outputMinified: false,
-		outputDev: targetDir + "/moxie.dev.js",
-		outputCoverage: targetDir + "/moxie.cov.js"
-	}));
-
-	var sourceCode = fs.readFileSync(targetDir + '/moxie.js').toString();
-	if (process.env.umd != 'no' && process.env.compat != 'yes') {
-		fs.writeFileSync(targetDir + '/moxie.js', mkjs.addUMD("moxie", sourceCode));
-	}
-
-	// compile minified version
-	tools.uglify(targetDir + "/moxie.js", targetDir + "/moxie.min.js", uglifyOptions);
-	console.info("Writing minified version output to: " + targetDir + "/moxie.min.js");
-
-	// inject version and copyright info
-	var info = require('./package.json');
-	info.copyright = copyright;
-	tools.addReleaseDetailsTo(targetDir, info);
-
-	// add debug constant to dev source
-	mkjs.addDebug(targetDir + "/moxie.js");
-	mkjs.addDebug(targetDir + "/moxie.dev.js");
-	mkjs.addDebug(targetDir + "/moxie.cov.js");
-
-	// add compatibility
-	if (process.env.compat == 'yes') {
-		mkjs.addCompat({
-			baseDir: baseDir,
-			targetDir: targetDir
-		});
-	}
-});
-
-
-
 desc("Generate documentation using YUIDoc");
 task("docs", [], function (params) {
-	var baseDir = "src/javascript"
-	, exclude = [
-		"runtime/flash",
-		"runtime/silverlight",
-		"runtime/html5",
-		"runtime/html4"
-	];
-
-	tools.yuidoc(baseDir, "docs", {
-		exclude: exclude.map(function(filePath) { return baseDir + "/" + filePath; }).join(",")
-	});
+	var baseDir = "src/javascript";
+	tools.yuidoc(baseDir, "docs");
 }, true);
-
 
 
 desc("Generate wiki pages");
 task("wiki", ["docs"], function() {
 	wiki("git@github.com:moxiecode/moxie.wiki.git", "wiki", "docs");
 });
-
 
 
 desc("Package library");
@@ -181,36 +73,6 @@ task("package", [], function (params) {
 		"README.md",
 		"LICENSE.txt"
 	], path.join(tmpDir, utils.format("moxie_%s.zip", suffix)), complete);
-}, true);
-
-
-desc("Run tests");
-task("test", [], function() {
-	var baseDir = 'tests/auto';
-	var suite = eval('(' + fs.readFileSync(baseDir + '/tests.js').toString() + ')');
-	var tests = suite.tests.map(function(test) {  return baseDir + '/' + test.url; });
-
-	var config = {
-		  hub: "http://localhost:9000"
-		, farm: 'saucelabs'
-		, saucelabs: {
-			  user: process.env.SAUCE_USERNAME
-			, pass: process.env.SAUCE_ACCESS_KEY
-			, slots: 1
-		}
-		, args: tests
-		, browsers: [
-			  { id: 'ie', version: 10, osId: 'win' }
-			, { id: 'chrome', version: 28, osId: 'mac' }
-			//, { id: 'firefox', version: 16, osId: 'mac' }
-		]
-
-		, verbose: true
-		, wait: true
-	};
-
-	require('./node_modules/bunyip/lib/bunyip').main(config);
-
 }, true);
 
 

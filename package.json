@@ -1,19 +1,15 @@
 {
-  "name": "mOxie",
-  "description": "Custom implementations of the XHR2 and File API.",
+  "name": "moxie-pickers",
+  "description": "HTML5 file-pickers - FileInput and FileDrop (left-over from mOxie - multi-runtime implementation of XHR2 and File API).",
   "keywords": [
-    "XHR2",
-    "XMLHttpRequest2",
     "HTML5",
-    "Flash",
-    "Silverlight",
     "FileInput",
-    "FileReader",
+    "FileDrop",
     "Image",
     "ImageResizer"
   ],
-  "version": "1.5.7",
-  "releaseDate": "2017-11-03",
+  "version": "1.0.0",
+  "releaseDate": "2018-04-03",
   "author": "Ephox",
   "contributors": [
     {
@@ -21,8 +17,8 @@
       "email": "davit.barbakadze@ephox.com"
     }
   ],
-  "main": "./dist/moxie.js",
-  "types": "./dist/moxie.d.ts",
+  "main": "bin/js/moxie.min.js",
+  "types": "lib",
   "homepage": "https://github.com/moxiecode/moxie/",
   "repository": {
     "type": "git",
@@ -53,24 +49,25 @@
     "node": ">=0.8.0"
   },
   "devDependencies": {
-    "amdlc": "https://github.com/jayarjo/amdlc/tarball/master",
     "async": "0.2.x",
-    "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
     "coverjs": "0.0.x",
     "dateformat": "1.x",
+    "declaration-bundler-webpack-plugin": "^1.0.3",
     "extract-zip": "^1.5.0",
     "fileset": "0.1.x",
-    "grunt-nuget-pack": "0.0.6",
-    "grunt-nuget-push": "0.0.1",
+    "fork-ts-checker-webpack-plugin": "^0.4.1",
     "handlebars": "1.0.x",
     "jake": "0.5.x",
     "jshint": "2.1.x",
     "moxie-zip": "0.0.x",
     "request": "^2.25.0",
+    "source-map-loader": "^0.2.3",
     "ts-loader": "^4.1.0",
+    "tsconfig-paths-webpack-plugin": "^3.0.3",
     "tslint": "^5.9.1",
     "typescript": "^2.7.2",
     "uglify-js": ">= 2.0.0",
+    "uglifyjs-webpack-plugin": "^1.2.4",
     "webpack": "^4.1.1",
     "webpack-cli": "^2.0.12",
     "webpack-dev-server": "^3.1.1",
@@ -78,6 +75,6 @@
   },
   "scripts": {
     "test": "jake test",
-    "build": "webpack"
+    "build": "tsc & webpack"
   }
 }

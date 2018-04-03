@@ -11,39 +11,6 @@ color.yellow = '\033[33m';
 color.green = '\033[32m';
 
 
-exports.uglify = function (sourceFiles, outputFile, options) {
-	var uglifyJS = require("uglify-js");
-	var code = "";
-
-	options = utils.extend({
-		unused: true,
-		dead_code: true
-	}, options);
-
-	// Combine JS files
-	if (sourceFiles instanceof Array) {
-		sourceFiles.forEach(function(filePath) {
-			if (options.sourceBase) {
-				filePath = path.join(options.sourceBase, filePath);
-			}
-			code += fs.readFileSync(filePath).toString();
-		});
-	} else {
-		code += fs.readFileSync(sourceFiles).toString();
-	}
-
-	// Compress
-	var result = uglifyJS.minify(code, {
-		fromString: true,
-		compress: options
-	});
-
-	if (outputFile) {
-		fs.writeFileSync(outputFile, result.code);
-	}
-	return code;
-};
-
 exports.less = function (sourceFile, outputFile, options) {
 	var less = require('less');
 
@@ -239,44 +206,6 @@ exports.copySync = function(from, to) {
 		console.info("Error: " + from + " is directory");
 	}
 }
-
-
-// inject version details and copyright header if available to all js files in specified directory
-exports.addReleaseDetailsTo = function (destPath, info) {
-	var self = this;
-
-	function processFile(filePath) {
-
-		if (info.copyright) {
-			contents = info.copyright + "\n" + fs.readFileSync(filePath);
-		}
-
-		contents = contents.replace(/@@([^@]+)@@/g, function($0, $1) {
-			switch ($1) {
-				case "year": return (new Date()).getFullYear();
-				case "version": return info.version;
-				case "releasedate": return info.releaseDate;
-			}
-		});
-
-		fs.writeFileSync(filePath, contents);
-	}
-
-	function isTextFile(filePath) {
-		return /\.(js|txt)$/.filePath;
-	}
-
-	var stat = fs.statSync(destPath);
-
-	if (stat.isFile()) {
-		processFile(destPath);
-	} else if (stat.isDirectory()) {
-		fs.readdirSync(destPath).forEach(function(fileName) {
-			self.addReleaseDetailsTo(path.join(destPath, fileName), info);
-		});
-	}
-};
-
 
 exports.downloadFile = function (url, destPath, cb) {
     var protocol = /^https:/.test(url) ? require('https') : require('http');
