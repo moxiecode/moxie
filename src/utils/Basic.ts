@@ -46,7 +46,7 @@ Extends the specified object with another object(s).
 @return {Object} Same as target, the extended object.
 */
 const extend = function (...args) {
-	return merge(false, false, arguments);
+	return merge(false, false, args);
 }
 
 /**
@@ -58,16 +58,16 @@ Extends the specified object with another object(s), but only if the property ex
 @param {Object} [obj]* Multiple objects to extend with.
 @return {Object} Same as target, the extended object.
 */
-const extendIf = function () {
-	return merge(true, false, arguments);
+const extendIf = function (...args) {
+	return merge(true, false, args);
 }
 
-const extendImmutable = function () {
-	return merge(false, true, arguments);
+const extendImmutable = function (...args) {
+	return merge(false, true, args);
 }
 
-const extendImmutableIf = function () {
-	return merge(true, true, arguments);
+const extendImmutableIf = function (...args) {
+	return merge(true, true, args);
 }
 
 const clone = function (value) {

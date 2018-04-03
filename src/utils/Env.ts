@@ -573,7 +573,7 @@ var uaResult = (new UAParser()).getResult();
 
 
 var Env: any = {
-	can: can,
+	can,
 
 	uaParser: UAParser,
 
@@ -582,7 +582,7 @@ var Env: any = {
 	os: uaResult.os.name, // everybody intuitively types it in a lowercase for some reason
 	osVersion: uaResult.os.version,
 
-	verComp: verComp
+	verComp
 };
 
 // for backward compatibility
